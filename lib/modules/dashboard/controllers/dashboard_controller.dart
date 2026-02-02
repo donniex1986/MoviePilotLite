@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/statistic_model.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/schedule_model.dart';
+import 'package:moviepilot_mobile/modules/dashboard/models/dashboard_config_model.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
@@ -77,6 +78,9 @@ class DashboardController extends GetxController {
   /// Talker日志实例
   late final Talker talker;
 
+  /// Dashboard配置
+  final dashboardConfig = Rx<DashboardConfigModel?>(null);
+
   late Timer _cpuTimer;
   late Timer _networkTimer;
   late Timer _downloaderTimer;
@@ -86,8 +90,6 @@ class DashboardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // 默认显示所有组件
-    displayedWidgets.assignAll(availableWidgets);
 
     // 初始化Talker实例
     talker = Talker();
@@ -105,10 +107,15 @@ class DashboardController extends GetxController {
       // 记录当前的baseUrl
       AppService.instance.setBaseUrl(loginProfile.server);
       talker.info('从登录信息中获取认证数据成功，服务器地址: ${loginProfile.server}');
+
+      // 获取用户的dashboard配置
+      _fetchDashboardConfig();
     } else {
       talker.warning('未找到登录信息，使用默认服务器地址');
       // 这里可以添加重定向到登录页面的逻辑
       ToastUtil.info('请先登录后再访问仪表盘');
+      // 使用默认配置
+      _useDefaultConfig();
     }
 
     // 初始化媒体服务器控制器
@@ -132,32 +139,32 @@ class DashboardController extends GetxController {
       mediaServerController.loadMediaLibraries();
     });
 
-    // 加载数据
-    loadCpuData();
-    loadNetworkData();
-    loadMemoryData();
-    loadDownloaderData();
-    loadStorageData();
-    loadStatisticData();
-    loadScheduleData();
-    loadLatestMediaData();
-    loadTransferData();
+    // 加载数据，只有当对应的组件在displayedWidgets列表中时才加载
+    if (displayedWidgets.contains('CPU')) loadCpuData();
+    if (displayedWidgets.contains('网络流量')) loadNetworkData();
+    if (displayedWidgets.contains('内存')) loadMemoryData();
+    if (displayedWidgets.contains('实时速率')) loadDownloaderData();
+    if (displayedWidgets.contains('存储空间')) loadStorageData();
+    if (displayedWidgets.contains('媒体统计')) loadStatisticData();
+    if (displayedWidgets.contains('后台任务')) loadScheduleData();
+    if (displayedWidgets.contains('最近添加')) loadLatestMediaData();
+    if (displayedWidgets.contains('最近入库')) loadTransferData();
 
-    // 初始化定时任务队列，每5秒获取一次数据
+    // 初始化定时任务队列，每5秒获取一次数据，只有当对应的组件在displayedWidgets列表中时才加载
     _cpuTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      loadCpuData();
+      if (displayedWidgets.contains('CPU')) loadCpuData();
     });
 
     _networkTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      loadNetworkData();
+      if (displayedWidgets.contains('网络流量')) loadNetworkData();
     });
 
     _downloaderTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      loadDownloaderData();
+      if (displayedWidgets.contains('实时速率')) loadDownloaderData();
     });
 
     _memoryTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      loadMemoryData();
+      if (displayedWidgets.contains('内存')) loadMemoryData();
     });
   }
 
@@ -471,5 +478,59 @@ class DashboardController extends GetxController {
     } catch (e, st) {
       talker.handle(e, st, '加载内存数据失败');
     }
+  }
+
+  /// 获取用户的dashboard配置
+  Future<void> _fetchDashboardConfig() async {
+    try {
+      talker.info('开始获取dashboard配置');
+      final response = await apiClient.get<Map<String, dynamic>>(
+        '/api/v1/user/config/Dashboard',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final config = DashboardConfigModel.fromJson(response.data!);
+        dashboardConfig.value = config;
+        talker.info('获取dashboard配置成功: ${config.data.value}');
+
+        // 根据配置更新displayedWidgets列表
+        _updateDisplayedWidgets(config.data.value);
+      } else {
+        talker.warning('获取dashboard配置失败: 响应数据为空或状态码错误');
+        // 如果获取失败，使用默认配置
+        _useDefaultConfig();
+      }
+    } catch (e, st) {
+      talker.handle(e, st, '获取dashboard配置失败');
+      // 如果获取失败，使用默认配置
+      _useDefaultConfig();
+    }
+  }
+
+  /// 根据配置更新displayedWidgets列表
+  void _updateDisplayedWidgets(DashboardConfigValue config) {
+    final widgets = <String>[];
+
+    // 根据配置添加显示的组件
+    if (config.storage) widgets.add('存储空间');
+    if (config.mediaStatistic) widgets.add('媒体统计');
+    if (config.weeklyOverview) widgets.add('最近入库');
+    if (config.speed) widgets.add('实时速率');
+    if (config.scheduler) widgets.add('后台任务');
+    if (config.cpu) widgets.add('CPU');
+    if (config.memory) widgets.add('内存');
+    if (config.network) widgets.add('网络流量');
+    if (config.library) widgets.add('我的媒体库');
+    if (config.latest) widgets.add('最近添加');
+
+    displayedWidgets.assignAll(widgets);
+    talker.info('根据配置更新displayedWidgets: $widgets');
+  }
+
+  /// 使用默认配置
+  void _useDefaultConfig() {
+    // 默认显示所有组件
+    displayedWidgets.assignAll(availableWidgets);
+    talker.info('使用默认配置，显示所有组件');
   }
 }
