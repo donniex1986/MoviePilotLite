@@ -88,4 +88,8 @@ class ApiClient {
   Future<Response<T>> runScheduler<T>(String jobId) {
     return get<T>('/api/v1/system/runscheduler?jobid=$jobId');
   }
+
+  Future<Response<T>> getMemoryData<T>() {
+    return get<T>('/api/v1/dashboard/memory');
+  }
 }

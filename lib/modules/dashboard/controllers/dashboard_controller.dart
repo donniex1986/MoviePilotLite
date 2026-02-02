@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/statistic_model.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/schedule_model.dart';
+import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:talker/talker.dart';
@@ -36,6 +37,9 @@ class DashboardController extends GetxController {
 
   /// 网络流量 [上行, 下行]
   final networkTraffic = <int>[0, 0].obs;
+
+  /// 内存数据 [内存占用(字节), 使用率(%)]
+  final memoryData = <int>[0, 0].obs;
 
   /// 下载器数据
   final downloaderData = <String, dynamic>{}.obs;
@@ -74,6 +78,9 @@ class DashboardController extends GetxController {
   late Timer _cpuTimer;
   late Timer _networkTimer;
   late Timer _downloaderTimer;
+  late Timer _memoryTimer;
+  late RealmService _realmService;
+
   @override
   void onInit() {
     super.onInit();
@@ -84,11 +91,20 @@ class DashboardController extends GetxController {
     talker = Talker();
     talker.info('Dashboard控制器初始化');
 
-    // 注意：实际使用时，baseUrl和token应该从登录信息中获取
-    token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzA0NDQ0NDQsImlhdCI6MTc2OTc1MzI0NCwic3ViIjoiMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJzdXBlcl91c2VyIjp0cnVlLCJsZXZlbCI6MiwicHVycG9zZSI6ImF1dGhlbnRpY2F0aW9uIn0.rjzTxQjMNHkZkZlwUxMxBajWF0Dbxe65Ny0Fnc5qJtI';
-    // 初始化API客户端
-    apiClient = ApiClient('https://mploser.x.ddnsto.com', talker, token: token);
+    // 初始化Realm服务
+    _realmService = RealmService();
+
+    // 从登录信息中获取baseUrl和token
+    final loginProfile = _getLatestLoginProfile();
+    if (loginProfile != null) {
+      token = loginProfile.accessToken;
+      apiClient = ApiClient(loginProfile.server, talker, token: token);
+      talker.info('从登录信息中获取认证数据成功');
+    } else {
+      talker.warning('未找到登录信息，请先登录');
+      // 这里可以添加重定向到登录页面的逻辑
+      ToastUtil.info('请先登录后再访问仪表盘');
+    }
 
     // 初始化媒体服务器控制器
     mediaServerController = Get.put(MediaServerController());
@@ -96,6 +112,7 @@ class DashboardController extends GetxController {
     // 加载数据
     loadCpuData();
     loadNetworkData();
+    loadMemoryData();
     loadDownloaderData();
     loadStorageData();
     loadStatisticData();
@@ -114,15 +131,37 @@ class DashboardController extends GetxController {
     _downloaderTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       loadDownloaderData();
     });
+
+    _memoryTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      loadMemoryData();
+    });
   }
 
   @override
   void onClose() {
-    // 取消定时任务
     _cpuTimer.cancel();
     _networkTimer.cancel();
     _downloaderTimer.cancel();
+    _memoryTimer.cancel();
+    _realmService.close();
     super.onClose();
+  }
+
+  /// 获取最新的登录配置文件
+  LoginProfile? _getLatestLoginProfile() {
+    try {
+      final profiles = _realmService.realm.all<LoginProfile>();
+      if (profiles.isEmpty) {
+        return null;
+      }
+      // 按更新时间排序，返回最新的登录配置
+      final sortedProfiles = profiles.toList()
+        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      return sortedProfiles.first;
+    } catch (e, st) {
+      talker.handle(e, st, '获取登录配置文件失败');
+      return null;
+    }
   }
 
   /// 添加组件
@@ -311,6 +350,7 @@ class DashboardController extends GetxController {
     await Future.wait([
       loadCpuData(),
       loadNetworkData(),
+      loadMemoryData(),
       loadDownloaderData(),
       loadStorageData(),
       loadStatisticData(),
@@ -357,6 +397,30 @@ class DashboardController extends GetxController {
       talker.handle(e, st, '执行后台任务失败');
       // 显示执行失败提示
       ToastUtil.error('网络错误，请检查网络连接', title: '执行失败');
+    }
+  }
+
+  /// 加载内存数据
+  Future<void> loadMemoryData() async {
+    try {
+      talker.info('开始加载内存数据');
+      final response = await apiClient.getMemoryData<List<dynamic>>();
+      if (response.statusCode == 200) {
+        final data = response.data!;
+        if (data.length >= 2) {
+          final memoryUsed = data[0] as int;
+          final memoryUsage = data[1] as int;
+          memoryData.value = [memoryUsed, memoryUsage];
+          talker.info('内存数据加载成功: 使用 ${memoryUsed} 字节, 使用率 ${memoryUsage}%');
+        }
+      } else if (response.statusCode == 401) {
+        talker.error('内存数据加载失败: 未授权，请重新登录');
+        // 这里可以添加重定向到登录页面的逻辑
+      } else {
+        talker.warning('内存数据加载失败，状态码: ${response.statusCode}');
+      }
+    } catch (e, st) {
+      talker.handle(e, st, '加载内存数据失败');
     }
   }
 }

@@ -68,7 +68,7 @@ class StorageWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Obx(() {
             final storageData = controller.storageData;
             final totalStorage = storageData['total_storage'] ?? 0.0;
@@ -79,30 +79,94 @@ class StorageWidget extends StatelessWidget {
             final usedPercentage = (progress * 100).toStringAsFixed(1);
             final freeStorage = totalStorage - usedStorage;
 
-            return Column(
-              children: [
-                _buildProgressBar(progress, '已使用 $usedPercentage%'),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '总容量: ${_formatStorageSize(totalStorage)}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: CupertinoColors.systemGrey,
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemBackground,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: CupertinoColors.systemGrey.withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _formatStorageSize(usedStorage),
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                '已使用 $usedPercentage%',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: CupertinoColors.systemGrey,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.rocket_launch,
+                                size: 14,
+                                color: CupertinoColors.systemOrange,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ),
-                    Text(
-                      '可用: ${_formatStorageSize(freeStorage)}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: CupertinoColors.systemGrey,
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: CupertinoColors.systemOrange,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.storage,
+                          size: 32,
+                          color: CupertinoColors.white,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildProgressBar(context, progress),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '总容量: ${_formatStorageSize(totalStorage)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                      ),
+                      Text(
+                        '可用: ${_formatStorageSize(freeStorage)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             );
           }),
         ],
@@ -110,27 +174,17 @@ class StorageWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressBar(double progress, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: CupertinoColors.systemGrey5,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              CupertinoColors.activeBlue,
-            ),
-            minHeight: 8,
-          ),
+  Widget _buildProgressBar(BuildContext context, double progress) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: LinearProgressIndicator(
+        value: progress,
+        backgroundColor: CupertinoColors.systemGrey5,
+        valueColor: AlwaysStoppedAnimation<Color>(
+          Theme.of(context).colorScheme.primary,
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
-        ),
-      ],
+        minHeight: 10,
+      ),
     );
   }
 
@@ -167,43 +221,60 @@ class MediaStatsWidget extends StatelessWidget {
           Obx(() {
             final statisticData = controller.statisticData.value;
 
-            // 构建统计项列表
+            // 构建统计项列表，添加颜色
             final stats = [
               {
                 'label': '电影',
                 'value': statisticData.movie_count,
                 'icon': CupertinoIcons.film,
+                'color': CupertinoColors.systemPurple,
+              },
+              {
+                'label': '电视剧',
+                'value': statisticData.tv_count,
+                'icon': CupertinoIcons.tv,
+                'color': CupertinoColors.systemGreen,
               },
               {
                 'label': '剧集',
-                'value': statisticData.tv_count,
-                'icon': CupertinoIcons.tv,
-              },
-              {
-                'label': '集数',
                 'value': statisticData.episode_count,
                 'icon': CupertinoIcons.collections,
+                'color': CupertinoColors.systemOrange,
               },
               {
                 'label': '用户',
                 'value': statisticData.user_count,
                 'icon': CupertinoIcons.person,
+                'color': CupertinoColors.systemBlue,
               },
             ];
 
-            return Row(
-              children: stats.map((stat) {
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemBackground,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: CupertinoColors.systemGrey.withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: stats.map((stat) {
+                  return Expanded(
                     child: _buildStatItem(
                       stat['label'] as String,
                       (stat['value'] as int).toString(),
                       stat['icon'] as IconData,
+                      stat['color'] as Color,
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             );
           }),
         ],
@@ -211,38 +282,36 @@ class MediaStatsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.systemGrey.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 28, color: CupertinoColors.activeBlue),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          Text(
-            label,
-            style: TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+          child: Icon(icon, size: 24, color: color),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }
@@ -656,6 +725,8 @@ class MemoryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DashboardController>();
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -671,54 +742,117 @@ class MemoryWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _buildProgressBar(0.68, '已使用 68%'),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '总内存: 16GB',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: CupertinoColors.systemGrey,
-                ),
+          const SizedBox(height: 16),
+          Obx(() {
+            final memoryData = controller.memoryData;
+            final memoryUsed = memoryData[0] ?? 0;
+            final memoryUsage = memoryData[1] ?? 0;
+            final progress = memoryUsage / 100;
+
+            // 假设总内存为16GB（实际应该从API获取）
+            const totalMemory = 16 * 1024 * 1024 * 1024; // 16GB in bytes
+            final freeMemory = totalMemory - memoryUsed;
+
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemBackground,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: CupertinoColors.systemGrey.withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              Text(
-                '可用: 5.1GB',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: CupertinoColors.systemGrey,
-                ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            SizeFormatter.formatSize(memoryUsed, 2),
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                '已使用 $memoryUsage%',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: CupertinoColors.systemGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.memory,
+                          size: 32,
+                          color: CupertinoColors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildProgressBar(context, progress),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '总内存: ${SizeFormatter.formatSize(totalMemory)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                      ),
+                      Text(
+                        '可用: ${SizeFormatter.formatSize(freeMemory)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildProgressBar(double progress, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: CupertinoColors.systemGrey5,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              CupertinoColors.systemRed,
-            ),
-            minHeight: 8,
-          ),
+  Widget _buildProgressBar(BuildContext context, double progress) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: LinearProgressIndicator(
+        value: progress,
+        backgroundColor: CupertinoColors.systemGrey5,
+        valueColor: AlwaysStoppedAnimation<Color>(
+          Theme.of(context).colorScheme.primary,
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
-        ),
-      ],
+        minHeight: 10,
+      ),
     );
   }
 }
