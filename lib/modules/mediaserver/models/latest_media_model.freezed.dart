@@ -27,23 +27,35 @@ mixin _$LatestMedia {
   /// 媒体标题
   String get title => throw _privateConstructorUsedError;
 
+  /// 媒体副标题
+  String get subtitle => throw _privateConstructorUsedError;
+
   /// 媒体类型
   String get type => throw _privateConstructorUsedError;
 
-  /// 媒体海报
-  String get poster => throw _privateConstructorUsedError;
+  /// 媒体封面
+  String get image => throw _privateConstructorUsedError;
 
-  /// 媒体简介
-  String get overview => throw _privateConstructorUsedError;
+  /// 媒体链接
+  String get link => throw _privateConstructorUsedError;
 
-  /// 媒体上映日期
-  String get release_date => throw _privateConstructorUsedError;
+  /// 百分比
+  double? get percent => throw _privateConstructorUsedError;
 
-  /// 媒体评分
-  double get vote_average => throw _privateConstructorUsedError;
+  /// 背景图片标签
+  @JsonKey(name: 'BackdropImageTags')
+  List<String> get backdropImageTags => throw _privateConstructorUsedError;
 
-  /// 媒体入库时间
-  String get added_date => throw _privateConstructorUsedError;
+  /// 服务器类型
+  @JsonKey(name: 'server_type')
+  String get serverType => throw _privateConstructorUsedError;
+
+  /// 是否使用cookie
+  @JsonKey(name: 'use_cookies')
+  bool? get useCookies => throw _privateConstructorUsedError;
+
+  /// 媒体库名称
+  String get libraryName => throw _privateConstructorUsedError;
 
   /// Serializes this LatestMedia to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -65,12 +77,15 @@ abstract class $LatestMediaCopyWith<$Res> {
   $Res call({
     String id,
     String title,
+    String subtitle,
     String type,
-    String poster,
-    String overview,
-    String release_date,
-    double vote_average,
-    String added_date,
+    String image,
+    String link,
+    double? percent,
+    @JsonKey(name: 'BackdropImageTags') List<String> backdropImageTags,
+    @JsonKey(name: 'server_type') String serverType,
+    @JsonKey(name: 'use_cookies') bool? useCookies,
+    String libraryName,
   });
 }
 
@@ -91,12 +106,15 @@ class _$LatestMediaCopyWithImpl<$Res, $Val extends LatestMedia>
   $Res call({
     Object? id = null,
     Object? title = null,
+    Object? subtitle = null,
     Object? type = null,
-    Object? poster = null,
-    Object? overview = null,
-    Object? release_date = null,
-    Object? vote_average = null,
-    Object? added_date = null,
+    Object? image = null,
+    Object? link = null,
+    Object? percent = freezed,
+    Object? backdropImageTags = null,
+    Object? serverType = null,
+    Object? useCookies = freezed,
+    Object? libraryName = null,
   }) {
     return _then(
       _value.copyWith(
@@ -108,29 +126,41 @@ class _$LatestMediaCopyWithImpl<$Res, $Val extends LatestMedia>
                 ? _value.title
                 : title // ignore: cast_nullable_to_non_nullable
                       as String,
+            subtitle: null == subtitle
+                ? _value.subtitle
+                : subtitle // ignore: cast_nullable_to_non_nullable
+                      as String,
             type: null == type
                 ? _value.type
                 : type // ignore: cast_nullable_to_non_nullable
                       as String,
-            poster: null == poster
-                ? _value.poster
-                : poster // ignore: cast_nullable_to_non_nullable
+            image: null == image
+                ? _value.image
+                : image // ignore: cast_nullable_to_non_nullable
                       as String,
-            overview: null == overview
-                ? _value.overview
-                : overview // ignore: cast_nullable_to_non_nullable
+            link: null == link
+                ? _value.link
+                : link // ignore: cast_nullable_to_non_nullable
                       as String,
-            release_date: null == release_date
-                ? _value.release_date
-                : release_date // ignore: cast_nullable_to_non_nullable
+            percent: freezed == percent
+                ? _value.percent
+                : percent // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            backdropImageTags: null == backdropImageTags
+                ? _value.backdropImageTags
+                : backdropImageTags // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
+            serverType: null == serverType
+                ? _value.serverType
+                : serverType // ignore: cast_nullable_to_non_nullable
                       as String,
-            vote_average: null == vote_average
-                ? _value.vote_average
-                : vote_average // ignore: cast_nullable_to_non_nullable
-                      as double,
-            added_date: null == added_date
-                ? _value.added_date
-                : added_date // ignore: cast_nullable_to_non_nullable
+            useCookies: freezed == useCookies
+                ? _value.useCookies
+                : useCookies // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            libraryName: null == libraryName
+                ? _value.libraryName
+                : libraryName // ignore: cast_nullable_to_non_nullable
                       as String,
           )
           as $Val,
@@ -150,12 +180,15 @@ abstract class _$$LatestMediaImplCopyWith<$Res>
   $Res call({
     String id,
     String title,
+    String subtitle,
     String type,
-    String poster,
-    String overview,
-    String release_date,
-    double vote_average,
-    String added_date,
+    String image,
+    String link,
+    double? percent,
+    @JsonKey(name: 'BackdropImageTags') List<String> backdropImageTags,
+    @JsonKey(name: 'server_type') String serverType,
+    @JsonKey(name: 'use_cookies') bool? useCookies,
+    String libraryName,
   });
 }
 
@@ -175,12 +208,15 @@ class __$$LatestMediaImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? title = null,
+    Object? subtitle = null,
     Object? type = null,
-    Object? poster = null,
-    Object? overview = null,
-    Object? release_date = null,
-    Object? vote_average = null,
-    Object? added_date = null,
+    Object? image = null,
+    Object? link = null,
+    Object? percent = freezed,
+    Object? backdropImageTags = null,
+    Object? serverType = null,
+    Object? useCookies = freezed,
+    Object? libraryName = null,
   }) {
     return _then(
       _$LatestMediaImpl(
@@ -192,29 +228,41 @@ class __$$LatestMediaImplCopyWithImpl<$Res>
             ? _value.title
             : title // ignore: cast_nullable_to_non_nullable
                   as String,
+        subtitle: null == subtitle
+            ? _value.subtitle
+            : subtitle // ignore: cast_nullable_to_non_nullable
+                  as String,
         type: null == type
             ? _value.type
             : type // ignore: cast_nullable_to_non_nullable
                   as String,
-        poster: null == poster
-            ? _value.poster
-            : poster // ignore: cast_nullable_to_non_nullable
+        image: null == image
+            ? _value.image
+            : image // ignore: cast_nullable_to_non_nullable
                   as String,
-        overview: null == overview
-            ? _value.overview
-            : overview // ignore: cast_nullable_to_non_nullable
+        link: null == link
+            ? _value.link
+            : link // ignore: cast_nullable_to_non_nullable
                   as String,
-        release_date: null == release_date
-            ? _value.release_date
-            : release_date // ignore: cast_nullable_to_non_nullable
+        percent: freezed == percent
+            ? _value.percent
+            : percent // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        backdropImageTags: null == backdropImageTags
+            ? _value._backdropImageTags
+            : backdropImageTags // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+        serverType: null == serverType
+            ? _value.serverType
+            : serverType // ignore: cast_nullable_to_non_nullable
                   as String,
-        vote_average: null == vote_average
-            ? _value.vote_average
-            : vote_average // ignore: cast_nullable_to_non_nullable
-                  as double,
-        added_date: null == added_date
-            ? _value.added_date
-            : added_date // ignore: cast_nullable_to_non_nullable
+        useCookies: freezed == useCookies
+            ? _value.useCookies
+            : useCookies // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        libraryName: null == libraryName
+            ? _value.libraryName
+            : libraryName // ignore: cast_nullable_to_non_nullable
                   as String,
       ),
     );
@@ -227,13 +275,17 @@ class _$LatestMediaImpl implements _LatestMedia {
   const _$LatestMediaImpl({
     this.id = '',
     this.title = '',
+    this.subtitle = '',
     this.type = '',
-    this.poster = '',
-    this.overview = '',
-    this.release_date = '',
-    this.vote_average = 0.0,
-    this.added_date = '',
-  });
+    this.image = '',
+    this.link = '',
+    this.percent,
+    @JsonKey(name: 'BackdropImageTags')
+    final List<String> backdropImageTags = const [],
+    @JsonKey(name: 'server_type') this.serverType = '',
+    @JsonKey(name: 'use_cookies') this.useCookies,
+    this.libraryName = '',
+  }) : _backdropImageTags = backdropImageTags;
 
   factory _$LatestMediaImpl.fromJson(Map<String, dynamic> json) =>
       _$$LatestMediaImplFromJson(json);
@@ -248,39 +300,61 @@ class _$LatestMediaImpl implements _LatestMedia {
   @JsonKey()
   final String title;
 
+  /// 媒体副标题
+  @override
+  @JsonKey()
+  final String subtitle;
+
   /// 媒体类型
   @override
   @JsonKey()
   final String type;
 
-  /// 媒体海报
+  /// 媒体封面
   @override
   @JsonKey()
-  final String poster;
+  final String image;
 
-  /// 媒体简介
+  /// 媒体链接
   @override
   @JsonKey()
-  final String overview;
+  final String link;
 
-  /// 媒体上映日期
+  /// 百分比
   @override
-  @JsonKey()
-  final String release_date;
+  final double? percent;
 
-  /// 媒体评分
-  @override
-  @JsonKey()
-  final double vote_average;
+  /// 背景图片标签
+  final List<String> _backdropImageTags;
 
-  /// 媒体入库时间
+  /// 背景图片标签
+  @override
+  @JsonKey(name: 'BackdropImageTags')
+  List<String> get backdropImageTags {
+    if (_backdropImageTags is EqualUnmodifiableListView)
+      return _backdropImageTags;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_backdropImageTags);
+  }
+
+  /// 服务器类型
+  @override
+  @JsonKey(name: 'server_type')
+  final String serverType;
+
+  /// 是否使用cookie
+  @override
+  @JsonKey(name: 'use_cookies')
+  final bool? useCookies;
+
+  /// 媒体库名称
   @override
   @JsonKey()
-  final String added_date;
+  final String libraryName;
 
   @override
   String toString() {
-    return 'LatestMedia(id: $id, title: $title, type: $type, poster: $poster, overview: $overview, release_date: $release_date, vote_average: $vote_average, added_date: $added_date)';
+    return 'LatestMedia(id: $id, title: $title, subtitle: $subtitle, type: $type, image: $image, link: $link, percent: $percent, backdropImageTags: $backdropImageTags, serverType: $serverType, useCookies: $useCookies, libraryName: $libraryName)';
   }
 
   @override
@@ -290,16 +364,22 @@ class _$LatestMediaImpl implements _LatestMedia {
             other is _$LatestMediaImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
+            (identical(other.subtitle, subtitle) ||
+                other.subtitle == subtitle) &&
             (identical(other.type, type) || other.type == type) &&
-            (identical(other.poster, poster) || other.poster == poster) &&
-            (identical(other.overview, overview) ||
-                other.overview == overview) &&
-            (identical(other.release_date, release_date) ||
-                other.release_date == release_date) &&
-            (identical(other.vote_average, vote_average) ||
-                other.vote_average == vote_average) &&
-            (identical(other.added_date, added_date) ||
-                other.added_date == added_date));
+            (identical(other.image, image) || other.image == image) &&
+            (identical(other.link, link) || other.link == link) &&
+            (identical(other.percent, percent) || other.percent == percent) &&
+            const DeepCollectionEquality().equals(
+              other._backdropImageTags,
+              _backdropImageTags,
+            ) &&
+            (identical(other.serverType, serverType) ||
+                other.serverType == serverType) &&
+            (identical(other.useCookies, useCookies) ||
+                other.useCookies == useCookies) &&
+            (identical(other.libraryName, libraryName) ||
+                other.libraryName == libraryName));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -308,12 +388,15 @@ class _$LatestMediaImpl implements _LatestMedia {
     runtimeType,
     id,
     title,
+    subtitle,
     type,
-    poster,
-    overview,
-    release_date,
-    vote_average,
-    added_date,
+    image,
+    link,
+    percent,
+    const DeepCollectionEquality().hash(_backdropImageTags),
+    serverType,
+    useCookies,
+    libraryName,
   );
 
   /// Create a copy of LatestMedia
@@ -334,12 +417,15 @@ abstract class _LatestMedia implements LatestMedia {
   const factory _LatestMedia({
     final String id,
     final String title,
+    final String subtitle,
     final String type,
-    final String poster,
-    final String overview,
-    final String release_date,
-    final double vote_average,
-    final String added_date,
+    final String image,
+    final String link,
+    final double? percent,
+    @JsonKey(name: 'BackdropImageTags') final List<String> backdropImageTags,
+    @JsonKey(name: 'server_type') final String serverType,
+    @JsonKey(name: 'use_cookies') final bool? useCookies,
+    final String libraryName,
   }) = _$LatestMediaImpl;
 
   factory _LatestMedia.fromJson(Map<String, dynamic> json) =
@@ -353,29 +439,44 @@ abstract class _LatestMedia implements LatestMedia {
   @override
   String get title;
 
+  /// 媒体副标题
+  @override
+  String get subtitle;
+
   /// 媒体类型
   @override
   String get type;
 
-  /// 媒体海报
+  /// 媒体封面
   @override
-  String get poster;
+  String get image;
 
-  /// 媒体简介
+  /// 媒体链接
   @override
-  String get overview;
+  String get link;
 
-  /// 媒体上映日期
+  /// 百分比
   @override
-  String get release_date;
+  double? get percent;
 
-  /// 媒体评分
+  /// 背景图片标签
   @override
-  double get vote_average;
+  @JsonKey(name: 'BackdropImageTags')
+  List<String> get backdropImageTags;
 
-  /// 媒体入库时间
+  /// 服务器类型
   @override
-  String get added_date;
+  @JsonKey(name: 'server_type')
+  String get serverType;
+
+  /// 是否使用cookie
+  @override
+  @JsonKey(name: 'use_cookies')
+  bool? get useCookies;
+
+  /// 媒体库名称
+  @override
+  String get libraryName;
 
   /// Create a copy of LatestMedia
   /// with the given fields replaced by the non-null parameter values.

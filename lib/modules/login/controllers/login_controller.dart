@@ -1,14 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:talker/talker.dart';
 
 import '../../../utils/toast_util.dart';
 import '../models/login_profile.dart';
 import '../repositories/auth_repository.dart';
 
 class LoginController extends GetxController {
-  LoginController(this._repository);
+  LoginController(this._repository, this._talker);
 
   final AuthRepository _repository;
+  final Talker _talker;
 
   final serverController = TextEditingController();
   final usernameController = TextEditingController();
@@ -23,7 +25,41 @@ class LoginController extends GetxController {
   @override
   void onInit() {
     _loadProfiles();
+    _autoLogin();
     super.onInit();
+  }
+
+  /// 自动登录
+  Future<void> _autoLogin() async {
+    // 如果没有保存的登录配置文件，则不进行自动登录
+    if (profiles.isEmpty) return;
+    
+    // 获取最新的登录配置文件
+    final latestProfile = profiles.first;
+    
+    // 尝试使用保存的accessToken获取用户信息
+    isLoading.value = true;
+    try {
+      final success = await _repository.getUserInfo(
+        server: latestProfile.server,
+        accessToken: latestProfile.accessToken,
+      );
+      
+      if (success) {
+        // 获取用户信息成功，直接跳转到dashboard页面
+        _talker.info('自动登录成功');
+        ToastUtil.success('自动登录成功');
+        Get.offAllNamed('/dashboard');
+      } else {
+        // 获取用户信息失败，需要用户手动登录
+        _talker.warning('自动登录失败，需要用户手动登录');
+      }
+    } catch (e) {
+      // 获取用户信息失败，需要用户手动登录
+      _talker.warning('自动登录失败，需要用户手动登录: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void _loadProfiles() {

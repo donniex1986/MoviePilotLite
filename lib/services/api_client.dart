@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 
 class ApiClient {
   ApiClient(this.baseUrl, this.talker, {this.token})
@@ -26,6 +27,31 @@ class ApiClient {
           printResponseData: true,
           logLevel: LogLevel.info,
         ),
+      ),
+    );
+
+    // 添加cookie拦截器
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onResponse: (response, handler) {
+          // 从响应头中获取cookie
+          final setCookie = response.headers['set-cookie'];
+          if (setCookie != null && setCookie.isNotEmpty) {
+            final cookie = setCookie.join('; ');
+            AppService.instance.setCookie(cookie);
+            talker.info('获取并存储cookie: $cookie');
+          }
+          handler.next(response);
+        },
+        onRequest: (options, handler) {
+          // 在请求头中添加cookie
+          final cookie = AppService.instance.cookie;
+          if (cookie != null && cookie.isNotEmpty) {
+            options.headers['cookie'] = cookie;
+            talker.info('添加cookie到请求头');
+          }
+          handler.next(options);
+        },
       ),
     );
   }
@@ -83,6 +109,13 @@ class ApiClient {
 
   Future<Response<T>> getLatestMediaServerData<T>(String server) {
     return get<T>('/api/v1/mediaserver/latest?server=$server');
+  }
+
+  Future<Response<T>> getMediaLibraries<T>(
+    String server, {
+    bool hidden = true,
+  }) {
+    return get<T>('/api/v1/mediaserver/library?server=$server&hidden=$hidden');
   }
 
   Future<Response<T>> runScheduler<T>(String jobId) {

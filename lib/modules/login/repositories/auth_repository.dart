@@ -31,8 +31,41 @@ class AuthRepository {
     final login = LoginResponse.fromJson(response.data!);
     _talker.info('登录成功: $username');
 
+    // 登录完成后调用API接口获取配置信息和cookie
+    try {
+      final configResponse = await api.get<Map<String, dynamic>>(
+        '/api/v1/system/config',
+      );
+      _talker.info('获取配置信息成功');
+      // 这里可以获取并缓存cookie
+      // 注意：实际获取cookie的方式取决于ApiClient的实现
+    } catch (e) {
+      _talker.warning('获取配置信息失败: $e');
+    }
+
     _saveProfile(_normalizeServer(server), username, password, login);
     return login;
+  }
+
+  /// 获取用户信息
+  Future<bool> getUserInfo({
+    required String server,
+    required String accessToken,
+  }) async {
+    try {
+      final api = ApiClient(
+        _normalizeServer(server),
+        _talker,
+        token: accessToken,
+      );
+      _talker.info('开始获取用户信息: ${_normalizeServer(server)}');
+      final response = await api.get<Map<String, dynamic>>('/api/v1/user');
+      _talker.info('获取用户信息成功');
+      return true;
+    } catch (e) {
+      _talker.warning('获取用户信息失败: $e');
+      return false;
+    }
   }
 
   List<LoginProfile> getProfiles() {
@@ -68,11 +101,11 @@ class AuthRepository {
           login.superUser,
           login.userId,
           login.userName,
-          login.avatar,
           login.level,
           permissionsJson,
           login.wizard,
           DateTime.now(),
+          avatar: login.avatar ?? '',
         ),
         update: true,
       );

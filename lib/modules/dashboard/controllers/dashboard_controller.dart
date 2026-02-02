@@ -7,6 +7,7 @@ import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:talker/talker.dart';
@@ -26,7 +27,6 @@ class DashboardController extends GetxController {
     '我的媒体库',
     '继续观看',
     '最近添加',
-    '最新入库',
   ];
 
   /// 当前显示的组件列表
@@ -99,18 +99,39 @@ class DashboardController extends GetxController {
 
     // 从登录信息中获取baseUrl和token
     final loginProfile = _getLatestLoginProfile();
+    talker.info('登录配置文件: $loginProfile');
     if (loginProfile != null) {
       token = loginProfile.accessToken;
       apiClient = ApiClient(loginProfile.server, talker, token: token);
-      talker.info('从登录信息中获取认证数据成功');
+      // 记录当前的baseUrl
+      AppService.instance.setBaseUrl(loginProfile.server);
+      talker.info('从登录信息中获取认证数据成功，服务器地址: ${loginProfile.server}');
     } else {
-      talker.warning('未找到登录信息，请先登录');
+      talker.warning('未找到登录信息，使用默认服务器地址');
       // 这里可以添加重定向到登录页面的逻辑
       ToastUtil.info('请先登录后再访问仪表盘');
     }
 
     // 初始化媒体服务器控制器
-    mediaServerController = Get.put(MediaServerController());
+    if (loginProfile != null) {
+      talker.info(
+        '使用登录信息初始化MediaServerController，服务器地址: ${loginProfile.server}',
+      );
+      mediaServerController = Get.put(
+        MediaServerController(loginProfile.server, token: token),
+      );
+    } else {
+      talker.info('使用默认地址初始化MediaServerController');
+      mediaServerController = Get.put(
+        MediaServerController('https://mploser.x.ddnsto.com'),
+      );
+    }
+
+    // 延迟一秒后加载媒体库数据，确保MediaServerController已完全初始化
+    Future.delayed(const Duration(seconds: 1), () {
+      talker.info('手动触发加载媒体库数据');
+      mediaServerController.loadMediaLibraries();
+    });
 
     // 加载数据
     loadCpuData();
@@ -384,6 +405,7 @@ class DashboardController extends GetxController {
       loadScheduleData(),
       loadLatestMediaData(),
       loadTransferData(),
+      mediaServerController.refreshLatestMediaList(),
     ]);
     talker.info('所有数据刷新完成');
   }

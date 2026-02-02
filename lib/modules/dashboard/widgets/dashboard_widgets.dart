@@ -1,14 +1,15 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
+import 'package:moviepilot_mobile/modules/mediaserver/models/library_model.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
+import 'package:moviepilot_mobile/utils/image_util.dart';
+import 'package:moviepilot_mobile/widgets/cached_image.dart';
 import '../controllers/dashboard_controller.dart';
 import 'schedule_widget.dart';
-import 'latest_media_widget.dart';
 
 /// Dashboard 组件工厂
 class DashboardWidgets {
@@ -37,8 +38,6 @@ class DashboardWidgets {
         return const ContinueWatchingWidget();
       case '最近添加':
         return const RecentlyAddedWidget();
-      case '最新入库':
-        return const LatestMediaWidget();
       default:
         return Container(
           padding: const EdgeInsets.all(16),
@@ -89,7 +88,7 @@ class StorageWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: CupertinoColors.systemGrey.withOpacity(0.1),
+                    color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
                     spreadRadius: 2,
                     blurRadius: 4,
                     offset: const Offset(0, 2),
@@ -242,7 +241,7 @@ class MediaStatsWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: CupertinoColors.systemGrey.withOpacity(0.1),
+                    color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
                     spreadRadius: 2,
                     blurRadius: 4,
                     offset: const Offset(0, 2),
@@ -281,7 +280,7 @@ class MediaStatsWidget extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, size: 24, color: color),
@@ -344,7 +343,9 @@ class RecentAddedWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: CupertinoColors.systemGrey.withOpacity(0.1),
+                        color: CupertinoColors.systemGrey.withValues(
+                          alpha: 0.1,
+                        ),
                         spreadRadius: 2,
                         blurRadius: 4,
                         offset: const Offset(0, 2),
@@ -375,7 +376,7 @@ class RecentAddedWidget extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '最近一周入库了 ${totalCount} 部影片 😊',
+                      '最近一周入库了 $totalCount 部影片 😊',
                       style: TextStyle(
                         fontSize: 14,
                         color: CupertinoColors.systemGrey,
@@ -520,7 +521,7 @@ class RealTimeSpeedWidget extends StatelessWidget {
                     Expanded(
                       child: _buildDataCard(
                         '下载速度',
-                        '${downloadSpeed} MB/s',
+                        '$downloadSpeed MB/s',
                         CupertinoIcons.arrow_down,
                         CupertinoColors.activeGreen,
                       ),
@@ -529,7 +530,7 @@ class RealTimeSpeedWidget extends StatelessWidget {
                     Expanded(
                       child: _buildDataCard(
                         '上传速度',
-                        '${uploadSpeed} MB/s',
+                        '$uploadSpeed MB/s',
                         CupertinoIcons.arrow_up,
                         CupertinoColors.activeBlue,
                       ),
@@ -615,7 +616,7 @@ class RealTimeSpeedWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.systemGrey.withOpacity(0.1),
+            color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
             spreadRadius: 2,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -710,8 +711,7 @@ class CpuWidget extends StatefulWidget {
 }
 
 class _CpuWidgetState extends State<CpuWidget> {
-  List<ChartData> _cpuData = [];
-
+  final List<ChartData> _cpuData = [];
   @override
   void initState() {
     super.initState();
@@ -776,7 +776,7 @@ class _CpuWidgetState extends State<CpuWidget> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: CupertinoColors.systemGrey.withOpacity(0.1),
+                    color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
                     spreadRadius: 2,
                     blurRadius: 4,
                     offset: const Offset(0, 2),
@@ -859,7 +859,7 @@ class MemoryWidget extends StatefulWidget {
 }
 
 class _MemoryWidgetState extends State<MemoryWidget> {
-  List<ChartData> _memoryData = [];
+  final List<ChartData> _memoryData = [];
 
   @override
   void initState() {
@@ -931,7 +931,7 @@ class _MemoryWidgetState extends State<MemoryWidget> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: CupertinoColors.systemGrey.withOpacity(0.1),
+                    color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
                     spreadRadius: 2,
                     blurRadius: 4,
                     offset: const Offset(0, 2),
@@ -1104,6 +1104,13 @@ class MyMediaLibraryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaServerController = Get.find<MediaServerController>();
+
+    // 加载媒体库数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      mediaServerController.loadMediaLibraries();
+    });
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1120,31 +1127,152 @@ class MyMediaLibraryWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildLibraryItem('电影', '1,234'),
-              _buildLibraryItem('剧集', '567'),
-              _buildLibraryItem('音乐', '89'),
-            ],
-          ),
+          Obx(() {
+            final libraries = mediaServerController.mediaLibraries.value;
+            final isLoading = mediaServerController.isLoading.value;
+
+            if (isLoading) {
+              return const Center(child: CupertinoActivityIndicator());
+            }
+
+            if (libraries.isEmpty) {
+              return const Center(child: Text('暂无媒体库数据'));
+            }
+
+            return SizedBox(
+              height: 160,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                shrinkWrap: true,
+                itemCount: libraries.length,
+                itemBuilder: (context, index) {
+                  final library = libraries[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: SizedBox(
+                      width: 240,
+                      child: _buildLibraryCard(library),
+                    ),
+                  );
+                },
+              ),
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildLibraryItem(String label, String count) {
-    return Column(
-      children: [
-        Text(
-          count,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
-        ),
-      ],
+  Widget _buildLibraryCard(MediaLibrary library) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 封面图作为背景
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: library.image != null && library.image!.isNotEmpty
+                ? CachedImage(imageUrl: library.image!, fit: BoxFit.cover)
+                : Container(
+                    color: CupertinoColors.systemGrey6,
+                    child: Center(
+                      child: Icon(
+                        CupertinoIcons.collections,
+                        size: 48,
+                        color: CupertinoColors.systemGrey4,
+                      ),
+                    ),
+                  ),
+          ),
+          // 渐变遮罩，确保文字清晰可见
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.7),
+                ],
+                stops: const [0.4, 1.0],
+              ),
+            ),
+          ),
+          // 文本信息显示在图片上方
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  library.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 2,
+                        color: Colors.black,
+                        offset: Offset(1, 1),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      library.type,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.white70,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 2,
+                            color: Colors.black,
+                            offset: Offset(1, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      library.server_type,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white60,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 2,
+                            color: Colors.black,
+                            offset: Offset(1, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1220,6 +1348,8 @@ class RecentlyAddedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaServerController = Get.find<MediaServerController>();
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1236,43 +1366,196 @@ class RecentlyAddedWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 120,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _buildRecentItem('新电影 1'),
-                const SizedBox(width: 12),
-                _buildRecentItem('新电影 2'),
-                const SizedBox(width: 12),
-                _buildRecentItem('新电影 3'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+          Obx(() {
+            final latestMediaList = mediaServerController.latestMediaList;
+            final isLoading = mediaServerController.isLoading;
 
-  Widget _buildRecentItem(String title) {
-    return Container(
-      width: 80,
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey5,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(CupertinoIcons.film, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 12),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+            if (isLoading.value) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: CupertinoActivityIndicator(radius: 20),
+                ),
+              );
+            }
+
+            if (latestMediaList.value.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.film,
+                        size: 48,
+                        color: CupertinoColors.systemGrey,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        '暂无最近添加的媒体',
+                        style: TextStyle(color: CupertinoColors.systemGrey),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return SizedBox(
+              height: 240,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: latestMediaList.value.length,
+                itemBuilder: (context, index) {
+                  final media = latestMediaList.value[index];
+                  return Container(
+                    margin: const EdgeInsets.only(right: 16),
+                    width: 110,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 媒体封面卡片
+                        Container(
+                          width: 110,
+                          height: 150,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: CupertinoColors.systemGrey.withAlpha(20),
+                                spreadRadius: 1,
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: media.image.isNotEmpty
+                                ? Stack(
+                                    children: [
+                                      // 封面图
+                                      CachedImage(
+                                        imageUrl: media.image.isNotEmpty
+                                            ? ImageUtil.convertInternalImageUrl(
+                                                media.image,
+                                              )
+                                            : '',
+                                        width: 110,
+                                        height: 150,
+                                        fit: BoxFit.cover,
+                                        placeholder: Container(
+                                          color: CupertinoColors.systemGrey5,
+                                          child: const Center(
+                                            child: CupertinoActivityIndicator(
+                                              radius: 15,
+                                            ),
+                                          ),
+                                        ),
+                                        errorWidget: Container(
+                                          color: CupertinoColors.systemGrey5,
+                                          child: const Center(
+                                            child: Icon(
+                                              CupertinoIcons.film,
+                                              size: 40,
+                                              color: CupertinoColors.systemGrey,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // 媒体类型标签
+                                      if (media.type.isNotEmpty)
+                                        Positioned(
+                                          top: 8,
+                                          left: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: CupertinoColors.systemBlue
+                                                  .withAlpha(180),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              media.type,
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                color: CupertinoColors.white,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  )
+                                : Container(
+                                    color: CupertinoColors.systemGrey5,
+                                    child: const Center(
+                                      child: Icon(
+                                        CupertinoIcons.film,
+                                        size: 40,
+                                        color: CupertinoColors.systemGrey,
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // 媒体信息
+                        SizedBox(
+                          width: 110,
+                          height: 70,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // 媒体标题
+                              Text(
+                                media.title,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              // 媒体库名称
+                              if (media.libraryName.isNotEmpty)
+                                Text(
+                                  media.libraryName,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: CupertinoColors.systemGrey,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              const SizedBox(height: 2),
+                              // 媒体年份
+                              Text(
+                                media.subtitle,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: CupertinoColors.systemGrey,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          }),
         ],
       ),
     );

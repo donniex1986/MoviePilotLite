@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:moviepilot_mobile/services/realm_service.dart';
+import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
 
 import '../controllers/dashboard_controller.dart';
 import '../widgets/dashboard_widgets.dart';
@@ -37,8 +42,49 @@ class DashboardPage extends GetView<DashboardController> {
     );
   }
 
+  /// 获取最新的登录配置文件
+  LoginProfile? _getLatestLoginProfile() {
+    try {
+      final realmService = RealmService();
+      final profiles = realmService.realm.all<LoginProfile>();
+      if (profiles.isEmpty) {
+        return null;
+      }
+      // 按更新时间排序，返回最新的登录配置
+      final sortedProfiles = profiles.toList()
+        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      return sortedProfiles.first;
+    } catch (e) {
+      // 如果获取失败，返回null
+      return null;
+    }
+  }
+
+  /// 解码头像
+  List<int> _decodeAvatar(String avatar) {
+    try {
+      // 检查是否是data URL格式
+      if (avatar.startsWith('data:image')) {
+        // 提取base64部分
+        final commaIndex = avatar.indexOf(',');
+        if (commaIndex != -1) {
+          final base64String = avatar.substring(commaIndex + 1);
+          return base64Decode(base64String);
+        }
+      }
+      // 否则，直接解码
+      return base64Decode(avatar);
+    } catch (e) {
+      // 如果解码失败，返回空列表
+      return [];
+    }
+  }
+
   /// 构建导航栏
   CupertinoNavigationBar _buildNavigationBar(BuildContext context) {
+    // 获取最新的登录配置文件
+    final loginProfile = _getLatestLoginProfile();
+
     return CupertinoNavigationBar(
       leading: CupertinoButton(
         padding: EdgeInsets.zero,
@@ -104,7 +150,29 @@ class DashboardPage extends GetView<DashboardController> {
           CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: () => _showProfile(context),
-            child: const Icon(CupertinoIcons.person_circle),
+            child:
+                loginProfile != null &&
+                    loginProfile.avatar != null &&
+                    loginProfile.avatar!.isNotEmpty
+                ? () {
+                    final avatarBytes = _decodeAvatar(loginProfile.avatar!);
+                    if (avatarBytes.isNotEmpty) {
+                      return Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: MemoryImage(Uint8List.fromList(avatarBytes)),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      );
+                    } else {
+                      return const Icon(CupertinoIcons.person_circle);
+                    }
+                  }()
+                : const Icon(CupertinoIcons.person_circle),
           ),
         ],
       ),

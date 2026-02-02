@@ -16,7 +16,7 @@ class _LoginProfile {
   late bool superUser;
   late int userId;
   late String userName;
-  late String avatar;
+  String? avatar;
   late int level;
   late String permissionsJson;
   late bool wizard;

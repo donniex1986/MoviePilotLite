@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_controller.dart';
 
@@ -65,7 +64,7 @@ class ScheduleWidget extends StatelessWidget {
                 children: [
                   ...displayList.map((schedule) {
                     return _buildScheduleItem(schedule);
-                  }).toList(),
+                  }),
                   // 如果任务数量超过5个，添加查看全部按钮
                   if (scheduleList.length > maxDisplayCount)
                     _buildViewAllButton(),

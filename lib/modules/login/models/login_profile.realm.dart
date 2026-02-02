@@ -21,12 +21,12 @@ class LoginProfile extends _LoginProfile
     bool superUser,
     int userId,
     String userName,
-    String avatar,
     int level,
     String permissionsJson,
     bool wizard,
-    DateTime updatedAt,
-  ) {
+    DateTime updatedAt, {
+    String? avatar,
+  }) {
     RealmObjectBase.set(this, 'id', id);
     RealmObjectBase.set(this, 'server', server);
     RealmObjectBase.set(this, 'username', username);
@@ -97,9 +97,9 @@ class LoginProfile extends _LoginProfile
   set userName(String value) => RealmObjectBase.set(this, 'userName', value);
 
   @override
-  String get avatar => RealmObjectBase.get<String>(this, 'avatar') as String;
+  String? get avatar => RealmObjectBase.get<String>(this, 'avatar') as String?;
   @override
-  set avatar(String value) => RealmObjectBase.set(this, 'avatar', value);
+  set avatar(String? value) => RealmObjectBase.set(this, 'avatar', value);
 
   @override
   int get level => RealmObjectBase.get<int>(this, 'level') as int;
@@ -170,7 +170,6 @@ class LoginProfile extends _LoginProfile
         'superUser': EJsonValue superUser,
         'userId': EJsonValue userId,
         'userName': EJsonValue userName,
-        'avatar': EJsonValue avatar,
         'level': EJsonValue level,
         'permissionsJson': EJsonValue permissionsJson,
         'wizard': EJsonValue wizard,
@@ -186,11 +185,11 @@ class LoginProfile extends _LoginProfile
           fromEJson(superUser),
           fromEJson(userId),
           fromEJson(userName),
-          fromEJson(avatar),
           fromEJson(level),
           fromEJson(permissionsJson),
           fromEJson(wizard),
           fromEJson(updatedAt),
+          avatar: fromEJson(ejson['avatar']),
         ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -213,7 +212,7 @@ class LoginProfile extends _LoginProfile
         SchemaProperty('superUser', RealmPropertyType.bool),
         SchemaProperty('userId', RealmPropertyType.int),
         SchemaProperty('userName', RealmPropertyType.string),
-        SchemaProperty('avatar', RealmPropertyType.string),
+        SchemaProperty('avatar', RealmPropertyType.string, optional: true),
         SchemaProperty('level', RealmPropertyType.int),
         SchemaProperty('permissionsJson', RealmPropertyType.string),
         SchemaProperty('wizard', RealmPropertyType.bool),

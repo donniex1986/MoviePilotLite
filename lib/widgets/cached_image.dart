@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 
 /// 网络图片加载组件
 /// 基于 cached_network_image 和 flutter_cache_manager
@@ -20,6 +21,7 @@ class CachedImage extends StatelessWidget {
     this.memCacheHeight,
     this.fadeInDuration = const Duration(milliseconds: 300),
     this.fadeOutDuration = const Duration(milliseconds: 100),
+    this.cookie,
   });
 
   /// 图片 URL
@@ -58,8 +60,20 @@ class CachedImage extends StatelessWidget {
   /// 淡出动画时长
   final Duration fadeOutDuration;
 
+  /// Cookie
+  final String? cookie;
+
   @override
   Widget build(BuildContext context) {
+    // 获取cookie，如果没有提供则从AppService获取
+    final imageCookie = cookie ?? AppService.instance.cookie;
+
+    // 构建请求头
+    final headers = <String, String>{};
+    if (imageCookie != null && imageCookie.isNotEmpty) {
+      headers['cookie'] = imageCookie;
+    }
+
     Widget imageWidget = CachedNetworkImage(
       imageUrl: imageUrl,
       width: width,
@@ -70,18 +84,16 @@ class CachedImage extends StatelessWidget {
       memCacheHeight: memCacheHeight,
       fadeInDuration: fadeInDuration,
       fadeOutDuration: fadeOutDuration,
-      placeholder: (context, url) => placeholder ?? _buildDefaultPlaceholder(),
+      placeholder: null,
       errorWidget: (context, url, error) =>
           errorWidget ?? _buildDefaultErrorWidget(),
       progressIndicatorBuilder: (context, url, progress) =>
-          _buildProgressIndicator(progress),
+          placeholder ?? _buildProgressIndicator(progress),
+      httpHeaders: headers.isNotEmpty ? headers : null,
     );
 
     if (borderRadius != null) {
-      imageWidget = ClipRRect(
-        borderRadius: borderRadius!,
-        child: imageWidget,
-      );
+      imageWidget = ClipRRect(borderRadius: borderRadius!, child: imageWidget);
     }
 
     return imageWidget;
@@ -93,9 +105,7 @@ class CachedImage extends StatelessWidget {
       width: width,
       height: height,
       color: CupertinoColors.systemGrey6,
-      child: const Center(
-        child: CupertinoActivityIndicator(),
-      ),
+      child: const Center(child: CupertinoActivityIndicator()),
     );
   }
 
@@ -157,10 +167,7 @@ class CachedImage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '加载失败',
-              style: TextStyle(
-                fontSize: 12,
-                color: CupertinoColors.systemGrey,
-              ),
+              style: TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
             ),
           ],
         ),
@@ -178,6 +185,7 @@ class CachedAvatar extends StatelessWidget {
     this.placeholder,
     this.errorWidget,
     this.cacheManager,
+    this.cookie,
   });
 
   /// 图片 URL
@@ -195,6 +203,9 @@ class CachedAvatar extends StatelessWidget {
   /// 自定义缓存管理器
   final CacheManager? cacheManager;
 
+  /// Cookie
+  final String? cookie;
+
   @override
   Widget build(BuildContext context) {
     return CachedImage(
@@ -208,6 +219,7 @@ class CachedAvatar extends StatelessWidget {
       cacheManager: cacheManager,
       memCacheWidth: (radius * 2).toInt(),
       memCacheHeight: (radius * 2).toInt(),
+      cookie: cookie,
     );
   }
 }
@@ -223,6 +235,7 @@ class CachedAvatarWithBorder extends StatelessWidget {
     this.placeholder,
     this.errorWidget,
     this.cacheManager,
+    this.cookie,
   });
 
   /// 图片 URL
@@ -246,6 +259,9 @@ class CachedAvatarWithBorder extends StatelessWidget {
   /// 自定义缓存管理器
   final CacheManager? cacheManager;
 
+  /// Cookie
+  final String? cookie;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -265,6 +281,7 @@ class CachedAvatarWithBorder extends StatelessWidget {
           placeholder: placeholder,
           errorWidget: errorWidget,
           cacheManager: cacheManager,
+          cookie: cookie,
         ),
       ),
     );

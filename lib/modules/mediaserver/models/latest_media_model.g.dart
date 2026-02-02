@@ -10,24 +10,34 @@ _$LatestMediaImpl _$$LatestMediaImplFromJson(Map<String, dynamic> json) =>
     _$LatestMediaImpl(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
+      subtitle: json['subtitle'] as String? ?? '',
       type: json['type'] as String? ?? '',
-      poster: json['poster'] as String? ?? '',
-      overview: json['overview'] as String? ?? '',
-      release_date: json['release_date'] as String? ?? '',
-      vote_average: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
-      added_date: json['added_date'] as String? ?? '',
+      image: json['image'] as String? ?? '',
+      link: json['link'] as String? ?? '',
+      percent: (json['percent'] as num?)?.toDouble(),
+      backdropImageTags:
+          (json['BackdropImageTags'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      serverType: json['server_type'] as String? ?? '',
+      useCookies: json['use_cookies'] as bool?,
+      libraryName: json['libraryName'] as String? ?? '',
     );
 
 Map<String, dynamic> _$$LatestMediaImplToJson(_$LatestMediaImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
+      'subtitle': instance.subtitle,
       'type': instance.type,
-      'poster': instance.poster,
-      'overview': instance.overview,
-      'release_date': instance.release_date,
-      'vote_average': instance.vote_average,
-      'added_date': instance.added_date,
+      'image': instance.image,
+      'link': instance.link,
+      'percent': instance.percent,
+      'BackdropImageTags': instance.backdropImageTags,
+      'server_type': instance.serverType,
+      'use_cookies': instance.useCookies,
+      'libraryName': instance.libraryName,
     };
 
 _$LatestMediaResponseImpl _$$LatestMediaResponseImplFromJson(

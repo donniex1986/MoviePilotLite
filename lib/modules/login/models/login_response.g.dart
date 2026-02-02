@@ -13,7 +13,7 @@ _$LoginResponseImpl _$$LoginResponseImplFromJson(Map<String, dynamic> json) =>
       superUser: json['super_user'] as bool,
       userId: (json['user_id'] as num).toInt(),
       userName: json['user_name'] as String,
-      avatar: json['avatar'] as String,
+      avatar: json['avatar'] as String?,
       level: (json['level'] as num).toInt(),
       permissions: json['permissions'] as Map<String, dynamic>? ?? {},
       wizard: json['wizard'] as bool,

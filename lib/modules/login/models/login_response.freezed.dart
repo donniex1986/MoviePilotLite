@@ -31,7 +31,7 @@ mixin _$LoginResponse {
   int get userId => throw _privateConstructorUsedError;
   @JsonKey(name: 'user_name')
   String get userName => throw _privateConstructorUsedError;
-  String get avatar => throw _privateConstructorUsedError;
+  String? get avatar => throw _privateConstructorUsedError;
   int get level => throw _privateConstructorUsedError;
   @JsonKey(defaultValue: <String, dynamic>{})
   Map<String, dynamic> get permissions => throw _privateConstructorUsedError;
@@ -60,7 +60,7 @@ abstract class $LoginResponseCopyWith<$Res> {
     @JsonKey(name: 'super_user') bool superUser,
     @JsonKey(name: 'user_id') int userId,
     @JsonKey(name: 'user_name') String userName,
-    String avatar,
+    String? avatar,
     int level,
     @JsonKey(defaultValue: <String, dynamic>{})
     Map<String, dynamic> permissions,
@@ -88,7 +88,7 @@ class _$LoginResponseCopyWithImpl<$Res, $Val extends LoginResponse>
     Object? superUser = null,
     Object? userId = null,
     Object? userName = null,
-    Object? avatar = null,
+    Object? avatar = freezed,
     Object? level = null,
     Object? permissions = null,
     Object? wizard = null,
@@ -115,10 +115,10 @@ class _$LoginResponseCopyWithImpl<$Res, $Val extends LoginResponse>
                 ? _value.userName
                 : userName // ignore: cast_nullable_to_non_nullable
                       as String,
-            avatar: null == avatar
+            avatar: freezed == avatar
                 ? _value.avatar
                 : avatar // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as String?,
             level: null == level
                 ? _value.level
                 : level // ignore: cast_nullable_to_non_nullable
@@ -152,7 +152,7 @@ abstract class _$$LoginResponseImplCopyWith<$Res>
     @JsonKey(name: 'super_user') bool superUser,
     @JsonKey(name: 'user_id') int userId,
     @JsonKey(name: 'user_name') String userName,
-    String avatar,
+    String? avatar,
     int level,
     @JsonKey(defaultValue: <String, dynamic>{})
     Map<String, dynamic> permissions,
@@ -179,7 +179,7 @@ class __$$LoginResponseImplCopyWithImpl<$Res>
     Object? superUser = null,
     Object? userId = null,
     Object? userName = null,
-    Object? avatar = null,
+    Object? avatar = freezed,
     Object? level = null,
     Object? permissions = null,
     Object? wizard = null,
@@ -206,10 +206,10 @@ class __$$LoginResponseImplCopyWithImpl<$Res>
             ? _value.userName
             : userName // ignore: cast_nullable_to_non_nullable
                   as String,
-        avatar: null == avatar
+        avatar: freezed == avatar
             ? _value.avatar
             : avatar // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as String?,
         level: null == level
             ? _value.level
             : level // ignore: cast_nullable_to_non_nullable
@@ -236,7 +236,7 @@ class _$LoginResponseImpl implements _LoginResponse {
     @JsonKey(name: 'super_user') required this.superUser,
     @JsonKey(name: 'user_id') required this.userId,
     @JsonKey(name: 'user_name') required this.userName,
-    required this.avatar,
+    this.avatar,
     required this.level,
     @JsonKey(defaultValue: <String, dynamic>{})
     required final Map<String, dynamic> permissions,
@@ -262,7 +262,7 @@ class _$LoginResponseImpl implements _LoginResponse {
   @JsonKey(name: 'user_name')
   final String userName;
   @override
-  final String avatar;
+  final String? avatar;
   @override
   final int level;
   final Map<String, dynamic> _permissions;
@@ -341,7 +341,7 @@ abstract class _LoginResponse implements LoginResponse {
     @JsonKey(name: 'super_user') required final bool superUser,
     @JsonKey(name: 'user_id') required final int userId,
     @JsonKey(name: 'user_name') required final String userName,
-    required final String avatar,
+    final String? avatar,
     required final int level,
     @JsonKey(defaultValue: <String, dynamic>{})
     required final Map<String, dynamic> permissions,
@@ -367,7 +367,7 @@ abstract class _LoginResponse implements LoginResponse {
   @JsonKey(name: 'user_name')
   String get userName;
   @override
-  String get avatar;
+  String? get avatar;
   @override
   int get level;
   @override

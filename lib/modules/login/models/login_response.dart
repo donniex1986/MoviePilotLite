@@ -11,7 +11,7 @@ class LoginResponse with _$LoginResponse {
     @JsonKey(name: 'super_user') required bool superUser,
     @JsonKey(name: 'user_id') required int userId,
     @JsonKey(name: 'user_name') required String userName,
-    required String avatar,
+    String? avatar,
     required int level,
     @JsonKey(defaultValue: <String, dynamic>{})
     required Map<String, dynamic> permissions,
@@ -21,4 +21,3 @@ class LoginResponse with _$LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) =>
       _$LoginResponseFromJson(json);
 }
-

@@ -13,6 +13,6 @@ class AppBinding extends Bindings {
       AuthRepository(Get.find<RealmService>(), Get.find<Talker>()),
       permanent: true,
     );
-    Get.put(LoginController(Get.find<AuthRepository>()), permanent: true);
+    Get.put(LoginController(Get.find<AuthRepository>(), Get.find<Talker>()), permanent: true);
   }
 }
