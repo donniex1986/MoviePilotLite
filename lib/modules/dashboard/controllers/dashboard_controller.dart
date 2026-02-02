@@ -195,10 +195,10 @@ class DashboardController extends GetxController {
       talker.info('开始加载CPU数据');
       final response = await apiClient.getCpuData<double>();
       if (response.statusCode == 200) {
-        // 模拟CPU使用率的小波动，使动画效果更明显
+        // 模拟CPU使用率的波动，使动画效果更明显
         final newUsage = response.data!;
-        // 添加小的随机波动，使数据变化更自然
-        final fluctuation = (Random().nextDouble() * 2 - 1) * 0.5;
+        // 添加适当的随机波动，使数据变化更自然明显
+        final fluctuation = (Random().nextDouble() * 2 - 1) * 2.0;
         final finalUsage = newUsage + fluctuation;
         // 确保CPU使用率在合理范围内
         cpuUsage.value = finalUsage.clamp(0.0, 100.0);

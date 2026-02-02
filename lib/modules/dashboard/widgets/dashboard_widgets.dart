@@ -731,7 +731,10 @@ class _CpuWidgetState extends State<CpuWidget> {
     setState(() {
       // 移除第一个数据点
       _cpuData.removeAt(0);
-      // 添加新数据点，索引递增
+      // 添加新数据点，重新分配索引以保持0-19的范围
+      for (int i = 0; i < _cpuData.length; i++) {
+        _cpuData[i] = ChartData(i, _cpuData[i].value);
+      }
       _cpuData.add(ChartData(_cpuData.length, cpuUsage));
     });
   }
@@ -758,8 +761,13 @@ class _CpuWidgetState extends State<CpuWidget> {
           const SizedBox(height: 16),
           Obx(() {
             final cpuUsage = controller.cpuUsage.value;
-            // 当CPU使用率变化时更新图表数据
-            _updateData(cpuUsage);
+
+            // 只在数据真正变化时更新，避免频繁更新导致曲线拉平
+            if (_cpuData.isNotEmpty && (_cpuData.last.value != cpuUsage)) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _updateData(cpuUsage);
+              });
+            }
 
             return Container(
               padding: const EdgeInsets.all(16),
@@ -872,7 +880,10 @@ class _MemoryWidgetState extends State<MemoryWidget> {
     setState(() {
       // 移除第一个数据点
       _memoryData.removeAt(0);
-      // 添加新数据点，索引递增
+      // 添加新数据点，重新分配索引以保持0-19的范围
+      for (int i = 0; i < _memoryData.length; i++) {
+        _memoryData[i] = ChartData(i, _memoryData[i].value);
+      }
       _memoryData.add(ChartData(_memoryData.length, memoryUsage));
     });
   }
@@ -901,8 +912,13 @@ class _MemoryWidgetState extends State<MemoryWidget> {
             final memoryData = controller.memoryData;
             final memoryUsed = memoryData[0];
             final memoryUsage = memoryData[1];
-            // 当内存使用率变化时更新图表数据
-            _updateData(memoryUsage.toDouble());
+            // 只在数据真正变化时更新，避免频繁更新导致曲线拉平
+            if (_memoryData.isNotEmpty &&
+                (_memoryData.last.value != memoryUsage.toDouble())) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _updateData(memoryUsage.toDouble());
+              });
+            }
 
             // 假设总内存为16GB（实际应该从API获取）
             const totalMemory = 16 * 1024 * 1024 * 1024; // 16GB in bytes
