@@ -84,4 +84,8 @@ class ApiClient {
   Future<Response<T>> getLatestMediaServerData<T>(String server) {
     return get<T>('/api/v1/mediaserver/latest?server=$server');
   }
+
+  Future<Response<T>> runScheduler<T>(String jobId) {
+    return get<T>('/api/v1/system/runscheduler?jobid=$jobId');
+  }
 }

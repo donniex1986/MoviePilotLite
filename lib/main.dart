@@ -5,6 +5,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 import 'bindings/app_binding.dart';
 import 'modules/dashboard/controllers/dashboard_controller.dart';
 import 'modules/dashboard/pages/dashboard_page.dart';
+import 'modules/dashboard/pages/background_task_list_page.dart';
 import 'modules/login/pages/login_page.dart';
 import 'theme/app_theme.dart';
 
@@ -48,6 +49,13 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: '/dashboard',
           page: () => const DashboardPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => DashboardController());
+          }),
+        ),
+        GetPage(
+          name: '/background-task-list',
+          page: () => const BackgroundTaskListPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => DashboardController());
           }),

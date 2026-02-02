@@ -10,7 +10,7 @@ class ScheduleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DashboardController>();
-    
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -29,7 +29,7 @@ class ScheduleWidget extends StatelessWidget {
           const SizedBox(height: 16),
           Obx(() {
             final scheduleList = controller.scheduleData.value;
-            
+
             if (scheduleList.isEmpty) {
               return Center(
                 child: Padding(
@@ -41,7 +41,13 @@ class ScheduleWidget extends StatelessWidget {
                 ),
               );
             }
-            
+
+            // 限制显示数量为5个
+            const maxDisplayCount = 5;
+            final displayList = scheduleList.length > maxDisplayCount
+                ? scheduleList.sublist(0, maxDisplayCount)
+                : scheduleList;
+
             return Container(
               decoration: BoxDecoration(
                 color: CupertinoColors.systemBackground,
@@ -56,9 +62,14 @@ class ScheduleWidget extends StatelessWidget {
                 ],
               ),
               child: Column(
-                children: scheduleList.map((schedule) {
-                  return _buildScheduleItem(schedule);
-                }).toList(),
+                children: [
+                  ...displayList.map((schedule) {
+                    return _buildScheduleItem(schedule);
+                  }).toList(),
+                  // 如果任务数量超过5个，添加查看全部按钮
+                  if (scheduleList.length > maxDisplayCount)
+                    _buildViewAllButton(),
+                ],
               ),
             );
           }),
@@ -83,14 +94,20 @@ class ScheduleWidget extends StatelessWidget {
               children: [
                 Text(
                   schedule.name,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${schedule.provider}',
-                  style: TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: CupertinoColors.systemGrey,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -116,10 +133,7 @@ class ScheduleWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  schedule.next_run,
-                  style: const TextStyle(fontSize: 14),
-                ),
+                Text(schedule.next_run, style: const TextStyle(fontSize: 14)),
               ],
             ),
           ),
@@ -142,5 +156,33 @@ class ScheduleWidget extends StatelessWidget {
       default:
         return CupertinoColors.systemGrey;
     }
+  }
+
+  /// 构建查看全部按钮
+  Widget _buildViewAllButton() {
+    return GestureDetector(
+      onTap: () {
+        // 使用modal样式导航到后台任务列表页面
+        Get.toNamed('/background-task-list', arguments: {'modal': true});
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: CupertinoColors.systemGrey5),
+          ),
+        ),
+        child: const Center(
+          child: Text(
+            '查看全部',
+            style: TextStyle(
+              fontSize: 14,
+              color: CupertinoColors.activeBlue,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
