@@ -28,17 +28,17 @@ class DashboardConfigData with _$DashboardConfigData {
 @freezed
 class DashboardConfigValue with _$DashboardConfigValue {
   const factory DashboardConfigValue({
-    @JsonKey(name: 'mediaStatistic') required bool mediaStatistic,
-    @JsonKey(name: 'scheduler') required bool scheduler,
-    @JsonKey(name: 'speed') required bool speed,
-    @JsonKey(name: 'storage') required bool storage,
-    @JsonKey(name: 'weeklyOverview') required bool weeklyOverview,
-    @JsonKey(name: 'cpu') required bool cpu,
-    @JsonKey(name: 'memory') required bool memory,
-    @JsonKey(name: 'network') required bool network,
-    @JsonKey(name: 'library') required bool library,
-    @JsonKey(name: 'playing') required bool playing,
-    @JsonKey(name: 'latest') required bool latest,
+    required bool mediaStatistic,
+    required bool scheduler,
+    required bool speed,
+    required bool storage,
+    required bool weeklyOverview,
+    required bool cpu,
+    required bool memory,
+    required bool network,
+    required bool library,
+    required bool playing,
+    required bool latest,
   }) = _DashboardConfigValue;
 
   factory DashboardConfigValue.fromJson(Map<String, dynamic> json) =>

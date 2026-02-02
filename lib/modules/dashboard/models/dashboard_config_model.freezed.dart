@@ -409,27 +409,16 @@ DashboardConfigValue _$DashboardConfigValueFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$DashboardConfigValue {
-  @JsonKey(name: 'mediaStatistic')
   bool get mediaStatistic => throw _privateConstructorUsedError;
-  @JsonKey(name: 'scheduler')
   bool get scheduler => throw _privateConstructorUsedError;
-  @JsonKey(name: 'speed')
   bool get speed => throw _privateConstructorUsedError;
-  @JsonKey(name: 'storage')
   bool get storage => throw _privateConstructorUsedError;
-  @JsonKey(name: 'weeklyOverview')
   bool get weeklyOverview => throw _privateConstructorUsedError;
-  @JsonKey(name: 'cpu')
   bool get cpu => throw _privateConstructorUsedError;
-  @JsonKey(name: 'memory')
   bool get memory => throw _privateConstructorUsedError;
-  @JsonKey(name: 'network')
   bool get network => throw _privateConstructorUsedError;
-  @JsonKey(name: 'library')
   bool get library => throw _privateConstructorUsedError;
-  @JsonKey(name: 'playing')
   bool get playing => throw _privateConstructorUsedError;
-  @JsonKey(name: 'latest')
   bool get latest => throw _privateConstructorUsedError;
 
   /// Serializes this DashboardConfigValue to a JSON map.
@@ -450,17 +439,17 @@ abstract class $DashboardConfigValueCopyWith<$Res> {
   ) = _$DashboardConfigValueCopyWithImpl<$Res, DashboardConfigValue>;
   @useResult
   $Res call({
-    @JsonKey(name: 'mediaStatistic') bool mediaStatistic,
-    @JsonKey(name: 'scheduler') bool scheduler,
-    @JsonKey(name: 'speed') bool speed,
-    @JsonKey(name: 'storage') bool storage,
-    @JsonKey(name: 'weeklyOverview') bool weeklyOverview,
-    @JsonKey(name: 'cpu') bool cpu,
-    @JsonKey(name: 'memory') bool memory,
-    @JsonKey(name: 'network') bool network,
-    @JsonKey(name: 'library') bool library,
-    @JsonKey(name: 'playing') bool playing,
-    @JsonKey(name: 'latest') bool latest,
+    bool mediaStatistic,
+    bool scheduler,
+    bool speed,
+    bool storage,
+    bool weeklyOverview,
+    bool cpu,
+    bool memory,
+    bool network,
+    bool library,
+    bool playing,
+    bool latest,
   });
 }
 
@@ -556,17 +545,17 @@ abstract class _$$DashboardConfigValueImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    @JsonKey(name: 'mediaStatistic') bool mediaStatistic,
-    @JsonKey(name: 'scheduler') bool scheduler,
-    @JsonKey(name: 'speed') bool speed,
-    @JsonKey(name: 'storage') bool storage,
-    @JsonKey(name: 'weeklyOverview') bool weeklyOverview,
-    @JsonKey(name: 'cpu') bool cpu,
-    @JsonKey(name: 'memory') bool memory,
-    @JsonKey(name: 'network') bool network,
-    @JsonKey(name: 'library') bool library,
-    @JsonKey(name: 'playing') bool playing,
-    @JsonKey(name: 'latest') bool latest,
+    bool mediaStatistic,
+    bool scheduler,
+    bool speed,
+    bool storage,
+    bool weeklyOverview,
+    bool cpu,
+    bool memory,
+    bool network,
+    bool library,
+    bool playing,
+    bool latest,
   });
 }
 
@@ -651,54 +640,43 @@ class __$$DashboardConfigValueImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$DashboardConfigValueImpl implements _DashboardConfigValue {
   const _$DashboardConfigValueImpl({
-    @JsonKey(name: 'mediaStatistic') required this.mediaStatistic,
-    @JsonKey(name: 'scheduler') required this.scheduler,
-    @JsonKey(name: 'speed') required this.speed,
-    @JsonKey(name: 'storage') required this.storage,
-    @JsonKey(name: 'weeklyOverview') required this.weeklyOverview,
-    @JsonKey(name: 'cpu') required this.cpu,
-    @JsonKey(name: 'memory') required this.memory,
-    @JsonKey(name: 'network') required this.network,
-    @JsonKey(name: 'library') required this.library,
-    @JsonKey(name: 'playing') required this.playing,
-    @JsonKey(name: 'latest') required this.latest,
+    required this.mediaStatistic,
+    required this.scheduler,
+    required this.speed,
+    required this.storage,
+    required this.weeklyOverview,
+    required this.cpu,
+    required this.memory,
+    required this.network,
+    required this.library,
+    required this.playing,
+    required this.latest,
   });
 
   factory _$DashboardConfigValueImpl.fromJson(Map<String, dynamic> json) =>
       _$$DashboardConfigValueImplFromJson(json);
 
   @override
-  @JsonKey(name: 'mediaStatistic')
   final bool mediaStatistic;
   @override
-  @JsonKey(name: 'scheduler')
   final bool scheduler;
   @override
-  @JsonKey(name: 'speed')
   final bool speed;
   @override
-  @JsonKey(name: 'storage')
   final bool storage;
   @override
-  @JsonKey(name: 'weeklyOverview')
   final bool weeklyOverview;
   @override
-  @JsonKey(name: 'cpu')
   final bool cpu;
   @override
-  @JsonKey(name: 'memory')
   final bool memory;
   @override
-  @JsonKey(name: 'network')
   final bool network;
   @override
-  @JsonKey(name: 'library')
   final bool library;
   @override
-  @JsonKey(name: 'playing')
   final bool playing;
   @override
-  @JsonKey(name: 'latest')
   final bool latest;
 
   @override
@@ -764,54 +742,43 @@ class _$DashboardConfigValueImpl implements _DashboardConfigValue {
 
 abstract class _DashboardConfigValue implements DashboardConfigValue {
   const factory _DashboardConfigValue({
-    @JsonKey(name: 'mediaStatistic') required final bool mediaStatistic,
-    @JsonKey(name: 'scheduler') required final bool scheduler,
-    @JsonKey(name: 'speed') required final bool speed,
-    @JsonKey(name: 'storage') required final bool storage,
-    @JsonKey(name: 'weeklyOverview') required final bool weeklyOverview,
-    @JsonKey(name: 'cpu') required final bool cpu,
-    @JsonKey(name: 'memory') required final bool memory,
-    @JsonKey(name: 'network') required final bool network,
-    @JsonKey(name: 'library') required final bool library,
-    @JsonKey(name: 'playing') required final bool playing,
-    @JsonKey(name: 'latest') required final bool latest,
+    required final bool mediaStatistic,
+    required final bool scheduler,
+    required final bool speed,
+    required final bool storage,
+    required final bool weeklyOverview,
+    required final bool cpu,
+    required final bool memory,
+    required final bool network,
+    required final bool library,
+    required final bool playing,
+    required final bool latest,
   }) = _$DashboardConfigValueImpl;
 
   factory _DashboardConfigValue.fromJson(Map<String, dynamic> json) =
       _$DashboardConfigValueImpl.fromJson;
 
   @override
-  @JsonKey(name: 'mediaStatistic')
   bool get mediaStatistic;
   @override
-  @JsonKey(name: 'scheduler')
   bool get scheduler;
   @override
-  @JsonKey(name: 'speed')
   bool get speed;
   @override
-  @JsonKey(name: 'storage')
   bool get storage;
   @override
-  @JsonKey(name: 'weeklyOverview')
   bool get weeklyOverview;
   @override
-  @JsonKey(name: 'cpu')
   bool get cpu;
   @override
-  @JsonKey(name: 'memory')
   bool get memory;
   @override
-  @JsonKey(name: 'network')
   bool get network;
   @override
-  @JsonKey(name: 'library')
   bool get library;
   @override
-  @JsonKey(name: 'playing')
   bool get playing;
   @override
-  @JsonKey(name: 'latest')
   bool get latest;
 
   /// Create a copy of DashboardConfigValue
