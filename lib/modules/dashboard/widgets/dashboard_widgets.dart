@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:get/get.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 import '../controllers/dashboard_controller.dart';
 import 'schedule_widget.dart';
@@ -95,51 +98,34 @@ class StorageWidget extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // 只显示存储使用信息，移除右侧图标
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Text(
+                        _formatStorageSize(usedStorage),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Row(
                         children: [
                           Text(
-                            _formatStorageSize(usedStorage),
+                            '已使用 $usedPercentage%',
                             style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
+                              fontSize: 14,
+                              color: CupertinoColors.systemGrey,
                             ),
                           ),
-                          Row(
-                            children: [
-                              Text(
-                                '已使用 $usedPercentage%',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: CupertinoColors.systemGrey,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.rocket_launch,
-                                size: 14,
-                                color: CupertinoColors.systemOrange,
-                              ),
-                            ],
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.rocket_launch,
+                            size: 14,
+                            color: CupertinoColors.systemOrange,
                           ),
                         ],
-                      ),
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: CupertinoColors.systemOrange,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.storage,
-                          size: 32,
-                          color: CupertinoColors.white,
-                        ),
                       ),
                     ],
                   ),
@@ -723,32 +709,31 @@ class CpuWidget extends StatefulWidget {
   State<CpuWidget> createState() => _CpuWidgetState();
 }
 
-class _CpuWidgetState extends State<CpuWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-  double _targetProgress = 0.0;
+class _CpuWidgetState extends State<CpuWidget> {
+  List<ChartData> _cpuData = [];
 
   @override
   void initState() {
     super.initState();
-
-    // 初始化动画控制器
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-
-    // 初始化动画
-    _animation = Tween<double>(begin: 0.0, end: _targetProgress).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
+    // 初始化数据 - 20个数据点
+    _initData();
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+  // 初始化数据 - 20个数据点
+  void _initData() {
+    for (int i = 0; i < 20; i++) {
+      _cpuData.add(ChartData(i, 10 + Random().nextDouble() * 20));
+    }
+  }
+
+  // 更新数据
+  void _updateData(double cpuUsage) {
+    setState(() {
+      // 移除第一个数据点
+      _cpuData.removeAt(0);
+      // 添加新数据点，索引递增
+      _cpuData.add(ChartData(_cpuData.length, cpuUsage));
+    });
   }
 
   @override
@@ -770,70 +755,127 @@ class _CpuWidgetState extends State<CpuWidget>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Obx(() {
             final cpuUsage = controller.cpuUsage.value;
-            final progress = cpuUsage / 100;
+            // 当CPU使用率变化时更新图表数据
+            _updateData(cpuUsage);
 
-            // 更新目标值并启动动画
-            if (_targetProgress != progress) {
-              _targetProgress = progress;
-              _animation =
-                  Tween<double>(
-                    begin: _animation.value,
-                    end: _targetProgress,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: _animationController,
-                      curve: Curves.easeInOut,
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemBackground,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: CupertinoColors.systemGrey.withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // 使用Syncfusion Charts构建波浪图
+                  SizedBox(
+                    height: 150,
+                    child: SfCartesianChart(
+                      primaryXAxis: NumericAxis(
+                        isVisible: false,
+                        majorGridLines: const MajorGridLines(width: 0),
+                      ),
+                      primaryYAxis: NumericAxis(
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        majorGridLines: const MajorGridLines(
+                          width: 1,
+                          color: CupertinoColors.systemGrey5,
+                        ),
+                        labelStyle: const TextStyle(
+                          fontSize: 10,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                      ),
+                      series: <CartesianSeries<ChartData, int>>[
+                        AreaSeries<ChartData, int>(
+                          dataSource: _cpuData,
+                          xValueMapper: (ChartData data, _) => data.index,
+                          yValueMapper: (ChartData data, _) => data.value,
+                          color: CupertinoColors.systemPurple.withAlpha(100),
+                          borderColor: CupertinoColors.systemPurple,
+                          borderWidth: 3,
+                          animationDuration: 300,
+                        ),
+                      ],
+                      tooltipBehavior: TooltipBehavior(enable: true),
                     ),
-                  );
-              _animationController.forward(from: 0);
-            }
-
-            return AnimatedBuilder(
-              animation: _animation,
-              builder: (context, child) {
-                return _buildProgressBar(
-                  _animation.value,
-                  '${cpuUsage.toStringAsFixed(1)}%',
-                );
-              },
+                  ),
+                  const SizedBox(height: 12),
+                  // 当前CPU使用率
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      '当前: ${cpuUsage.toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: CupertinoColors.systemGrey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             );
           }),
         ],
       ),
     );
   }
+}
 
-  Widget _buildProgressBar(double progress, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: CupertinoColors.systemGrey5,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              CupertinoColors.systemOrange,
-            ),
-            minHeight: 8,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
-        ),
-      ],
-    );
-  }
+/// 图表数据模型
+class ChartData {
+  final int index;
+  final double value;
+
+  ChartData(this.index, this.value);
 }
 
 /// 内存组件
-class MemoryWidget extends StatelessWidget {
+class MemoryWidget extends StatefulWidget {
   const MemoryWidget({super.key});
+
+  @override
+  State<MemoryWidget> createState() => _MemoryWidgetState();
+}
+
+class _MemoryWidgetState extends State<MemoryWidget> {
+  List<ChartData> _memoryData = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // 初始化数据 - 20个数据点
+    _initData();
+  }
+
+  // 初始化数据 - 20个数据点
+  void _initData() {
+    for (int i = 0; i < 20; i++) {
+      _memoryData.add(ChartData(i, 50 + Random().nextDouble() * 30));
+    }
+  }
+
+  // 更新数据
+  void _updateData(double memoryUsage) {
+    setState(() {
+      // 移除第一个数据点
+      _memoryData.removeAt(0);
+      // 添加新数据点，索引递增
+      _memoryData.add(ChartData(_memoryData.length, memoryUsage));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -859,7 +901,8 @@ class MemoryWidget extends StatelessWidget {
             final memoryData = controller.memoryData;
             final memoryUsed = memoryData[0];
             final memoryUsage = memoryData[1];
-            final progress = memoryUsage / 100;
+            // 当内存使用率变化时更新图表数据
+            _updateData(memoryUsage.toDouble());
 
             // 假设总内存为16GB（实际应该从API获取）
             const totalMemory = 16 * 1024 * 1024 * 1024; // 16GB in bytes
@@ -881,50 +924,69 @@ class MemoryWidget extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // 只显示内存使用信息，移除右侧图标
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Text(
+                        SizeFormatter.formatSize(memoryUsed, 2),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Row(
                         children: [
                           Text(
-                            SizeFormatter.formatSize(memoryUsed, 2),
+                            '已使用 ${memoryUsage.toStringAsFixed(1)}%',
                             style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
+                              fontSize: 14,
+                              color: CupertinoColors.systemGrey,
                             ),
                           ),
-                          Row(
-                            children: [
-                              Text(
-                                '已使用 $memoryUsage%',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: CupertinoColors.systemGrey,
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
-                      ),
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.memory,
-                          size: 32,
-                          color: CupertinoColors.white,
-                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildProgressBar(context, progress),
+                  // 使用Syncfusion Charts构建波浪图
+                  SizedBox(
+                    height: 150,
+                    child: SfCartesianChart(
+                      primaryXAxis: NumericAxis(
+                        isVisible: false,
+                        majorGridLines: const MajorGridLines(width: 0),
+                      ),
+                      primaryYAxis: NumericAxis(
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        majorGridLines: const MajorGridLines(
+                          width: 1,
+                          color: CupertinoColors.systemGrey5,
+                        ),
+                        labelStyle: const TextStyle(
+                          fontSize: 10,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                      ),
+                      series: <CartesianSeries<ChartData, int>>[
+                        AreaSeries<ChartData, int>(
+                          dataSource: _memoryData,
+                          xValueMapper: (ChartData data, _) => data.index,
+                          yValueMapper: (ChartData data, _) => data.value,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withAlpha(100),
+                          borderColor: Theme.of(context).colorScheme.primary,
+                          borderWidth: 3,
+                          animationDuration: 300,
+                        ),
+                      ],
+                      tooltipBehavior: TooltipBehavior(enable: true),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -950,20 +1012,6 @@ class MemoryWidget extends StatelessWidget {
             );
           }),
         ],
-      ),
-    );
-  }
-
-  Widget _buildProgressBar(BuildContext context, double progress) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: LinearProgressIndicator(
-        value: progress,
-        backgroundColor: CupertinoColors.systemGrey5,
-        valueColor: AlwaysStoppedAnimation<Color>(
-          Theme.of(context).colorScheme.primary,
-        ),
-        minHeight: 10,
       ),
     );
   }

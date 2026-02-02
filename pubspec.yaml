@@ -20,7 +20,8 @@ dependencies:
   talker: ^5.1.13
   talker_flutter: ^5.1.13
   talker_dio_logger: ^5.1.13
-  syncfusion_flutter_charts: ^32.1.25
+  syncfusion_flutter_charts: ^31.1.25
+  intl: ^0.19.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
