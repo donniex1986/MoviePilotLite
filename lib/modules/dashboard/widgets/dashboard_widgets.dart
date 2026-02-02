@@ -34,8 +34,6 @@ class DashboardWidgets {
         return const NetworkTrafficWidget();
       case '我的媒体库':
         return const MyMediaLibraryWidget();
-      case '继续观看':
-        return const ContinueWatchingWidget();
       case '最近添加':
         return const RecentlyAddedWidget();
       default:
@@ -1270,71 +1268,6 @@ class MyMediaLibraryWidget extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 继续观看组件
-class ContinueWatchingWidget extends StatelessWidget {
-  const ContinueWatchingWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(CupertinoIcons.play_circle, size: 20),
-              const SizedBox(width: 8),
-              const Text(
-                '继续观看',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 120,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _buildContinueItem('电影 1'),
-                const SizedBox(width: 12),
-                _buildContinueItem('电影 2'),
-                const SizedBox(width: 12),
-                _buildContinueItem('电影 3'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContinueItem(String title) {
-    return Container(
-      width: 80,
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey5,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(CupertinoIcons.play_circle_fill, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 12),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

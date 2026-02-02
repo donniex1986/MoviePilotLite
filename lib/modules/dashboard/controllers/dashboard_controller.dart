@@ -25,7 +25,6 @@ class DashboardController extends GetxController {
     '内存',
     '网络流量',
     '我的媒体库',
-    '继续观看',
     '最近添加',
   ];
 
