@@ -533,4 +533,69 @@ class DashboardController extends GetxController {
     displayedWidgets.assignAll(availableWidgets);
     talker.info('使用默认配置，显示所有组件');
   }
+
+  /// 更新dashboard配置
+  Future<bool> updateDashboardConfig(Map<String, dynamic> config) async {
+    try {
+      talker.info('开始更新dashboard配置: $config');
+      final response = await apiClient.postForm<Map<String, dynamic>>(
+        '/api/v1/user/config/Dashboard',
+        config,
+      );
+
+      if (response.statusCode == 200) {
+        talker.info('更新dashboard配置成功');
+        // 重新获取配置
+        await _fetchDashboardConfig();
+        // 刷新dashboardUI
+        update();
+        // 重启所需的计时器和http请求任务
+        _restartTimersAndTasks();
+        return true;
+      } else {
+        talker.warning('更新dashboard配置失败: 状态码错误');
+        return false;
+      }
+    } catch (e, st) {
+      talker.handle(e, st, '更新dashboard配置失败');
+      return false;
+    }
+  }
+
+  /// 重启所需的计时器和http请求任务
+  void _restartTimersAndTasks() {
+    // 取消现有的计时器
+    _cpuTimer.cancel();
+    _networkTimer.cancel();
+    _downloaderTimer.cancel();
+    _memoryTimer.cancel();
+
+    // 重新加载数据
+    if (displayedWidgets.contains('CPU')) loadCpuData();
+    if (displayedWidgets.contains('网络流量')) loadNetworkData();
+    if (displayedWidgets.contains('内存')) loadMemoryData();
+    if (displayedWidgets.contains('实时速率')) loadDownloaderData();
+    if (displayedWidgets.contains('存储空间')) loadStorageData();
+    if (displayedWidgets.contains('媒体统计')) loadStatisticData();
+    if (displayedWidgets.contains('后台任务')) loadScheduleData();
+    if (displayedWidgets.contains('最近添加')) loadLatestMediaData();
+    if (displayedWidgets.contains('最近入库')) loadTransferData();
+
+    // 重新启动计时器
+    _cpuTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (displayedWidgets.contains('CPU')) loadCpuData();
+    });
+
+    _networkTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (displayedWidgets.contains('网络流量')) loadNetworkData();
+    });
+
+    _downloaderTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (displayedWidgets.contains('实时速率')) loadDownloaderData();
+    });
+
+    _memoryTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (displayedWidgets.contains('内存')) loadMemoryData();
+    });
+  }
 }

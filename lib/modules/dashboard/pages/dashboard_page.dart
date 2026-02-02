@@ -181,57 +181,62 @@ class DashboardPage extends GetView<DashboardController> {
 
   /// 构建组件网格
   Widget _buildWidgetGrid(BuildContext context) {
-    if (controller.displayedWidgets.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              CupertinoIcons.square_grid_2x2,
-              size: 64,
-              color: CupertinoColors.systemGrey3,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '暂无组件',
-              style: TextStyle(fontSize: 16, color: CupertinoColors.systemGrey),
-            ),
-            const SizedBox(height: 8),
-            CupertinoButton(
-              onPressed: () => _showWidgetSelector(context),
-              child: const Text('添加组件'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Dashboard',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => _showWidgetSelector(context),
-              child: const Icon(CupertinoIcons.add_circled),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        ...controller.displayedWidgets.map(
-          (widget) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _buildWidgetCard(context, widget),
+    return Obx(() {
+      if (controller.displayedWidgets.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                CupertinoIcons.square_grid_2x2,
+                size: 64,
+                color: CupertinoColors.systemGrey3,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '暂无组件',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: CupertinoColors.systemGrey,
+                ),
+              ),
+              const SizedBox(height: 8),
+              CupertinoButton(
+                onPressed: () => _showWidgetSelector(context),
+                child: const Text('添加组件'),
+              ),
+            ],
           ),
-        ),
-      ],
-    );
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Dashboard',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () => _showWidgetSelector(context),
+                child: const Icon(CupertinoIcons.add_circled),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...controller.displayedWidgets.map(
+            (widget) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildWidgetCard(context, widget),
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   /// 构建组件卡片
@@ -339,20 +344,20 @@ class _WidgetSelectorModal extends StatelessWidget {
             Container(height: 1, color: CupertinoColors.separator),
             // 组件列表
             Expanded(
-              child: Obx(
-                () => ListView.separated(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: DashboardController.availableWidgets.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final widget = DashboardController.availableWidgets[index];
+              child: ListView.separated(
+                controller: scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: DashboardController.availableWidgets.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final widget = DashboardController.availableWidgets[index];
+                  return Obx(() {
                     final isSelected = controller.displayedWidgets.contains(
                       widget,
                     );
                     return _buildWidgetItem(context, widget, isSelected);
-                  },
-                ),
+                  });
+                },
               ),
             ),
           ],
