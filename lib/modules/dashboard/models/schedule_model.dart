@@ -10,16 +10,16 @@ class ScheduleModel with _$ScheduleModel {
   const factory ScheduleModel({
     /// 任务ID
     @Default('') String id,
-    
+
     /// 任务名称
     @Default('') String name,
-    
+
     /// 任务提供者
     @Default('') String provider,
-    
+
     /// 任务状态
     @Default('') String status,
-    
+
     /// 下次运行时间
     @Default('') String next_run,
   }) = _ScheduleModel;

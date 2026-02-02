@@ -92,4 +92,9 @@ class ApiClient {
   Future<Response<T>> getMemoryData<T>() {
     return get<T>('/api/v1/dashboard/memory');
   }
+
+  // 获取最近入库数据
+  Future<Response<T>> getTransferData<T>() {
+    return get<T>('/api/v1/dashboard/transfer');
+  }
 }

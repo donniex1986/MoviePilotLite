@@ -63,6 +63,9 @@ class DashboardController extends GetxController {
   /// 媒体服务器最新入库数据
   final latestMediaData = Rx<Map<String, dynamic>?>(null);
 
+  /// 最近入库数据（一周内每天的入库量）
+  final transferData = <int>[].obs;
+
   /// API客户端
   late final ApiClient apiClient;
 
@@ -118,6 +121,7 @@ class DashboardController extends GetxController {
     loadStatisticData();
     loadScheduleData();
     loadLatestMediaData();
+    loadTransferData();
 
     // 初始化定时任务队列，每5秒获取一次数据
     _cpuTimer = Timer.periodic(const Duration(seconds: 5), (_) {
@@ -344,6 +348,29 @@ class DashboardController extends GetxController {
     }
   }
 
+  /// 加载最近入库数据（一周内每天的入库量）
+  Future<void> loadTransferData() async {
+    try {
+      talker.info('开始加载最近入库数据');
+      final response = await apiClient.getTransferData<List<dynamic>>();
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data!;
+        // 将数据转换为整数列表
+        final transferList = data
+            .map((item) => item is int ? item : 0)
+            .toList();
+        transferData.value = transferList;
+        talker.info('最近入库数据加载成功: $transferList');
+      } else if (response.statusCode == 401) {
+        talker.error('最近入库数据加载失败: 未授权，请重新登录');
+      } else {
+        talker.warning('最近入库数据加载失败，状态码: ${response.statusCode}');
+      }
+    } catch (e, st) {
+      talker.handle(e, st, '加载最近入库数据失败');
+    }
+  }
+
   /// 刷新所有数据
   Future<void> refreshData() async {
     talker.info('开始刷新所有数据');
@@ -356,6 +383,7 @@ class DashboardController extends GetxController {
       loadStatisticData(),
       loadScheduleData(),
       loadLatestMediaData(),
+      loadTransferData(),
     ]);
     talker.info('所有数据刷新完成');
   }
@@ -411,7 +439,7 @@ class DashboardController extends GetxController {
           final memoryUsed = data[0] as int;
           final memoryUsage = data[1] as int;
           memoryData.value = [memoryUsed, memoryUsage];
-          talker.info('内存数据加载成功: 使用 ${memoryUsed} 字节, 使用率 ${memoryUsage}%');
+          talker.info('内存数据加载成功: 使用 $memoryUsed 字节, 使用率 $memoryUsage%');
         }
       } else if (response.statusCode == 401) {
         talker.error('内存数据加载失败: 未授权，请重新登录');

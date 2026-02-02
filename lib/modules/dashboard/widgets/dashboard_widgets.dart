@@ -322,6 +322,8 @@ class RecentAddedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DashboardController>();
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -337,46 +339,156 @@ class RecentAddedWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _buildRecentItem('电影名称 1', '2小时前'),
-          const SizedBox(height: 8),
-          _buildRecentItem('电影名称 2', '5小时前'),
-          const SizedBox(height: 8),
-          _buildRecentItem('电影名称 3', '1天前'),
+          const SizedBox(height: 16),
+          Obx(() {
+            final transferData = controller.transferData;
+            // 计算总入库量
+            final totalCount = transferData.fold(0, (sum, item) => sum + item);
+
+            // 准备图表数据
+            final chartData = _prepareChartData(transferData);
+
+            return Column(
+              children: [
+                // 柱状图
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: CupertinoColors.systemBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: CupertinoColors.systemGrey.withOpacity(0.1),
+                        spreadRadius: 2,
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Stack(
+                    children: [
+                      // 背景网格线
+                      _buildGridLines(),
+                      // 柱状图
+                      _buildBars(chartData, context),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // 总入库量
+                Row(
+                  children: [
+                    Text(
+                      totalCount.toString(),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '最近一周入库了 ${totalCount} 部影片 😊',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: CupertinoColors.systemGrey,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // 查看详情按钮
+                SizedBox(
+                  width: double.infinity,
+                  child: CupertinoButton.filled(
+                    onPressed: () {
+                      // 查看详情按钮点击事件
+                    },
+                    child: const Text('查看详情'),
+                  ),
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildRecentItem(String title, String time) {
-    return Row(
+  // 准备图表数据
+  List<Map<String, dynamic>> _prepareChartData(List<int> transferData) {
+    // 确保数据长度为7（一周）
+    final data = List<int>.from(transferData);
+    while (data.length < 7) {
+      data.add(0);
+    }
+
+    // 准备图表数据
+    return data.asMap().entries.map((entry) {
+      return {'day': entry.key, 'count': entry.value};
+    }).toList();
+  }
+
+  // 构建背景网格线
+  Widget _buildGridLines() {
+    return Stack(
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: CupertinoColors.systemGrey5,
-            borderRadius: BorderRadius.circular(8),
+        for (int i = 0; i <= 3; i++)
+          Positioned(
+            top: i * 50.0,
+            left: 0,
+            right: 0,
+            child: Container(height: 1, color: CupertinoColors.systemGrey5),
           ),
-          child: const Icon(CupertinoIcons.film, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
+      ],
+    );
+  }
+
+  // 构建柱状图
+  Widget _buildBars(
+    List<Map<String, dynamic>> chartData,
+    BuildContext context,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: chartData.map((item) {
+        final count = item['count'] as int;
+        final maxCount = chartData.fold(
+          0,
+          (max, data) => data['count'] > max ? data['count'] : max,
+        );
+        final barHeight = maxCount > 0 ? (count / maxCount) * 150.0 : 0.0;
+
+        return Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(title, style: const TextStyle(fontSize: 15)),
-              Text(
-                time,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: CupertinoColors.systemGrey,
+              // 在柱子上方显示数量
+              if (count > 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    count.toString(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              Container(
+                height: barHeight,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
             ],
           ),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 }
@@ -745,8 +857,8 @@ class MemoryWidget extends StatelessWidget {
           const SizedBox(height: 16),
           Obx(() {
             final memoryData = controller.memoryData;
-            final memoryUsed = memoryData[0] ?? 0;
-            final memoryUsage = memoryData[1] ?? 0;
+            final memoryUsed = memoryData[0];
+            final memoryUsage = memoryData[1];
             final progress = memoryUsage / 100;
 
             // 假设总内存为16GB（实际应该从API获取）
