@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 import '../controllers/system_message_controller.dart';
 import '../models/system_message.dart';
@@ -431,20 +432,7 @@ class SystemMessagePage extends GetView<SystemMessageController> {
         ),
       );
     }
-    return Image.network(
-      url,
-      fit: BoxFit.cover,
-      alignment: Alignment.topCenter,
-      filterQuality: FilterQuality.medium,
-      errorBuilder: (_, __, ___) => Container(
-        color: CupertinoColors.systemGrey4,
-        child: const Icon(
-          CupertinoIcons.photo,
-          color: CupertinoColors.white,
-          size: 42,
-        ),
-      ),
-    );
+    return CachedImage(imageUrl: url, fit: BoxFit.cover);
   }
 
   Widget _buildTypeChip(

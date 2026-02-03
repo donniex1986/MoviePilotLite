@@ -20,22 +20,20 @@ class DashboardPage extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildNavigationBar(context),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            CupertinoSliverRefreshControl(
-              onRefresh: () async {
-                await controller.refreshData();
-              },
+      body: CustomScrollView(
+        slivers: [
+          CupertinoSliverRefreshControl(
+            onRefresh: () async {
+              await controller.refreshData();
+            },
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: _buildWidgetGrid(context),
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: _buildWidgetGrid(context),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
