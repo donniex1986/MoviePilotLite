@@ -1,5 +1,6 @@
-import 'dart:convert';
+import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:get/get.dart';
 
 /// 图片工具类
 class ImageUtil {
@@ -11,12 +12,10 @@ class ImageUtil {
   /// 返回拼接后的外部访问地址，例如：https://xx.x.ddnsto.com/api/v1/system/img/0?imgurl=http%3A%2F%2F192.168.31.173%3A8096%2FItems%2F6100%2FImages%2FPrimary
   static String convertInternalImageUrl(String imageUrl, {String? baseUrl}) {
     if (imageUrl.isEmpty) return '';
+    final apiClient = Get.find<ApiClient>();
 
     // 如果没有提供baseUrl，则从AppService读取
-    baseUrl ??= AppService.instance.baseUrl ?? '';
-
-    // 确保baseUrl不为空
-    if (baseUrl.isEmpty) return imageUrl;
+    baseUrl ??= apiClient.baseUrl ?? '';
 
     // 编码图片地址
     final encodedImageUrl = Uri.encodeComponent(imageUrl);

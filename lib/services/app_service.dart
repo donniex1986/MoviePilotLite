@@ -1,14 +1,8 @@
+import 'package:moviepilot_mobile/modules/login/models/login_response.dart';
+import 'package:get/get.dart';
+
 /// 应用全局服务
-class AppService {
-  /// 单例实例
-  static final AppService _instance = AppService._();
-
-  /// 获取单例实例
-  static AppService get instance => _instance;
-
-  /// 私有构造函数
-  AppService._();
-
+class AppService extends GetxService {
   /// 基础URL
   String? _baseUrl;
 
@@ -34,6 +28,10 @@ class AppService {
   /// 获取缓存的cookie
   String? get cookie => _cookie;
 
+  LoginResponse? _loginResponse;
+
+  LoginResponse? get loginResponse => _loginResponse;
+
   /// 设置缓存的cookie
   void setCookie(String cookie) {
     _cookie = cookie;
@@ -44,6 +42,15 @@ class AppService {
     _cookie = null;
   }
 
+  saveProfile(String server, LoginResponse login) {
+    _loginResponse = login;
+    setBaseUrl(server);
+  }
+
   /// 检查是否有缓存的cookie
   bool get hasCookie => _cookie != null && _cookie!.isNotEmpty;
+
+  LoginResponse? get latestLoginProfile => _loginResponse;
+
+  String? get latestLoginProfileAccessToken => _loginResponse?.accessToken;
 }

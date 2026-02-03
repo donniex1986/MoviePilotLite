@@ -70,7 +70,6 @@ class CustomButton extends StatelessWidget {
         onPressed: isDisabled ? null : onPressed,
         borderRadius: BorderRadius.circular(borderRadius),
         padding: padding,
-        minSize: minSize,
         color: buttonColor,
         child: _buildContent(context),
       );
@@ -79,18 +78,13 @@ class CustomButton extends StatelessWidget {
         onPressed: isDisabled ? null : onPressed,
         borderRadius: BorderRadius.circular(borderRadius),
         padding: padding,
-        minSize: minSize,
         color: isDisabled ? null : buttonColor,
         child: Container(
-          padding: padding ?? const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
+          padding:
+              padding ??
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: effectiveColor,
-              width: 1.5,
-            ),
+            border: Border.all(color: effectiveColor, width: 1.5),
             borderRadius: BorderRadius.circular(borderRadius),
           ),
           child: _buildContent(context),
@@ -122,21 +116,22 @@ class CustomButton extends StatelessWidget {
             color: isFilled
                 ? CupertinoColors.white
                 : (onPressed == null
-                    ? CupertinoColors.systemGrey4
-                    : context.primaryColor),
+                      ? CupertinoColors.systemGrey4
+                      : context.primaryColor),
           ),
           const SizedBox(width: 8),
           Text(
             text!,
-            style: textStyle ??
+            style:
+                textStyle ??
                 TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
                   color: isFilled
                       ? CupertinoColors.white
                       : (onPressed == null
-                          ? CupertinoColors.systemGrey4
-                          : context.primaryColor),
+                            ? CupertinoColors.systemGrey4
+                            : context.primaryColor),
                 ),
           ),
         ],
@@ -148,21 +143,22 @@ class CustomButton extends StatelessWidget {
         color: isFilled
             ? CupertinoColors.white
             : (onPressed == null
-                ? CupertinoColors.systemGrey4
-                : CupertinoColors.activeBlue),
+                  ? CupertinoColors.systemGrey4
+                  : CupertinoColors.activeBlue),
       );
     } else {
       return Text(
         text!,
-        style: textStyle ??
+        style:
+            textStyle ??
             TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w600,
               color: isFilled
                   ? CupertinoColors.white
                   : (onPressed == null
-                      ? CupertinoColors.systemGrey4
-                      : CupertinoColors.activeBlue),
+                        ? CupertinoColors.systemGrey4
+                        : CupertinoColors.activeBlue),
             ),
       );
     }

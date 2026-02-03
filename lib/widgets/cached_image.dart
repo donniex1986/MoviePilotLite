@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:get/get.dart';
 
 /// 网络图片加载组件
 /// 基于 cached_network_image 和 flutter_cache_manager
@@ -66,7 +67,7 @@ class CachedImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取cookie，如果没有提供则从AppService获取
-    final imageCookie = cookie ?? AppService.instance.cookie;
+    final imageCookie = cookie ?? Get.find<AppService>().cookie;
 
     // 构建请求头
     final headers = <String, String>{};

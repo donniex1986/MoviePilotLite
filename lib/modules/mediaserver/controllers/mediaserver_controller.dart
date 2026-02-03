@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/models/mediaserver_model.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/models/library_model.dart';
@@ -9,10 +10,10 @@ import 'package:talker/talker.dart';
 /// 媒体服务器控制器
 class MediaServerController extends GetxController {
   /// API客户端
-  late final ApiClient apiClient;
+  final apiClient = Get.find<ApiClient>();
 
   /// Talker日志实例
-  late final Talker talker;
+  final talker = Get.find<AppLog>();
 
   /// 媒体服务器列表
   final mediaServers = Rx<List<MediaServer>>([]);
@@ -26,19 +27,9 @@ class MediaServerController extends GetxController {
   /// 加载状态
   final isLoading = false.obs;
 
-  /// 初始化参数
-  final String baseUrl;
-  final String? token;
-
-  /// 构造函数
-  MediaServerController(this.baseUrl, {this.token});
-
   @override
   void onInit() {
     super.onInit();
-    talker = Talker();
-    // 初始化API客户端
-    apiClient = ApiClient(baseUrl, talker, token: token);
     // 加载媒体服务器数据
     loadMediaServers().then((_) {
       // 加载媒体库数据
@@ -54,7 +45,9 @@ class MediaServerController extends GetxController {
     try {
       isLoading.value = true;
       talker.info('开始加载媒体服务器数据');
-      final response = await apiClient.getMediaServers<Map<String, dynamic>>();
+      final response = await apiClient.get<Map<String, dynamic>>(
+        '/api/v1/system/setting/MediaServers',
+      );
       talker.info('媒体服务器API响应状态码: ${response.statusCode}');
       talker.info('媒体服务器API响应数据: ${response.data}');
       if (response.statusCode == 200) {
@@ -93,7 +86,7 @@ class MediaServerController extends GetxController {
         talker.warning('媒体服务器数据加载失败，状态码: ${response.statusCode}');
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载媒体服务器数据失败');
+      talker.handle(e, stackTrace: st, message: '加载媒体服务器数据失败');
     } finally {
       isLoading.value = false;
     }
@@ -124,8 +117,8 @@ class MediaServerController extends GetxController {
         );
         if (server.enabled) {
           talker.info('加载服务器 ${server.name} 的媒体库数据');
-          final response = await apiClient.getMediaLibraries<dynamic>(
-            server.type,
+          final response = await apiClient.get<dynamic>(
+            '/api/v1/mediaserver/library?server=${server.type}&hidden=true',
           );
           talker.info('服务器 ${server.name} 媒体库API响应状态码: ${response.statusCode}');
           talker.info('服务器 ${server.name} 媒体库API响应数据: ${response.data}');
@@ -189,7 +182,7 @@ class MediaServerController extends GetxController {
       mediaLibraries.value = allLibraries;
       talker.info('所有媒体库数据加载成功: ${allLibraries.length} 个媒体库');
     } catch (e, st) {
-      talker.handle(e, st, '加载媒体库数据失败');
+      talker.handle(e, stackTrace: st, message: '加载媒体库数据失败');
       // 确保即使发生错误也更新状态
       mediaLibraries.value = [];
     } finally {
@@ -206,8 +199,9 @@ class MediaServerController extends GetxController {
   Future<Map<String, dynamic>?> loadLatestMediaData(String server) async {
     try {
       talker.info('开始加载媒体服务器最新入库数据: $server');
-      final response = await apiClient
-          .getLatestMediaServerData<Map<String, dynamic>>(server);
+      final response = await apiClient.get<Map<String, dynamic>>(
+        '/api/v1/mediaserver/latest?server=$server',
+      );
       if (response.statusCode == 200) {
         final data = response.data!;
         if (data['success'] == true) {
@@ -225,7 +219,7 @@ class MediaServerController extends GetxController {
         return null;
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载媒体服务器最新入库数据失败');
+      talker.handle(e, stackTrace: st, message: '加载媒体服务器最新入库数据失败');
       return null;
     }
   }
@@ -242,8 +236,8 @@ class MediaServerController extends GetxController {
       for (final server in servers) {
         if (server.enabled) {
           talker.info('加载服务器 ${server.name} 的最近添加媒体');
-          final response = await apiClient.getLatestMediaServerData<dynamic>(
-            server.type,
+          final response = await apiClient.get<dynamic>(
+            '/api/v1/mediaserver/latest?server=${server.type}',
           );
 
           if (response.statusCode == 200) {
@@ -303,7 +297,7 @@ class MediaServerController extends GetxController {
       latestMediaList.value = allLatestMedia;
       talker.info('所有媒体服务器最近添加媒体加载完成: ${allLatestMedia.length} 个');
     } catch (e, st) {
-      talker.handle(e, st, '加载最近添加媒体列表失败');
+      talker.handle(e, stackTrace: st, message: '加载最近添加媒体列表失败');
       latestMediaList.value = [];
     } finally {
       isLoading.value = false;

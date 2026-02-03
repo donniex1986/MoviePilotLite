@@ -10,6 +10,15 @@
             "type": "dart"
         },
         {
+            "name": "moviepilot_mobile (debug 0093)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "args": [
+                "--device-id=00008120-000E5CAA2184C01E"
+            ]
+        },
+        {
             "name": "moviepilot_mobile (profile mode)",
             "request": "launch",
             "type": "dart",

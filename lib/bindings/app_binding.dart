@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
-import 'package:talker_flutter/talker_flutter.dart';
+import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 
 import '../modules/login/controllers/login_controller.dart';
 import '../modules/login/repositories/auth_repository.dart';
@@ -8,11 +9,10 @@ import '../services/realm_service.dart';
 class AppBinding extends Bindings {
   @override
   void dependencies() {
+    Get.put(AppLog(), permanent: true);
+    Get.put(AppService(), permanent: true);
     Get.put(RealmService(), permanent: true);
-    Get.put(
-      AuthRepository(Get.find<RealmService>(), Get.find<Talker>()),
-      permanent: true,
-    );
-    Get.put(LoginController(Get.find<AuthRepository>(), Get.find<Talker>()), permanent: true);
+    Get.put(AuthRepository(), permanent: true);
+    Get.put(LoginController(), permanent: true);
   }
 }

@@ -1,5 +1,9 @@
 import 'package:get/get.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 import 'bindings/app_binding.dart';
@@ -10,17 +14,10 @@ import 'modules/login/pages/login_page.dart';
 import 'theme/app_theme.dart';
 
 void main() {
-  // 确保在运行应用之前初始化所有依赖
-  Get.put(
-    Talker(
-      settings: TalkerSettings(
-        useConsoleLogs: true,
-        useHistory: true,
-        maxHistoryItems: 100,
-      ),
-    ),
-    permanent: true,
-  );
+  Get.put(AppLog());
+  Get.put(AppService());
+  Get.put(RealmService());
+  Get.put(ApiClient());
   runApp(const MyApp());
 }
 
@@ -30,14 +27,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取Talker实例
-    final talker = Get.find<Talker>();
+    final talker = Get.find<AppLog>();
 
     // 创建Talker路由观察器
-    final routeObserver = TalkerRouteObserver(talker);
+    final routeObserver = TalkerRouteObserver(talker.talker);
 
-    return GetCupertinoApp(
+    return GetMaterialApp(
       title: 'MoviePilot',
-      theme: AppTheme.cupertinoTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       initialBinding: AppBinding(),
       initialRoute: '/login',
       navigatorObservers: [
@@ -63,7 +61,7 @@ class MyApp extends StatelessWidget {
       ],
       // 配置错误处理
       builder: (context, child) {
-        return TalkerWrapper(talker: talker, child: child!);
+        return TalkerWrapper(talker: talker.talker, child: child!);
       },
     );
   }

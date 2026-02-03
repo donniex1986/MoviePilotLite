@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/statistic_model.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/schedule_model.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/dashboard_config_model.dart';
-import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
+import 'package:moviepilot_mobile/modules/dashboard/models/dashboard_order_model.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
@@ -72,14 +73,16 @@ class DashboardController extends GetxController {
   /// 媒体服务器控制器
   late final MediaServerController mediaServerController;
 
-  /// 认证令牌
-  String? token;
-
   /// Talker日志实例
   late final Talker talker;
 
   /// Dashboard配置
   final dashboardConfig = Rx<DashboardConfigModel?>(null);
+
+  /// Dashboard元素排序
+  final dashboardOrder = Rx<DashboardOrderModel?>(null);
+
+  final appService = Get.find<AppService>();
 
   late Timer _cpuTimer;
   late Timer _networkTimer;
@@ -88,84 +91,27 @@ class DashboardController extends GetxController {
   late RealmService _realmService;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     super.onInit();
-
-    // 初始化Talker实例
+    // 初始化依赖
+    apiClient = Get.find<ApiClient>();
+    _realmService = Get.find<RealmService>();
     talker = Talker();
-    talker.info('Dashboard控制器初始化');
 
-    // 初始化Realm服务
-    _realmService = RealmService();
+    // 1. 根据传入数据创建 mediaServerController
+    await _initializeMediaServerController();
 
-    // 从登录信息中获取baseUrl和token
-    final loginProfile = _getLatestLoginProfile();
-    talker.info('登录配置文件: $loginProfile');
-    if (loginProfile != null) {
-      token = loginProfile.accessToken;
-      apiClient = ApiClient(loginProfile.server, talker, token: token);
-      // 记录当前的baseUrl
-      AppService.instance.setBaseUrl(loginProfile.server);
-      talker.info('从登录信息中获取认证数据成功，服务器地址: ${loginProfile.server}');
+    // 2. 获取 dashboard 开关配置
+    await _fetchDashboardConfig();
 
-      // 获取用户的dashboard配置
-      _fetchDashboardConfig();
-    } else {
-      talker.warning('未找到登录信息，使用默认服务器地址');
-      // 这里可以添加重定向到登录页面的逻辑
-      ToastUtil.info('请先登录后再访问仪表盘');
-      // 使用默认配置
-      _useDefaultConfig();
-    }
+    // 3. 获取 dashboard 顺序配置
+    await _fetchDashboardOrder();
 
-    // 初始化媒体服务器控制器
-    if (loginProfile != null) {
-      talker.info(
-        '使用登录信息初始化MediaServerController，服务器地址: ${loginProfile.server}',
-      );
-      mediaServerController = Get.put(
-        MediaServerController(loginProfile.server, token: token),
-      );
-    } else {
-      talker.info('使用默认地址初始化MediaServerController');
-      mediaServerController = Get.put(
-        MediaServerController('https://mploser.x.ddnsto.com'),
-      );
-    }
+    // 4. 根据开关获取对应数据
+    _setupDataLoading();
 
-    // 延迟一秒后加载媒体库数据，确保MediaServerController已完全初始化
-    Future.delayed(const Duration(seconds: 1), () {
-      talker.info('手动触发加载媒体库数据');
-      mediaServerController.loadMediaLibraries();
-    });
-
-    // 加载数据，只有当对应的组件在displayedWidgets列表中时才加载
-    if (displayedWidgets.contains('CPU')) loadCpuData();
-    if (displayedWidgets.contains('网络流量')) loadNetworkData();
-    if (displayedWidgets.contains('内存')) loadMemoryData();
-    if (displayedWidgets.contains('实时速率')) loadDownloaderData();
-    if (displayedWidgets.contains('存储空间')) loadStorageData();
-    if (displayedWidgets.contains('媒体统计')) loadStatisticData();
-    if (displayedWidgets.contains('后台任务')) loadScheduleData();
-    if (displayedWidgets.contains('最近添加')) loadLatestMediaData();
-    if (displayedWidgets.contains('最近入库')) loadTransferData();
-
-    // 初始化定时任务队列，每5秒获取一次数据，只有当对应的组件在displayedWidgets列表中时才加载
-    _cpuTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (displayedWidgets.contains('CPU')) loadCpuData();
-    });
-
-    _networkTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (displayedWidgets.contains('网络流量')) loadNetworkData();
-    });
-
-    _downloaderTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (displayedWidgets.contains('实时速率')) loadDownloaderData();
-    });
-
-    _memoryTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (displayedWidgets.contains('内存')) loadMemoryData();
-    });
+    // 启动定时刷新
+    _startPeriodicRefresh();
   }
 
   @override
@@ -178,21 +124,43 @@ class DashboardController extends GetxController {
     super.onClose();
   }
 
-  /// 获取最新的登录配置文件
-  LoginProfile? _getLatestLoginProfile() {
-    try {
-      final profiles = _realmService.realm.all<LoginProfile>();
-      if (profiles.isEmpty) {
-        return null;
-      }
-      // 按更新时间排序，返回最新的登录配置
-      final sortedProfiles = profiles.toList()
-        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-      return sortedProfiles.first;
-    } catch (e, st) {
-      talker.handle(e, st, '获取登录配置文件失败');
-      return null;
-    }
+  /// 初始化媒体服务器控制器
+  Future<void> _initializeMediaServerController() async {
+    // 无论当前是否已经有登录信息，都先初始化 MediaServerController，
+    // 避免在后续定时任务中访问到未初始化的字段。
+    mediaServerController = Get.put(MediaServerController());
+
+    // 延迟一秒后加载媒体库数据，确保MediaServerController已完全初始化
+    Future.delayed(const Duration(seconds: 1), () {
+      talker.info('手动触发加载媒体库数据');
+      mediaServerController.loadMediaLibraries();
+    });
+  }
+
+  /// 设置数据加载
+  void _setupDataLoading() {
+    _loadDataBasedOnConfig();
+  }
+
+  /// 启动周期性刷新
+  void _startPeriodicRefresh() {
+    final duration = const Duration(seconds: kDebugMode ? 60 : 10);
+    // 初始化定时任务队列，每5秒获取一次数据，根据开关配置获取对应的数据
+    _cpuTimer = Timer.periodic(duration, (_) {
+      _loadDataBasedOnConfig();
+    });
+
+    _networkTimer = Timer.periodic(duration, (_) {
+      _loadDataBasedOnConfig();
+    });
+
+    _downloaderTimer = Timer.periodic(duration, (_) {
+      _loadDataBasedOnConfig();
+    });
+
+    _memoryTimer = Timer.periodic(duration, (_) {
+      _loadDataBasedOnConfig();
+    });
   }
 
   /// 添加组件
@@ -220,7 +188,7 @@ class DashboardController extends GetxController {
   Future<void> loadCpuData() async {
     try {
       talker.info('开始加载CPU数据');
-      final response = await apiClient.getCpuData<double>();
+      final response = await apiClient.get<double>('/api/v1/dashboard/cpu');
       if (response.statusCode == 200) {
         // 模拟CPU使用率的波动，使动画效果更明显
         final newUsage = response.data!;
@@ -245,7 +213,9 @@ class DashboardController extends GetxController {
   Future<void> loadNetworkData() async {
     try {
       talker.info('开始加载网络流量数据');
-      final response = await apiClient.getNetworkData<List<dynamic>>();
+      final response = await apiClient.get<List<dynamic>>(
+        '/api/v1/dashboard/network',
+      );
       if (response.statusCode == 200) {
         final traffic = response.data!;
         if (traffic.length >= 2) {
@@ -272,8 +242,9 @@ class DashboardController extends GetxController {
   Future<void> loadDownloaderData() async {
     try {
       talker.info('开始加载下载器数据');
-      final response = await apiClient
-          .getDownloaderData<Map<String, dynamic>>();
+      final response = await apiClient.get<Map<String, dynamic>>(
+        '/api/v1/dashboard/downloader',
+      );
       if (response.statusCode == 200) {
         final data = response.data!;
         downloaderData.value = data;
@@ -295,7 +266,9 @@ class DashboardController extends GetxController {
   Future<void> loadStorageData() async {
     try {
       talker.info('开始加载存储空间数据');
-      final response = await apiClient.getStorageData<Map<String, dynamic>>();
+      final response = await apiClient.get<Map<String, dynamic>>(
+        '/api/v1/dashboard/storage',
+      );
       if (response.statusCode == 200) {
         final data = response.data!;
         storageData.value = data;
@@ -322,7 +295,9 @@ class DashboardController extends GetxController {
   Future<void> loadStatisticData() async {
     try {
       talker.info('开始加载媒体统计数据');
-      final response = await apiClient.getStatisticData<Map<String, dynamic>>();
+      final response = await apiClient.get<Map<String, dynamic>>(
+        '/api/v1/dashboard/statistic',
+      );
       if (response.statusCode == 200) {
         final data = response.data!;
         final statisticModel = StatisticModel.fromJson(data);
@@ -343,7 +318,9 @@ class DashboardController extends GetxController {
   Future<void> loadScheduleData() async {
     try {
       talker.info('开始加载后台任务列表数据');
-      final response = await apiClient.getScheduleData<List<dynamic>>();
+      final response = await apiClient.get<List<dynamic>>(
+        '/api/v1/dashboard/schedule',
+      );
       if (response.statusCode == 200) {
         final data = response.data!;
         final scheduleList = data
@@ -379,7 +356,9 @@ class DashboardController extends GetxController {
   Future<void> loadTransferData() async {
     try {
       talker.info('开始加载最近入库数据');
-      final response = await apiClient.getTransferData<List<dynamic>>();
+      final response = await apiClient.get<List<dynamic>>(
+        '/api/v1/dashboard/transfer',
+      );
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data!;
         // 将数据转换为整数列表
@@ -401,18 +380,8 @@ class DashboardController extends GetxController {
   /// 刷新所有数据
   Future<void> refreshData() async {
     talker.info('开始刷新所有数据');
-    await Future.wait([
-      loadCpuData(),
-      loadNetworkData(),
-      loadMemoryData(),
-      loadDownloaderData(),
-      loadStorageData(),
-      loadStatisticData(),
-      loadScheduleData(),
-      loadLatestMediaData(),
-      loadTransferData(),
-      mediaServerController.refreshLatestMediaList(),
-    ]);
+    await _loadDataBasedOnConfig();
+    await mediaServerController.refreshLatestMediaList();
     talker.info('所有数据刷新完成');
   }
 
@@ -420,8 +389,8 @@ class DashboardController extends GetxController {
   Future<void> runScheduler(String jobId) async {
     try {
       talker.info('开始执行后台任务: $jobId');
-      final response = await apiClient.runScheduler<Map<String, dynamic>>(
-        jobId,
+      final response = await apiClient.get<Map<String, dynamic>>(
+        '/api/v1/system/runscheduler?jobid=$jobId',
       );
       if (response.statusCode == 200) {
         final data = response.data!;
@@ -460,7 +429,9 @@ class DashboardController extends GetxController {
   Future<void> loadMemoryData() async {
     try {
       talker.info('开始加载内存数据');
-      final response = await apiClient.getMemoryData<List<dynamic>>();
+      final response = await apiClient.get<List<dynamic>>(
+        '/api/v1/dashboard/memory',
+      );
       if (response.statusCode == 200) {
         final data = response.data!;
         if (data.length >= 2) {
@@ -480,7 +451,7 @@ class DashboardController extends GetxController {
     }
   }
 
-  /// 获取用户的dashboard配置
+  /// 获取dashboard开关配置
   Future<void> _fetchDashboardConfig() async {
     try {
       talker.info('开始获取dashboard配置');
@@ -507,7 +478,7 @@ class DashboardController extends GetxController {
     }
   }
 
-  /// 根据配置更新displayedWidgets列表
+  /// 根据开关配置更新displayedWidgets列表
   void _updateDisplayedWidgets(DashboardConfigValue config) {
     final widgets = <String>[];
 
@@ -532,6 +503,20 @@ class DashboardController extends GetxController {
     // 默认显示所有组件
     displayedWidgets.assignAll(availableWidgets);
     talker.info('使用默认配置，显示所有组件');
+  }
+
+  /// 根据开关配置获取对应的数据
+  Future<void> _loadDataBasedOnConfig() async {
+    // 加载数据，只有当对应的组件在displayedWidgets列表中时才加载
+    if (displayedWidgets.contains('CPU')) loadCpuData();
+    if (displayedWidgets.contains('网络流量')) loadNetworkData();
+    if (displayedWidgets.contains('内存')) loadMemoryData();
+    if (displayedWidgets.contains('实时速率')) loadDownloaderData();
+    if (displayedWidgets.contains('存储空间')) loadStorageData();
+    if (displayedWidgets.contains('媒体统计')) loadStatisticData();
+    if (displayedWidgets.contains('后台任务')) loadScheduleData();
+    if (displayedWidgets.contains('最近添加')) loadLatestMediaData();
+    if (displayedWidgets.contains('最近入库')) loadTransferData();
   }
 
   /// 更新dashboard配置
@@ -562,6 +547,39 @@ class DashboardController extends GetxController {
     }
   }
 
+  /// 更新dashboard排序
+  Future<bool> updateDashboardOrder(List<dynamic> order) async {
+    try {
+      talker.info('开始更新dashboard排序: $order');
+      final response = await apiClient.postForm<Map<String, dynamic>>(
+        '/api/v1/user/config/DashboardOrder',
+        {'value': order},
+      );
+
+      if (response.statusCode == 200) {
+        talker.info('更新dashboard排序成功');
+        // 重新获取排序
+        await _fetchDashboardOrder();
+        // 刷新dashboardUI
+        update();
+        return true;
+      } else {
+        talker.warning('更新dashboard排序失败: 状态码错误');
+        return false;
+      }
+    } catch (e, st) {
+      talker.handle(e, st, '更新dashboard排序失败');
+      return false;
+    }
+  }
+
+  /// 重新获取dashboard配置和排序
+  Future<void> refreshDashboard() async {
+    await _fetchDashboardConfig();
+    await _fetchDashboardOrder();
+    update();
+  }
+
   /// 重启所需的计时器和http请求任务
   void _restartTimersAndTasks() {
     // 取消现有的计时器
@@ -571,31 +589,88 @@ class DashboardController extends GetxController {
     _memoryTimer.cancel();
 
     // 重新加载数据
-    if (displayedWidgets.contains('CPU')) loadCpuData();
-    if (displayedWidgets.contains('网络流量')) loadNetworkData();
-    if (displayedWidgets.contains('内存')) loadMemoryData();
-    if (displayedWidgets.contains('实时速率')) loadDownloaderData();
-    if (displayedWidgets.contains('存储空间')) loadStorageData();
-    if (displayedWidgets.contains('媒体统计')) loadStatisticData();
-    if (displayedWidgets.contains('后台任务')) loadScheduleData();
-    if (displayedWidgets.contains('最近添加')) loadLatestMediaData();
-    if (displayedWidgets.contains('最近入库')) loadTransferData();
+    _loadDataBasedOnConfig();
 
     // 重新启动计时器
     _cpuTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (displayedWidgets.contains('CPU')) loadCpuData();
+      _loadDataBasedOnConfig();
     });
 
     _networkTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (displayedWidgets.contains('网络流量')) loadNetworkData();
+      _loadDataBasedOnConfig();
     });
 
     _downloaderTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (displayedWidgets.contains('实时速率')) loadDownloaderData();
+      _loadDataBasedOnConfig();
     });
 
     _memoryTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (displayedWidgets.contains('内存')) loadMemoryData();
+      _loadDataBasedOnConfig();
     });
+  }
+
+  /// 获取dashboard顺序配置
+  Future<void> _fetchDashboardOrder() async {
+    try {
+      talker.info('开始获取dashboard元素排序');
+      final response = await apiClient.get<Map<String, dynamic>>(
+        '/api/v1/user/config/DashboardOrder',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final order = DashboardOrderModel.fromJson(response.data!);
+        dashboardOrder.value = order;
+        talker.info('获取dashboard元素排序成功: ${order.data.value}');
+
+        // 根据排序结果更新displayedWidgets列表的顺序
+        _updateWidgetsOrder(order.data.value);
+      } else {
+        talker.warning('获取dashboard元素排序失败: 响应数据为空或状态码错误');
+      }
+    } catch (e, st) {
+      talker.handle(e, st, '获取dashboard元素排序失败');
+    }
+  }
+
+  /// 根据排序结果更新displayedWidgets列表的顺序
+  void _updateWidgetsOrder(List<DashboardOrderItem> orderItems) {
+    if (orderItems.isEmpty) return;
+
+    // 创建id到中文名称的映射
+    final idToNameMap = {
+      'storage': '存储空间',
+      'mediaStatistic': '媒体统计',
+      'weeklyOverview': '最近入库',
+      'speed': '实时速率',
+      'scheduler': '后台任务',
+      'cpu': 'CPU',
+      'memory': '内存',
+      'network': '网络流量',
+      'library': '我的媒体库',
+      'playing': '继续观看',
+      'latest': '最近添加',
+    };
+
+    // 根据排序结果创建新的displayedWidgets列表
+    final newWidgets = <String>[];
+
+    // 首先添加排序中的组件
+    for (final item in orderItems) {
+      final widgetName = idToNameMap[item.id];
+      if (widgetName != null && displayedWidgets.contains(widgetName)) {
+        newWidgets.add(widgetName);
+      }
+    }
+
+    // 然后添加不在排序中的组件（如果有的话）
+    for (final widget in displayedWidgets) {
+      if (!newWidgets.contains(widget)) {
+        newWidgets.add(widget);
+      }
+    }
+
+    // 更新displayedWidgets列表
+    displayedWidgets.assignAll(newWidgets);
+    talker.info('根据排序结果更新displayedWidgets顺序: $newWidgets');
   }
 }
