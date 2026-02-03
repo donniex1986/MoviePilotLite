@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:moviepilot_mobile/theme/section.dart';
 
 import '../../../theme/app_theme.dart';
 import '../../../widgets/custom_button.dart';
@@ -16,112 +18,38 @@ class LoginPage extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // 背景渐变 - 填充整个屏幕，包括安全区域外
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    context.primaryColor.withOpacity(0.08),
-                    CupertinoColors.systemGrey5,
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-          ),
-          // 内容区域 - 适配 SafeArea
-          SafeArea(
-            child: Obx(
-              () => Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 24,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 520),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: CupertinoColors.white.withOpacity(0.75),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: CupertinoColors.systemGrey4.withOpacity(
-                                0.5,
-                              ),
-                            ),
-                            boxShadow: const [
-                              BoxShadow(
-                                blurRadius: 20,
-                                color: Color(0x1A000000),
-                                offset: Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Builder(
-                                builder: (context) => _buildHeader(context),
-                              ),
-                              const SizedBox(height: 20),
-                              _buildTextField(
-                                controller.serverController,
-                                '服务器地址（含协议，如 https://example.com）',
-                                keyboardType: TextInputType.url,
-                                prefix: const Icon(CupertinoIcons.link),
-                                autocorrect: false,
-                                enableSuggestions: false,
-                              ),
-                              const SizedBox(height: 12),
-                              _buildTextField(
-                                controller.usernameController,
-                                '用户名',
-                                keyboardType: TextInputType.text,
-                                prefix: const Icon(CupertinoIcons.person),
-                                autocorrect: false,
-                                enableSuggestions: false,
-                              ),
-                              const SizedBox(height: 12),
-                              _buildPasswordField(),
-                              const SizedBox(height: 12),
-                              _buildTextField(
-                                controller.otpController,
-                                '二步验证码（如未启用可留空）',
-                                keyboardType: TextInputType.number,
-                                prefix: const Icon(CupertinoIcons.number),
-                              ),
-                              const SizedBox(height: 16),
-                              _buildProfilePicker(context),
-                              const SizedBox(height: 20),
-                              Obx(
-                                () => CustomButton(
-                                  text: '登录并保存',
-                                  icon: CupertinoIcons.check_mark,
-                                  isLoading: controller.isLoading.value,
-                                  onPressed: () => controller.submitLogin(),
-                                  borderRadius: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+      body: SafeArea(
+        child: Obx(
+          () => Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 24),
+                    _buildHeader(context),
+                    const SizedBox(height: 32),
+                    _buildFormSection(context),
+                    const SizedBox(height: 16),
+                    _buildProfilePicker(context),
+                    const SizedBox(height: 24),
+                    Obx(
+                      () => CustomButton(
+                        text: '登录并保存',
+                        icon: CupertinoIcons.check_mark,
+                        isLoading: controller.isLoading.value,
+                        onPressed: () => controller.submitLogin(),
+                        borderRadius: 12,
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -206,45 +134,68 @@ class LoginPage extends GetView<LoginController> {
 
   Widget _buildHeader(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    context.primaryColor,
-                    context.primaryColor.withOpacity(0.8),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              padding: const EdgeInsets.all(8),
-              child: SvgPicture.asset(
-                'assets/logo.svg',
-                width: 24,
-                height: 24,
-                colorFilter: const ColorFilter.mode(
-                  CupertinoColors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: CupertinoColors.systemGrey5,
+          ),
+          padding: const EdgeInsets.all(10),
+          child: SvgPicture.asset(
+            'assets/logo.svg',
+            width: 32,
+            height: 32,
+            colorFilter: ColorFilter.mode(
+              context.primaryColor,
+              BlendMode.srcIn,
             ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Text(
-                '登录 MoviePilot',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-            ),
-          ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          '使用你的账户登录以访问 MoviePilot 服务',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 14, color: CupertinoColors.systemGrey),
         ),
       ],
+    );
+  }
+
+  Widget _buildFormSection(BuildContext context) {
+    return Section(
+      child: Column(
+        children: [
+          _buildTextField(
+            controller.serverController,
+            '服务器地址（含协议，如 https://example.com）',
+            keyboardType: TextInputType.url,
+            prefix: const Icon(CupertinoIcons.link),
+            autocorrect: false,
+            enableSuggestions: false,
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller.usernameController,
+            '用户名',
+            keyboardType: TextInputType.text,
+            prefix: const Icon(CupertinoIcons.person),
+            autocorrect: false,
+            enableSuggestions: false,
+          ),
+          const SizedBox(height: 10),
+          _buildPasswordField(),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller.otpController,
+            '二步验证码（如未启用可留空）',
+            keyboardType: TextInputType.number,
+            prefix: const Icon(CupertinoIcons.number),
+          ),
+        ],
+      ),
     );
   }
 
@@ -340,7 +291,7 @@ class LoginPage extends GetView<LoginController> {
   }
 
   void _showPicker(BuildContext context, List<LoginProfile> profiles) {
-    showCupertinoModalPopup<void>(
+    showCupertinoModalBottomSheet<void>(
       context: context,
       builder: (_) => const AccountPickerPage(),
     );

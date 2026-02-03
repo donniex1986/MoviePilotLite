@@ -1,0 +1,92 @@
+import 'package:get/get.dart';
+import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
+import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
+import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:moviepilot_mobile/services/realm_service.dart';
+
+/// Profile 控制器：负责当前登录用户 / 登录档案的展示与后续扩展
+class ProfileController extends GetxController {
+  final _appService = Get.find<AppService>();
+  final _realmService = Get.find<RealmService>();
+  final _authRepository = Get.find<AuthRepository>();
+  final _talker = Get.find<AppLog>();
+
+  /// 当前登录配置（登录档案）
+  final currentProfile = Rxn<LoginProfile>();
+
+  /// 当前用户信息（来自 /api/v1/user）
+  final currentUserInfo = Rxn<UserInfo>();
+
+  /// 是否正在加载
+  final isLoading = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadCurrentProfile();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    // 页面展示后再拉取一次最新的用户信息
+    loadCurrentUserInfo();
+  }
+
+  /// 从 Realm 中读取最近使用的登录配置
+  void loadCurrentProfile() {
+    try {
+      isLoading.value = true;
+      final profiles = _realmService.realm.all<LoginProfile>().toList();
+      if (profiles.isEmpty) {
+        currentProfile.value = null;
+        return;
+      }
+      profiles.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      currentProfile.value = profiles.first;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 获取当前用户的最新信息（优先从接口拉取）
+  Future<void> loadCurrentUserInfo() async {
+    // 根据最近使用的登录档案获取用户信息
+    final profiles = _realmService.realm.all<LoginProfile>().toList();
+    if (profiles.isEmpty) {
+      currentUserInfo.value = null;
+      return;
+    }
+    profiles.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final latest = profiles.first;
+
+    try {
+      isLoading.value = true;
+      final userInfo = await _authRepository.getUserInfoByRole(
+        role: latest.username,
+      );
+      if (userInfo != null) {
+        currentUserInfo.value = userInfo;
+      }
+    } catch (e) {
+      _talker.error('获取用户信息失败: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 退出登录：清空本地会话并回到登录页
+  Future<void> logout() async {
+    // 清空内存中的登录信息
+    _appService.clearBaseUrl();
+    _appService.clearCookie();
+
+    currentProfile.value = null;
+    currentUserInfo.value = null;
+
+    // 跳转到登录页面
+    Get.offAllNamed('/login');
+  }
+}

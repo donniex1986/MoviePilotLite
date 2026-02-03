@@ -12,6 +12,8 @@ import 'modules/dashboard/pages/dashboard_page.dart';
 import 'modules/dashboard/pages/background_task_list_page.dart';
 import 'modules/login/pages/login_page.dart';
 import 'theme/app_theme.dart';
+import 'modules/profile/controllers/profile_controller.dart';
+import 'modules/profile/pages/profile_page.dart';
 
 void main() {
   Get.put(AppLog());
@@ -56,6 +58,13 @@ class MyApp extends StatelessWidget {
           page: () => const BackgroundTaskListPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => DashboardController());
+          }),
+        ),
+        GetPage(
+          name: '/profile',
+          page: () => const ProfilePage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => ProfileController());
           }),
         ),
       ],

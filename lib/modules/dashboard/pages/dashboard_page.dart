@@ -210,7 +210,7 @@ class DashboardPage extends GetView<DashboardController> {
 
   /// 显示个人资料
   void _showProfile(BuildContext context) {
-    Get.snackbar('个人资料', '个人资料功能开发中');
+    Get.toNamed('/profile');
   }
 
   /// 显示组件选择器

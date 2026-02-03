@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../theme/app_theme.dart';
@@ -11,11 +12,10 @@ class AccountPickerPage extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.1,
-      maxChildSize: 0.95,
-      snap: true,
-      snapSizes: const [0.1, 0.6, 0.95],
+      initialChildSize: 0.5,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
       builder: (context, scrollController) => Container(
         decoration: const BoxDecoration(
           color: CupertinoColors.systemGroupedBackground,
@@ -64,45 +64,43 @@ class AccountPickerPage extends GetView<LoginController> {
             Container(height: 1, color: CupertinoColors.separator),
             // 账号列表
             Expanded(
-              child: Obx(
-                () {
-                  final profiles = controller.profiles;
-                  if (profiles.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            CupertinoIcons.person_circle,
-                            size: 64,
-                            color: CupertinoColors.systemGrey3,
+              child: Obx(() {
+                final profiles = controller.profiles;
+                if (profiles.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          CupertinoIcons.person_circle,
+                          size: 64,
+                          color: CupertinoColors.systemGrey3,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '暂无已保存账号',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: CupertinoColors.systemGrey,
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            '暂无已保存账号',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: CupertinoColors.systemGrey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  return ListView.separated(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: profiles.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final profile = profiles[index];
-                      final isSelected =
-                          controller.selectedProfile.value?.id == profile.id;
-                      return _buildAccountCard(context, profile, isSelected);
-                    },
+                        ),
+                      ],
+                    ),
                   );
-                },
-              ),
+                }
+                return ListView.separated(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: profiles.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final profile = profiles[index];
+                    final isSelected =
+                        controller.selectedProfile.value?.id == profile.id;
+                    return _buildAccountCard(context, profile, isSelected);
+                  },
+                );
+              }),
             ),
           ],
         ),

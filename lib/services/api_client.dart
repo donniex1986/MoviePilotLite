@@ -84,6 +84,23 @@ class ApiClient extends g.GetxController {
     return _dio.post<T>(path, data: formData);
   }
 
+  Future<Response<T>> put<T>(
+    String path,
+    Map<String, dynamic> data, {
+    String? token,
+  }) {
+    final authToken = token ?? this.token;
+    _log.info('API PUT请求: $path, token: ${authToken != null ? '***' : 'null'}');
+    final options = Options(
+      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      validateStatus: (status) {
+        // 允许所有状态码，让调用者自己处理错误
+        return true;
+      },
+    );
+    return _dio.put<T>(path, data: data, options: options);
+  }
+
   Future<Response<T>> get<T>(String path, {String? token}) {
     final authToken = token ?? this.token;
     _log.info('API请求: $path, token: ${authToken != null ? '***' : 'null'}');

@@ -1,5 +1,6 @@
-import 'package:moviepilot_mobile/modules/login/models/login_response.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/modules/login/models/login_response.dart';
+import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
 
 /// 应用全局服务
 class AppService extends GetxService {
@@ -32,6 +33,10 @@ class AppService extends GetxService {
 
   LoginResponse? get loginResponse => _loginResponse;
 
+  UserInfo? _userInfo;
+
+  UserInfo? get userInfo => _userInfo;
+
   /// 设置缓存的cookie
   void setCookie(String cookie) {
     _cookie = cookie;
@@ -45,6 +50,10 @@ class AppService extends GetxService {
   saveProfile(String server, LoginResponse login) {
     _loginResponse = login;
     setBaseUrl(server);
+  }
+
+  void saveUserInfo(UserInfo userInfo) {
+    _userInfo = userInfo;
   }
 
   /// 检查是否有缓存的cookie

@@ -37,12 +37,12 @@ class LoginController extends GetxController {
     // 尝试使用保存的accessToken获取用户信息
     isLoading.value = true;
     try {
-      final success = await _repository.getUserInfo(
+      final userInfo = await _repository.getUserInfo(
         server: latestProfile.server,
         accessToken: latestProfile.accessToken,
       );
 
-      if (success) {
+      if (userInfo != null) {
         // 获取用户信息成功，直接跳转到dashboard页面
         _talker.info('自动登录成功');
         ToastUtil.success('自动登录成功');
