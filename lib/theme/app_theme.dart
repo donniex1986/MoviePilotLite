@@ -92,6 +92,11 @@ class AppTheme {
         backgroundColor: lightCardBackgroundColor,
         foregroundColor: lightTextPrimaryColor,
         elevation: 0,
+        titleTextStyle: TextStyle(
+          color: lightTextPrimaryColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       buttonTheme: ButtonThemeData(
         buttonColor: primaryColor,
@@ -159,6 +164,11 @@ class AppTheme {
         backgroundColor: darkCardBackgroundColor,
         foregroundColor: darkTextPrimaryColor,
         elevation: 0,
+        titleTextStyle: TextStyle(
+          color: darkTextPrimaryColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       buttonTheme: ButtonThemeData(
         buttonColor: primaryColor,

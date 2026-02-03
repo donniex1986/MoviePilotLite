@@ -16,7 +16,9 @@ class ServerLogPage extends GetView<ServerLogController> {
         title: const Text('服务器日志'),
         actions: [Obx(() => _buildStreamIndicator(controller))],
       ),
-      body: SafeArea(child: Obx(() => _buildScrollableBody(controller))),
+      body: SafeArea(
+        child: Obx(() => _buildScrollableBody(context, controller)),
+      ),
     );
   }
 
@@ -85,7 +87,7 @@ class ServerLogPage extends GetView<ServerLogController> {
     );
   }
 
-  Widget _buildFilterBar(ServerLogController controller) {
+  Widget _buildFilterBar(BuildContext context, ServerLogController controller) {
     const segments = <String, Widget>{
       'ALL': Text('全部'),
       'INFO': Text('INFO'),
@@ -111,6 +113,7 @@ class ServerLogPage extends GetView<ServerLogController> {
                 if (value == null) return;
                 controller.filterLevel.value = value;
               },
+              // thumbColor: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
@@ -118,12 +121,15 @@ class ServerLogPage extends GetView<ServerLogController> {
     );
   }
 
-  Widget _buildScrollableBody(ServerLogController controller) {
+  Widget _buildScrollableBody(
+    BuildContext context,
+    ServerLogController controller,
+  ) {
     final logs = controller.filteredLogs;
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: _buildFilterBar(controller)),
+        SliverToBoxAdapter(child: _buildFilterBar(context, controller)),
         if (logs.isEmpty)
           SliverFillRemaining(
             hasScrollBody: false,
@@ -184,7 +190,7 @@ class ServerLogPage extends GetView<ServerLogController> {
                         timeLabel,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: CupertinoColors.systemGrey,
+                          color: CupertinoColors.systemBlue,
                         ),
                       ),
                     ],

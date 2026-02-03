@@ -8,6 +8,28 @@ import 'package:get/get.dart' as g;
 
 enum RequestMethod { get, post, put, delete }
 
+class ApiAuthException implements Exception {
+  ApiAuthException(this.statusCode, [this.message]);
+
+  final int statusCode;
+  final String? message;
+
+  @override
+  String toString() =>
+      'ApiAuthException(statusCode: $statusCode, message: $message)';
+}
+
+class ApiHttpException implements Exception {
+  ApiHttpException(this.statusCode, [this.message]);
+
+  final int statusCode;
+  final String? message;
+
+  @override
+  String toString() =>
+      'ApiHttpException(statusCode: $statusCode, message: $message)';
+}
+
 class ApiClient extends g.GetxController {
   final _appService = g.Get.find<AppService>();
   final _log = g.Get.find<AppLog>();
@@ -132,6 +154,13 @@ class ApiClient extends g.GetxController {
         validateStatus: (status) => true,
       ),
     );
+    final status = response.statusCode ?? 0;
+    if (status == 401 || status == 403) {
+      throw ApiAuthException(status, response.statusMessage);
+    }
+    if (status >= 400) {
+      throw ApiHttpException(status, response.statusMessage);
+    }
     final body = response.data;
     if (body == null) {
       return const Stream<String>.empty();

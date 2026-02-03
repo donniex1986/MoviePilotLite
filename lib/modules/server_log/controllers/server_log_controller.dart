@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
+import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:moviepilot_mobile/services/realm_service.dart';
 
 /// 服务器日志控制器
 ///
@@ -12,6 +15,8 @@ import 'package:moviepilot_mobile/services/api_client.dart';
 class ServerLogController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
   final _log = Get.find<AppLog>();
+  final _realmService = Get.find<RealmService>();
+  final _authRepository = Get.find<AuthRepository>();
 
   /// 是否正在加载日志
   final isLoading = false.obs;
@@ -49,7 +54,7 @@ class ServerLogController extends GetxController {
   }
 
   /// 启动实时日志流，从 /api/v1/system/logging 订阅 SSE。
-  Future<void> startLogStream() async {
+  Future<void> startLogStream({bool allowRefresh = true}) async {
     isLoading.value = true;
     logs.clear();
     await _subscription?.cancel();
@@ -103,6 +108,18 @@ class ServerLogController extends GetxController {
       );
       // 订阅建立后即可展示页面，避免等待流结束
       isLoading.value = false;
+    } on ApiAuthException catch (e, st) {
+      _log.handle(
+        e,
+        stackTrace: st,
+        message: '实时日志流鉴权失败，尝试刷新 Token',
+      );
+      if (allowRefresh && await _refreshToken()) {
+        return startLogStream(allowRefresh: false);
+      }
+      isLoading.value = false;
+      isStreaming.value = false;
+      isIdle.value = false;
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '启动实时日志流失败');
       isLoading.value = false;
@@ -114,7 +131,7 @@ class ServerLogController extends GetxController {
   /// 仅用于断开后手动重连
   Future<void> reconnect() async {
     await _subscription?.cancel();
-    await startLogStream();
+    await startLogStream(allowRefresh: true);
   }
 
   void _startIdleTimer() {
@@ -132,6 +149,24 @@ class ServerLogController extends GetxController {
       isIdle.value =
           DateTime.now().difference(last) > const Duration(seconds: 3);
     });
+  }
+
+  Future<bool> _refreshToken() async {
+    try {
+      final profiles = _realmService.realm.all<LoginProfile>().toList();
+      if (profiles.isEmpty) return false;
+      profiles.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      final latest = profiles.first;
+      await _authRepository.login(
+        server: latest.server,
+        username: latest.username,
+        password: latest.password,
+      );
+      return true;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '刷新 Token 失败');
+      return false;
+    }
   }
 
   List<LogEntry> get filteredLogs {
