@@ -107,6 +107,32 @@ class ApiClient extends g.GetxController {
     return _dio.post<T>(path, data: formData);
   }
 
+  Future<Response<T>> post<T>(
+    String path, {
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? queryParameters,
+    String? token,
+  }) {
+    final authToken = token ?? this.token;
+    _log.info('API POST请求: $path, token: ${authToken != null ? '***' : 'null'}');
+    final options = Options(
+      headers: {
+        if (authToken != null) 'authorization': 'Bearer $authToken',
+        if (_appService.hasCookie) 'cookie': _appService.cookie!,
+      },
+      validateStatus: (status) {
+        // 允许所有状态码，让调用者自己处理错误
+        return true;
+      },
+    );
+    return _dio.post<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
+  }
+
   Future<Response<T>> put<T>(
     String path,
     Map<String, dynamic> data, {
@@ -128,7 +154,10 @@ class ApiClient extends g.GetxController {
     final authToken = token ?? this.token;
     _log.info('API请求: $path, token: ${authToken != null ? '***' : 'null'}');
     final options = Options(
-      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      headers: {
+        if (authToken != null) 'authorization': 'Bearer $authToken',
+        if (_appService.hasCookie) 'cookie': _appService.cookie!,
+      },
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
         return true;

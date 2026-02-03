@@ -248,10 +248,11 @@ class DashboardPage extends GetView<DashboardController> {
         title: 'TODO: 系统',
         subtitle: '健康检查',
       ),
-      const ShortcutItem(
+      ShortcutItem(
         icon: CupertinoIcons.chat_bubble_2_fill,
         title: '消息',
         subtitle: '消息中心',
+        onTap: () => Get.toNamed('/system-message'),
       ),
     ];
 

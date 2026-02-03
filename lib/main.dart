@@ -16,6 +16,8 @@ import 'modules/profile/controllers/profile_controller.dart';
 import 'modules/profile/pages/profile_page.dart';
 import 'modules/server_log/controllers/server_log_controller.dart';
 import 'modules/server_log/pages/server_log_page.dart';
+import 'modules/system_message/controllers/system_message_controller.dart';
+import 'modules/system_message/pages/system_message_page.dart';
 
 void main() {
   Get.put(AppLog());
@@ -74,6 +76,13 @@ class MyApp extends StatelessWidget {
           page: () => const ServerLogPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => ServerLogController());
+          }),
+        ),
+        GetPage(
+          name: '/system-message',
+          page: () => const SystemMessagePage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SystemMessageController());
           }),
         ),
       ],
