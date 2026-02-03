@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:moviepilot_mobile/utils/open_url.dart';
 import 'schedule_widget.dart';
 import 'storage_widget.dart';
 import 'media_stats_widget.dart';
@@ -33,7 +34,11 @@ class DashboardWidgets {
       case '网络流量':
         return const NetworkTrafficWidget();
       case '我的媒体库':
-        return const MyMediaLibraryWidget();
+        return MyMediaLibraryWidget(
+          onTap: (library) {
+            WebUtil.open(url: library.link);
+          },
+        );
       case '最近添加':
         return const RecentlyAddedWidget();
       default:

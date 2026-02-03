@@ -21,6 +21,7 @@ class ImageUtil {
     final encodedImageUrl = Uri.encodeComponent(imageUrl);
 
     // 拼接外部访问地址
-    return '$baseUrl/api/v1/system/img/0?imgurl=$encodedImageUrl';
+    final url = '$baseUrl/api/v1/system/img/0?imgurl=$encodedImageUrl';
+    return url;
   }
 }

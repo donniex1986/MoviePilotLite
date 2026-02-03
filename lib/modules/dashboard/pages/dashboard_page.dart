@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/modules/dashboard/widgets/shortcut_popover.dart';
 
 import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
@@ -83,10 +84,12 @@ class DashboardPage extends GetView<DashboardController> {
     final loginProfile = _getLatestLoginProfile();
 
     return AppBar(
-      leading: CupertinoButton(
-        padding: EdgeInsets.zero,
-        onPressed: () => _showShortcuts(context),
-        child: const Icon(CupertinoIcons.app_badge),
+      leading: Builder(
+        builder: (buttonContext) => CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => _showShortcuts(buttonContext),
+          child: const Icon(CupertinoIcons.app_badge),
+        ),
       ),
       title: Text(
         'Dashboard',
@@ -115,7 +118,7 @@ class DashboardPage extends GetView<DashboardController> {
           ),
         ),
         CupertinoButton(
-          padding: EdgeInsets.zero,
+          padding: EdgeInsets.symmetric(horizontal: 12),
           onPressed: () => _showProfile(context),
           child:
               loginProfile != null &&
@@ -200,7 +203,70 @@ class DashboardPage extends GetView<DashboardController> {
 
   /// 显示捷径
   void _showShortcuts(BuildContext context) {
-    Get.snackbar('捷径', '捷径功能开发中');
+    final overlay = Overlay.of(context);
+
+    // 计算按钮在屏幕中的位置，用于锚定菜单
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final target = box.localToGlobal(Offset.zero);
+    final size = box.size;
+
+    final shortcuts = <ShortcutItem>[
+      const ShortcutItem(
+        icon: CupertinoIcons.textformat,
+        title: 'TODO: 识别',
+        subtitle: '名称识别测试',
+      ),
+      const ShortcutItem(
+        icon: CupertinoIcons.settings,
+        title: 'TODO: 规则',
+        subtitle: '规则测试',
+      ),
+      const ShortcutItem(
+        icon: CupertinoIcons.doc_text,
+        title: '日志',
+        subtitle: '实时日志',
+      ),
+      const ShortcutItem(
+        icon: CupertinoIcons.desktopcomputer,
+        title: 'TODO: 网络',
+        subtitle: '网速连通性测试',
+      ),
+      const ShortcutItem(
+        icon: CupertinoIcons.text_alignleft,
+        title: 'TODO: 词表',
+        subtitle: '词表设置',
+      ),
+      const ShortcutItem(
+        icon: CupertinoIcons.cube_box,
+        title: 'TODO: 缓存',
+        subtitle: '管理缓存',
+      ),
+      const ShortcutItem(
+        icon: CupertinoIcons.gear_alt_fill,
+        title: 'TODO: 系统',
+        subtitle: '健康检查',
+      ),
+      const ShortcutItem(
+        icon: CupertinoIcons.chat_bubble_2_fill,
+        title: '消息',
+        subtitle: '消息中心',
+      ),
+    ];
+
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (ctx) {
+        return ShortcutPopover(
+          target: target,
+          targetSize: size,
+          items: shortcuts,
+          onClose: () => entry.remove(),
+        );
+      },
+    );
+
+    overlay.insert(entry);
   }
 
   /// 显示通知
