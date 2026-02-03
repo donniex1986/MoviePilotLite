@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 import '../controllers/dashboard_controller.dart';
 
 /// 最近入库组件
@@ -39,15 +40,52 @@ class RecentAddedWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // // 柱状图
-                // Stack(
-                //   children: [
-                //     // 背景网格线
-                //     _buildGridLines(),
-                //     // 柱状图
-                //     _buildBars(chartData, context),
-                //   ],
-                // ),
+                // 柱状图（使用 Syncfusion Flutter Charts）
+                SizedBox(
+                  height: 180,
+                  child: SfCartesianChart(
+                    primaryXAxis: CategoryAxis(
+                      majorGridLines: const MajorGridLines(width: 0),
+                      axisLine: const AxisLine(width: 0),
+                      labelStyle: const TextStyle(fontSize: 10),
+                    ),
+                    primaryYAxis: NumericAxis(
+                      isVisible: false,
+                      majorGridLines: const MajorGridLines(width: 0),
+                    ),
+                    plotAreaBorderWidth: 0,
+                    series: <ColumnSeries<Map<String, dynamic>, String>>[
+                      ColumnSeries<Map<String, dynamic>, String>(
+                        dataSource: chartData,
+                        xValueMapper: (data, index) {
+                          final dayIndex = data['day'] as int;
+                          const labels = [
+                            '周一',
+                            '周二',
+                            '周三',
+                            '周四',
+                            '周五',
+                            '周六',
+                            '周日',
+                          ];
+                          if (dayIndex >= 0 && dayIndex < labels.length) {
+                            return labels[dayIndex];
+                          }
+                          return '';
+                        },
+                        yValueMapper: (data, _) => data['count'] as int,
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(4),
+                        ),
+                        color: Theme.of(context).colorScheme.primary,
+                        dataLabelSettings: const DataLabelSettings(
+                          isVisible: true,
+                          textStyle: TextStyle(fontSize: 10),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 12),
                 // 总入库量
                 Row(

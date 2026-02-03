@@ -199,16 +199,30 @@ class MediaServerController extends GetxController {
   Future<Map<String, dynamic>?> loadLatestMediaData(String server) async {
     try {
       talker.info('开始加载媒体服务器最新入库数据: $server');
-      final response = await apiClient.get<Map<String, dynamic>>(
+      // 接口返回格式在不同版本中可能是 Map 包装对象或直接 List，
+      // 这里使用 dynamic 接收并在本地做兼容处理，避免类型转换错误。
+      final response = await apiClient.get<dynamic>(
         '/api/v1/mediaserver/latest?server=$server',
       );
+      talker.info('媒体服务器最新入库数据API响应数据: ${response.data}');
       if (response.statusCode == 200) {
-        final data = response.data!;
-        if (data['success'] == true) {
-          talker.info('媒体服务器最新入库数据加载成功');
-          return data;
+        final data = response.data;
+
+        if (data is Map<String, dynamic>) {
+          // 标准格式：{"success": true, "data": [...]}
+          if (data['success'] == true) {
+            talker.info('媒体服务器最新入库数据加载成功(包装对象)');
+            return data;
+          } else {
+            talker.warning('媒体服务器最新入库数据加载失败: ${data['message']}');
+            return null;
+          }
+        } else if (data is List<dynamic>) {
+          // 兼容直接返回列表的情况：[...]，包一层统一结构返回
+          talker.info('媒体服务器最新入库数据加载成功(列表格式)');
+          return <String, dynamic>{'success': true, 'data': data};
         } else {
-          talker.warning('媒体服务器最新入库数据加载失败: ${data['message']}');
+          talker.warning('媒体服务器最新入库数据格式异常: ${data.runtimeType}');
           return null;
         }
       } else if (response.statusCode == 401) {
