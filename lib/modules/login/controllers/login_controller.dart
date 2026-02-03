@@ -46,7 +46,7 @@ class LoginController extends GetxController {
         // 获取用户信息成功，直接跳转到dashboard页面
         _talker.info('自动登录成功');
         ToastUtil.success('自动登录成功');
-        Get.offAllNamed('/dashboard');
+        Get.offAllNamed('/main');
       } else {
         // 获取用户信息失败，需要用户手动登录
         _talker.warning('自动登录失败，需要用户手动登录');
@@ -106,7 +106,7 @@ class LoginController extends GetxController {
       _loadProfiles();
       ToastUtil.success('已保存账号信息', title: '登录成功');
       // 跳转到 Dashboard
-      Get.offAllNamed('/dashboard');
+      Get.offAllNamed('/main');
     } catch (e) {
       ToastUtil.error(e.toString(), title: '登录失败');
     } finally {

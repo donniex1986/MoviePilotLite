@@ -1,5 +1,7 @@
 PODS:
   - Flutter (1.0.0)
+  - liquid_tabbar_minimize (1.0.9):
+    - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -15,6 +17,7 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - liquid_tabbar_minimize (from `.symlinks/plugins/liquid_tabbar_minimize/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - realm (from `.symlinks/plugins/realm/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
@@ -24,6 +27,8 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  liquid_tabbar_minimize:
+    :path: ".symlinks/plugins/liquid_tabbar_minimize/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   realm:
@@ -37,6 +42,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  liquid_tabbar_minimize: c0607fa636d8ad6090e33a63d567474a9c6ccf55
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   realm: 333c5f1c81ae50912c7f7d7763050275fbfe9e50
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
