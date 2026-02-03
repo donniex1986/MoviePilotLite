@@ -222,10 +222,11 @@ class DashboardPage extends GetView<DashboardController> {
         title: 'TODO: 规则',
         subtitle: '规则测试',
       ),
-      const ShortcutItem(
+      ShortcutItem(
         icon: CupertinoIcons.doc_text,
         title: '日志',
         subtitle: '实时日志',
+        onTap: () => Get.toNamed('/server-log'),
       ),
       const ShortcutItem(
         icon: CupertinoIcons.desktopcomputer,

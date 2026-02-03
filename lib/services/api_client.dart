@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'dart:convert';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
@@ -112,5 +113,31 @@ class ApiClient extends g.GetxController {
       },
     );
     return _dio.get<T>(path, options: options);
+  }
+
+  /// SSE / 流式 GET，请求 `text/event-stream` 并返回按行解码后的字符串流。
+  Future<Stream<String>> streamLines(String path, {String? token}) async {
+    final authToken = token ?? this.token;
+    _log.info('API流式请求: $path, token: ${authToken != null ? '***' : 'null'}');
+    final response = await _dio.get<ResponseBody>(
+      path,
+      options: Options(
+        responseType: ResponseType.stream,
+        receiveTimeout: Duration.zero,
+        headers: {
+          'accept': 'text/event-stream',
+          if (authToken != null) 'authorization': 'Bearer $authToken',
+          if (_appService.hasCookie) 'cookie': _appService.cookie!,
+        },
+        validateStatus: (status) => true,
+      ),
+    );
+    final body = response.data;
+    if (body == null) {
+      return const Stream<String>.empty();
+    }
+    // 将底层字节流转换为按行分隔的 UTF8 字符串流
+    final byteStream = body.stream.map((chunk) => chunk as List<int>);
+    return byteStream.transform(utf8.decoder).transform(const LineSplitter());
   }
 }

@@ -37,7 +37,7 @@ class LoginController extends GetxController {
     // 尝试使用保存的accessToken获取用户信息
     isLoading.value = true;
     try {
-      final userInfo = await _repository.getUserInfo(
+      final userInfo = await _repository.getUserGlobalConfig(
         server: latestProfile.server,
         accessToken: latestProfile.accessToken,
       );

@@ -17,7 +17,6 @@ _$UserInfoImpl _$$UserInfoImplFromJson(Map<String, dynamic> json) =>
       isOtp: json['is_otp'] as bool,
       permissions: json['permissions'] as Map<String, dynamic>? ?? {},
       settings: json['settings'] as Map<String, dynamic>? ?? {},
-      nickname: json['nickname'] as String?,
     );
 
 Map<String, dynamic> _$$UserInfoImplToJson(_$UserInfoImpl instance) =>
@@ -31,5 +30,4 @@ Map<String, dynamic> _$$UserInfoImplToJson(_$UserInfoImpl instance) =>
       'is_otp': instance.isOtp,
       'permissions': instance.permissions,
       'settings': instance.settings,
-      'nickname': instance.nickname,
     };

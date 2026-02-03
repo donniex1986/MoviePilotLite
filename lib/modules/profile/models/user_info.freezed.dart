@@ -35,6 +35,9 @@ mixin _$UserInfo {
   Map<String, dynamic> get permissions => throw _privateConstructorUsedError;
   @JsonKey(defaultValue: <String, dynamic>{})
   Map<String, dynamic> get settings => throw _privateConstructorUsedError;
+
+  /// 可选昵称：写入时作为顶层字段发送，读取时从 settings.nickname 获取
+  @JsonKey(includeFromJson: false)
   String? get nickname => throw _privateConstructorUsedError;
 
   /// Serializes this UserInfo to a JSON map.
@@ -63,7 +66,7 @@ abstract class $UserInfoCopyWith<$Res> {
     @JsonKey(defaultValue: <String, dynamic>{})
     Map<String, dynamic> permissions,
     @JsonKey(defaultValue: <String, dynamic>{}) Map<String, dynamic> settings,
-    String? nickname,
+    @JsonKey(includeFromJson: false) String? nickname,
   });
 }
 
@@ -161,7 +164,7 @@ abstract class _$$UserInfoImplCopyWith<$Res>
     @JsonKey(defaultValue: <String, dynamic>{})
     Map<String, dynamic> permissions,
     @JsonKey(defaultValue: <String, dynamic>{}) Map<String, dynamic> settings,
-    String? nickname,
+    @JsonKey(includeFromJson: false) String? nickname,
   });
 }
 
@@ -252,7 +255,7 @@ class _$UserInfoImpl implements _UserInfo {
     required final Map<String, dynamic> permissions,
     @JsonKey(defaultValue: <String, dynamic>{})
     required final Map<String, dynamic> settings,
-    this.nickname,
+    @JsonKey(includeFromJson: false) this.nickname,
   }) : _permissions = permissions,
        _settings = settings;
 
@@ -294,7 +297,9 @@ class _$UserInfoImpl implements _UserInfo {
     return EqualUnmodifiableMapView(_settings);
   }
 
+  /// 可选昵称：写入时作为顶层字段发送，读取时从 settings.nickname 获取
   @override
+  @JsonKey(includeFromJson: false)
   final String? nickname;
 
   @override
@@ -368,7 +373,7 @@ abstract class _UserInfo implements UserInfo {
     required final Map<String, dynamic> permissions,
     @JsonKey(defaultValue: <String, dynamic>{})
     required final Map<String, dynamic> settings,
-    final String? nickname,
+    @JsonKey(includeFromJson: false) final String? nickname,
   }) = _$UserInfoImpl;
 
   factory _UserInfo.fromJson(Map<String, dynamic> json) =
@@ -397,7 +402,10 @@ abstract class _UserInfo implements UserInfo {
   @override
   @JsonKey(defaultValue: <String, dynamic>{})
   Map<String, dynamic> get settings;
+
+  /// 可选昵称：写入时作为顶层字段发送，读取时从 settings.nickname 获取
   @override
+  @JsonKey(includeFromJson: false)
   String? get nickname;
 
   /// Create a copy of UserInfo
