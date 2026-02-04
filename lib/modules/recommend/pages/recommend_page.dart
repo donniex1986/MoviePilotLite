@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
+import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_media_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class RecommendPage extends GetView<RecommendController> {
@@ -27,14 +29,29 @@ class RecommendPage extends GetView<RecommendController> {
           SliverToBoxAdapter(child: Obx(() => _buildCategoryBar(context))),
           const SliverToBoxAdapter(child: SizedBox(height: 6)),
           SliverToBoxAdapter(child: Obx(() => _buildSectionList(context))),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
     );
   }
 
   AppBar _buildNavigationBar(BuildContext context) {
-    return AppBar(title: const Text('推荐'), centerTitle: false);
+    return AppBar(
+      title: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              color: _accentColor(context),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Text('推荐'),
+        ],
+      ),
+      centerTitle: false,
+    );
   }
 
   Widget _buildCategoryBar(BuildContext context) {
@@ -129,7 +146,7 @@ class RecommendPage extends GetView<RecommendController> {
     final subCategories = controller.currentSubCategories;
     if (subCategories.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Text(
           '暂无可展示的分组，请在筛选中开启。',
           style: Theme.of(
@@ -139,58 +156,61 @@ class RecommendPage extends GetView<RecommendController> {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (final subCategory in subCategories) ...[
-          _buildSectionHeader(context, title: subCategory),
-          _buildPosterRail(context, subCategory),
-          const SizedBox(height: 12),
-        ],
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: subCategories.map((subCategory) {
+          return Column(
+            children: [
+              _buildSectionHeader(context, title: subCategory),
+              SizedBox(height: 8),
+              _buildPosterRail(context, subCategory),
+              SizedBox(height: 8),
+            ],
+          );
+        }).toList(),
+      ),
     );
   }
 
   Widget _buildSectionHeader(BuildContext context, {required String title}) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 12, 12),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 20,
-            decoration: BoxDecoration(
-              color: _accentColor(context),
-              borderRadius: BorderRadius.circular(4),
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 20,
+          decoration: BoxDecoration(
+            color: _accentColor(context),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+        ),
+        Text(
+          '更多',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: _accentColor(context),
+            fontWeight: FontWeight.w600,
           ),
-          Text(
-            '更多',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: _accentColor(context),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, size: 18, color: _accentColor(context)),
-        ],
-      ),
+        ),
+        const SizedBox(width: 4),
+        Icon(Icons.chevron_right, size: 18, color: _accentColor(context)),
+      ],
     );
   }
 
   Widget _buildPosterRail(BuildContext context, String subCategory) {
     controller.ensureSubCategoryLoaded(subCategory);
-    final items = controller.itemsForSubCategory(subCategory);
+    final items = controller.itemsForSubCategory(subCategory).take(8).toList();
     final isLoading = controller.isLoadingForSubCategory(subCategory);
     final errorText = controller.errorForSubCategory(subCategory);
     if (items.isEmpty && errorText != null) {
@@ -199,28 +219,15 @@ class RecommendPage extends GetView<RecommendController> {
     return Skeletonizer(enabled: isLoading, child: _buildItemsRail(items));
   }
 
-  Widget _buildItemsRail(List<RecommendMediaItem> items) {
+  Widget _buildItemsRail(List<RecommendApiItem> items) {
     return SizedBox(
-      height: 230,
+      height: 200,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.only(right: 8),
         itemBuilder: (context, index) => RecommendItemCard(item: items[index]),
         separatorBuilder: (context, index) => const SizedBox(width: 14),
         itemCount: items.length,
-      ),
-    );
-  }
-
-  Widget _buildLoadingRail() {
-    return SizedBox(
-      height: 230,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemBuilder: (context, index) => const RecommendItemCard.placeholder(),
-        separatorBuilder: (context, index) => const SizedBox(width: 14),
-        itemCount: 4,
       ),
     );
   }

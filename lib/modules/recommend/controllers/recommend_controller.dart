@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
-import 'package:moviepilot_mobile/modules/recommend/models/recommend_media_item.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 
@@ -85,7 +84,7 @@ class RecommendController extends GetxController {
   final _visibleCategories = RecommendCategory.values.toList().obs;
   final _hiddenSubCategoryKeys = <String>[].obs;
 
-  final itemsByKey = <String, List<RecommendMediaItem>>{}.obs;
+  final itemsByKey = <String, List<RecommendApiItem>>{}.obs;
   final isLoadingByKey = <String, bool>{}.obs;
   final errorByKey = <String, String?>{}.obs;
 
@@ -120,7 +119,8 @@ class RecommendController extends GetxController {
 
   Future<void> _refreshUserCookie() async {
     final server = _appService.baseUrl ?? _apiClient.baseUrl;
-    final token = _appService.loginResponse?.accessToken ??
+    final token =
+        _appService.loginResponse?.accessToken ??
         _appService.latestLoginProfileAccessToken ??
         _apiClient.token;
     if (server == null || server.isEmpty || token == null || token.isEmpty) {
@@ -154,7 +154,7 @@ class RecommendController extends GetxController {
     return _subCategoryKeyMap[subCategory];
   }
 
-  List<RecommendMediaItem> itemsForSubCategory(String subCategory) {
+  List<RecommendApiItem> itemsForSubCategory(String subCategory) {
     final key = keyForSubCategory(subCategory);
     if (key == null) return const [];
     return itemsByKey[key] ?? const [];
@@ -399,25 +399,18 @@ class RecommendController extends GetxController {
     return result;
   }
 
-  List<RecommendMediaItem> _parseItems(
+  List<RecommendApiItem> _parseItems(
     List<dynamic> rawList, {
     required String fallbackMediaType,
   }) {
-    final items = <RecommendMediaItem>[];
+    final items = <RecommendApiItem>[];
     for (var i = 0; i < rawList.length; i++) {
       final raw = rawList[i];
       if (raw is! Map) continue;
       final map = _toStringKeyMap(raw);
       try {
         final apiItem = RecommendApiItem.fromJson(map);
-        items.add(
-          RecommendMediaItem.fromApi(
-            apiItem,
-            fallbackMediaType: fallbackMediaType,
-            fallbackId: '$fallbackMediaType-$i',
-            imageProxyBaseUrl: _recommendImageProxyBaseUrl,
-          ),
-        );
+        items.add(apiItem);
       } catch (e, st) {
         _log.handle(e, stackTrace: st, message: '解析推荐条目失败');
       }

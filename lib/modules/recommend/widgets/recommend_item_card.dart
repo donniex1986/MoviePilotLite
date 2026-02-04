@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:moviepilot_mobile/modules/recommend/models/recommend_media_item.dart';
+import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
+import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 class RecommendItemCard extends StatelessWidget {
@@ -10,11 +11,11 @@ class RecommendItemCard extends StatelessWidget {
     : item = null,
       isPlaceholder = true;
 
-  final RecommendMediaItem? item;
+  final RecommendApiItem? item;
   final bool isPlaceholder;
 
   static const double cardWidth = 150;
-  static const double cardRadius = 20;
+  static const double cardRadius = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -24,35 +25,62 @@ class RecommendItemCard extends StatelessWidget {
     final data = item!;
     return SizedBox(
       width: cardWidth,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(cardRadius),
-        child: Stack(
-          children: [
-            _buildPoster(data),
-            Positioned(left: 10, top: 10, child: _buildPill(data.mediaType)),
-            if (data.rating != null && data.rating! > 0)
-              Positioned(
-                right: 10,
-                top: 10,
-                child: _buildPill(
-                  data.rating!.toStringAsFixed(1),
-                  background: const Color(0xFF7C4DFF),
-                ),
+      child: Stack(
+        children: [
+          _buildPoster(data),
+          if (data.type != null && data.type!.isNotEmpty)
+            Positioned(left: 10, top: 10, child: _buildPill(data.type!)),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildTitle(data.title ?? ''),
+          ),
+          if (data.vote_average != null && data.vote_average! > 0)
+            Positioned(
+              right: 10,
+              top: 10,
+              child: _buildPill(
+                data.vote_average!.toStringAsFixed(1),
+                background: const Color(0xFF7C4DFF),
               ),
-          ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTitle(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(cardRadius),
+          bottomRight: Radius.circular(cardRadius),
+        ),
+        gradient: LinearGradient(colors: [Colors.black, Colors.transparent]),
+      ),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
         ),
       ),
     );
   }
 
-  Widget _buildPoster(RecommendMediaItem data) {
-    final imageUrl = data.imageUrl;
+  Widget _buildPoster(RecommendApiItem data) {
+    var imageUrl = data.poster_path;
     if (imageUrl != null && imageUrl.isNotEmpty) {
+      imageUrl = ImageUtil.convertCacheImageUrl(imageUrl);
       return CachedImage(
         imageUrl: imageUrl,
         fit: BoxFit.cover,
         width: cardWidth,
         height: cardWidth * 1.4,
+        borderRadius: BorderRadius.circular(cardRadius),
       );
     }
     return Container(

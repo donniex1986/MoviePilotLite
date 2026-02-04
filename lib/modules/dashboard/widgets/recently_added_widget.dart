@@ -106,24 +106,6 @@ class RecentlyAddedWidget extends StatelessWidget {
                                         width: 110,
                                         height: 150,
                                         fit: BoxFit.cover,
-                                        placeholder: Container(
-                                          color: CupertinoColors.systemGrey5,
-                                          child: const Center(
-                                            child: CupertinoActivityIndicator(
-                                              radius: 15,
-                                            ),
-                                          ),
-                                        ),
-                                        errorWidget: Container(
-                                          color: CupertinoColors.systemGrey5,
-                                          child: const Center(
-                                            child: Icon(
-                                              CupertinoIcons.film,
-                                              size: 40,
-                                              color: CupertinoColors.systemGrey,
-                                            ),
-                                          ),
-                                        ),
                                       ),
                                       // 媒体类型标签
                                       if (media.type.isNotEmpty)
