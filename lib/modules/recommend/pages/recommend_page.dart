@@ -1,14 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
-import 'package:moviepilot_mobile/modules/recommend/models/recommend_media_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
-import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:moviepilot_mobile/modules/recommend/widgets/recommond_category_group_edit_pannel.dart';
 
 class RecommendPage extends GetView<RecommendController> {
   const RecommendPage({super.key, this.scrollController});
@@ -80,7 +78,8 @@ class RecommendPage extends GetView<RecommendController> {
             ),
           ),
           IconButton(
-            onPressed: () => _openGroupManager(context),
+            onPressed: () =>
+                RecommondCategoryGroupEditPannel(context, controller),
             icon: const Icon(Icons.tune),
             color: AppTheme.textSecondaryColor,
             tooltip: '筛选',
@@ -257,107 +256,5 @@ class RecommendPage extends GetView<RecommendController> {
       case RecommendCategory.chart:
         return Icons.emoji_events_outlined;
     }
-  }
-
-  void _openGroupManager(BuildContext context) {
-    final theme = Theme.of(context);
-    showCupertinoModalBottomSheet(
-      context: context,
-      builder: (sheetContext) => Scaffold(
-        appBar: AppBar(
-          title: Text('分组管理'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(sheetContext).pop(),
-              child: const Text('完成'),
-            ),
-          ],
-        ),
-        body: Obx(() {
-          return Padding(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              12,
-              16,
-              20 + MediaQuery.of(sheetContext).padding.bottom,
-            ),
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                Text(
-                  '至少保留一个主分组',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textSecondaryColor,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text('主分组', style: theme.textTheme.titleSmall),
-                const SizedBox(height: 8),
-                for (final category in RecommendCategory.values)
-                  _buildCategoryToggle(category),
-                const SizedBox(height: 12),
-                Divider(color: AppTheme.borderColor.withOpacity(0.4)),
-                const SizedBox(height: 12),
-                Text('子分组', style: theme.textTheme.titleSmall),
-                const SizedBox(height: 8),
-                for (final category in RecommendCategory.values)
-                  if (category != RecommendCategory.all)
-                    _buildSubCategorySection(context, category),
-              ],
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildCategoryToggle(RecommendCategory category) {
-    return SwitchListTile(
-      value: controller.isCategoryVisible(category),
-      onChanged: (value) => controller.setCategoryVisibility(category, value),
-      title: Text(category.label),
-      contentPadding: EdgeInsets.zero,
-    );
-  }
-
-  Widget _buildSubCategorySection(
-    BuildContext context,
-    RecommendCategory category,
-  ) {
-    final theme = Theme.of(context);
-    final categoryVisible = controller.isCategoryVisible(category);
-    final titleColor = categoryVisible
-        ? theme.textTheme.bodyLarge?.color
-        : Colors.grey;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Text(
-            category.label,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: titleColor,
-            ),
-          ),
-        ),
-        for (final subCategory in category.subCategories)
-          CheckboxListTile(
-            value: controller.isSubCategoryVisible(category, subCategory),
-            onChanged: categoryVisible
-                ? (value) => controller.setSubCategoryVisibility(
-                    category,
-                    subCategory,
-                    value ?? true,
-                  )
-                : null,
-            title: Text(subCategory),
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-          ),
-        const SizedBox(height: 4),
-      ],
-    );
   }
 }
