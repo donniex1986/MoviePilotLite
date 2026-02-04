@@ -76,8 +76,7 @@ class CachedImage extends StatelessWidget {
     }
 
     Widget imageWidget = CachedNetworkImage(
-      imageUrl:
-          'https://mploser.x.ddnsto.com/api/v1/system/cache/image?url=https%3A%2F%2Fimage.tmdb.org%2Ft%2Fp%2Fw500%2F1C01VWRbHOzj8qzHMUaeaInXQyq.jpg',
+      imageUrl: imageUrl,
       width: width,
       height: height,
       fit: fit,
