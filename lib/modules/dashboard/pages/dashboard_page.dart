@@ -243,10 +243,11 @@ class DashboardPage extends GetView<DashboardController> {
         title: 'TODO: 词表',
         subtitle: '词表设置',
       ),
-      const ShortcutItem(
+      ShortcutItem(
         icon: CupertinoIcons.cube_box,
-        title: 'TODO: 缓存',
+        title: '缓存',
         subtitle: '管理缓存',
+        onTap: () => Get.toNamed('/cache'),
       ),
       const ShortcutItem(
         icon: CupertinoIcons.gear_alt_fill,

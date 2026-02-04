@@ -18,6 +18,8 @@ import 'modules/profile/controllers/profile_controller.dart';
 import 'modules/profile/pages/profile_page.dart';
 import 'modules/network_test/controllers/network_test_controller.dart';
 import 'modules/network_test/pages/network_test_page.dart';
+import 'modules/cache/controllers/cache_controller.dart';
+import 'modules/cache/pages/cache_page.dart';
 import 'modules/server_log/controllers/server_log_controller.dart';
 import 'modules/server_log/pages/server_log_page.dart';
 import 'modules/system_message/controllers/system_message_controller.dart';
@@ -97,6 +99,13 @@ class MyApp extends StatelessWidget {
           page: () => const SystemMessagePage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => SystemMessageController());
+          }),
+        ),
+        GetPage(
+          name: '/cache',
+          page: () => const CachePage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => CacheController());
           }),
         ),
       ],
