@@ -16,6 +16,9 @@ class RecommendPage extends GetView<RecommendController> {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.ensureUserCookieRefreshed();
+    });
     return Scaffold(
       appBar: _buildNavigationBar(context),
       body: CustomScrollView(
