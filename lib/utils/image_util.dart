@@ -24,4 +24,28 @@ class ImageUtil {
     final url = '$baseUrl/api/v1/system/img/0?imgurl=$encodedImageUrl';
     return url;
   }
+
+  /// 将图片地址转换为缓存代理地址
+  ///
+  /// [imageUrl] 原始图片地址
+  /// [baseUrl] 基础URL，例如：https://xx.x.ddnsto.com
+  ///
+  /// 返回拼接后的缓存访问地址，例如：
+  /// https://xx.x.ddnsto.com/api/v1/system/cache/image?url=https%3A%2F%2Fimage.tmdb.org%2F...
+  static String convertCacheImageUrl(String imageUrl, {String? baseUrl}) {
+    if (imageUrl.isEmpty) return '';
+    if (imageUrl.contains('/api/v1/system/cache/image')) {
+      return imageUrl;
+    }
+
+    final apiClient = Get.find<ApiClient>();
+    baseUrl ??= apiClient.baseUrl ?? '';
+    if (baseUrl.isEmpty) return imageUrl;
+
+    final sanitizedBase = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    final encodedImageUrl = Uri.encodeComponent(imageUrl);
+    return '$sanitizedBase/api/v1/system/cache/image?url=$encodedImageUrl';
+  }
 }

@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:liquid_tabbar_minimize/liquid_tabbar_minimize.dart';
 import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:moviepilot_mobile/modules/dashboard/pages/dashboard_page.dart';
+import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
+import 'package:moviepilot_mobile/modules/recommend/pages/recommend_page.dart';
 
 class Index extends StatefulWidget {
   const Index({super.key});
@@ -18,21 +20,22 @@ class _IndexState extends State<Index> {
   // Language toggle for testing locale label updates
   final dashboardController = Get.put(DashboardController());
   // Dynamic labels based on language
-  List<String> get _labels => ['Dashboard', 'Explore', 'Favorites', 'Settings'];
+  List<String> get _labels => ['Dashboard', '推荐', 'Favorites', 'Settings'];
 
   // Separate ScrollController for each page
   late final ScrollController _homeScrollController;
-  late final ScrollController _exploreScrollController;
+  late final ScrollController _recommendScrollController;
   late final ScrollController _favoritesScrollController;
   late final ScrollController _settingsScrollController;
 
   @override
   void initState() {
     super.initState();
+    Get.put(RecommendController());
     _homeScrollController = ScrollController()
       ..addListener(() => _onScroll(_homeScrollController));
-    _exploreScrollController = ScrollController()
-      ..addListener(() => _onScroll(_exploreScrollController));
+    _recommendScrollController = ScrollController()
+      ..addListener(() => _onScroll(_recommendScrollController));
     _favoritesScrollController = ScrollController()
       ..addListener(() => _onScroll(_favoritesScrollController));
     _settingsScrollController = ScrollController()
@@ -42,7 +45,7 @@ class _IndexState extends State<Index> {
   @override
   void dispose() {
     _homeScrollController.dispose();
-    _exploreScrollController.dispose();
+    _recommendScrollController.dispose();
     _favoritesScrollController.dispose();
     _settingsScrollController.dispose();
     super.dispose();
@@ -67,7 +70,7 @@ class _IndexState extends State<Index> {
       case 0:
         controller = _homeScrollController;
       case 1:
-        controller = _exploreScrollController;
+        controller = _recommendScrollController;
       case 2:
         controller = _favoritesScrollController;
       case 3:
@@ -83,52 +86,6 @@ class _IndexState extends State<Index> {
   }
 
   // Dedicated page for each tab
-
-  Widget _buildExplorePage() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Explore'),
-        backgroundColor: Colors.green,
-      ),
-      body: GridView.builder(
-        controller: _exploreScrollController,
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1,
-        ),
-        itemCount: 50,
-        itemBuilder: (context, index) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.green.withValues(alpha: 0.5),
-                width: 2,
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.public, size: 40, color: Colors.green),
-                const SizedBox(height: 8),
-                Text(
-                  'Place ${index + 1}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   Widget _buildFavoritesPage() {
     return Scaffold(
@@ -269,7 +226,7 @@ class _IndexState extends State<Index> {
         index: _selectedIndex,
         children: [
           DashboardPage(),
-          _buildExplorePage(),
+          RecommendPage(scrollController: _recommendScrollController),
           _buildFavoritesPage(),
           _buildSettingsPage(),
           _buildSearchPage(),
@@ -292,8 +249,10 @@ class _IndexState extends State<Index> {
             label: _labels[0],
           ),
           LiquidTabItem(
-            widget: const Icon(Icons.public),
-            sfSymbol: 'globe',
+            widget: const Icon(Icons.movie_outlined),
+            selectedWidget: const Icon(Icons.movie),
+            sfSymbol: 'film',
+            selectedSfSymbol: 'film.fill',
             label: _labels[1],
           ),
           LiquidTabItem(

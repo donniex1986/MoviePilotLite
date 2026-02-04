@@ -76,7 +76,8 @@ class CachedImage extends StatelessWidget {
     }
 
     Widget imageWidget = CachedNetworkImage(
-      imageUrl: imageUrl,
+      imageUrl:
+          'https://mploser.x.ddnsto.com/api/v1/system/cache/image?url=https%3A%2F%2Fimage.tmdb.org%2Ft%2Fp%2Fw500%2F1C01VWRbHOzj8qzHMUaeaInXQyq.jpg',
       width: width,
       height: height,
       fit: fit,
@@ -86,8 +87,10 @@ class CachedImage extends StatelessWidget {
       fadeInDuration: fadeInDuration,
       fadeOutDuration: fadeOutDuration,
       placeholder: null,
-      errorWidget: (context, url, error) =>
-          errorWidget ?? _buildDefaultErrorWidget(),
+      errorWidget: (context, url, error) {
+        print('img: error: $error');
+        return errorWidget ?? _buildDefaultErrorWidget();
+      },
       progressIndicatorBuilder: (context, url, progress) =>
           placeholder ?? _buildProgressIndicator(progress),
       httpHeaders: headers.isNotEmpty ? headers : null,

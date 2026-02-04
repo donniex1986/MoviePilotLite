@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:get/get.dart';
+import 'package:dio/dio.dart';
+import 'package:get/get.dart' hide Response;
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_global_config.dart';
@@ -112,6 +113,7 @@ class AuthRepository extends GetxService {
       final response = await _api.get<Map<String, dynamic>>(
         '/api/v1/system/global/user',
       );
+      await _syncCookie(normalizedServer, response: response);
       final data = response.data;
       if (data == null) {
         _talker.warning('获取用户全局配置失败: 返回数据为空');
@@ -131,6 +133,34 @@ class AuthRepository extends GetxService {
       _talker.warning('获取用户全局配置失败: $e');
       return null;
     }
+  }
+
+  Future<void> _syncCookie(String server, {Response<dynamic>? response}) async {
+    try {
+      var cookieHeader = await _api.getCookieHeader(
+        url: server,
+        preferCache: false,
+      );
+      cookieHeader ??= _compactSetCookie(response?.headers['set-cookie']);
+      if (cookieHeader != null && cookieHeader.isNotEmpty) {
+        _appService.setCookie(cookieHeader);
+      }
+    } catch (e) {
+      _talker.warning('同步 Cookie 失败: $e');
+    }
+  }
+
+  String? _compactSetCookie(List<String>? setCookie) {
+    if (setCookie == null || setCookie.isEmpty) return null;
+    final parts = <String>[];
+    for (final item in setCookie) {
+      final segment = item.split(';').first.trim();
+      if (segment.isNotEmpty) {
+        parts.add(segment);
+      }
+    }
+    if (parts.isEmpty) return null;
+    return parts.join('; ');
   }
 
   Future<UserInfo?> getUserInfoByRole({required String role}) async {

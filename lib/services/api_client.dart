@@ -38,9 +38,15 @@ class ApiClient extends g.GetxController {
   final _appService = g.Get.find<AppService>();
   final _log = g.Get.find<AppLog>();
   late final Dio _dio;
+  late final CookieJar _cookieJar;
   late final Future<void> _ready;
   bool _dioReady = false;
   String? _pendingBaseUrl;
+  String? _cachedCookieHeader;
+  Uri? _cachedCookieUri;
+  DateTime? _cachedCookieAt;
+
+  static const Duration _cookieCacheTtl = Duration(seconds: 15);
 
   String? get baseUrl {
     if (_dioReady) return _dio.options.baseUrl;
@@ -80,7 +86,8 @@ class ApiClient extends g.GetxController {
       final dir = await getApplicationSupportDirectory();
       cookieJar = PersistCookieJar(storage: FileStorage('${dir.path}/cookies'));
     }
-    _dio.interceptors.add(CookieManager(cookieJar));
+    _cookieJar = cookieJar;
+    _dio.interceptors.add(CookieManager(_cookieJar));
     _dio.interceptors.add(
       TalkerDioLogger(
         talker: _log.talker,
@@ -99,6 +106,59 @@ class ApiClient extends g.GetxController {
   Future<void> _ensureReady() => _ready;
 
   String? token;
+
+  /// 获取 Cookie Header（优先根据传入 url，否则使用 baseUrl）
+  Future<String?> getCookieHeader({
+    String? url,
+    bool preferCache = true,
+  }) async {
+    if (!_dioReady) return _cachedCookieHeader;
+
+    final uri = _resolveCookieUri(url);
+    if (uri == null) return _cachedCookieHeader;
+
+    if (preferCache && _isCookieCacheFresh(uri)) {
+      return _cachedCookieHeader;
+    }
+
+    final cookies = await _cookieJar.loadForRequest(uri);
+    final header = cookies.isEmpty
+        ? null
+        : cookies.map((cookie) => '${cookie.name}=${cookie.value}').join('; ');
+    _cacheCookieHeader(uri, header);
+    return header;
+  }
+
+  Uri? _resolveCookieUri(String? url) {
+    if (url != null && url.isNotEmpty) {
+      var uri = Uri.tryParse(url);
+      if (uri == null) return null;
+      if (!uri.hasScheme) {
+        final base = baseUrl ?? '';
+        if (base.isEmpty) return null;
+        uri = Uri.parse(base).resolve(url);
+      }
+      return uri;
+    }
+
+    final base = baseUrl ?? '';
+    if (base.isEmpty) return null;
+    return Uri.parse(base);
+  }
+
+  bool _isCookieCacheFresh(Uri uri) {
+    if (_cachedCookieHeader == null) return false;
+    if (_cachedCookieUri?.host != uri.host) return false;
+    final cachedAt = _cachedCookieAt;
+    if (cachedAt == null) return false;
+    return DateTime.now().difference(cachedAt) < _cookieCacheTtl;
+  }
+
+  void _cacheCookieHeader(Uri uri, String? header) {
+    _cachedCookieHeader = header;
+    _cachedCookieUri = uri;
+    _cachedCookieAt = DateTime.now();
+  }
 
   /// 配置服务端基础地址。
   ///
