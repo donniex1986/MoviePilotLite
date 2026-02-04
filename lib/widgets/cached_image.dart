@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:get/get.dart';
@@ -85,7 +86,6 @@ class CachedImage extends StatelessWidget {
       memCacheHeight: memCacheHeight,
       fadeInDuration: fadeInDuration,
       fadeOutDuration: fadeOutDuration,
-      placeholder: null,
       errorWidget: (context, url, error) {
         print('img: error: $error');
         return errorWidget ?? _buildDefaultErrorWidget();
@@ -128,7 +128,7 @@ class CachedImage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CupertinoActivityIndicator(),
+            const CupertinoActivityIndicator(color: Colors.white),
             if (progressValue != null) ...[
               const SizedBox(height: 12),
               SizedBox(

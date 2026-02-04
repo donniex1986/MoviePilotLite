@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
@@ -19,9 +20,22 @@ class RecommendItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isPlaceholder) {
-      return _buildPlaceholder();
-    }
+    return CupertinoContextMenu(
+      actions: [
+        CupertinoContextMenuAction(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          isDefaultAction: true,
+          trailingIcon: Icons.favorite,
+          child: const Text('订阅'),
+        ),
+      ],
+      child: _buildContent(),
+    );
+  }
+
+  Widget _buildContent() {
     final data = item!;
     return SizedBox(
       width: cardWidth,
