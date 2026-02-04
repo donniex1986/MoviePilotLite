@@ -16,6 +16,8 @@ import 'modules/login/pages/login_page.dart';
 import 'theme/app_theme.dart';
 import 'modules/profile/controllers/profile_controller.dart';
 import 'modules/profile/pages/profile_page.dart';
+import 'modules/network_test/controllers/network_test_controller.dart';
+import 'modules/network_test/pages/network_test_page.dart';
 import 'modules/server_log/controllers/server_log_controller.dart';
 import 'modules/server_log/pages/server_log_page.dart';
 import 'modules/system_message/controllers/system_message_controller.dart';
@@ -81,6 +83,13 @@ class MyApp extends StatelessWidget {
           page: () => const ServerLogPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => ServerLogController());
+          }),
+        ),
+        GetPage(
+          name: '/network-test',
+          page: () => const NetworkTestPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => NetworkTestController());
           }),
         ),
         GetPage(

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/dashboard/widgets/shortcut_popover.dart';
+import 'package:moviepilot_mobile/modules/network_test/controllers/network_test_controller.dart';
+import 'package:moviepilot_mobile/modules/network_test/pages/network_test_page.dart';
 import 'package:moviepilot_mobile/modules/recognize/controllers/recognize_controller.dart';
 import 'package:moviepilot_mobile/modules/recognize/pages/recognize_page.dart';
 
@@ -230,10 +232,11 @@ class DashboardPage extends GetView<DashboardController> {
         subtitle: '实时日志',
         onTap: () => Get.toNamed('/server-log'),
       ),
-      const ShortcutItem(
+      ShortcutItem(
         icon: CupertinoIcons.desktopcomputer,
-        title: 'TODO: 网络',
+        title: '网络测试',
         subtitle: '网速连通性测试',
+        onTap: () => _showNetworkTestModal(context),
       ),
       const ShortcutItem(
         icon: CupertinoIcons.text_alignleft,
@@ -303,6 +306,21 @@ class DashboardPage extends GetView<DashboardController> {
     );
     if (Get.isRegistered<RecognizeController>()) {
       Get.delete<RecognizeController>();
+    }
+  }
+
+  /// 显示网络测试（Modal）
+  Future<void> _showNetworkTestModal(BuildContext context) async {
+    if (Get.isRegistered<NetworkTestController>()) {
+      Get.delete<NetworkTestController>();
+    }
+    Get.put(NetworkTestController());
+    await showCupertinoModalBottomSheet<void>(
+      context: context,
+      builder: (_) => const NetworkTestPage(),
+    );
+    if (Get.isRegistered<NetworkTestController>()) {
+      Get.delete<NetworkTestController>();
     }
   }
 }
