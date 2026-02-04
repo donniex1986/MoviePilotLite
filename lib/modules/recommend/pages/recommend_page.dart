@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -37,19 +38,14 @@ class RecommendPage extends GetView<RecommendController> {
 
   AppBar _buildNavigationBar(BuildContext context) {
     return AppBar(
-      title: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 20,
-            decoration: BoxDecoration(
-              color: _accentColor(context),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Text('推荐'),
-        ],
+      leading: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: () {},
+        child: const Icon(Icons.recommend_outlined),
+      ),
+      title: Text(
+        'Recommend',
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       centerTitle: false,
     );
