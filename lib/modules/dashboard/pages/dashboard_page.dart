@@ -7,6 +7,8 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/dashboard/widgets/shortcut_popover.dart';
 import 'package:moviepilot_mobile/modules/network_test/controllers/network_test_controller.dart';
 import 'package:moviepilot_mobile/modules/network_test/pages/network_test_page.dart';
+import 'package:moviepilot_mobile/modules/system_health/controllers/system_health_controller.dart';
+import 'package:moviepilot_mobile/modules/system_health/pages/system_health_page.dart';
 import 'package:moviepilot_mobile/modules/recognize/controllers/recognize_controller.dart';
 import 'package:moviepilot_mobile/modules/recognize/pages/recognize_page.dart';
 
@@ -249,10 +251,11 @@ class DashboardPage extends GetView<DashboardController> {
         subtitle: '管理缓存',
         onTap: () => Get.toNamed('/cache'),
       ),
-      const ShortcutItem(
+      ShortcutItem(
         icon: CupertinoIcons.gear_alt_fill,
-        title: 'TODO: 系统',
+        title: '系统',
         subtitle: '健康检查',
+        onTap: () => _showSystemHealthModal(context),
       ),
       ShortcutItem(
         icon: CupertinoIcons.chat_bubble_2_fill,
@@ -322,6 +325,21 @@ class DashboardPage extends GetView<DashboardController> {
     );
     if (Get.isRegistered<NetworkTestController>()) {
       Get.delete<NetworkTestController>();
+    }
+  }
+
+  /// 显示系统健康检查（Modal）
+  Future<void> _showSystemHealthModal(BuildContext context) async {
+    if (Get.isRegistered<SystemHealthController>()) {
+      Get.delete<SystemHealthController>();
+    }
+    Get.put(SystemHealthController());
+    await showCupertinoModalBottomSheet<void>(
+      context: context,
+      builder: (_) => const SystemHealthPage(),
+    );
+    if (Get.isRegistered<SystemHealthController>()) {
+      Get.delete<SystemHealthController>();
     }
   }
 }
