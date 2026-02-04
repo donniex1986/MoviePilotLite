@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
@@ -78,8 +79,13 @@ class RecommendPage extends GetView<RecommendController> {
             ),
           ),
           IconButton(
-            onPressed: () =>
-                RecommondCategoryGroupEditPannel(context, controller),
+            onPressed: () => showCupertinoModalBottomSheet(
+              context: context,
+              builder: (sheetContext) => RecommondCategoryGroupEditPannelWidget(
+                sheetContext: sheetContext,
+                controller: controller,
+              ),
+            ),
             icon: const Icon(Icons.tune),
             color: AppTheme.textSecondaryColor,
             tooltip: '筛选',

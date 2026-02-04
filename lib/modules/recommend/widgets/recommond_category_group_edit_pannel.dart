@@ -1,28 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 
-void RecommondCategoryGroupEditPannel(
-  BuildContext context,
-  RecommendController controller,
-) {
-  showCupertinoModalBottomSheet(
-    context: context,
-    builder: (sheetContext) => _RecommondCategoryGroupEditPannelWidget(
-      sheetContext: sheetContext,
-      controller: controller,
-    ),
-  );
-}
-
-class _RecommondCategoryGroupEditPannelWidget extends StatelessWidget {
+class RecommondCategoryGroupEditPannelWidget extends StatelessWidget {
   final BuildContext sheetContext;
   final RecommendController controller;
 
-  const _RecommondCategoryGroupEditPannelWidget({
+  const RecommondCategoryGroupEditPannelWidget({
+    super.key,
     required this.sheetContext,
     required this.controller,
   });
