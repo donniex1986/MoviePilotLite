@@ -119,9 +119,10 @@ class RecommendController extends GetxController {
   }
 
   Future<void> _refreshUserCookie() async {
-    final server = _appService.baseUrl;
+    final server = _appService.baseUrl ?? _apiClient.baseUrl;
     final token = _appService.loginResponse?.accessToken ??
-        _appService.latestLoginProfileAccessToken;
+        _appService.latestLoginProfileAccessToken ??
+        _apiClient.token;
     if (server == null || server.isEmpty || token == null || token.isEmpty) {
       return;
     }
