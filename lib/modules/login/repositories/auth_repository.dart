@@ -118,14 +118,6 @@ class AuthRepository extends GetxService {
         return null;
       }
 
-      // 捕获并缓存该接口返回的 Cookie（例如全局用户配置相关会话）
-      final setCookie = response.headers['set-cookie'];
-      if (setCookie != null && setCookie.isNotEmpty) {
-        final cookieHeader = setCookie.join('; ');
-        _appService.setCookie(cookieHeader);
-        _talker.info('从用户全局配置接口缓存 Cookie');
-      }
-
       final configResponse = UserGlobalConfigResponse.fromJson(data);
       if (!configResponse.success) {
         _talker.warning(

@@ -22,6 +22,7 @@ import 'modules/system_message/controllers/system_message_controller.dart';
 import 'modules/system_message/pages/system_message_page.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   Get.put(AppLog());
   Get.put(AppService());
   Get.put(RealmService());

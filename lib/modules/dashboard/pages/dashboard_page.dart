@@ -3,7 +3,10 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/dashboard/widgets/shortcut_popover.dart';
+import 'package:moviepilot_mobile/modules/recognize/controllers/recognize_controller.dart';
+import 'package:moviepilot_mobile/modules/recognize/pages/recognize_page.dart';
 
 import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
@@ -210,10 +213,11 @@ class DashboardPage extends GetView<DashboardController> {
     final size = box.size;
 
     final shortcuts = <ShortcutItem>[
-      const ShortcutItem(
+      ShortcutItem(
         icon: CupertinoIcons.textformat,
-        title: 'TODO: 识别',
-        subtitle: '名称识别测试',
+        title: '识别',
+        subtitle: '标题/副标题识别',
+        onTap: () => _showRecognizeModal(context),
       ),
       const ShortcutItem(
         icon: CupertinoIcons.settings,
@@ -285,5 +289,20 @@ class DashboardPage extends GetView<DashboardController> {
       context: context,
       builder: (_) => EditDashboardPage(),
     );
+  }
+
+  /// 显示识别模块（Modal）
+  Future<void> _showRecognizeModal(BuildContext context) async {
+    if (Get.isRegistered<RecognizeController>()) {
+      Get.delete<RecognizeController>();
+    }
+    Get.put(RecognizeController());
+    await showCupertinoModalBottomSheet<void>(
+      context: context,
+      builder: (_) => const RecognizePage(),
+    );
+    if (Get.isRegistered<RecognizeController>()) {
+      Get.delete<RecognizeController>();
+    }
   }
 }

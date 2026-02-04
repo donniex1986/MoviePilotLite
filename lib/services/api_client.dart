@@ -1,5 +1,9 @@
-import 'package:dio/dio.dart';
 import 'dart:convert';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio/dio.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
@@ -34,38 +38,65 @@ class ApiClient extends g.GetxController {
   final _appService = g.Get.find<AppService>();
   final _log = g.Get.find<AppLog>();
   late final Dio _dio;
-  String? get baseUrl => _dio.options.baseUrl;
+  late final Future<void> _ready;
+  bool _dioReady = false;
+  String? _pendingBaseUrl;
+
+  String? get baseUrl {
+    if (_dioReady) return _dio.options.baseUrl;
+    return _pendingBaseUrl ?? _appService.baseUrl;
+  }
+
   @override
   void onInit() {
     super.onInit();
-    _dio =
-        Dio(
-            BaseOptions(
-              // 初始时 baseUrl 为空，后续在登录时根据服务器地址进行配置。
-              baseUrl: _appService.baseUrl ?? '',
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 15),
-              // FormData 需要 multipart/form-data；这里不强行设置，
-              // 让 dio 根据 data 类型自动推导 Content-Type。
-              headers: const {'accept': 'application/json'},
-            ),
-          )
-          ..interceptors.add(
-            TalkerDioLogger(
-              talker: _log.talker,
-              settings: const TalkerDioLoggerSettings(
-                printRequestHeaders: true,
-                printResponseHeaders: true,
-                printResponseMessage: true,
-                printRequestData: true,
-                printResponseData: true,
-                logLevel: LogLevel.info,
-              ),
-            ),
-          );
-    // cookie 写入存在问题，这里不再做全局 cookie 读写，
-    // 只由具体业务在调用 /api/v1/user 等接口时按需要读取响应体。
+    _ready = _initClient();
   }
+
+  Future<void> _initClient() async {
+    _dio = Dio(
+      BaseOptions(
+        // 初始时 baseUrl 为空，后续在登录时根据服务器地址进行配置。
+        baseUrl: _appService.baseUrl ?? '',
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 15),
+        // FormData 需要 multipart/form-data；这里不强行设置，
+        // 让 dio 根据 data 类型自动推导 Content-Type。
+        headers: const {'accept': 'application/json'},
+      ),
+    );
+    _dioReady = true;
+
+    if ((_pendingBaseUrl ?? '').isNotEmpty) {
+      _dio.options.baseUrl = _pendingBaseUrl!;
+    } else if (_appService.hasBaseUrl) {
+      _dio.options.baseUrl = _appService.baseUrl!;
+    }
+
+    final CookieJar cookieJar;
+    if (kIsWeb) {
+      cookieJar = CookieJar();
+    } else {
+      final dir = await getApplicationSupportDirectory();
+      cookieJar = PersistCookieJar(storage: FileStorage('${dir.path}/cookies'));
+    }
+    _dio.interceptors.add(CookieManager(cookieJar));
+    _dio.interceptors.add(
+      TalkerDioLogger(
+        talker: _log.talker,
+        settings: const TalkerDioLoggerSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+          printResponseMessage: true,
+          printRequestData: true,
+          printResponseData: true,
+          logLevel: LogLevel.info,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _ensureReady() => _ready;
 
   String? token;
 
@@ -74,7 +105,10 @@ class ApiClient extends g.GetxController {
   /// 登录时会根据用户输入的 serverUrl 调用该方法，
   /// 之后所有以 `/api/...` 开头的请求都会以此为前缀。
   void setBaseUrl(String baseUrl) {
-    _dio.options.baseUrl = baseUrl;
+    _pendingBaseUrl = baseUrl;
+    if (_dioReady) {
+      _dio.options.baseUrl = baseUrl;
+    }
     _log.info('设置 API baseUrl: $baseUrl');
   }
 
@@ -88,7 +122,8 @@ class ApiClient extends g.GetxController {
     String url,
     RequestMethod method,
     Map<String, dynamic> data,
-  ) {
+  ) async {
+    await _ensureReady();
     if (method == RequestMethod.get) {
       return get<T>(url);
     } else if (method == RequestMethod.post) {
@@ -102,7 +137,11 @@ class ApiClient extends g.GetxController {
     }
   }
 
-  Future<Response<T>> postForm<T>(String path, Map<String, dynamic> data) {
+  Future<Response<T>> postForm<T>(
+    String path,
+    Map<String, dynamic> data,
+  ) async {
+    await _ensureReady();
     final formData = FormData.fromMap(data);
     return _dio.post<T>(path, data: formData);
   }
@@ -112,14 +151,14 @@ class ApiClient extends g.GetxController {
     Map<String, dynamic>? data,
     Map<String, dynamic>? queryParameters,
     String? token,
-  }) {
+  }) async {
+    await _ensureReady();
     final authToken = token ?? this.token;
-    _log.info('API POST请求: $path, token: ${authToken != null ? '***' : 'null'}');
+    _log.info(
+      'API POST请求: $path, token: ${authToken != null ? '***' : 'null'}',
+    );
     final options = Options(
-      headers: {
-        if (authToken != null) 'authorization': 'Bearer $authToken',
-        if (_appService.hasCookie) 'cookie': _appService.cookie!,
-      },
+      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
         return true;
@@ -137,7 +176,8 @@ class ApiClient extends g.GetxController {
     String path,
     Map<String, dynamic> data, {
     String? token,
-  }) {
+  }) async {
+    await _ensureReady();
     final authToken = token ?? this.token;
     _log.info('API PUT请求: $path, token: ${authToken != null ? '***' : 'null'}');
     final options = Options(
@@ -150,14 +190,12 @@ class ApiClient extends g.GetxController {
     return _dio.put<T>(path, data: data, options: options);
   }
 
-  Future<Response<T>> get<T>(String path, {String? token}) {
+  Future<Response<T>> get<T>(String path, {String? token}) async {
+    await _ensureReady();
     final authToken = token ?? this.token;
     _log.info('API请求: $path, token: ${authToken != null ? '***' : 'null'}');
     final options = Options(
-      headers: {
-        if (authToken != null) 'authorization': 'Bearer $authToken',
-        if (_appService.hasCookie) 'cookie': _appService.cookie!,
-      },
+      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
         return true;
@@ -168,6 +206,7 @@ class ApiClient extends g.GetxController {
 
   /// SSE / 流式 GET，请求 `text/event-stream` 并返回按行解码后的字符串流。
   Future<Stream<String>> streamLines(String path, {String? token}) async {
+    await _ensureReady();
     final authToken = token ?? this.token;
     _log.info('API流式请求: $path, token: ${authToken != null ? '***' : 'null'}');
     final response = await _dio.get<ResponseBody>(
@@ -178,7 +217,6 @@ class ApiClient extends g.GetxController {
         headers: {
           'accept': 'text/event-stream',
           if (authToken != null) 'authorization': 'Bearer $authToken',
-          if (_appService.hasCookie) 'cookie': _appService.cookie!,
         },
         validateStatus: (status) => true,
       ),

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
+import 'package:moviepilot_mobile/utils/open_url.dart';
 
 import '../controllers/system_message_controller.dart';
 import '../models/system_message.dart';
@@ -101,6 +102,7 @@ class SystemMessagePage extends GetView<SystemMessageController> {
 
   Widget _buildUserTextCard(SystemMessage message) {
     final time = DateFormat('MM-dd HH:mm').format(message.regTime);
+    final text = message.text.trim();
     return Align(
       alignment: Alignment.centerRight,
       child: ConstrainedBox(
@@ -114,9 +116,13 @@ class SystemMessagePage extends GetView<SystemMessageController> {
                 color: CupertinoColors.systemBlue,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Text(
-                message.text,
-                style: const TextStyle(fontSize: 14, color: Colors.white),
+              child: _buildSelectableText(
+                text,
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.45,
+                  color: Colors.white,
+                ),
               ),
             ),
             const SizedBox(height: 4),
@@ -136,6 +142,7 @@ class SystemMessagePage extends GetView<SystemMessageController> {
   Widget _buildTextCard(SystemMessage message) {
     final time = DateFormat('MM-dd HH:mm').format(message.regTime);
     final meta = _extractMeta(message.text);
+    final body = message.text.trim();
     return Section(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -169,24 +176,25 @@ class SystemMessagePage extends GetView<SystemMessageController> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            message.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 6),
-          if (meta.isNotEmpty) _buildMetaRow(meta),
-          if (meta.isNotEmpty) const SizedBox(height: 6),
-          Text(
-            message.text.replaceAll('\n', '  '),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
+          _buildSelectableText(
+            message.title.trim(),
             style: const TextStyle(
-              fontSize: 13,
-              color: CupertinoColors.systemGrey,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
             ),
           ),
+          const SizedBox(height: 8),
+          if (meta.isNotEmpty) _buildMetaRow(meta),
+          if (meta.isNotEmpty) const SizedBox(height: 8),
+          if (body.isNotEmpty)
+            _buildSelectableText(
+              body,
+              style: const TextStyle(
+                fontSize: 13,
+                height: 1.45,
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
         ],
       ),
     );
@@ -195,6 +203,7 @@ class SystemMessagePage extends GetView<SystemMessageController> {
   Widget _buildPosterCard(SystemMessage message) {
     final time = DateFormat('MM-dd HH:mm').format(message.regTime);
     final meta = _extractMeta(message.text);
+    final body = message.text.trim();
     return Section(
       padding: EdgeInsets.zero,
       child: Column(
@@ -225,10 +234,8 @@ class SystemMessagePage extends GetView<SystemMessageController> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          message.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        _buildSelectableText(
+                          message.title.trim(),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -268,13 +275,12 @@ class SystemMessagePage extends GetView<SystemMessageController> {
               children: [
                 if (meta.isNotEmpty) _buildMetaRow(meta),
                 if (meta.isNotEmpty) const SizedBox(height: 8),
-                if (message.text.trim().isNotEmpty)
-                  Text(
-                    message.text.replaceAll('\n', '  '),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
+                if (body.isNotEmpty)
+                  _buildSelectableText(
+                    body,
                     style: const TextStyle(
                       fontSize: 13,
+                      height: 1.45,
                       color: CupertinoColors.systemGrey,
                     ),
                   ),
@@ -303,6 +309,9 @@ class SystemMessagePage extends GetView<SystemMessageController> {
     final grabs = primary?.grabs ?? 0;
     final pubdate = primary?.pubdate ?? '';
     final labels = primary?.labels ?? const <String>[];
+    final messageTitle = message.title.trim();
+    final noteTitle = title.trim();
+    final noteDescription = description.trim();
     return Section(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -340,28 +349,31 @@ class SystemMessagePage extends GetView<SystemMessageController> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            message.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-          ),
-          if (title.isNotEmpty) const SizedBox(height: 8),
-          if (title.isNotEmpty)
-            Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          if (messageTitle.isNotEmpty)
+            _buildSelectableText(
+              messageTitle,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          if (description.isNotEmpty) const SizedBox(height: 6),
-          if (description.isNotEmpty)
-            Text(
-              description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+          if (noteTitle.isNotEmpty) const SizedBox(height: 10),
+          if (noteTitle.isNotEmpty)
+            _buildSelectableText(
+              noteTitle,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+            ),
+          if (noteDescription.isNotEmpty) const SizedBox(height: 8),
+          if (noteDescription.isNotEmpty)
+            _buildSelectableText(
+              noteDescription,
               style: const TextStyle(
                 fontSize: 12,
+                height: 1.45,
                 color: CupertinoColors.systemGrey,
               ),
             ),
@@ -400,10 +412,8 @@ class SystemMessagePage extends GetView<SystemMessageController> {
                           ),
                           const SizedBox(width: 6),
                           Expanded(
-                            child: Text(
+                            child: _buildSelectableText(
                               item.title ?? '',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: CupertinoColors.systemGrey,
@@ -491,6 +501,40 @@ class SystemMessagePage extends GetView<SystemMessageController> {
           color: baseColor,
         ),
       ),
+    );
+  }
+
+  Widget _buildSelectableText(
+    String text, {
+    required TextStyle style,
+    TextAlign? textAlign,
+  }) {
+    return SelectableText(
+      text,
+      style: style,
+      textAlign: textAlign,
+      contextMenuBuilder: (context, editableTextState) {
+        final selection = editableTextState.currentTextEditingValue.selection;
+        final selectedText =
+            selection.textInside(editableTextState.textEditingValue.text);
+        final url = _extractUrl(selectedText);
+        final items = editableTextState.contextMenuButtonItems.toList();
+        if (url != null) {
+          items.add(
+            ContextMenuButtonItem(
+              label: '打开链接',
+              onPressed: () {
+                editableTextState.hideToolbar();
+                WebUtil.open(url: url);
+              },
+            ),
+          );
+        }
+        return AdaptiveTextSelectionToolbar.buttonItems(
+          anchors: editableTextState.contextMenuAnchors,
+          buttonItems: items,
+        );
+      },
     );
   }
 
@@ -587,5 +631,16 @@ class SystemMessagePage extends GetView<SystemMessageController> {
     if (text.startsWith('类别')) return CupertinoColors.systemTeal;
     if (text.startsWith('标签')) return CupertinoColors.systemOrange;
     return null;
+  }
+
+  String? _extractUrl(String text) {
+    final match = RegExp(
+      r'(https?:\/\/\S+|www\.\S+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (match == null) return null;
+    var url = match.group(0) ?? '';
+    url = url.replaceAll(RegExp(r'[)\],.;:]+$'), '');
+    return url.isEmpty ? null : url;
   }
 }
