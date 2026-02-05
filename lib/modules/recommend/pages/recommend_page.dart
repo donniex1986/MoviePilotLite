@@ -38,7 +38,7 @@ class RecommendPage extends GetView<RecommendController> {
   }
 
   double _bottomSpacer(BuildContext context) {
-    return MediaQuery.of(context).padding.bottom + 70;
+    return 100;
   }
 
   AppBar _buildNavigationBar(BuildContext context) {

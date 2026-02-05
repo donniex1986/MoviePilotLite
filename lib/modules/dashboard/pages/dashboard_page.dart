@@ -47,7 +47,7 @@ class DashboardPage extends GetView<DashboardController> {
   }
 
   double _bottomSpacer(BuildContext context) {
-    return MediaQuery.of(context).padding.bottom + 70;
+    return 100;
   }
 
   /// 获取最新的登录配置文件

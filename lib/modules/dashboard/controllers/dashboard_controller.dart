@@ -132,7 +132,6 @@ class DashboardController extends GetxController {
     _networkTimer.cancel();
     _downloaderTimer.cancel();
     _memoryTimer.cancel();
-    _realmService.close();
     super.onClose();
   }
 

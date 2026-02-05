@@ -28,7 +28,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
   }
 
   double _bottomSpacer(BuildContext context) {
-    return MediaQuery.of(context).padding.bottom + 70;
+    return 100;
   }
 
   AppBar _buildNavigationBar(BuildContext context) {
@@ -106,11 +106,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
         color: accent.withOpacity(0.18),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(
-        _sectionIconData(section.title),
-        size: 16,
-        color: accent,
-      ),
+      child: Icon(_sectionIconData(section.title), size: 16, color: accent),
     );
   }
 

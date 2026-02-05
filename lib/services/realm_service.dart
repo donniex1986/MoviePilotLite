@@ -1,8 +1,9 @@
+import 'package:get/get_state_manager/src/rx_flutter/rx_disposable.dart';
 import 'package:realm/realm.dart';
 
 import '../modules/login/models/login_profile.dart';
 
-class RealmService {
+class RealmService extends GetxService {
   RealmService() {
     final config = Configuration.local(
       [LoginProfile.schema],
@@ -22,5 +23,5 @@ class RealmService {
 
   Realm get realm => _realm;
 
-  void close() => _realm.close();
+  // void close() => _realm.close();
 }
