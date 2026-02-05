@@ -178,10 +178,7 @@ class SystemMessagePage extends GetView<SystemMessageController> {
           const SizedBox(height: 8),
           _buildSelectableText(
             message.title.trim(),
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           if (meta.isNotEmpty) _buildMetaRow(meta),
@@ -352,10 +349,7 @@ class SystemMessagePage extends GetView<SystemMessageController> {
           if (messageTitle.isNotEmpty)
             _buildSelectableText(
               messageTitle,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
             ),
           if (noteTitle.isNotEmpty) const SizedBox(height: 10),
           if (noteTitle.isNotEmpty)
@@ -515,8 +509,9 @@ class SystemMessagePage extends GetView<SystemMessageController> {
       textAlign: textAlign,
       contextMenuBuilder: (context, editableTextState) {
         final selection = editableTextState.currentTextEditingValue.selection;
-        final selectedText =
-            selection.textInside(editableTextState.textEditingValue.text);
+        final selectedText = selection.textInside(
+          editableTextState.textEditingValue.text,
+        );
         final url = _extractUrl(selectedText);
         final items = editableTextState.contextMenuButtonItems.toList();
         if (url != null) {
@@ -626,7 +621,7 @@ class SystemMessagePage extends GetView<SystemMessageController> {
     if (text.startsWith('下载')) return CupertinoColors.systemPurple;
     if (text.startsWith('完成')) return CupertinoColors.systemTeal;
     if (text.startsWith('发布')) return CupertinoColors.systemIndigo;
-    if (text.startsWith('评分')) return CupertinoColors.systemPink;
+    if (text.startsWith('评分')) return CupertinoColors.activeGreen;
     if (text.startsWith('类型')) return CupertinoColors.systemPurple;
     if (text.startsWith('类别')) return CupertinoColors.systemTeal;
     if (text.startsWith('标签')) return CupertinoColors.systemOrange;

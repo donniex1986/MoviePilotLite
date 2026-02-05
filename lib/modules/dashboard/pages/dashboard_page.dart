@@ -40,9 +40,7 @@ class DashboardPage extends GetView<DashboardController> {
               child: _buildWidgetGrid(context),
             ),
           ),
-          SliverToBoxAdapter(
-            child: SizedBox(height: _bottomSpacer(context)),
-          ),
+          SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
         ],
       ),
     );
@@ -110,10 +108,11 @@ class DashboardPage extends GetView<DashboardController> {
       actions: [
         CupertinoButton(
           padding: EdgeInsets.zero,
-          onPressed: () => _showNotifications(context),
+          onPressed: () => Get.toNamed('/system-message'),
+          // _showNotifications(context),
           child: Stack(
             children: [
-              const Icon(CupertinoIcons.bell),
+              const Icon(CupertinoIcons.mail),
               Positioned(
                 right: 0,
                 top: 0,
