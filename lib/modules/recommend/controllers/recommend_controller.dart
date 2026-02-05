@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:path_provider/path_provider.dart';
 
 const List<String> _movieSubCategories = <String>[
   '正在热映',
@@ -70,6 +74,8 @@ enum RecommendCategory {
 }
 
 class RecommendController extends GetxController {
+  static const String _localConfigFileName = 'recommend_config.json';
+  static const int _localConfigVersion = 1;
   static const Duration _minRefreshInterval = Duration(seconds: 30);
   static const Duration _forceRefreshInterval = Duration(seconds: 10);
   static const Duration _throttleGap = Duration(milliseconds: 350);
@@ -106,6 +112,11 @@ class RecommendController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _initLocalConfig();
+  }
+
+  Future<void> _initLocalConfig() async {
+    await _loadLocalConfig();
     _syncSubCategory();
     prefetchCurrentCategory();
     ever(selectedCategory, (_) => prefetchCurrentCategory(forceRefresh: true));
@@ -218,6 +229,7 @@ class RecommendController extends GetxController {
     _visibleCategories.assignAll(next);
     _ensureSelectedCategoryVisible();
     prefetchCurrentCategory();
+    unawaited(_saveLocalConfig());
   }
 
   bool isSubCategoryVisible(RecommendCategory category, String subCategory) {
@@ -240,6 +252,118 @@ class RecommendController extends GetxController {
     _hiddenSubCategoryKeys.refresh();
     _syncSubCategory();
     prefetchCurrentCategory();
+    unawaited(_saveLocalConfig());
+  }
+
+  Future<void> _loadLocalConfig() async {
+    if (kIsWeb) return;
+    try {
+      final file = await _resolveLocalConfigFile();
+      if (file == null || !await file.exists()) return;
+      final raw = await file.readAsString();
+      if (raw.trim().isEmpty) return;
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return;
+      final profiles = decoded['profiles'];
+      if (profiles is! Map) return;
+      final key = _profileKey();
+      final profile = profiles[key];
+      if (profile is! Map) return;
+      final visibleRaw = profile['visibleCategories'];
+      final hiddenRaw = profile['hiddenSubCategoryKeys'];
+      final visible = _parseVisibleCategories(visibleRaw);
+      if (visible.isNotEmpty) {
+        if (!visible.contains(RecommendCategory.all)) {
+          visible.insert(0, RecommendCategory.all);
+        }
+        _visibleCategories.assignAll(visible);
+      }
+      final hidden = _parseStringList(hiddenRaw);
+      if (hidden.isNotEmpty) {
+        _hiddenSubCategoryKeys.assignAll(hidden);
+      }
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '读取推荐分组配置失败');
+    }
+  }
+
+  Future<void> _saveLocalConfig() async {
+    if (kIsWeb) return;
+    try {
+      final file = await _resolveLocalConfigFile();
+      if (file == null) return;
+      final data = await _readLocalConfigRaw(file);
+      final profiles = <String, dynamic>{};
+      final existingProfiles = data['profiles'];
+      if (existingProfiles is Map) {
+        profiles.addAll(existingProfiles.cast<String, dynamic>());
+      }
+      profiles[_profileKey()] = {
+        'visibleCategories': _visibleCategories
+            .map((category) => category.name)
+            .toList(),
+        'hiddenSubCategoryKeys': _hiddenSubCategoryKeys.toList(),
+      };
+      data['version'] = _localConfigVersion;
+      data['profiles'] = profiles;
+      await file.writeAsString(jsonEncode(data));
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '保存推荐分组配置失败');
+    }
+  }
+
+  Future<File?> _resolveLocalConfigFile() async {
+    final dir = await getApplicationSupportDirectory();
+    return File('${dir.path}/$_localConfigFileName');
+  }
+
+  Future<Map<String, dynamic>> _readLocalConfigRaw(File file) async {
+    if (!await file.exists()) return <String, dynamic>{};
+    final raw = await file.readAsString();
+    if (raw.trim().isEmpty) return <String, dynamic>{};
+    final decoded = jsonDecode(raw);
+    if (decoded is Map<String, dynamic>) return decoded;
+    if (decoded is Map) {
+      return Map<String, dynamic>.from(decoded);
+    }
+    return <String, dynamic>{};
+  }
+
+  String _profileKey() {
+    final baseUrl =
+        _appService.baseUrl ?? _apiClient.baseUrl ?? 'default-server';
+    final userId =
+        _appService.loginResponse?.userId ?? _appService.userInfo?.id ?? 0;
+    return '$baseUrl::$userId';
+  }
+
+  List<RecommendCategory> _parseVisibleCategories(dynamic raw) {
+    if (raw is! List) return const [];
+    final items = <RecommendCategory>[];
+    for (final entry in raw) {
+      final name = entry?.toString();
+      if (name == null || name.isEmpty) continue;
+      RecommendCategory? match;
+      for (final category in RecommendCategory.values) {
+        if (category.name == name) {
+          match = category;
+          break;
+        }
+      }
+      if (match != null && !items.contains(match)) {
+        items.add(match);
+      }
+    }
+    return items;
+  }
+
+  List<String> _parseStringList(dynamic raw) {
+    if (raw is! List) return const [];
+    return raw
+        .map((item) => item?.toString())
+        .whereType<String>()
+        .where((item) => item.trim().isNotEmpty)
+        .toList();
   }
 
   void _ensureSelectedCategoryVisible() {

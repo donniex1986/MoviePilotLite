@@ -55,7 +55,7 @@ class RecommondCategoryGroupEditPannelWidget extends StatelessWidget {
         children: [
           _buildSectionHeader('至少保留一个子分组'),
           const SizedBox(height: 16),
-          _buildCategorySection('子分组', true),
+          _buildCategorySection('子分组'),
           const SizedBox(height: 20),
         ],
       ),
@@ -76,7 +76,7 @@ class RecommondCategoryGroupEditPannelWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCategorySection(String sectionTitle, bool isSubCategory) {
+  Widget _buildCategorySection(String sectionTitle) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -88,12 +88,12 @@ class RecommondCategoryGroupEditPannelWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        _buildCategoryCardGroup(isSubCategory),
+        _buildCategoryCardGroup(),
       ],
     );
   }
 
-  Widget _buildCategoryCardGroup(bool isSubCategory) {
+  Widget _buildCategoryCardGroup() {
     final categories = RecommendCategory.values
         .where((c) => c != RecommendCategory.all)
         .toList();
@@ -104,7 +104,7 @@ class RecommondCategoryGroupEditPannelWidget extends StatelessWidget {
         final isLast = index == categories.length - 1;
         return Column(
           children: [
-            _buildCategoryTile(category, true),
+            _buildCategoryTile(category),
             if (!isLast) const SizedBox(height: 8),
           ],
         );
@@ -112,8 +112,8 @@ class RecommondCategoryGroupEditPannelWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryTile(RecommendCategory category, bool isSubCategory) {
-    final isVisible = controller.isSubCategoryVisible(category, category.label);
+  Widget _buildCategoryTile(RecommendCategory category) {
+    final isVisible = controller.isCategoryVisible(category);
 
     return Section(
       padding: const EdgeInsets.all(0),
@@ -127,11 +127,7 @@ class RecommondCategoryGroupEditPannelWidget extends StatelessWidget {
             trailing: Switch(
               value: isVisible,
               onChanged: (value) {
-                controller.setSubCategoryVisibility(
-                  category,
-                  category.label,
-                  value,
-                );
+                controller.setCategoryVisibility(category, value);
               },
             ),
           ),
