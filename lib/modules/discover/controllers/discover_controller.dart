@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/discover/defines/discover_filter_defines.dart';
 import 'package:moviepilot_mobile/modules/discover/models/discover_filters.dart';
+import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 
 enum DiscoverSource {
@@ -24,6 +26,8 @@ class DiscoverController extends GetxController {
 
   final _apiClient = Get.find<ApiClient>();
   final _log = Get.find<AppLog>();
+  final _authRepository = Get.find<AuthRepository>();
+  final _appService = Get.find<AppService>();
 
   final selectedSource = DiscoverSource.tmdb.obs;
   final filters = const DiscoverFilters().obs;
@@ -37,6 +41,7 @@ class DiscoverController extends GetxController {
   final _pendingKeys = <String>{};
   final Map<String, DateTime> _lastFetchAt = {};
   bool _suspendAutoLoad = false;
+  bool _cookieRefreshTriggered = false;
 
   @override
   void onInit() {
@@ -64,6 +69,31 @@ class DiscoverController extends GetxController {
   void updateFilters(DiscoverFilters next) {
     filters.value = next;
     _filtersBySource[selectedSource.value] = next;
+  }
+
+  void ensureUserCookieRefreshed() {
+    if (_cookieRefreshTriggered) return;
+    _cookieRefreshTriggered = true;
+    _refreshUserCookie();
+  }
+
+  Future<void> _refreshUserCookie() async {
+    final server = _appService.baseUrl ?? _apiClient.baseUrl;
+    final token =
+        _appService.loginResponse?.accessToken ??
+        _appService.latestLoginProfileAccessToken ??
+        _apiClient.token;
+    if (server == null || server.isEmpty || token == null || token.isEmpty) {
+      return;
+    }
+    try {
+      await _authRepository.getUserGlobalConfig(
+        server: server,
+        accessToken: token,
+      );
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '刷新探索 Cookie 失败');
+    }
   }
 
   Map<DiscoverSource, DiscoverFilters> snapshotFiltersBySource() {

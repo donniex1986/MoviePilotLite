@@ -24,6 +24,9 @@ class DiscoverPage extends GetView<DiscoverController> {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.ensureUserCookieRefreshed();
+    });
     return Scaffold(
       appBar: _buildNavigationBar(context),
       body: CustomScrollView(
