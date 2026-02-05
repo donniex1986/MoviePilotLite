@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:moviepilot_mobile/utils/image_cache_manager.dart';
 import 'package:get/get.dart';
 
 /// 网络图片加载组件
@@ -81,7 +82,7 @@ class CachedImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
-      cacheManager: cacheManager,
+      cacheManager: cacheManager ?? AppImageCacheManager.instance,
       memCacheWidth: memCacheWidth,
       memCacheHeight: memCacheHeight,
       fadeInDuration: fadeInDuration,

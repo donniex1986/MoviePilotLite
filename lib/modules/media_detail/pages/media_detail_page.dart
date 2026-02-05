@@ -39,30 +39,27 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           final viewDetail = detail ?? _skeletonDetail();
           return Skeletonizer(
             enabled: isLoading,
-            child: RefreshIndicator(
-              onRefresh: controller.refreshDetail,
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(
-                  parent: AlwaysScrollableScrollPhysics(),
-                ),
-                slivers: [
-                  _buildSliverAppBar(context, viewDetail),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      child: _buildContent(
-                        context,
-                        viewDetail,
-                        errorText: hasError && !isLoading ? errorText : null,
-                        isLoading: isLoading,
-                      ),
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              slivers: [
+                _buildSliverAppBar(context, viewDetail),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: _buildContent(
+                      context,
+                      viewDetail,
+                      errorText: hasError && !isLoading ? errorText : null,
+                      isLoading: isLoading,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         }),
