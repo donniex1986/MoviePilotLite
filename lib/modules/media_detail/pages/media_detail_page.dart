@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_controller.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_model.dart';
-import 'package:moviepilot_mobile/modules/search/controllers/search_controller.dart';
+import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
+import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
 import 'package:moviepilot_mobile/modules/search/pages/search_page.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
@@ -12,7 +13,7 @@ import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class MediaDetailPage extends GetView<MediaDetailController> {
+class MediaDetailPage extends GetWidget<MediaDetailController> {
   const MediaDetailPage({super.key});
 
   @override
@@ -30,7 +31,7 @@ class MediaDetailPage extends GetView<MediaDetailController> {
           final hasError = errorText != null && errorText.trim().isNotEmpty;
           if (detail == null && !isLoading) {
             if (hasError) {
-              return _buildErrorState(context, errorText!);
+              return _buildErrorState(context, errorText);
             }
             return _buildEmptyState(context);
           }
@@ -325,12 +326,19 @@ class MediaDetailPage extends GetView<MediaDetailController> {
     final overview = detail.overview?.trim().isNotEmpty == true
         ? detail.overview!.trim()
         : '暂无简介';
+    final similarItems = controller.similarItems.toList();
+    final recommendItems = controller.recommendItems.toList();
+    final similarLoading = controller.isLoadingSimilar.value;
+    final recommendLoading = controller.isLoadingRecommend.value;
+    final similarError = controller.errorSimilar.value;
+    final recommendError = controller.errorRecommend.value;
+    final similarSupported = controller.similarSupported.value;
+    final recommendSupported = controller.recommendSupported.value;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('操作'),
-        Section(child: _buildActionButtons(context, detail, isLoading)),
+        _buildActionSection(context, detail, isLoading),
         const SizedBox(height: 16),
         if (errorText != null && errorText.trim().isNotEmpty) ...[
           _buildSectionTitle('请求错误'),
@@ -354,6 +362,41 @@ class MediaDetailPage extends GetView<MediaDetailController> {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
+        if (_hasExternalLinks(detail)) ...[
+          const SizedBox(height: 12),
+          _buildSectionTitle('相关链接'),
+          Section(child: _buildExternalLinks(detail, isLoading)),
+        ],
+        if (similarSupported &&
+            _shouldShowRelatedSection(
+              similarItems,
+              similarLoading,
+              similarError,
+            )) ...[
+          const SizedBox(height: 16),
+          _buildSectionTitle(_relatedSectionTitle(detail, isSimilar: true)),
+          _buildRelatedRail(
+            context,
+            items: similarItems,
+            isLoading: similarLoading,
+            errorText: similarError,
+          ),
+        ],
+        if (recommendSupported &&
+            _shouldShowRelatedSection(
+              recommendItems,
+              recommendLoading,
+              recommendError,
+            )) ...[
+          const SizedBox(height: 16),
+          _buildSectionTitle(_relatedSectionTitle(detail, isSimilar: false)),
+          _buildRelatedRail(
+            context,
+            items: recommendItems,
+            isLoading: recommendLoading,
+            errorText: recommendError,
+          ),
+        ],
         const SizedBox(height: 16),
         _buildSectionTitle('核心信息'),
         Section(child: _buildInfoList(context, detail)),
@@ -646,7 +689,7 @@ class MediaDetailPage extends GetView<MediaDetailController> {
 
   Widget _buildActorList(List<Actor> actors) {
     return SizedBox(
-      height: 140,
+      height: 180,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: actors.length,
@@ -758,19 +801,48 @@ class MediaDetailPage extends GetView<MediaDetailController> {
     MediaDetail detail,
     bool isLoading,
   ) {
-    final actions = <Widget>[
-      _buildPrimaryAction(
-        label: '订阅',
-        icon: CupertinoIcons.heart_fill,
-        onPressed: isLoading ? null : _handleSubscribe,
-      ),
-      _buildSecondaryAction(
-        label: '搜索资源',
-        icon: CupertinoIcons.search,
-        onPressed: isLoading ? null : () => _openSearch(context),
-      ),
-    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final subscribe = _buildPrimaryAction(
+          label: '订阅',
+          icon: CupertinoIcons.heart_fill,
+          onPressed: isLoading ? null : _handleSubscribe,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        );
+        final search = _buildPrimaryAction(
+          label: '搜索资源',
+          icon: CupertinoIcons.search,
+          onPressed: isLoading ? null : () => _openSearch(context),
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+        );
+        final isNarrow = constraints.maxWidth < 340;
+        if (isNarrow) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [subscribe, const SizedBox(height: 10), search],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(child: subscribe),
+            const SizedBox(width: 12),
+            Expanded(child: search),
+          ],
+        );
+      },
+    );
+  }
 
+  Widget _buildActionSection(
+    BuildContext context,
+    MediaDetail detail,
+    bool isLoading,
+  ) {
+    return _buildActionButtons(context, detail, isLoading);
+  }
+
+  Widget _buildExternalLinks(MediaDetail detail, bool isLoading) {
+    final actions = <Widget>[];
     final tmdbUrl = _tmdbUrl(detail);
     if (tmdbUrl != null) {
       actions.add(
@@ -798,50 +870,178 @@ class MediaDetailPage extends GetView<MediaDetailController> {
         ),
       );
     }
+    return Wrap(spacing: 10, runSpacing: 10, children: actions);
+  }
 
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: actions,
+  bool _hasExternalLinks(MediaDetail detail) {
+    return _tmdbUrl(detail) != null ||
+        _imdbUrl(detail) != null ||
+        _doubanUrl(detail) != null;
+  }
+
+  bool _shouldShowRelatedSection(
+    List<RecommendApiItem> items,
+    bool isLoading,
+    String? errorText,
+  ) {
+    return items.isNotEmpty || isLoading || (errorText?.isNotEmpty ?? false);
+  }
+
+  String _relatedSectionTitle(MediaDetail detail, {required bool isSimilar}) {
+    final isTv = _isTv(detail);
+    if (isSimilar) {
+      return isTv ? '类似剧集' : '类似影片';
+    }
+    return isTv ? '推荐剧集' : '推荐影片';
+  }
+
+  Widget _buildRelatedRail(
+    BuildContext context, {
+    required List<RecommendApiItem> items,
+    required bool isLoading,
+    String? errorText,
+  }) {
+    if (items.isEmpty) {
+      if (isLoading) return _buildRelatedPlaceholder();
+      if (errorText != null && errorText.isNotEmpty) {
+        return _buildRelatedError(context, errorText);
+      }
+      return _buildRelatedEmpty(context);
+    }
+
+    return SizedBox(
+      height: 200,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(right: 8),
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return RecommendItemCard(
+            item: item,
+            onTap: () => _openRelatedDetail(item),
+          );
+        },
+        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        itemCount: items.length,
+      ),
     );
+  }
+
+  Widget _buildRelatedPlaceholder() {
+    return SizedBox(
+      height: 200,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(right: 8),
+        itemBuilder: (context, index) => const RecommendItemCard.placeholder(),
+        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        itemCount: 6,
+      ),
+    );
+  }
+
+  Widget _buildRelatedError(BuildContext context, String message) {
+    return SizedBox(
+      height: 120,
+      child: Center(
+        child: Text(
+          message,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRelatedEmpty(BuildContext context) {
+    return SizedBox(
+      height: 120,
+      child: Center(
+        child: Text(
+          '暂无数据',
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+        ),
+      ),
+    );
+  }
+
+  void _openRelatedDetail(RecommendApiItem item) {
+    final path = _buildMediaPath(item);
+    if (path == null) {
+      ToastUtil.info('暂无可用详情信息');
+      return;
+    }
+    final title = _bestTitle(item);
+    final params = <String, String>{
+      'path': path,
+      if (title != null && title.isNotEmpty) 'title': title,
+      if (item.year != null && item.year!.isNotEmpty) 'year': item.year!,
+      if (item.type != null && item.type!.isNotEmpty) 'type_name': item.type!,
+    };
+    Get.toNamed('/media-detail', parameters: params, preventDuplicates: true);
+  }
+
+  String? _bestTitle(RecommendApiItem item) {
+    final title = item.title;
+    if (title != null && title.trim().isNotEmpty) return title.trim();
+    final enTitle = item.en_title;
+    if (enTitle != null && enTitle.trim().isNotEmpty) return enTitle.trim();
+    final original = item.original_title ?? item.original_name;
+    if (original != null && original.trim().isNotEmpty) {
+      return original.trim();
+    }
+    return null;
+  }
+
+  String? _buildMediaPath(RecommendApiItem item) {
+    final prefix = item.mediaid_prefix;
+    final mediaId = item.media_id;
+    if (prefix != null &&
+        prefix.isNotEmpty &&
+        mediaId != null &&
+        mediaId.isNotEmpty) {
+      return '$prefix:$mediaId';
+    }
+    final tmdbId = item.tmdb_id;
+    if (tmdbId != null && tmdbId.isNotEmpty) {
+      return 'tmdb:$tmdbId';
+    }
+    final doubanId = item.douban_id;
+    if (doubanId != null && doubanId.isNotEmpty) {
+      return 'douban:$doubanId';
+    }
+    final bangumiId = item.bangumi_id;
+    if (bangumiId != null && bangumiId.isNotEmpty) {
+      return 'bangumi:$bangumiId';
+    }
+    return null;
   }
 
   Widget _buildPrimaryAction({
     required String label,
     required IconData icon,
     VoidCallback? onPressed,
+    Color? backgroundColor,
+    Color? foregroundColor,
   }) {
     return ElevatedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 18),
       label: Text(label),
       style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        foregroundColor: foregroundColor ?? Colors.white,
+        elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 
-  Widget _buildSecondaryAction({
-    required String label,
-    required IconData icon,
-    VoidCallback? onPressed,
-  }) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
-
-  Widget _buildLinkAction({
-    required String label,
-    VoidCallback? onPressed,
-  }) {
+  Widget _buildLinkAction({required String label, VoidCallback? onPressed}) {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
@@ -859,11 +1059,11 @@ class MediaDetailPage extends GetView<MediaDetailController> {
   void _openSearch(BuildContext context) {
     Get.to(
       () => const SearchPage(),
-      binding: BindingsBuilder(() {
-        if (!Get.isRegistered<SearchController>()) {
-          Get.put(SearchController());
-        }
-      }),
+      // binding: BindingsBuilder(() {
+      //   if (!Get.isRegistered<SearchPageController>()) {
+      //     Get.put(SearchController());
+      //   }
+      // }),
     );
   }
 
@@ -891,7 +1091,9 @@ class MediaDetailPage extends GetView<MediaDetailController> {
   bool _isTv(MediaDetail detail) {
     final type = detail.type?.toLowerCase();
     if (type != null) {
-      if (type.contains('剧') || type.contains('tv') || type.contains('series')) {
+      if (type.contains('剧') ||
+          type.contains('tv') ||
+          type.contains('series')) {
         return true;
       }
       if (type.contains('电影') || type.contains('movie')) {

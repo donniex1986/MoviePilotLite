@@ -123,7 +123,7 @@ class MyApp extends StatelessWidget {
           name: '/media-detail',
           page: () => const MediaDetailPage(),
           binding: BindingsBuilder(() {
-            Get.lazyPut(() => MediaDetailController());
+            Get.create(() => MediaDetailController());
           }),
         ),
       ],
