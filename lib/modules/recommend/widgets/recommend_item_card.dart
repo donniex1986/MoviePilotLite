@@ -5,10 +5,14 @@ import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 class RecommendItemCard extends StatelessWidget {
-  const RecommendItemCard({super.key, required this.item, this.onTap})
-    : isPlaceholder = false;
+  const RecommendItemCard({
+    super.key,
+    required this.item,
+    this.onTap,
+    this.width,
+  }) : isPlaceholder = false;
 
-  const RecommendItemCard.placeholder({super.key})
+  const RecommendItemCard.placeholder({super.key, this.width})
     : item = null,
       isPlaceholder = true,
       onTap = null;
@@ -16,9 +20,13 @@ class RecommendItemCard extends StatelessWidget {
   final RecommendApiItem? item;
   final bool isPlaceholder;
   final VoidCallback? onTap;
+  final double? width;
 
   static const double cardWidth = 150;
   static const double cardRadius = 10;
+
+  double get _cardWidth => width ?? cardWidth;
+  double get _cardHeight => _cardWidth * 1.4;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +55,7 @@ class RecommendItemCard extends StatelessWidget {
   Widget _buildContent() {
     final data = item!;
     return SizedBox(
-      width: cardWidth,
+      width: _cardWidth,
       child: Stack(
         children: [
           _buildPoster(data),
@@ -101,15 +109,16 @@ class RecommendItemCard extends StatelessWidget {
       return CachedImage(
         imageUrl: imageUrl,
         fit: BoxFit.cover,
-        width: cardWidth,
-        height: cardWidth * 1.4,
+        width: _cardWidth,
+        height: _cardHeight,
         borderRadius: BorderRadius.circular(cardRadius),
       );
     }
     return Container(
-      width: cardWidth,
-      height: cardWidth * 1.4,
-      decoration: const BoxDecoration(
+      width: _cardWidth,
+      height: _cardHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(cardRadius),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -121,11 +130,11 @@ class RecommendItemCard extends StatelessWidget {
 
   Widget _buildPlaceholder() {
     return SizedBox(
-      width: cardWidth,
+      width: _cardWidth,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(cardRadius),
         child: Container(
-          height: cardWidth * 1.4,
+          height: _cardHeight,
           decoration: BoxDecoration(
             color: const Color(0xFFE1E3EA),
             borderRadius: BorderRadius.circular(cardRadius),

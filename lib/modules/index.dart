@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:liquid_tabbar_minimize/liquid_tabbar_minimize.dart';
 import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:moviepilot_mobile/modules/dashboard/pages/dashboard_page.dart';
+import 'package:moviepilot_mobile/modules/discover/controllers/discover_controller.dart';
+import 'package:moviepilot_mobile/modules/discover/pages/discover_page.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/pages/recommend_page.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
@@ -21,24 +23,25 @@ class _IndexState extends State<Index> {
   // Language toggle for testing locale label updates
   final dashboardController = Get.put(DashboardController());
   // Dynamic labels based on language
-  List<String> get _labels => ['Dashboard', '推荐', 'Favorites', 'Settings'];
+  List<String> get _labels => ['Dashboard', '推荐', '探索', 'Settings'];
 
   // Separate ScrollController for each page
   late final ScrollController _homeScrollController;
   late final ScrollController _recommendScrollController;
-  late final ScrollController _favoritesScrollController;
+  late final ScrollController _discoverScrollController;
   late final ScrollController _settingsScrollController;
 
   @override
   void initState() {
     super.initState();
     Get.put(RecommendController());
+    Get.put(DiscoverController());
     _homeScrollController = ScrollController()
       ..addListener(() => _onScroll(_homeScrollController));
     _recommendScrollController = ScrollController()
       ..addListener(() => _onScroll(_recommendScrollController));
-    _favoritesScrollController = ScrollController()
-      ..addListener(() => _onScroll(_favoritesScrollController));
+    _discoverScrollController = ScrollController()
+      ..addListener(() => _onScroll(_discoverScrollController));
     _settingsScrollController = ScrollController()
       ..addListener(() => _onScroll(_settingsScrollController));
   }
@@ -47,7 +50,7 @@ class _IndexState extends State<Index> {
   void dispose() {
     _homeScrollController.dispose();
     _recommendScrollController.dispose();
-    _favoritesScrollController.dispose();
+    _discoverScrollController.dispose();
     _settingsScrollController.dispose();
     super.dispose();
   }
@@ -73,7 +76,7 @@ class _IndexState extends State<Index> {
       case 1:
         controller = _recommendScrollController;
       case 2:
-        controller = _favoritesScrollController;
+        controller = _discoverScrollController;
       case 3:
         controller = _settingsScrollController;
     }
@@ -87,30 +90,6 @@ class _IndexState extends State<Index> {
   }
 
   // Dedicated page for each tab
-
-  Widget _buildFavoritesPage() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Favorites'),
-        backgroundColor: Colors.orange,
-      ),
-      body: ListView.builder(
-        controller: _favoritesScrollController,
-        itemCount: 50,
-        itemBuilder: (context, index) {
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Colors.orange.withValues(alpha: 0.3),
-              child: Icon(Icons.star, color: Colors.orange),
-            ),
-            title: Text('Favorite Item ${index + 1}'),
-            subtitle: const Text('Tap to view details'),
-            trailing: Icon(Icons.chevron_right, color: Colors.orange),
-          );
-        },
-      ),
-    );
-  }
 
   Widget _buildSettingsPage() {
     return Scaffold(
@@ -228,7 +207,7 @@ class _IndexState extends State<Index> {
         children: [
           DashboardPage(),
           RecommendPage(scrollController: _recommendScrollController),
-          _buildFavoritesPage(),
+          DiscoverPage(scrollController: _discoverScrollController),
           _buildSettingsPage(),
           _buildSearchPage(),
         ],
@@ -259,10 +238,10 @@ class _IndexState extends State<Index> {
             label: _labels[1],
           ),
           LiquidTabItem(
-            widget: const Icon(Icons.star_outline),
-            selectedWidget: const Icon(Icons.star),
-            sfSymbol: 'star',
-            selectedSfSymbol: 'star.fill',
+            widget: const Icon(Icons.explore_outlined),
+            selectedWidget: const Icon(Icons.explore),
+            sfSymbol: 'safari',
+            selectedSfSymbol: 'safari.fill',
             label: _labels[2],
           ),
           LiquidTabItem(
