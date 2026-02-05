@@ -5,21 +5,26 @@ import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 class RecommendItemCard extends StatelessWidget {
-  const RecommendItemCard({super.key, required this.item})
+  const RecommendItemCard({super.key, required this.item, this.onTap})
     : isPlaceholder = false;
 
   const RecommendItemCard.placeholder({super.key})
     : item = null,
-      isPlaceholder = true;
+      isPlaceholder = true,
+      onTap = null;
 
   final RecommendApiItem? item;
   final bool isPlaceholder;
+  final VoidCallback? onTap;
 
   static const double cardWidth = 150;
   static const double cardRadius = 10;
 
   @override
   Widget build(BuildContext context) {
+    if (isPlaceholder) {
+      return _buildPlaceholder();
+    }
     return CupertinoContextMenu(
       actions: [
         CupertinoContextMenuAction(
@@ -31,7 +36,11 @@ class RecommendItemCard extends StatelessWidget {
           child: const Text('订阅'),
         ),
       ],
-      child: _buildContent(),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: _buildContent(),
+      ),
     );
   }
 

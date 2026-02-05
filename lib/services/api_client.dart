@@ -181,17 +181,46 @@ class ApiClient extends g.GetxController {
   Future<Response<T>> request<T>(
     String url,
     RequestMethod method,
-    Map<String, dynamic> data,
-  ) async {
+    Map<String, dynamic> data, {
+    Map<String, dynamic>? queryParameters,
+    String? token,
+  }) async {
     await _ensureReady();
+    final authToken = token ?? this.token;
+    final options = Options(
+      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      validateStatus: (status) {
+        // 允许所有状态码，让调用者自己处理错误
+        return true;
+      },
+    );
     if (method == RequestMethod.get) {
-      return get<T>(url);
+      return _dio.get<T>(
+        url,
+        queryParameters: queryParameters,
+        options: options,
+      );
     } else if (method == RequestMethod.post) {
-      return _dio.post<T>(url, data: data);
+      return _dio.post<T>(
+        url,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
     } else if (method == RequestMethod.put) {
-      return _dio.put<T>(url, data: data);
+      return _dio.put<T>(
+        url,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
     } else if (method == RequestMethod.delete) {
-      return _dio.delete<T>(url, data: data);
+      return _dio.delete<T>(
+        url,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
     } else {
       throw ArgumentError('Invalid method: $method');
     }
@@ -250,7 +279,11 @@ class ApiClient extends g.GetxController {
     return _dio.put<T>(path, data: data, options: options);
   }
 
-  Future<Response<T>> get<T>(String path, {String? token}) async {
+  Future<Response<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    String? token,
+  }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
     _log.info('API请求: $path, token: ${authToken != null ? '***' : 'null'}');
@@ -261,7 +294,11 @@ class ApiClient extends g.GetxController {
         return true;
       },
     );
-    return _dio.get<T>(path, options: options);
+    return _dio.get<T>(
+      path,
+      queryParameters: queryParameters,
+      options: options,
+    );
   }
 
   /// SSE / 流式 GET，请求 `text/event-stream` 并返回按行解码后的字符串流。

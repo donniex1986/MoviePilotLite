@@ -26,6 +26,8 @@ import 'modules/server_log/controllers/server_log_controller.dart';
 import 'modules/server_log/pages/server_log_page.dart';
 import 'modules/system_message/controllers/system_message_controller.dart';
 import 'modules/system_message/pages/system_message_page.dart';
+import 'modules/media_detail/controllers/media_detail_controller.dart';
+import 'modules/media_detail/pages/media_detail_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -115,6 +117,13 @@ class MyApp extends StatelessWidget {
           page: () => const CachePage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => CacheController());
+          }),
+        ),
+        GetPage(
+          name: '/media-detail',
+          page: () => const MediaDetailPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => MediaDetailController());
           }),
         ),
       ],

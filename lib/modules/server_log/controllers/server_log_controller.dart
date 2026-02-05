@@ -109,11 +109,7 @@ class ServerLogController extends GetxController {
       // 订阅建立后即可展示页面，避免等待流结束
       isLoading.value = false;
     } on ApiAuthException catch (e, st) {
-      _log.handle(
-        e,
-        stackTrace: st,
-        message: '实时日志流鉴权失败，尝试刷新 Token',
-      );
+      _log.handle(e, stackTrace: st, message: '实时日志流鉴权失败，尝试刷新 Token');
       if (allowRefresh && await _refreshToken()) {
         return startLogStream(allowRefresh: false);
       }

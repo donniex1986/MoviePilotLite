@@ -6,6 +6,7 @@ import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_contro
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommond_category_group_edit_pannel.dart';
 
@@ -227,7 +228,10 @@ class RecommendPage extends GetView<RecommendController> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(right: 8),
-        itemBuilder: (context, index) => RecommendItemCard(item: items[index]),
+        itemBuilder: (context, index) => RecommendItemCard(
+          item: items[index],
+          onTap: () => _openDetail(items[index]),
+        ),
         separatorBuilder: (context, index) => const SizedBox(width: 14),
         itemCount: items.length,
       ),
@@ -262,5 +266,57 @@ class RecommendPage extends GetView<RecommendController> {
       case RecommendCategory.chart:
         return Icons.emoji_events_outlined;
     }
+  }
+
+  void _openDetail(RecommendApiItem item) {
+    final path = _buildMediaPath(item);
+    if (path == null) {
+      ToastUtil.info('暂无可用详情信息');
+      return;
+    }
+    final title = _bestTitle(item);
+    final params = <String, String>{
+      'path': path,
+      if (title != null && title.isNotEmpty) 'title': title,
+      if (item.year != null && item.year!.isNotEmpty) 'year': item.year!,
+      if (item.type != null && item.type!.isNotEmpty) 'type_name': item.type!,
+    };
+    Get.toNamed('/media-detail', parameters: params);
+  }
+
+  String? _bestTitle(RecommendApiItem item) {
+    final title = item.title;
+    if (title != null && title.trim().isNotEmpty) return title.trim();
+    final enTitle = item.en_title;
+    if (enTitle != null && enTitle.trim().isNotEmpty) return enTitle.trim();
+    final original = item.original_title ?? item.original_name;
+    if (original != null && original.trim().isNotEmpty) {
+      return original.trim();
+    }
+    return null;
+  }
+
+  String? _buildMediaPath(RecommendApiItem item) {
+    final prefix = item.mediaid_prefix;
+    final mediaId = item.media_id;
+    if (prefix != null &&
+        prefix.isNotEmpty &&
+        mediaId != null &&
+        mediaId.isNotEmpty) {
+      return '$prefix:$mediaId';
+    }
+    final tmdbId = item.tmdb_id;
+    if (tmdbId != null && tmdbId.isNotEmpty) {
+      return 'tmdb:$tmdbId';
+    }
+    final doubanId = item.douban_id;
+    if (doubanId != null && doubanId.isNotEmpty) {
+      return 'douban:$doubanId';
+    }
+    final bangumiId = item.bangumi_id;
+    if (bangumiId != null && bangumiId.isNotEmpty) {
+      return 'bangumi:$bangumiId';
+    }
+    return null;
   }
 }

@@ -102,16 +102,6 @@ class CachedImage extends StatelessWidget {
     return imageWidget;
   }
 
-  /// 构建默认占位符（iOS 风格）
-  Widget _buildDefaultPlaceholder() {
-    return Container(
-      width: width,
-      height: height,
-      color: CupertinoColors.systemGrey6,
-      child: const Center(child: CupertinoActivityIndicator()),
-    );
-  }
-
   /// 构建进度指示器（iOS 风格）
   Widget _buildProgressIndicator(dynamic progress) {
     double? progressValue;
@@ -217,76 +207,26 @@ class CachedAvatar extends StatelessWidget {
       height: radius * 2,
       fit: BoxFit.cover,
       borderRadius: BorderRadius.circular(radius),
-      placeholder: placeholder,
-      errorWidget: errorWidget,
+      placeholder: placeholder ?? _buildDefaultPlaceholder(),
+      errorWidget: errorWidget ?? _buildDefaultErrorPlaceholder(),
       cacheManager: cacheManager,
-      memCacheWidth: (radius * 2).toInt(),
-      memCacheHeight: (radius * 2).toInt(),
       cookie: cookie,
     );
   }
-}
 
-/// 带边框的圆形头像
-class CachedAvatarWithBorder extends StatelessWidget {
-  const CachedAvatarWithBorder({
-    super.key,
-    required this.imageUrl,
-    required this.radius,
-    this.borderWidth = 2.0,
-    this.borderColor,
-    this.placeholder,
-    this.errorWidget,
-    this.cacheManager,
-    this.cookie,
-  });
+  Widget _buildDefaultPlaceholder() {
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: CupertinoColors.systemGrey5,
+      child: Icon(CupertinoIcons.person, color: CupertinoColors.systemGrey),
+    );
+  }
 
-  /// 图片 URL
-  final String imageUrl;
-
-  /// 半径
-  final double radius;
-
-  /// 边框宽度
-  final double borderWidth;
-
-  /// 边框颜色
-  final Color? borderColor;
-
-  /// 占位符
-  final Widget? placeholder;
-
-  /// 错误占位符
-  final Widget? errorWidget;
-
-  /// 自定义缓存管理器
-  final CacheManager? cacheManager;
-
-  /// Cookie
-  final String? cookie;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: radius * 2,
-      height: radius * 2,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: borderColor ?? CupertinoColors.systemGrey4,
-          width: borderWidth,
-        ),
-      ),
-      child: ClipOval(
-        child: CachedAvatar(
-          imageUrl: imageUrl,
-          radius: radius - borderWidth,
-          placeholder: placeholder,
-          errorWidget: errorWidget,
-          cacheManager: cacheManager,
-          cookie: cookie,
-        ),
-      ),
+  Widget _buildDefaultErrorPlaceholder() {
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: CupertinoColors.systemGrey5,
+      child: Icon(CupertinoIcons.person, color: CupertinoColors.systemGrey),
     );
   }
 }
