@@ -5,6 +5,7 @@ import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_contro
 import 'package:moviepilot_mobile/modules/dashboard/pages/dashboard_page.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/pages/recommend_page.dart';
+import 'package:moviepilot_mobile/theme/app_theme.dart';
 
 class Index extends StatefulWidget {
   const Index({super.key});
@@ -233,6 +234,8 @@ class _IndexState extends State<Index> {
         ],
       ),
       bottomNavigationBar: LiquidBottomNavigationBar(
+        selectedItemColor: context.primaryColor,
+        unselectedItemColor: context.textSecondaryColor,
         enableMinimize: true,
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -283,8 +286,6 @@ class _IndexState extends State<Index> {
             _lastScrollOffset = 0;
           });
         },
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.white,
         labelVisibility: LabelVisibility.always,
         height: 68,
         forceCustomBar: false,

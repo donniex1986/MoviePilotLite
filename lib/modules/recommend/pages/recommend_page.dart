@@ -160,7 +160,7 @@ class RecommendPage extends GetView<RecommendController> {
     }
 
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: subCategories.map((subCategory) {

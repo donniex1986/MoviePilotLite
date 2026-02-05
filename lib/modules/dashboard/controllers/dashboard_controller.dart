@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -13,9 +15,13 @@ import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:talker/talker.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Dashboard 控制器
 class DashboardController extends GetxController {
+  static const String _localConfigFileName = 'dashboard_config.json';
+  static const int _localConfigVersion = 1;
+
   /// 可用的组件类型
   static const List<String> availableWidgets = [
     '存储空间',
@@ -90,6 +96,9 @@ class DashboardController extends GetxController {
   late Timer _memoryTimer;
   late RealmService _realmService;
 
+  bool _hasLocalDashboardConfig = false;
+  bool _hasLocalDashboardOrder = false;
+
   @override
   Future<void> onInit() async {
     super.onInit();
@@ -101,13 +110,16 @@ class DashboardController extends GetxController {
     // 1. 根据传入数据创建 mediaServerController
     await _initializeMediaServerController();
 
-    // 2. 获取 dashboard 开关配置
+    // 2. 读取本地配置并预先展示
+    await _loadLocalDashboardConfig();
+
+    // 3. 获取 dashboard 开关配置
     await _fetchDashboardConfig();
 
-    // 3. 获取 dashboard 顺序配置
+    // 4. 获取 dashboard 顺序配置
     await _fetchDashboardOrder();
 
-    // 4. 根据开关获取对应数据
+    // 5. 根据开关获取对应数据
     _setupDataLoading();
 
     // 启动定时刷新
@@ -466,15 +478,23 @@ class DashboardController extends GetxController {
 
         // 根据配置更新displayedWidgets列表
         _updateDisplayedWidgets(config.data.value);
+        await _saveLocalDashboardConfig(
+          configValue: config.data.value,
+          orderItems: dashboardOrder.value?.data.value,
+        );
       } else {
         talker.warning('获取dashboard配置失败: 响应数据为空或状态码错误');
         // 如果获取失败，使用默认配置
-        _useDefaultConfig();
+        if (!_hasLocalDashboardConfig) {
+          _useDefaultConfig();
+        }
       }
     } catch (e, st) {
       talker.handle(e, st, '获取dashboard配置失败');
       // 如果获取失败，使用默认配置
-      _useDefaultConfig();
+      if (!_hasLocalDashboardConfig) {
+        _useDefaultConfig();
+      }
     }
   }
 
@@ -624,6 +644,10 @@ class DashboardController extends GetxController {
 
         // 根据排序结果更新displayedWidgets列表的顺序
         _updateWidgetsOrder(order.data.value);
+        await _saveLocalDashboardConfig(
+          configValue: dashboardConfig.value?.data.value,
+          orderItems: order.data.value,
+        );
       } else {
         talker.warning('获取dashboard元素排序失败: 响应数据为空或状态码错误');
       }
@@ -672,5 +696,114 @@ class DashboardController extends GetxController {
     // 更新displayedWidgets列表
     displayedWidgets.assignAll(newWidgets);
     talker.info('根据排序结果更新displayedWidgets顺序: $newWidgets');
+  }
+
+  Future<void> _loadLocalDashboardConfig() async {
+    if (kIsWeb) return;
+    try {
+      final file = await _resolveLocalConfigFile();
+      if (file == null || !await file.exists()) return;
+      final raw = await file.readAsString();
+      if (raw.trim().isEmpty) return;
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return;
+      final profiles = decoded['profiles'];
+      if (profiles is! Map) return;
+      final profile = profiles[_profileKey()];
+      if (profile is! Map) return;
+
+      final configRaw = profile['config'];
+      if (configRaw is Map) {
+        final value = DashboardConfigValue.fromJson(
+          Map<String, dynamic>.from(configRaw),
+        );
+        dashboardConfig.value = DashboardConfigModel(
+          success: true,
+          message: 'local',
+          data: DashboardConfigData(value: value),
+        );
+        _updateDisplayedWidgets(value);
+        _hasLocalDashboardConfig = true;
+      }
+
+      final orderRaw = profile['order'];
+      if (orderRaw is List) {
+        final items = orderRaw
+            .whereType<Map>()
+            .map(
+              (item) =>
+                  DashboardOrderItem.fromJson(Map<String, dynamic>.from(item)),
+            )
+            .toList();
+        if (items.isNotEmpty) {
+          dashboardOrder.value = DashboardOrderModel(
+            success: true,
+            message: 'local',
+            data: DashboardOrderData(value: items),
+          );
+          _updateWidgetsOrder(items);
+          _hasLocalDashboardOrder = true;
+        }
+      }
+    } catch (e, st) {
+      talker.handle(e, st, '读取本地dashboard配置失败');
+    }
+  }
+
+  Future<void> _saveLocalDashboardConfig({
+    DashboardConfigValue? configValue,
+    List<DashboardOrderItem>? orderItems,
+  }) async {
+    if (kIsWeb) return;
+    try {
+      final file = await _resolveLocalConfigFile();
+      if (file == null) return;
+      final data = await _readLocalConfigRaw(file);
+      final profiles = <String, dynamic>{};
+      final existingProfiles = data['profiles'];
+      if (existingProfiles is Map) {
+        profiles.addAll(existingProfiles.cast<String, dynamic>());
+      }
+      final profile = <String, dynamic>{};
+      final existingProfile = profiles[_profileKey()];
+      if (existingProfile is Map) {
+        profile.addAll(existingProfile.cast<String, dynamic>());
+      }
+      if (configValue != null) {
+        profile['config'] = configValue.toJson();
+        _hasLocalDashboardConfig = true;
+      }
+      if (orderItems != null) {
+        profile['order'] = orderItems.map((item) => item.toJson()).toList();
+        _hasLocalDashboardOrder = true;
+      }
+      profiles[_profileKey()] = profile;
+      data['version'] = _localConfigVersion;
+      data['profiles'] = profiles;
+      await file.writeAsString(jsonEncode(data));
+    } catch (e, st) {
+      talker.handle(e, st, '保存本地dashboard配置失败');
+    }
+  }
+
+  Future<File?> _resolveLocalConfigFile() async {
+    final dir = await getApplicationSupportDirectory();
+    return File('${dir.path}/$_localConfigFileName');
+  }
+
+  Future<Map<String, dynamic>> _readLocalConfigRaw(File file) async {
+    if (!await file.exists()) return <String, dynamic>{};
+    final raw = await file.readAsString();
+    if (raw.trim().isEmpty) return <String, dynamic>{};
+    final decoded = jsonDecode(raw);
+    if (decoded is Map<String, dynamic>) return decoded;
+    if (decoded is Map) return Map<String, dynamic>.from(decoded);
+    return <String, dynamic>{};
+  }
+
+  String _profileKey() {
+    final baseUrl = appService.baseUrl ?? apiClient.baseUrl ?? 'default-server';
+    final userId = appService.loginResponse?.userId ?? appService.userInfo?.id;
+    return '${baseUrl}::${userId ?? 0}';
   }
 }
