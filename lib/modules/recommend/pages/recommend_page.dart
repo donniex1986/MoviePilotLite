@@ -31,9 +31,14 @@ class RecommendPage extends GetView<RecommendController> {
           SliverToBoxAdapter(child: Obx(() => _buildCategoryBar(context))),
           const SliverToBoxAdapter(child: SizedBox(height: 6)),
           SliverToBoxAdapter(child: Obx(() => _buildSectionList(context))),
+          SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
         ],
       ),
     );
+  }
+
+  double _bottomSpacer(BuildContext context) {
+    return MediaQuery.of(context).padding.bottom + 70;
   }
 
   AppBar _buildNavigationBar(BuildContext context) {

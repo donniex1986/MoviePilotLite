@@ -5,6 +5,8 @@ import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_contro
 import 'package:moviepilot_mobile/modules/dashboard/pages/dashboard_page.dart';
 import 'package:moviepilot_mobile/modules/discover/controllers/discover_controller.dart';
 import 'package:moviepilot_mobile/modules/discover/pages/discover_page.dart';
+import 'package:moviepilot_mobile/modules/multifunction/controllers/multifunction_controller.dart';
+import 'package:moviepilot_mobile/modules/multifunction/pages/multifunction_page.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/pages/recommend_page.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
@@ -23,27 +25,28 @@ class _IndexState extends State<Index> {
   // Language toggle for testing locale label updates
   final dashboardController = Get.put(DashboardController());
   // Dynamic labels based on language
-  List<String> get _labels => ['Dashboard', '推荐', '探索', 'Settings'];
+  List<String> get _labels => ['仪表盘', '推荐', '探索', '更多'];
 
   // Separate ScrollController for each page
   late final ScrollController _homeScrollController;
   late final ScrollController _recommendScrollController;
   late final ScrollController _discoverScrollController;
-  late final ScrollController _settingsScrollController;
+  late final ScrollController _multifunctionScrollController;
 
   @override
   void initState() {
     super.initState();
     Get.put(RecommendController());
     Get.put(DiscoverController());
+    Get.put(MultifunctionController());
     _homeScrollController = ScrollController()
       ..addListener(() => _onScroll(_homeScrollController));
     _recommendScrollController = ScrollController()
       ..addListener(() => _onScroll(_recommendScrollController));
     _discoverScrollController = ScrollController()
       ..addListener(() => _onScroll(_discoverScrollController));
-    _settingsScrollController = ScrollController()
-      ..addListener(() => _onScroll(_settingsScrollController));
+    _multifunctionScrollController = ScrollController()
+      ..addListener(() => _onScroll(_multifunctionScrollController));
   }
 
   @override
@@ -51,7 +54,7 @@ class _IndexState extends State<Index> {
     _homeScrollController.dispose();
     _recommendScrollController.dispose();
     _discoverScrollController.dispose();
-    _settingsScrollController.dispose();
+    _multifunctionScrollController.dispose();
     super.dispose();
   }
 
@@ -78,7 +81,7 @@ class _IndexState extends State<Index> {
       case 2:
         controller = _discoverScrollController;
       case 3:
-        controller = _settingsScrollController;
+        controller = _multifunctionScrollController;
     }
     if (controller != null && controller.hasClients) {
       controller.animateTo(
@@ -90,85 +93,6 @@ class _IndexState extends State<Index> {
   }
 
   // Dedicated page for each tab
-
-  Widget _buildSettingsPage() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.purple,
-      ),
-      body: ListView(
-        controller: _settingsScrollController,
-        children: [
-          const SizedBox(height: 20),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.purple.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Column(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.purple,
-                  child: Icon(Icons.person, size: 40, color: Colors.white),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'John Doe',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'john.doe@example.com',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          _buildSettingsTile(
-            Icons.notifications,
-            'Notifications',
-            'Manage notifications',
-          ),
-          _buildSettingsTile(Icons.privacy_tip, 'Privacy', 'Privacy settings'),
-          _buildSettingsTile(Icons.language, 'Language', 'Change language'),
-          _buildSettingsTile(Icons.dark_mode, 'Dark Mode', 'Toggle dark mode'),
-          _buildSettingsTile(Icons.help, 'Help & Support', 'Get help'),
-          _buildSettingsTile(
-            Icons.info,
-            'About',
-            'App version 1.0.0',
-            onTap: () {},
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettingsTile(
-    IconData icon,
-    String title,
-    String subtitle, {
-    VoidCallback? onTap,
-  }) {
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.purple.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: Colors.purple),
-      ),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right),
-    );
-  }
 
   Widget _buildSearchPage() {
     return Center(
@@ -208,7 +132,7 @@ class _IndexState extends State<Index> {
           DashboardPage(),
           RecommendPage(scrollController: _recommendScrollController),
           DiscoverPage(scrollController: _discoverScrollController),
-          _buildSettingsPage(),
+          MultifunctionPage(scrollController: _multifunctionScrollController),
           _buildSearchPage(),
         ],
       ),
@@ -245,14 +169,14 @@ class _IndexState extends State<Index> {
             label: _labels[2],
           ),
           LiquidTabItem(
-            widget: const Icon(Icons.settings_outlined),
-            selectedWidget: const Icon(Icons.settings),
-            sfSymbol: 'gearshape',
-            selectedSfSymbol: 'gearshape.fill',
+            widget: const Icon(Icons.grid_view_outlined),
+            selectedWidget: const Icon(Icons.grid_view),
+            sfSymbol: 'square.grid.2x2',
+            selectedSfSymbol: 'square.grid.2x2.fill',
             label: _labels[3],
           ),
         ],
-        showActionButton: true,
+        showActionButton: false,
         actionButton: ActionButtonConfig(
           const Icon(Icons.search),
           'magnifyingglass',

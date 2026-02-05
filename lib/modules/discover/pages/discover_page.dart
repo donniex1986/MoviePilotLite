@@ -34,10 +34,14 @@ class DiscoverPage extends GetView<DiscoverController> {
         slivers: [
           SliverToBoxAdapter(child: Obx(() => _buildFilterSummary(context))),
           SliverToBoxAdapter(child: Obx(() => _buildSection(context))),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
         ],
       ),
     );
+  }
+
+  double _bottomSpacer(BuildContext context) {
+    return MediaQuery.of(context).padding.bottom + 70;
   }
 
   AppBar _buildNavigationBar(BuildContext context) {

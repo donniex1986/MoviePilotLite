@@ -40,9 +40,16 @@ class DashboardPage extends GetView<DashboardController> {
               child: _buildWidgetGrid(context),
             ),
           ),
+          SliverToBoxAdapter(
+            child: SizedBox(height: _bottomSpacer(context)),
+          ),
         ],
       ),
     );
+  }
+
+  double _bottomSpacer(BuildContext context) {
+    return MediaQuery.of(context).padding.bottom + 70;
   }
 
   /// 获取最新的登录配置文件

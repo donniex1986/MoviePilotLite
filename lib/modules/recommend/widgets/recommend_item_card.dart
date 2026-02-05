@@ -56,6 +56,7 @@ class RecommendItemCard extends StatelessWidget {
     final data = item!;
     return SizedBox(
       width: _cardWidth,
+      height: _cardHeight,
       child: Stack(
         children: [
           _buildPoster(data),
@@ -98,6 +99,8 @@ class RecommendItemCard extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: Colors.white,
         ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
