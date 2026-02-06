@@ -7,8 +7,13 @@ import 'package:moviepilot_mobile/utils/size_formatter.dart';
 import '../models/search_result_models.dart';
 
 class SearchResultTorrentItem extends StatelessWidget {
-  const SearchResultTorrentItem({super.key, required this.item});
+  const SearchResultTorrentItem({
+    super.key,
+    required this.item,
+    this.similarItems,
+  });
   final SearchResultItem item;
+  final List<SearchResultItem>? similarItems;
   @override
   Widget build(BuildContext context) {
     final meta = item.meta_info;
@@ -20,7 +25,7 @@ class SearchResultTorrentItem extends StatelessWidget {
     final promotion = _promotionBadgeLabel(item);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(18),
@@ -57,7 +62,7 @@ class SearchResultTorrentItem extends StatelessWidget {
           Row(
             children: [
               _buildSiteBadge(_siteName(item)),
-              const SizedBox(width: 10),
+              const Spacer(),
               if ((torrent?.seeders ?? 0) > 0) ...[
                 Icon(
                   Icons.arrow_upward,
@@ -72,13 +77,21 @@ class SearchResultTorrentItem extends StatelessWidget {
                   ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ],
-              const Spacer(),
-              _buildSizePill(context, item),
-              const SizedBox(width: 6),
-              InkWell(
-                onTap: () => _openInfoSheet(context, item),
-                child: Icon(Icons.info_outline, color: accent),
-              ),
+              const SizedBox(width: 10),
+              if ((torrent?.peers ?? 0) > 0) ...[
+                Icon(
+                  Icons.arrow_downward,
+                  size: 18,
+                  color: Colors.red.shade600,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${torrent?.peers ?? 0}',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 10),
@@ -123,6 +136,45 @@ class SearchResultTorrentItem extends StatelessWidget {
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: tags),
           ],
+          _buildMoreFooter(context, item),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMoreFooter(BuildContext context, SearchResultItem item) {
+    return Container(
+      decoration: BoxDecoration(color: Theme.of(context).cardColor),
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          const Divider(height: 1),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              if (similarItems != null && similarItems!.isNotEmpty) ...[
+                Text(
+                  '相似资源',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 6),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: AppTheme.textSecondaryColor,
+                ),
+              ],
+              Spacer(),
+              _buildSizePill(context, item),
+              const SizedBox(width: 6),
+              InkWell(
+                onTap: () => _openInfoSheet(context, item),
+                child: Icon(Icons.info_outline, color: context.primaryColor),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -301,7 +353,12 @@ class SearchResultTorrentItem extends StatelessWidget {
   }
 
   String _displayTitle(SearchResultItem item) {
+    final mediaTitle = item.media_info?.title?.trim().isNotEmpty == true
+        ? item.media_info!.title!.trim()
+        : null;
+    if (mediaTitle != null) return mediaTitle;
     final meta = item.meta_info;
+
     return meta?.name?.trim().isNotEmpty == true
         ? meta!.name!.trim()
         : meta?.cn_name?.trim().isNotEmpty == true

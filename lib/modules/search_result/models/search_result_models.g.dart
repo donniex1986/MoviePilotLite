@@ -12,7 +12,9 @@ _$SearchResultItemImpl _$$SearchResultItemImplFromJson(
   meta_info: json['meta_info'] == null
       ? null
       : SearchMetaInfo.fromJson(json['meta_info'] as Map<String, dynamic>),
-  media_info: json['media_info'] as Map<String, dynamic>?,
+  media_info: json['media_info'] == null
+      ? null
+      : RecommendApiItem.fromJson(json['media_info'] as Map<String, dynamic>),
   torrent_info: json['torrent_info'] == null
       ? null
       : SearchTorrentInfo.fromJson(

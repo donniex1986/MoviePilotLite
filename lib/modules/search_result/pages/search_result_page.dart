@@ -26,6 +26,7 @@ class SearchResultPage extends GetView<SearchResultController> {
     return Scaffold(
       appBar: _buildNavigationBar(context),
       body: Obx(() {
+        if (controller.isClosed) return const SizedBox.shrink();
         final items = controller.visibleItems;
         final isLoading = controller.isLoading.value;
         final errorText = controller.errorText.value;

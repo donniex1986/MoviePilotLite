@@ -30,6 +30,12 @@ import 'modules/media_detail/controllers/media_detail_controller.dart';
 import 'modules/media_detail/pages/media_detail_page.dart';
 import 'modules/search_result/controllers/search_result_controller.dart';
 import 'modules/search_result/pages/search_result_page.dart';
+import 'modules/subscribe/controllers/subscribe_controller.dart';
+import 'modules/subscribe/controllers/subscribe_popular_controller.dart';
+import 'modules/subscribe/controllers/subscribe_share_controller.dart';
+import 'modules/subscribe/pages/subscribe_page.dart';
+import 'modules/subscribe/pages/subscribe_popular_page.dart';
+import 'modules/subscribe/pages/subscribe_share_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -136,6 +142,34 @@ class MyApp extends StatelessWidget {
           page: () => const SearchResultPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => SearchResultController());
+          }),
+        ),
+        GetPage(
+          name: '/subscribe-tv',
+          page: () => const SubscribePage(),
+          binding: BindingsBuilder(() {
+            Get.put(SubscribeController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/subscribe-movie',
+          page: () => const SubscribePage(),
+          binding: BindingsBuilder(() {
+            Get.put(SubscribeController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/subscribe-popular',
+          page: () => const SubscribePopularPage(),
+          binding: BindingsBuilder(() {
+            Get.put(SubscribePopularController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/subscribe-share',
+          page: () => const SubscribeSharePage(),
+          binding: BindingsBuilder(() {
+            Get.put(SubscribeShareController(), permanent: false);
           }),
         ),
         GetPage(

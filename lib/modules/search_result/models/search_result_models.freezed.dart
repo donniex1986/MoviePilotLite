@@ -24,7 +24,7 @@ mixin _$SearchResultItem {
   @JsonKey(name: 'meta_info')
   SearchMetaInfo? get meta_info => throw _privateConstructorUsedError;
   @JsonKey(name: 'media_info')
-  Map<String, dynamic>? get media_info => throw _privateConstructorUsedError;
+  RecommendApiItem? get media_info => throw _privateConstructorUsedError;
   @JsonKey(name: 'torrent_info')
   SearchTorrentInfo? get torrent_info => throw _privateConstructorUsedError;
 
@@ -47,11 +47,12 @@ abstract class $SearchResultItemCopyWith<$Res> {
   @useResult
   $Res call({
     @JsonKey(name: 'meta_info') SearchMetaInfo? meta_info,
-    @JsonKey(name: 'media_info') Map<String, dynamic>? media_info,
+    @JsonKey(name: 'media_info') RecommendApiItem? media_info,
     @JsonKey(name: 'torrent_info') SearchTorrentInfo? torrent_info,
   });
 
   $SearchMetaInfoCopyWith<$Res>? get meta_info;
+  $RecommendApiItemCopyWith<$Res>? get media_info;
   $SearchTorrentInfoCopyWith<$Res>? get torrent_info;
 }
 
@@ -83,7 +84,7 @@ class _$SearchResultItemCopyWithImpl<$Res, $Val extends SearchResultItem>
             media_info: freezed == media_info
                 ? _value.media_info
                 : media_info // ignore: cast_nullable_to_non_nullable
-                      as Map<String, dynamic>?,
+                      as RecommendApiItem?,
             torrent_info: freezed == torrent_info
                 ? _value.torrent_info
                 : torrent_info // ignore: cast_nullable_to_non_nullable
@@ -104,6 +105,20 @@ class _$SearchResultItemCopyWithImpl<$Res, $Val extends SearchResultItem>
 
     return $SearchMetaInfoCopyWith<$Res>(_value.meta_info!, (value) {
       return _then(_value.copyWith(meta_info: value) as $Val);
+    });
+  }
+
+  /// Create a copy of SearchResultItem
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RecommendApiItemCopyWith<$Res>? get media_info {
+    if (_value.media_info == null) {
+      return null;
+    }
+
+    return $RecommendApiItemCopyWith<$Res>(_value.media_info!, (value) {
+      return _then(_value.copyWith(media_info: value) as $Val);
     });
   }
 
@@ -133,12 +148,14 @@ abstract class _$$SearchResultItemImplCopyWith<$Res>
   @useResult
   $Res call({
     @JsonKey(name: 'meta_info') SearchMetaInfo? meta_info,
-    @JsonKey(name: 'media_info') Map<String, dynamic>? media_info,
+    @JsonKey(name: 'media_info') RecommendApiItem? media_info,
     @JsonKey(name: 'torrent_info') SearchTorrentInfo? torrent_info,
   });
 
   @override
   $SearchMetaInfoCopyWith<$Res>? get meta_info;
+  @override
+  $RecommendApiItemCopyWith<$Res>? get media_info;
   @override
   $SearchTorrentInfoCopyWith<$Res>? get torrent_info;
 }
@@ -168,9 +185,9 @@ class __$$SearchResultItemImplCopyWithImpl<$Res>
             : meta_info // ignore: cast_nullable_to_non_nullable
                   as SearchMetaInfo?,
         media_info: freezed == media_info
-            ? _value._media_info
+            ? _value.media_info
             : media_info // ignore: cast_nullable_to_non_nullable
-                  as Map<String, dynamic>?,
+                  as RecommendApiItem?,
         torrent_info: freezed == torrent_info
             ? _value.torrent_info
             : torrent_info // ignore: cast_nullable_to_non_nullable
@@ -185,9 +202,9 @@ class __$$SearchResultItemImplCopyWithImpl<$Res>
 class _$SearchResultItemImpl implements _SearchResultItem {
   const _$SearchResultItemImpl({
     @JsonKey(name: 'meta_info') this.meta_info,
-    @JsonKey(name: 'media_info') final Map<String, dynamic>? media_info,
+    @JsonKey(name: 'media_info') this.media_info,
     @JsonKey(name: 'torrent_info') this.torrent_info,
-  }) : _media_info = media_info;
+  });
 
   factory _$SearchResultItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$SearchResultItemImplFromJson(json);
@@ -195,17 +212,9 @@ class _$SearchResultItemImpl implements _SearchResultItem {
   @override
   @JsonKey(name: 'meta_info')
   final SearchMetaInfo? meta_info;
-  final Map<String, dynamic>? _media_info;
   @override
   @JsonKey(name: 'media_info')
-  Map<String, dynamic>? get media_info {
-    final value = _media_info;
-    if (value == null) return null;
-    if (_media_info is EqualUnmodifiableMapView) return _media_info;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
-
+  final RecommendApiItem? media_info;
   @override
   @JsonKey(name: 'torrent_info')
   final SearchTorrentInfo? torrent_info;
@@ -222,22 +231,16 @@ class _$SearchResultItemImpl implements _SearchResultItem {
             other is _$SearchResultItemImpl &&
             (identical(other.meta_info, meta_info) ||
                 other.meta_info == meta_info) &&
-            const DeepCollectionEquality().equals(
-              other._media_info,
-              _media_info,
-            ) &&
+            (identical(other.media_info, media_info) ||
+                other.media_info == media_info) &&
             (identical(other.torrent_info, torrent_info) ||
                 other.torrent_info == torrent_info));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    meta_info,
-    const DeepCollectionEquality().hash(_media_info),
-    torrent_info,
-  );
+  int get hashCode =>
+      Object.hash(runtimeType, meta_info, media_info, torrent_info);
 
   /// Create a copy of SearchResultItem
   /// with the given fields replaced by the non-null parameter values.
@@ -259,7 +262,7 @@ class _$SearchResultItemImpl implements _SearchResultItem {
 abstract class _SearchResultItem implements SearchResultItem {
   const factory _SearchResultItem({
     @JsonKey(name: 'meta_info') final SearchMetaInfo? meta_info,
-    @JsonKey(name: 'media_info') final Map<String, dynamic>? media_info,
+    @JsonKey(name: 'media_info') final RecommendApiItem? media_info,
     @JsonKey(name: 'torrent_info') final SearchTorrentInfo? torrent_info,
   }) = _$SearchResultItemImpl;
 
@@ -271,7 +274,7 @@ abstract class _SearchResultItem implements SearchResultItem {
   SearchMetaInfo? get meta_info;
   @override
   @JsonKey(name: 'media_info')
-  Map<String, dynamic>? get media_info;
+  RecommendApiItem? get media_info;
   @override
   @JsonKey(name: 'torrent_info')
   SearchTorrentInfo? get torrent_info;

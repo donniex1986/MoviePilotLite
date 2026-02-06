@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-
+import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 part 'search_result_models.freezed.dart';
 part 'search_result_models.g.dart';
 
@@ -7,7 +7,7 @@ part 'search_result_models.g.dart';
 class SearchResultItem with _$SearchResultItem {
   const factory SearchResultItem({
     @JsonKey(name: 'meta_info') SearchMetaInfo? meta_info,
-    @JsonKey(name: 'media_info') Map<String, dynamic>? media_info,
+    @JsonKey(name: 'media_info') RecommendApiItem? media_info,
     @JsonKey(name: 'torrent_info') SearchTorrentInfo? torrent_info,
   }) = _SearchResultItem;
 

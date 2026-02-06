@@ -158,10 +158,9 @@ class RecommendPage extends GetView<RecommendController> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
             '暂无可展示的分组，请在筛选中开启。',
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: AppTheme.textSecondaryColor),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppTheme.textSecondaryColor,
+            ),
           ),
         );
       }
@@ -224,8 +223,10 @@ class RecommendPage extends GetView<RecommendController> {
 
   Widget _buildPosterRail(BuildContext context, String subCategory) {
     return Obx(() {
-      final items =
-          controller.itemsForSubCategory(subCategory).take(8).toList();
+      final items = controller
+          .itemsForSubCategory(subCategory)
+          .take(8)
+          .toList();
       final isLoading = controller.isLoadingForSubCategory(subCategory);
       final errorText = controller.errorForSubCategory(subCategory);
       if (items.isEmpty && errorText != null) {

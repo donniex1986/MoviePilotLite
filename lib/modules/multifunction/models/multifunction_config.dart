@@ -25,7 +25,7 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.movie_outlined,
         accent: Color(0xFF5C7CFA),
         style: MultifunctionCardStyle.tall,
-        badge: '追更 12',
+        route: '/subscribe-movie',
       ),
       MultifunctionItem(
         title: '电视剧订阅',
@@ -33,7 +33,7 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.tv,
         accent: Color(0xFF00B894),
         style: MultifunctionCardStyle.tall,
-        badge: '待看 6',
+        route: '/subscribe-tv',
       ),
       MultifunctionItem(
         title: '工作流',

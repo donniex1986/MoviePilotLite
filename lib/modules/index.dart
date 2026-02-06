@@ -51,7 +51,6 @@ class _IndexState extends State<Index> {
     Get.put(RecommendController());
     Get.put(DiscoverController());
     Get.put(MultifunctionController());
-    Get.put(SearchResultController());
     _homeScrollController = ScrollController()
       ..addListener(() => _onScroll(_homeScrollController));
     _recommendScrollController = ScrollController()
@@ -167,9 +166,6 @@ class _IndexState extends State<Index> {
           RecommendPage(scrollController: _recommendScrollController),
           DiscoverPage(scrollController: _discoverScrollController),
           MultifunctionPage(scrollController: _multifunctionScrollController),
-          SearchResultPage(
-            scrollController: _searchResultScrollController,
-          ),
         ],
       ),
       bottomNavigationBar: LiquidBottomNavigationBar(

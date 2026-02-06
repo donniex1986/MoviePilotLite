@@ -46,8 +46,8 @@ class SearchResultController extends GetxController {
   final _dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
 
   @override
-  void onInit() {
-    super.onInit();
+  onReady() {
+    super.onReady();
     loadLatest();
   }
 
@@ -77,9 +77,7 @@ class SearchResultController extends GetxController {
       items
         ..clear()
         ..addAll(
-          list
-              .whereType<Map<String, dynamic>>()
-              .map(SearchResultItem.fromJson),
+          list.whereType<Map<String, dynamic>>().map(SearchResultItem.fromJson),
         );
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '获取搜索结果失败');
@@ -104,10 +102,9 @@ class SearchResultController extends GetxController {
   }
 
   void toggleSortDirection() {
-    sortDirection.value =
-        sortDirection.value == SortDirection.asc
-            ? SortDirection.desc
-            : SortDirection.asc;
+    sortDirection.value = sortDirection.value == SortDirection.asc
+        ? SortDirection.desc
+        : SortDirection.asc;
   }
 
   void toggleFilter(SearchResultFilterType type, String value) {
@@ -190,10 +187,8 @@ class SearchResultController extends GetxController {
     return _sortResults(results);
   }
 
-  List<String> get availableSites =>
-      _uniqueOptions(items.map(_siteName));
-  List<String> get availableSeasons =>
-      _uniqueOptions(items.map(_seasonLabel));
+  List<String> get availableSites => _uniqueOptions(items.map(_siteName));
+  List<String> get availableSeasons => _uniqueOptions(items.map(_seasonLabel));
   List<String> get availablePromotions =>
       _uniqueOptions(items.map(_promotionLabel));
   List<String> get availableVideoEncodes =>
