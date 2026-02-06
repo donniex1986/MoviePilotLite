@@ -14,7 +14,9 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
   static const double _horizontalPadding = 16;
   static const double _gridCrossAxisSpacing = 12;
   static const double _gridMainAxisSpacing = 16;
-  static const int _crossAxisCount = 3;
+
+  /// 宽屏断点：>= 此宽度时每行 5 个，否则每行 2 个
+  static const double _wideBreakpoint = 600;
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +66,7 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
 
   Widget _buildSearchBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        _horizontalPadding,
-        8,
-        _horizontalPadding,
-        8,
-      ),
+      padding: const EdgeInsets.only(top: 16, bottom: 0, left: 16, right: 16),
       child: CupertinoSearchTextField(
         onSubmitted: controller.updateKeyword,
         placeholder: '搜索订阅名称…',
@@ -134,6 +131,8 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
           ),
         );
       }
+      final width = MediaQuery.sizeOf(context).width;
+      final crossAxisCount = width >= _wideBreakpoint ? 5 : 2;
       return SliverPadding(
         padding: const EdgeInsets.fromLTRB(
           _horizontalPadding,
@@ -143,10 +142,10 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
         ),
         sliver: SliverGrid(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: _crossAxisCount,
+            crossAxisCount: crossAxisCount,
             mainAxisSpacing: _gridMainAxisSpacing,
             crossAxisSpacing: _gridCrossAxisSpacing,
-            childAspectRatio: 0.58,
+            childAspectRatio: 0.85,
           ),
           delegate: SliverChildBuilderDelegate((context, index) {
             return SubscribePopularItemCard(item: items[index], onTap: () {});

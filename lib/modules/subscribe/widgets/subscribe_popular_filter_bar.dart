@@ -1,10 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/modules/subscribe/defines/subscribe_popular_filter_defines.dart';
-import 'package:moviepilot_mobile/theme/app_theme.dart';
 
 /// 热门订阅/订阅分享 筛选栏
-/// 布局：排序[最新、热门、评分] -- 风格 --- 评分 --- filter button
+/// 扁平化：排序 + 风格·评分合并展示（无 chip 风格）+ 筛选入口
 class SubscribePopularFilterBar extends StatelessWidget {
   const SubscribePopularFilterBar({
     super.key,
@@ -27,147 +26,120 @@ class SubscribePopularFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final accent = theme.colorScheme.primary;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildSortChips(context, accent),
-            const SizedBox(width: 12),
-            _buildChip(
-              context,
-              label: genreLabel,
-              icon: Icons.movie_filter_outlined,
-              onTap: onGenreTap,
-            ),
+            _buildSortSegmented(context, accent, isDark),
+            const SizedBox(width: 10),
+            _buildMergedFilterRow(context, theme, isDark),
             const SizedBox(width: 8),
-            _buildChip(
-              context,
-              label: ratingLabel,
-              icon: Icons.star_outline,
-              onTap: onRatingTap,
-            ),
-            const SizedBox(width: 8),
-            _buildFilterButton(context, accent),
+            _buildFilterIconButton(context, accent),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSortChips(BuildContext context, Color accent) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: SubscribePopularFilterDefines.sortOptions.map((opt) {
-        final selected = opt.value == sortValue;
-        return Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: GestureDetector(
-            onTap: () => onSortChanged(opt.value),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: selected
-                    ? accent.withOpacity(0.14)
-                    : Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: selected
-                      ? accent.withOpacity(0.45)
-                      : AppTheme.borderColor.withOpacity(0.4),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Text(
-                opt.label,
-                style: TextStyle(
-                  color: selected ? accent : null,
-                  fontSize: 13,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                ),
+  Widget _buildSortSegmented(BuildContext context, Color accent, bool isDark) {
+    return CupertinoSlidingSegmentedControl<String>(
+      groupValue: sortValue,
+      children: {
+        for (final opt in SubscribePopularFilterDefines.sortOptions)
+          opt.value: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Text(
+              opt.label,
+              style: TextStyle(
+                fontSize: 13,
+                color: sortValue == opt.value
+                    ? CupertinoColors.white
+                    : (isDark
+                          ? CupertinoColors.label.resolveFrom(context)
+                          : CupertinoColors.label.resolveFrom(context)),
               ),
             ),
           ),
-        );
-      }).toList(),
+      },
+      thumbColor: accent,
+      backgroundColor: isDark
+          ? CupertinoColors.tertiarySystemFill.resolveFrom(context)
+          : CupertinoColors.tertiarySystemFill.resolveFrom(context),
+      padding: const EdgeInsets.all(2),
+      onValueChanged: (value) {
+        if (value != null) onSortChanged(value);
+      },
     );
   }
 
-  Widget _buildChip(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.borderColor.withOpacity(0.4)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: theme.colorScheme.primary),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
+  /// 风格与评分合并为一行扁平展示，无 chip 样式
+  Widget _buildMergedFilterRow(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    final onSurface = theme.colorScheme.onSurface;
+    final muted = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onFilterTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.tune, size: 16, color: muted),
+              const SizedBox(width: 6),
+              Text(
+                genreLabel,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.expand_more,
-              size: 16,
-              color: theme.colorScheme.primary.withOpacity(0.8),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text('·', style: TextStyle(fontSize: 13, color: muted)),
+              ),
+              Text(
+                ratingLabel,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.expand_more, size: 18, color: muted),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFilterButton(BuildContext context, Color accent) {
-    return GestureDetector(
-      onTap: onFilterTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: accent.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: accent.withOpacity(0.35)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+  Widget _buildFilterIconButton(BuildContext context, Color accent) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onFilterTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(Icons.tune, size: 22, color: accent),
         ),
-        child: Icon(Icons.tune, size: 20, color: accent),
       ),
     );
   }

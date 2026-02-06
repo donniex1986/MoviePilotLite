@@ -1,11 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/modules/subscribe/defines/subscribe_popular_filter_defines.dart';
-import 'package:moviepilot_mobile/theme/app_theme.dart';
-import 'package:moviepilot_mobile/theme/section.dart';
 
 /// 热门订阅/订阅分享 筛选弹窗
-/// 筛选维度：风格、评分
+/// 扁平化：风格单选 + 评分滑块
 class SubscribePopularFilterSheet extends StatefulWidget {
   const SubscribePopularFilterSheet({
     super.key,
@@ -25,34 +23,45 @@ class SubscribePopularFilterSheet extends StatefulWidget {
       _SubscribePopularFilterSheetState();
 }
 
-class _SubscribePopularFilterSheetState extends State<SubscribePopularFilterSheet> {
-  static const Color _genreColor = Color(0xFFF79009);
-  static const Color _ratingColor = Color(0xFF875BF7);
-
+class _SubscribePopularFilterSheetState
+    extends State<SubscribePopularFilterSheet> {
+  /// 风格单选：只保留 0 或 1 个
   late List<String> _selectedGenres;
   late int _ratingMin;
 
   @override
   void initState() {
     super.initState();
-    _selectedGenres = List.from(widget.initialGenres);
-    _ratingMin = widget.initialRatingMin;
+    _selectedGenres = widget.initialGenres.isEmpty
+        ? []
+        : [widget.initialGenres.first];
+    _ratingMin = widget.initialRatingMin.clamp(0, 8);
   }
 
-  List<Map<String, String>> get _genreOptions =>
-      widget.isTv
-          ? SubscribePopularFilterDefines.tvGenreOptions
-          : SubscribePopularFilterDefines.movieGenreOptions;
+  List<Map<String, String>> get _genreOptions => widget.isTv
+      ? SubscribePopularFilterDefines.tvGenreOptions
+      : SubscribePopularFilterDefines.movieGenreOptions;
 
   void _apply() {
     widget.onApply(_selectedGenres, _ratingMin);
-    Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  void _onGenreTap(String value) {
+    setState(() {
+      if (_selectedGenres.contains(value)) {
+        _selectedGenres = [];
+      } else {
+        _selectedGenres = [value];
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height * 0.5;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final theme = Theme.of(context);
+    final height = MediaQuery.sizeOf(context).height * 0.5;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return SizedBox(
       height: height,
@@ -63,70 +72,61 @@ class _SubscribePopularFilterSheetState extends State<SubscribePopularFilterShee
           actions: [
             TextButton(
               onPressed: _apply,
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.primary,
-              ),
-              child: const Text(
+              child: Text(
                 '应用',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
           ],
         ),
         body: SafeArea(
           top: false,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, 20 + bottomPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionBlock(
-                  context,
-                  title: '风格',
-                  color: _genreColor,
-                  child: _buildGenreChips(),
-                ),
-                const SizedBox(height: 16),
-                _buildSectionBlock(
-                  context,
-                  title: '评分',
-                  color: _ratingColor,
-                  child: _buildRatingChips(),
-                ),
-              ],
-            ),
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 24 + bottomPadding),
+            children: [
+              _buildFlatSectionTitle('风格', '单选'),
+              const SizedBox(height: 8),
+              _buildGenreSingleSelect(theme),
+              const SizedBox(height: 20),
+              _buildFlatSectionTitle(
+                '评分',
+                _ratingMin <= 0 ? '不限' : '不低于 $_ratingMin 分',
+              ),
+              const SizedBox(height: 8),
+              _buildRatingSlider(theme),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSectionBlock(
-    BuildContext context, {
-    required String title,
-    required Color color,
-    required Widget child,
-  }) {
+  Widget _buildFlatSectionTitle(String title, String subtitle) {
     final theme = Theme.of(context);
-    return Section(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
-            ),
+    return Row(
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
           ),
-          const SizedBox(height: 10),
-          child,
-        ],
-      ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          subtitle,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildGenreChips() {
+  Widget _buildGenreSingleSelect(ThemeData theme) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -135,103 +135,98 @@ class _SubscribePopularFilterSheetState extends State<SubscribePopularFilterShee
         final label = opt['label'] ?? value;
         final isSelected = _selectedGenres.contains(value);
 
-        return _FilterChipButton(
+        return _FlatSelectChip(
           label: label,
           selected: isSelected,
-          color: _genreColor,
-          onTap: () {
-            setState(() {
-              if (isSelected) {
-                _selectedGenres.remove(value);
-              } else {
-                _selectedGenres.add(value);
-              }
-            });
-          },
+          onTap: () => _onGenreTap(value),
         );
       }).toList(),
     );
   }
 
-  Widget _buildRatingChips() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: SubscribePopularFilterDefines.ratingOptions.map((opt) {
-        final value = opt['value'] ?? '0';
-        final label = opt['label'] ?? value;
-        final intVal = int.tryParse(value) ?? 0;
-        final isSelected = _ratingMin == intVal;
-
-        return _FilterChipButton(
-          label: label,
-          selected: isSelected,
-          color: _ratingColor,
-          onTap: () {
-            setState(() => _ratingMin = intVal);
-          },
-        );
-      }).toList(),
+  Widget _buildRatingSlider(ThemeData theme) {
+    final primary = theme.colorScheme.primary;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: primary,
+              inactiveTrackColor: primary.withValues(alpha: 0.24),
+              thumbColor: primary,
+              overlayColor: primary.withValues(alpha: 0.2),
+              trackHeight: 3,
+            ),
+            child: Slider(
+              value: _ratingMin.toDouble(),
+              min: 0,
+              max: 8,
+              divisions: 8,
+              onChanged: (v) => setState(() => _ratingMin = v.round()),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '不限',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+              Text(
+                '8分+',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _FilterChipButton extends StatelessWidget {
-  const _FilterChipButton({
+/// 扁平化单选/多选项，无 chip 立体感
+class _FlatSelectChip extends StatelessWidget {
+  const _FlatSelectChip({
     required this.label,
     required this.selected,
-    required this.color,
     required this.onTap,
   });
 
   final String label;
   final bool selected;
-  final Color color;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final background = selected
-        ? color.withOpacity(0.14)
-        : theme.colorScheme.surfaceVariant;
-    final borderColor = selected
-        ? color.withOpacity(0.45)
-        : theme.dividerColor.withOpacity(0.45);
-    final textColor = selected
-        ? color
-        : theme.textTheme.bodySmall?.color?.withOpacity(0.55) ??
-            theme.hintColor;
-    final fontWeight = selected ? FontWeight.w600 : FontWeight.w400;
+    final primary = theme.colorScheme.primary;
+    final surfaceVariant = theme.colorScheme.surfaceContainerHighest;
 
     return Material(
-      color: Colors.transparent,
+      color: selected
+          ? primary.withValues(alpha: 0.12)
+          : surfaceVariant.withValues(alpha: 0.6),
+      borderRadius: BorderRadius.circular(8),
       child: InkWell(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: background,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: borderColor),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (selected) ...[
-                Icon(Icons.check, size: 16, color: textColor),
-                const SizedBox(width: 4),
-              ],
-              Text(
-                label,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 13,
-                  fontWeight: fontWeight,
-                ),
-              ),
-            ],
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              color: selected
+                  ? primary
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.85),
+            ),
           ),
         ),
       ),

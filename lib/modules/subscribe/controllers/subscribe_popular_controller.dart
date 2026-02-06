@@ -36,8 +36,9 @@ class SubscribePopularController extends GetxController {
       subscribeType = args['type'] as SubscribeType;
     } else {
       final route = Get.currentRoute;
-      subscribeType =
-          route.contains('movie') ? SubscribeType.movie : SubscribeType.tv;
+      subscribeType = route.contains('movie')
+          ? SubscribeType.movie
+          : SubscribeType.tv;
     }
   }
 
@@ -80,12 +81,6 @@ class SubscribePopularController extends GetxController {
     isLoading.value = true;
     errorText.value = null;
     try {
-      final token = _getToken();
-      if (token == null || token.isEmpty) {
-        errorText.value = '请先登录';
-        items.clear();
-        return;
-      }
       final response = await _apiClient.get<dynamic>(
         '/api/v1/subscribe/popular',
         queryParameters: {
@@ -93,8 +88,8 @@ class SubscribePopularController extends GetxController {
           'page': 1,
           'count': 30,
           'sort_type': sortType.value,
+          'genre_id': selectedGenres,
         },
-        token: token,
       );
       final status = response.statusCode ?? 0;
       if (status >= 400) {
@@ -107,8 +102,12 @@ class SubscribePopularController extends GetxController {
       for (final raw in list) {
         if (raw is Map<String, dynamic>) {
           try {
-            parsed.add(RecommendApiItem.fromJson(raw));
-          } catch (_) {}
+            final item = RecommendApiItem.fromJson(raw);
+            parsed.add(item);
+          } catch (e, st) {
+            _log.handle(e, stackTrace: st, message: '解析热门订阅失败');
+            continue;
+          }
         }
       }
       items.assignAll(parsed);
@@ -148,6 +147,7 @@ class SubscribePopularController extends GetxController {
   void applyFilter(List<String> genres, int ratingMin) {
     selectedGenres.assignAll(genres);
     voteMin.value = ratingMin;
+    load();
   }
 
   String get genreLabel {
@@ -157,7 +157,9 @@ class SubscribePopularController extends GetxController {
         : SubscribePopularFilterDefines.movieGenreOptions;
     final map = {for (final o in opts) o['value']!: o['label']!};
     final labels = selectedGenres.map((v) => map[v] ?? v).toList();
-    return labels.length <= 2 ? labels.join('、') : '${labels.take(2).join('、')}等';
+    return labels.length <= 2
+        ? labels.join('、')
+        : '${labels.take(2).join('、')}等';
   }
 
   String get ratingLabel {
@@ -166,33 +168,6 @@ class SubscribePopularController extends GetxController {
   }
 
   List<RecommendApiItem> get visibleItems {
-    var list = items.toList();
-    final key = keyword.value.trim().toLowerCase();
-    if (key.isNotEmpty) {
-      list = list.where((e) {
-        final t = '${e.title ?? ''} ${e.title_year ?? ''} ${e.overview ?? ''}'
-            .toLowerCase();
-        return t.contains(key);
-      }).toList();
-    }
-    final genres = selectedGenres.toList();
-    if (genres.isNotEmpty) {
-      list = list.where((e) {
-        final ids = e.genre_ids ?? [];
-        for (final g in ids) {
-          if (g == null) continue;
-          final s = g is int ? g.toString() : g.toString();
-          if (genres.contains(s)) return true;
-        }
-        return false;
-      }).toList();
-    }
-    final min = voteMin.value;
-    if (min > 0) {
-      list = list
-          .where((e) => (e.vote_average ?? 0) >= min.toDouble())
-          .toList();
-    }
-    return list;
+    return items.toList();
   }
 }

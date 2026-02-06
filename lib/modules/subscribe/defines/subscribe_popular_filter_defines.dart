@@ -1,9 +1,6 @@
 /// 热门订阅/订阅分享 筛选选项
 class SubscribePopularSortOption {
-  const SubscribePopularSortOption({
-    required this.label,
-    required this.value,
-  });
+  const SubscribePopularSortOption({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -14,7 +11,7 @@ class SubscribePopularFilterDefines {
   static const List<SubscribePopularSortOption> sortOptions = [
     SubscribePopularSortOption(label: '最新', value: 'time'),
     SubscribePopularSortOption(label: '热门', value: 'count'),
-    SubscribePopularSortOption(label: '评分', value: 'vote'),
+    SubscribePopularSortOption(label: '评分', value: 'rating'),
   ];
 
   /// 风格选项（电视剧）

@@ -18,16 +18,12 @@ class SubscribePopularItemCard extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(cardRadius),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                _buildPosterImage(),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(cardRadius),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildPosterImage(),
                 // 底部渐变 + 标题
                 Positioned(
                   left: 0,
@@ -83,17 +79,15 @@ class SubscribePopularItemCard extends StatelessWidget {
                       background: const Color(0xFF7C4DFF),
                     ),
                   ),
-                // 热度角标（右下角，避免与标题重叠）
-                if (_popularityText != null)
-                  Positioned(
-                    right: 5,
-                    bottom: 5,
-                    child: _buildHeatBadge(_popularityText!),
-                  ),
-              ],
-            ),
-          ),
-        ],
+            // 热度角标（右下角，避免与标题重叠）
+            if (_popularityText != null)
+              Positioned(
+                right: 5,
+                bottom: 5,
+                child: _buildHeatBadge(_popularityText!),
+              ),
+          ],
+        ),
       ),
     );
   }
