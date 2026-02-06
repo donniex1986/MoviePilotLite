@@ -68,11 +68,10 @@ class CachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 获取cookie，如果没有提供则从AppService获取
-    final imageCookie = cookie ?? Get.find<AppService>().cookie;
-
     // 构建请求头
     final headers = <String, String>{};
+    // 获取cookie，如果没有提供则从AppService获取
+    final imageCookie = cookie ?? Get.find<AppService>().cookie;
     if (imageCookie != null && imageCookie.isNotEmpty) {
       headers['cookie'] = imageCookie;
     }
@@ -88,7 +87,6 @@ class CachedImage extends StatelessWidget {
       fadeInDuration: fadeInDuration,
       fadeOutDuration: fadeOutDuration,
       errorWidget: (context, url, error) {
-        print('img: error: $error');
         return errorWidget ?? _buildDefaultErrorWidget();
       },
       progressIndicatorBuilder: (context, url, progress) =>

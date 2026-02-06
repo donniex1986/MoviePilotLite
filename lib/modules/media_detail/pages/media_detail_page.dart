@@ -930,7 +930,8 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(right: 8),
-        itemBuilder: (context, index) => const RecommendItemCard.placeholder(),
+        itemBuilder: (context, index) =>
+            RecommendItemCard(width: 150, item: null),
         separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemCount: 6,
       ),

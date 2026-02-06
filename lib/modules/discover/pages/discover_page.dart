@@ -237,7 +237,7 @@ class DiscoverPage extends GetView<DiscoverController> {
         childAspectRatio: _cardAspectRatio,
       ),
       itemBuilder: (context, index) =>
-          RecommendItemCard.placeholder(width: layout.cardWidth),
+          RecommendItemCard(width: layout.cardWidth, item: null),
     );
   }
 

@@ -207,6 +207,7 @@ class DiscoverController extends GetxController {
       itemsByKey[key] = items;
       itemsByKey.refresh();
       _lastFetchAt[key] = DateTime.now();
+      ensureUserCookieRefreshed();
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '探索数据请求异常');
       errorByKey[key] = '请求异常';

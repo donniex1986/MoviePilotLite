@@ -2,13 +2,24 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
+import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_cache.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_model.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 class MediaDetailController extends GetxController {
+  static const Duration _cacheValidDuration = Duration(hours: 24 * 2);
+
   final ApiClient _apiClient = Get.find<ApiClient>();
+  final _authRepository = Get.find<AuthRepository>();
+  final _appService = Get.find<AppService>();
+  final _log = Get.find<AppLog>();
+  final _realmService = Get.find<RealmService>();
 
   final isLoading = false.obs;
   final mediaDetail = Rxn<MediaDetail>();
@@ -25,6 +36,7 @@ class MediaDetailController extends GetxController {
   final recommendSupported = false.obs;
 
   String? _relatedKey;
+  bool _cookieRefreshTriggered = false;
 
   late final MediaDetailArgs _args;
 
@@ -41,7 +53,94 @@ class MediaDetailController extends GetxController {
       errorText.value = _args.validationMessage;
       return;
     }
+    ensureUserCookieRefreshed();
+    _loadCachedDetailIfValid();
     fetchDetail();
+  }
+
+  void ensureUserCookieRefreshed() {
+    if (_cookieRefreshTriggered) return;
+    _cookieRefreshTriggered = true;
+    _refreshUserCookie();
+  }
+
+  Future<void> _refreshUserCookie() async {
+    final server = _appService.baseUrl ?? _apiClient.baseUrl;
+    final token =
+        _appService.loginResponse?.accessToken ??
+        _appService.latestLoginProfileAccessToken ??
+        _apiClient.token;
+    if (server == null || server.isEmpty || token == null || token.isEmpty) {
+      return;
+    }
+    try {
+      await _authRepository.getUserGlobalConfig(
+        server: server,
+        accessToken: token,
+      );
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '刷新详情 Cookie 失败');
+    }
+  }
+
+  void _loadCachedDetailIfValid() {
+    final cacheKey = _cacheKey(_args);
+    if (cacheKey.isEmpty) return;
+    final cache = _realmService.realm.find<MediaDetailCache>(cacheKey);
+    if (cache == null) return;
+    final now = DateTime.now();
+    if (now.difference(cache.updatedAt) > _cacheValidDuration) {
+      return;
+    }
+    try {
+      final decoded = jsonDecode(cache.payload);
+      if (decoded is Map) {
+        mediaDetail.value = MediaDetail.fromJson(
+          Map<String, dynamic>.from(decoded),
+        );
+      }
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '解析详情缓存失败');
+    }
+  }
+
+  void _cacheDetail(MediaDetail detail) {
+    final cacheKey = _cacheKey(_args);
+    if (cacheKey.isEmpty) return;
+    try {
+      final payload = jsonEncode(detail.toJson());
+      final server = (_appService.baseUrl ?? _apiClient.baseUrl ?? '').trim();
+      final cache = MediaDetailCache(
+        cacheKey,
+        server,
+        _args.path,
+        payload,
+        DateTime.now(),
+        title: _args.title,
+        year: _args.year,
+        typeName: _args.typeName,
+        session: _args.session,
+      );
+      _realmService.realm.write(() {
+        _realmService.realm.add(cache, update: true);
+      });
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '写入详情缓存失败');
+    }
+  }
+
+  String _cacheKey(MediaDetailArgs args) {
+    final server = (_appService.baseUrl ?? _apiClient.baseUrl ?? '').trim();
+    if (server.isEmpty && args.path.trim().isEmpty) return '';
+    final parts = [
+      server,
+      args.path.trim(),
+      args.title.trim(),
+      args.year?.trim() ?? '',
+      args.typeName?.trim() ?? '',
+      args.session?.trim() ?? '',
+    ];
+    return parts.join('|');
   }
 
   Future<void> fetchDetail() async {
@@ -66,6 +165,7 @@ class MediaDetailController extends GetxController {
       final detail = _parseResponse(response.data);
       if (detail != null) {
         mediaDetail.value = detail;
+        _cacheDetail(detail);
         _fetchRelated(detail);
       }
 
