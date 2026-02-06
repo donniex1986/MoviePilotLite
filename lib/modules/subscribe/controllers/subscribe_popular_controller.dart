@@ -13,8 +13,14 @@ class SubscribePopularController extends GetxController {
   final _authRepository = Get.find<AuthRepository>();
   final _log = Get.find<AppLog>();
 
+  static const int _pageSize = 30;
+
   late final SubscribeType subscribeType;
   bool _cookieRefreshTriggered = false;
+
+  final scrollController = ScrollController();
+  int _page = 1;
+  final hasMore = true.obs;
 
   final items = <RecommendApiItem>[].obs;
   final isLoading = false.obs;
@@ -45,7 +51,24 @@ class SubscribePopularController extends GetxController {
   @override
   void onReady() {
     super.onReady();
+    scrollController.addListener(_onScroll);
     load();
+  }
+
+  @override
+  void onClose() {
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
+    super.onClose();
+  }
+
+  void _onScroll() {
+    if (!hasMore.value || isLoading.value) return;
+    if (!scrollController.hasClients) return;
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      loadMore();
+    }
   }
 
   bool get isTv => subscribeType == SubscribeType.tv;
@@ -80,13 +103,15 @@ class SubscribePopularController extends GetxController {
   Future<void> load() async {
     isLoading.value = true;
     errorText.value = null;
+    _page = 1;
+    hasMore.value = true;
     try {
       final response = await _apiClient.get<dynamic>(
         '/api/v1/subscribe/popular',
         queryParameters: {
           'stype': subscribeType.stype,
-          'page': 1,
-          'count': 30,
+          'page': _page,
+          'count': _pageSize,
           'sort_type': sortType.value,
           'genre_id': selectedGenres,
         },
@@ -111,10 +136,55 @@ class SubscribePopularController extends GetxController {
         }
       }
       items.assignAll(parsed);
+      hasMore.value = parsed.length >= _pageSize;
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '获取热门订阅失败');
       errorText.value = '请求失败，请稍后重试';
       items.clear();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (isLoading.value || !hasMore.value || items.isEmpty) return;
+    isLoading.value = true;
+    _page += 1;
+    try {
+      final response = await _apiClient.get<dynamic>(
+        '/api/v1/subscribe/popular',
+        queryParameters: {
+          'stype': subscribeType.stype,
+          'page': _page,
+          'count': _pageSize,
+          'sort_type': sortType.value,
+          'genre_id': selectedGenres,
+        },
+      );
+      final status = response.statusCode ?? 0;
+      if (status >= 400) {
+        _page -= 1;
+        hasMore.value = false;
+        return;
+      }
+      final list = _extractList(response.data);
+      final parsed = <RecommendApiItem>[];
+      for (final raw in list) {
+        if (raw is Map<String, dynamic>) {
+          try {
+            final item = RecommendApiItem.fromJson(raw);
+            parsed.add(item);
+          } catch (e, st) {
+            _log.handle(e, stackTrace: st, message: '解析热门订阅失败');
+            continue;
+          }
+        }
+      }
+      items.addAll(parsed);
+      hasMore.value = parsed.length >= _pageSize;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '加载更多热门订阅失败');
+      _page -= 1;
     } finally {
       isLoading.value = false;
     }

@@ -7,19 +7,41 @@ import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_popular_fi
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_share_item_card.dart';
 
 class SubscribeSharePage extends GetView<SubscribeShareController> {
-  const SubscribeSharePage({super.key, this.scrollController});
-
-  final ScrollController? scrollController;
+  const SubscribeSharePage({super.key});
 
   static const double _horizontalPadding = 16;
   static const double _cardSpacing = 12;
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.ensureUserCookieRefreshed();
+    });
     return Scaffold(
-      appBar: AppBar(title: const Text('订阅分享'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('订阅分享'),
+        centerTitle: false,
+        actions: [
+          Obx(() {
+            if (!controller.isLoading.value) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
       body: CustomScrollView(
-        controller: scrollController,
+        controller: controller.scrollController,
         slivers: [
           SliverToBoxAdapter(child: _buildSearchBar(context)),
           SliverToBoxAdapter(
@@ -59,11 +81,11 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
 
   Widget _buildSearchBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        _horizontalPadding,
-        8,
-        _horizontalPadding,
-        8,
+      padding: const EdgeInsets.only(
+        top: 16,
+        bottom: 0,
+        left: _horizontalPadding,
+        right: _horizontalPadding,
       ),
       child: CupertinoSearchTextField(
         onSubmitted: controller.updateKeyword,
@@ -136,19 +158,60 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
           _horizontalPadding,
           80,
         ),
-        sliver: SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: index < items.length - 1 ? _cardSpacing : 0,
-              ),
-              child: SubscribeShareItemCard(
-                item: items[index],
-                onTap: () {},
-                onMoreTap: () {},
-              ),
-            );
-          }, childCount: items.length),
+        sliver: SliverMainAxisGroup(
+          slivers: [
+            SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: index < items.length - 1 ? _cardSpacing : 0,
+                  ),
+                  child: SubscribeShareItemCard(
+                    item: items[index],
+                    onTap: () {},
+                    onMoreTap: () {},
+                  ),
+                );
+              }, childCount: items.length),
+            ),
+            SliverToBoxAdapter(
+              child: Obx(() {
+                if (controller.isLoading.value && items.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                if (!controller.hasMore.value && items.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+                    child: Center(
+                      child: Text(
+                        '没有更多了',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: CupertinoDynamicColor.resolve(
+                            CupertinoColors.secondaryLabel,
+                            context,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
+            ),
+          ],
         ),
       );
     });

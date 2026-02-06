@@ -47,6 +47,7 @@ class SubscribeItem with _$SubscribeItem {
     @JsonKey(name: 'media_category') String? mediaCategory,
     @JsonKey(name: 'filter_groups') dynamic filterGroups,
     @JsonKey(name: 'episode_group') dynamic episodeGroup,
+
     /// 热门订阅专用：订阅人数
     @JsonKey(name: 'count', fromJson: _intFromJson) int? count,
   }) = _SubscribeItem;
@@ -55,24 +56,39 @@ class SubscribeItem with _$SubscribeItem {
       _$SubscribeItemFromJson(json);
 }
 
-/// 订阅分享项（仅 TV 类型使用）
+/// 订阅分享项（API: /api/v1/subscribe/shares）
 @freezed
 class SubscribeShareItem with _$SubscribeShareItem {
   const factory SubscribeShareItem({
     @JsonKey(fromJson: _intFromJson) int? id,
+    @JsonKey(name: 'subscribe_id', fromJson: _intFromJson) int? subscribeId,
+    @JsonKey(name: 'share_title') String? shareTitle,
+    @JsonKey(name: 'share_comment') String? shareComment,
+    @JsonKey(name: 'share_user') String? shareUser,
+    @JsonKey(name: 'share_uid') String? shareUid,
     String? name,
     String? year,
     String? type,
     String? keyword,
     @JsonKey(fromJson: _intFromJson) int? tmdbid,
+    @JsonKey(name: 'doubanid', fromJson: _intFromJson) int? doubanid,
+    @JsonKey(name: 'bangumiid', fromJson: _intFromJson) int? bangumiid,
+    @JsonKey(fromJson: _intFromJson) int? season,
     String? poster,
     String? backdrop,
     @JsonKey(fromJson: _doubleFromJson) double? vote,
     String? description,
-    @JsonKey(fromJson: _intFromJson) int? season,
+    String? include,
+    String? exclude,
+    String? quality,
+    String? resolution,
+    String? effect,
     @JsonKey(name: 'total_episode', fromJson: _intFromJson) int? totalEpisode,
-    @JsonKey(name: 'share_user') String? shareUser,
-    @JsonKey(name: 'share_time') String? shareTime,
+    String? date,
+    @JsonKey(name: 'custom_words') String? customWords,
+    @JsonKey(name: 'media_category') String? mediaCategory,
+    @JsonKey(name: 'episode_group') dynamic episodeGroup,
+    @JsonKey(name: 'count', fromJson: _intFromJson) int? count,
   }) = _SubscribeShareItem;
 
   factory SubscribeShareItem.fromJson(Map<String, dynamic> json) =>

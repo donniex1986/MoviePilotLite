@@ -7,9 +7,7 @@ import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_popular_fi
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_popular_item_card.dart';
 
 class SubscribePopularPage extends GetView<SubscribePopularController> {
-  const SubscribePopularPage({super.key, this.scrollController});
-
-  final ScrollController? scrollController;
+  const SubscribePopularPage({super.key});
 
   static const double _horizontalPadding = 16;
   static const double _gridCrossAxisSpacing = 12;
@@ -24,9 +22,30 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
       controller.ensureUserCookieRefreshed();
     });
     return Scaffold(
-      appBar: AppBar(title: const Text('热门订阅'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('热门订阅'),
+        centerTitle: false,
+        actions: [
+          Obx(() {
+            if (!controller.isLoading.value) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
       body: CustomScrollView(
-        controller: scrollController,
+        controller: controller.scrollController,
         slivers: [
           SliverToBoxAdapter(child: _buildSearchBar(context)),
           SliverToBoxAdapter(
@@ -140,16 +159,58 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
           _horizontalPadding,
           80,
         ),
-        sliver: SliverGrid(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            mainAxisSpacing: _gridMainAxisSpacing,
-            crossAxisSpacing: _gridCrossAxisSpacing,
-            childAspectRatio: 0.85,
-          ),
-          delegate: SliverChildBuilderDelegate((context, index) {
-            return SubscribePopularItemCard(item: items[index], onTap: () {});
-          }, childCount: items.length),
+        sliver: SliverMainAxisGroup(
+          slivers: [
+            SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: _gridMainAxisSpacing,
+                crossAxisSpacing: _gridCrossAxisSpacing,
+                childAspectRatio: 0.85,
+              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                return SubscribePopularItemCard(
+                    item: items[index], onTap: () {});
+              }, childCount: items.length),
+            ),
+            SliverToBoxAdapter(
+              child: Obx(() {
+                if (controller.isLoading.value && items.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                if (!controller.hasMore.value && items.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+                    child: Center(
+                      child: Text(
+                        '没有更多了',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: CupertinoDynamicColor.resolve(
+                            CupertinoColors.secondaryLabel,
+                            context,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
+            ),
+          ],
         ),
       );
     });

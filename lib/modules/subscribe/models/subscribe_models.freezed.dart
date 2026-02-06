@@ -1109,25 +1109,49 @@ SubscribeShareItem _$SubscribeShareItemFromJson(Map<String, dynamic> json) {
 mixin _$SubscribeShareItem {
   @JsonKey(fromJson: _intFromJson)
   int? get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'subscribe_id', fromJson: _intFromJson)
+  int? get subscribeId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'share_title')
+  String? get shareTitle => throw _privateConstructorUsedError;
+  @JsonKey(name: 'share_comment')
+  String? get shareComment => throw _privateConstructorUsedError;
+  @JsonKey(name: 'share_user')
+  String? get shareUser => throw _privateConstructorUsedError;
+  @JsonKey(name: 'share_uid')
+  String? get shareUid => throw _privateConstructorUsedError;
   String? get name => throw _privateConstructorUsedError;
   String? get year => throw _privateConstructorUsedError;
   String? get type => throw _privateConstructorUsedError;
   String? get keyword => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _intFromJson)
   int? get tmdbid => throw _privateConstructorUsedError;
+  @JsonKey(name: 'doubanid', fromJson: _intFromJson)
+  int? get doubanid => throw _privateConstructorUsedError;
+  @JsonKey(name: 'bangumiid', fromJson: _intFromJson)
+  int? get bangumiid => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _intFromJson)
+  int? get season => throw _privateConstructorUsedError;
   String? get poster => throw _privateConstructorUsedError;
   String? get backdrop => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _doubleFromJson)
   double? get vote => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
-  @JsonKey(fromJson: _intFromJson)
-  int? get season => throw _privateConstructorUsedError;
+  String? get include => throw _privateConstructorUsedError;
+  String? get exclude => throw _privateConstructorUsedError;
+  String? get quality => throw _privateConstructorUsedError;
+  String? get resolution => throw _privateConstructorUsedError;
+  String? get effect => throw _privateConstructorUsedError;
   @JsonKey(name: 'total_episode', fromJson: _intFromJson)
   int? get totalEpisode => throw _privateConstructorUsedError;
-  @JsonKey(name: 'share_user')
-  String? get shareUser => throw _privateConstructorUsedError;
-  @JsonKey(name: 'share_time')
-  String? get shareTime => throw _privateConstructorUsedError;
+  String? get date => throw _privateConstructorUsedError;
+  @JsonKey(name: 'custom_words')
+  String? get customWords => throw _privateConstructorUsedError;
+  @JsonKey(name: 'media_category')
+  String? get mediaCategory => throw _privateConstructorUsedError;
+  @JsonKey(name: 'episode_group')
+  dynamic get episodeGroup => throw _privateConstructorUsedError;
+  @JsonKey(name: 'count', fromJson: _intFromJson)
+  int? get count => throw _privateConstructorUsedError;
 
   /// Serializes this SubscribeShareItem to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1148,19 +1172,34 @@ abstract class $SubscribeShareItemCopyWith<$Res> {
   @useResult
   $Res call({
     @JsonKey(fromJson: _intFromJson) int? id,
+    @JsonKey(name: 'subscribe_id', fromJson: _intFromJson) int? subscribeId,
+    @JsonKey(name: 'share_title') String? shareTitle,
+    @JsonKey(name: 'share_comment') String? shareComment,
+    @JsonKey(name: 'share_user') String? shareUser,
+    @JsonKey(name: 'share_uid') String? shareUid,
     String? name,
     String? year,
     String? type,
     String? keyword,
     @JsonKey(fromJson: _intFromJson) int? tmdbid,
+    @JsonKey(name: 'doubanid', fromJson: _intFromJson) int? doubanid,
+    @JsonKey(name: 'bangumiid', fromJson: _intFromJson) int? bangumiid,
+    @JsonKey(fromJson: _intFromJson) int? season,
     String? poster,
     String? backdrop,
     @JsonKey(fromJson: _doubleFromJson) double? vote,
     String? description,
-    @JsonKey(fromJson: _intFromJson) int? season,
+    String? include,
+    String? exclude,
+    String? quality,
+    String? resolution,
+    String? effect,
     @JsonKey(name: 'total_episode', fromJson: _intFromJson) int? totalEpisode,
-    @JsonKey(name: 'share_user') String? shareUser,
-    @JsonKey(name: 'share_time') String? shareTime,
+    String? date,
+    @JsonKey(name: 'custom_words') String? customWords,
+    @JsonKey(name: 'media_category') String? mediaCategory,
+    @JsonKey(name: 'episode_group') dynamic episodeGroup,
+    @JsonKey(name: 'count', fromJson: _intFromJson) int? count,
   });
 }
 
@@ -1180,19 +1219,34 @@ class _$SubscribeShareItemCopyWithImpl<$Res, $Val extends SubscribeShareItem>
   @override
   $Res call({
     Object? id = freezed,
+    Object? subscribeId = freezed,
+    Object? shareTitle = freezed,
+    Object? shareComment = freezed,
+    Object? shareUser = freezed,
+    Object? shareUid = freezed,
     Object? name = freezed,
     Object? year = freezed,
     Object? type = freezed,
     Object? keyword = freezed,
     Object? tmdbid = freezed,
+    Object? doubanid = freezed,
+    Object? bangumiid = freezed,
+    Object? season = freezed,
     Object? poster = freezed,
     Object? backdrop = freezed,
     Object? vote = freezed,
     Object? description = freezed,
-    Object? season = freezed,
+    Object? include = freezed,
+    Object? exclude = freezed,
+    Object? quality = freezed,
+    Object? resolution = freezed,
+    Object? effect = freezed,
     Object? totalEpisode = freezed,
-    Object? shareUser = freezed,
-    Object? shareTime = freezed,
+    Object? date = freezed,
+    Object? customWords = freezed,
+    Object? mediaCategory = freezed,
+    Object? episodeGroup = freezed,
+    Object? count = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -1200,6 +1254,26 @@ class _$SubscribeShareItemCopyWithImpl<$Res, $Val extends SubscribeShareItem>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                       as int?,
+            subscribeId: freezed == subscribeId
+                ? _value.subscribeId
+                : subscribeId // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            shareTitle: freezed == shareTitle
+                ? _value.shareTitle
+                : shareTitle // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            shareComment: freezed == shareComment
+                ? _value.shareComment
+                : shareComment // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            shareUser: freezed == shareUser
+                ? _value.shareUser
+                : shareUser // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            shareUid: freezed == shareUid
+                ? _value.shareUid
+                : shareUid // ignore: cast_nullable_to_non_nullable
+                      as String?,
             name: freezed == name
                 ? _value.name
                 : name // ignore: cast_nullable_to_non_nullable
@@ -1220,6 +1294,18 @@ class _$SubscribeShareItemCopyWithImpl<$Res, $Val extends SubscribeShareItem>
                 ? _value.tmdbid
                 : tmdbid // ignore: cast_nullable_to_non_nullable
                       as int?,
+            doubanid: freezed == doubanid
+                ? _value.doubanid
+                : doubanid // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            bangumiid: freezed == bangumiid
+                ? _value.bangumiid
+                : bangumiid // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            season: freezed == season
+                ? _value.season
+                : season // ignore: cast_nullable_to_non_nullable
+                      as int?,
             poster: freezed == poster
                 ? _value.poster
                 : poster // ignore: cast_nullable_to_non_nullable
@@ -1236,22 +1322,50 @@ class _$SubscribeShareItemCopyWithImpl<$Res, $Val extends SubscribeShareItem>
                 ? _value.description
                 : description // ignore: cast_nullable_to_non_nullable
                       as String?,
-            season: freezed == season
-                ? _value.season
-                : season // ignore: cast_nullable_to_non_nullable
-                      as int?,
+            include: freezed == include
+                ? _value.include
+                : include // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            exclude: freezed == exclude
+                ? _value.exclude
+                : exclude // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            quality: freezed == quality
+                ? _value.quality
+                : quality // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            resolution: freezed == resolution
+                ? _value.resolution
+                : resolution // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            effect: freezed == effect
+                ? _value.effect
+                : effect // ignore: cast_nullable_to_non_nullable
+                      as String?,
             totalEpisode: freezed == totalEpisode
                 ? _value.totalEpisode
                 : totalEpisode // ignore: cast_nullable_to_non_nullable
                       as int?,
-            shareUser: freezed == shareUser
-                ? _value.shareUser
-                : shareUser // ignore: cast_nullable_to_non_nullable
+            date: freezed == date
+                ? _value.date
+                : date // ignore: cast_nullable_to_non_nullable
                       as String?,
-            shareTime: freezed == shareTime
-                ? _value.shareTime
-                : shareTime // ignore: cast_nullable_to_non_nullable
+            customWords: freezed == customWords
+                ? _value.customWords
+                : customWords // ignore: cast_nullable_to_non_nullable
                       as String?,
+            mediaCategory: freezed == mediaCategory
+                ? _value.mediaCategory
+                : mediaCategory // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            episodeGroup: freezed == episodeGroup
+                ? _value.episodeGroup
+                : episodeGroup // ignore: cast_nullable_to_non_nullable
+                      as dynamic,
+            count: freezed == count
+                ? _value.count
+                : count // ignore: cast_nullable_to_non_nullable
+                      as int?,
           )
           as $Val,
     );
@@ -1269,19 +1383,34 @@ abstract class _$$SubscribeShareItemImplCopyWith<$Res>
   @useResult
   $Res call({
     @JsonKey(fromJson: _intFromJson) int? id,
+    @JsonKey(name: 'subscribe_id', fromJson: _intFromJson) int? subscribeId,
+    @JsonKey(name: 'share_title') String? shareTitle,
+    @JsonKey(name: 'share_comment') String? shareComment,
+    @JsonKey(name: 'share_user') String? shareUser,
+    @JsonKey(name: 'share_uid') String? shareUid,
     String? name,
     String? year,
     String? type,
     String? keyword,
     @JsonKey(fromJson: _intFromJson) int? tmdbid,
+    @JsonKey(name: 'doubanid', fromJson: _intFromJson) int? doubanid,
+    @JsonKey(name: 'bangumiid', fromJson: _intFromJson) int? bangumiid,
+    @JsonKey(fromJson: _intFromJson) int? season,
     String? poster,
     String? backdrop,
     @JsonKey(fromJson: _doubleFromJson) double? vote,
     String? description,
-    @JsonKey(fromJson: _intFromJson) int? season,
+    String? include,
+    String? exclude,
+    String? quality,
+    String? resolution,
+    String? effect,
     @JsonKey(name: 'total_episode', fromJson: _intFromJson) int? totalEpisode,
-    @JsonKey(name: 'share_user') String? shareUser,
-    @JsonKey(name: 'share_time') String? shareTime,
+    String? date,
+    @JsonKey(name: 'custom_words') String? customWords,
+    @JsonKey(name: 'media_category') String? mediaCategory,
+    @JsonKey(name: 'episode_group') dynamic episodeGroup,
+    @JsonKey(name: 'count', fromJson: _intFromJson) int? count,
   });
 }
 
@@ -1300,19 +1429,34 @@ class __$$SubscribeShareItemImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = freezed,
+    Object? subscribeId = freezed,
+    Object? shareTitle = freezed,
+    Object? shareComment = freezed,
+    Object? shareUser = freezed,
+    Object? shareUid = freezed,
     Object? name = freezed,
     Object? year = freezed,
     Object? type = freezed,
     Object? keyword = freezed,
     Object? tmdbid = freezed,
+    Object? doubanid = freezed,
+    Object? bangumiid = freezed,
+    Object? season = freezed,
     Object? poster = freezed,
     Object? backdrop = freezed,
     Object? vote = freezed,
     Object? description = freezed,
-    Object? season = freezed,
+    Object? include = freezed,
+    Object? exclude = freezed,
+    Object? quality = freezed,
+    Object? resolution = freezed,
+    Object? effect = freezed,
     Object? totalEpisode = freezed,
-    Object? shareUser = freezed,
-    Object? shareTime = freezed,
+    Object? date = freezed,
+    Object? customWords = freezed,
+    Object? mediaCategory = freezed,
+    Object? episodeGroup = freezed,
+    Object? count = freezed,
   }) {
     return _then(
       _$SubscribeShareItemImpl(
@@ -1320,6 +1464,26 @@ class __$$SubscribeShareItemImplCopyWithImpl<$Res>
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
                   as int?,
+        subscribeId: freezed == subscribeId
+            ? _value.subscribeId
+            : subscribeId // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        shareTitle: freezed == shareTitle
+            ? _value.shareTitle
+            : shareTitle // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        shareComment: freezed == shareComment
+            ? _value.shareComment
+            : shareComment // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        shareUser: freezed == shareUser
+            ? _value.shareUser
+            : shareUser // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        shareUid: freezed == shareUid
+            ? _value.shareUid
+            : shareUid // ignore: cast_nullable_to_non_nullable
+                  as String?,
         name: freezed == name
             ? _value.name
             : name // ignore: cast_nullable_to_non_nullable
@@ -1340,6 +1504,18 @@ class __$$SubscribeShareItemImplCopyWithImpl<$Res>
             ? _value.tmdbid
             : tmdbid // ignore: cast_nullable_to_non_nullable
                   as int?,
+        doubanid: freezed == doubanid
+            ? _value.doubanid
+            : doubanid // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        bangumiid: freezed == bangumiid
+            ? _value.bangumiid
+            : bangumiid // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        season: freezed == season
+            ? _value.season
+            : season // ignore: cast_nullable_to_non_nullable
+                  as int?,
         poster: freezed == poster
             ? _value.poster
             : poster // ignore: cast_nullable_to_non_nullable
@@ -1356,22 +1532,50 @@ class __$$SubscribeShareItemImplCopyWithImpl<$Res>
             ? _value.description
             : description // ignore: cast_nullable_to_non_nullable
                   as String?,
-        season: freezed == season
-            ? _value.season
-            : season // ignore: cast_nullable_to_non_nullable
-                  as int?,
+        include: freezed == include
+            ? _value.include
+            : include // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        exclude: freezed == exclude
+            ? _value.exclude
+            : exclude // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        quality: freezed == quality
+            ? _value.quality
+            : quality // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        resolution: freezed == resolution
+            ? _value.resolution
+            : resolution // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        effect: freezed == effect
+            ? _value.effect
+            : effect // ignore: cast_nullable_to_non_nullable
+                  as String?,
         totalEpisode: freezed == totalEpisode
             ? _value.totalEpisode
             : totalEpisode // ignore: cast_nullable_to_non_nullable
                   as int?,
-        shareUser: freezed == shareUser
-            ? _value.shareUser
-            : shareUser // ignore: cast_nullable_to_non_nullable
+        date: freezed == date
+            ? _value.date
+            : date // ignore: cast_nullable_to_non_nullable
                   as String?,
-        shareTime: freezed == shareTime
-            ? _value.shareTime
-            : shareTime // ignore: cast_nullable_to_non_nullable
+        customWords: freezed == customWords
+            ? _value.customWords
+            : customWords // ignore: cast_nullable_to_non_nullable
                   as String?,
+        mediaCategory: freezed == mediaCategory
+            ? _value.mediaCategory
+            : mediaCategory // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        episodeGroup: freezed == episodeGroup
+            ? _value.episodeGroup
+            : episodeGroup // ignore: cast_nullable_to_non_nullable
+                  as dynamic,
+        count: freezed == count
+            ? _value.count
+            : count // ignore: cast_nullable_to_non_nullable
+                  as int?,
       ),
     );
   }
@@ -1382,19 +1586,34 @@ class __$$SubscribeShareItemImplCopyWithImpl<$Res>
 class _$SubscribeShareItemImpl implements _SubscribeShareItem {
   const _$SubscribeShareItemImpl({
     @JsonKey(fromJson: _intFromJson) this.id,
+    @JsonKey(name: 'subscribe_id', fromJson: _intFromJson) this.subscribeId,
+    @JsonKey(name: 'share_title') this.shareTitle,
+    @JsonKey(name: 'share_comment') this.shareComment,
+    @JsonKey(name: 'share_user') this.shareUser,
+    @JsonKey(name: 'share_uid') this.shareUid,
     this.name,
     this.year,
     this.type,
     this.keyword,
     @JsonKey(fromJson: _intFromJson) this.tmdbid,
+    @JsonKey(name: 'doubanid', fromJson: _intFromJson) this.doubanid,
+    @JsonKey(name: 'bangumiid', fromJson: _intFromJson) this.bangumiid,
+    @JsonKey(fromJson: _intFromJson) this.season,
     this.poster,
     this.backdrop,
     @JsonKey(fromJson: _doubleFromJson) this.vote,
     this.description,
-    @JsonKey(fromJson: _intFromJson) this.season,
+    this.include,
+    this.exclude,
+    this.quality,
+    this.resolution,
+    this.effect,
     @JsonKey(name: 'total_episode', fromJson: _intFromJson) this.totalEpisode,
-    @JsonKey(name: 'share_user') this.shareUser,
-    @JsonKey(name: 'share_time') this.shareTime,
+    this.date,
+    @JsonKey(name: 'custom_words') this.customWords,
+    @JsonKey(name: 'media_category') this.mediaCategory,
+    @JsonKey(name: 'episode_group') this.episodeGroup,
+    @JsonKey(name: 'count', fromJson: _intFromJson) this.count,
   });
 
   factory _$SubscribeShareItemImpl.fromJson(Map<String, dynamic> json) =>
@@ -1403,6 +1622,21 @@ class _$SubscribeShareItemImpl implements _SubscribeShareItem {
   @override
   @JsonKey(fromJson: _intFromJson)
   final int? id;
+  @override
+  @JsonKey(name: 'subscribe_id', fromJson: _intFromJson)
+  final int? subscribeId;
+  @override
+  @JsonKey(name: 'share_title')
+  final String? shareTitle;
+  @override
+  @JsonKey(name: 'share_comment')
+  final String? shareComment;
+  @override
+  @JsonKey(name: 'share_user')
+  final String? shareUser;
+  @override
+  @JsonKey(name: 'share_uid')
+  final String? shareUid;
   @override
   final String? name;
   @override
@@ -1415,6 +1649,15 @@ class _$SubscribeShareItemImpl implements _SubscribeShareItem {
   @JsonKey(fromJson: _intFromJson)
   final int? tmdbid;
   @override
+  @JsonKey(name: 'doubanid', fromJson: _intFromJson)
+  final int? doubanid;
+  @override
+  @JsonKey(name: 'bangumiid', fromJson: _intFromJson)
+  final int? bangumiid;
+  @override
+  @JsonKey(fromJson: _intFromJson)
+  final int? season;
+  @override
   final String? poster;
   @override
   final String? backdrop;
@@ -1424,21 +1667,36 @@ class _$SubscribeShareItemImpl implements _SubscribeShareItem {
   @override
   final String? description;
   @override
-  @JsonKey(fromJson: _intFromJson)
-  final int? season;
+  final String? include;
+  @override
+  final String? exclude;
+  @override
+  final String? quality;
+  @override
+  final String? resolution;
+  @override
+  final String? effect;
   @override
   @JsonKey(name: 'total_episode', fromJson: _intFromJson)
   final int? totalEpisode;
   @override
-  @JsonKey(name: 'share_user')
-  final String? shareUser;
+  final String? date;
   @override
-  @JsonKey(name: 'share_time')
-  final String? shareTime;
+  @JsonKey(name: 'custom_words')
+  final String? customWords;
+  @override
+  @JsonKey(name: 'media_category')
+  final String? mediaCategory;
+  @override
+  @JsonKey(name: 'episode_group')
+  final dynamic episodeGroup;
+  @override
+  @JsonKey(name: 'count', fromJson: _intFromJson)
+  final int? count;
 
   @override
   String toString() {
-    return 'SubscribeShareItem(id: $id, name: $name, year: $year, type: $type, keyword: $keyword, tmdbid: $tmdbid, poster: $poster, backdrop: $backdrop, vote: $vote, description: $description, season: $season, totalEpisode: $totalEpisode, shareUser: $shareUser, shareTime: $shareTime)';
+    return 'SubscribeShareItem(id: $id, subscribeId: $subscribeId, shareTitle: $shareTitle, shareComment: $shareComment, shareUser: $shareUser, shareUid: $shareUid, name: $name, year: $year, type: $type, keyword: $keyword, tmdbid: $tmdbid, doubanid: $doubanid, bangumiid: $bangumiid, season: $season, poster: $poster, backdrop: $backdrop, vote: $vote, description: $description, include: $include, exclude: $exclude, quality: $quality, resolution: $resolution, effect: $effect, totalEpisode: $totalEpisode, date: $date, customWords: $customWords, mediaCategory: $mediaCategory, episodeGroup: $episodeGroup, count: $count)';
   }
 
   @override
@@ -1447,45 +1705,86 @@ class _$SubscribeShareItemImpl implements _SubscribeShareItem {
         (other.runtimeType == runtimeType &&
             other is _$SubscribeShareItemImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.subscribeId, subscribeId) ||
+                other.subscribeId == subscribeId) &&
+            (identical(other.shareTitle, shareTitle) ||
+                other.shareTitle == shareTitle) &&
+            (identical(other.shareComment, shareComment) ||
+                other.shareComment == shareComment) &&
+            (identical(other.shareUser, shareUser) ||
+                other.shareUser == shareUser) &&
+            (identical(other.shareUid, shareUid) ||
+                other.shareUid == shareUid) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.year, year) || other.year == year) &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.keyword, keyword) || other.keyword == keyword) &&
             (identical(other.tmdbid, tmdbid) || other.tmdbid == tmdbid) &&
+            (identical(other.doubanid, doubanid) ||
+                other.doubanid == doubanid) &&
+            (identical(other.bangumiid, bangumiid) ||
+                other.bangumiid == bangumiid) &&
+            (identical(other.season, season) || other.season == season) &&
             (identical(other.poster, poster) || other.poster == poster) &&
             (identical(other.backdrop, backdrop) ||
                 other.backdrop == backdrop) &&
             (identical(other.vote, vote) || other.vote == vote) &&
             (identical(other.description, description) ||
                 other.description == description) &&
-            (identical(other.season, season) || other.season == season) &&
+            (identical(other.include, include) || other.include == include) &&
+            (identical(other.exclude, exclude) || other.exclude == exclude) &&
+            (identical(other.quality, quality) || other.quality == quality) &&
+            (identical(other.resolution, resolution) ||
+                other.resolution == resolution) &&
+            (identical(other.effect, effect) || other.effect == effect) &&
             (identical(other.totalEpisode, totalEpisode) ||
                 other.totalEpisode == totalEpisode) &&
-            (identical(other.shareUser, shareUser) ||
-                other.shareUser == shareUser) &&
-            (identical(other.shareTime, shareTime) ||
-                other.shareTime == shareTime));
+            (identical(other.date, date) || other.date == date) &&
+            (identical(other.customWords, customWords) ||
+                other.customWords == customWords) &&
+            (identical(other.mediaCategory, mediaCategory) ||
+                other.mediaCategory == mediaCategory) &&
+            const DeepCollectionEquality().equals(
+              other.episodeGroup,
+              episodeGroup,
+            ) &&
+            (identical(other.count, count) || other.count == count));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     id,
+    subscribeId,
+    shareTitle,
+    shareComment,
+    shareUser,
+    shareUid,
     name,
     year,
     type,
     keyword,
     tmdbid,
+    doubanid,
+    bangumiid,
+    season,
     poster,
     backdrop,
     vote,
     description,
-    season,
+    include,
+    exclude,
+    quality,
+    resolution,
+    effect,
     totalEpisode,
-    shareUser,
-    shareTime,
-  );
+    date,
+    customWords,
+    mediaCategory,
+    const DeepCollectionEquality().hash(episodeGroup),
+    count,
+  ]);
 
   /// Create a copy of SubscribeShareItem
   /// with the given fields replaced by the non-null parameter values.
@@ -1507,20 +1806,36 @@ class _$SubscribeShareItemImpl implements _SubscribeShareItem {
 abstract class _SubscribeShareItem implements SubscribeShareItem {
   const factory _SubscribeShareItem({
     @JsonKey(fromJson: _intFromJson) final int? id,
+    @JsonKey(name: 'subscribe_id', fromJson: _intFromJson)
+    final int? subscribeId,
+    @JsonKey(name: 'share_title') final String? shareTitle,
+    @JsonKey(name: 'share_comment') final String? shareComment,
+    @JsonKey(name: 'share_user') final String? shareUser,
+    @JsonKey(name: 'share_uid') final String? shareUid,
     final String? name,
     final String? year,
     final String? type,
     final String? keyword,
     @JsonKey(fromJson: _intFromJson) final int? tmdbid,
+    @JsonKey(name: 'doubanid', fromJson: _intFromJson) final int? doubanid,
+    @JsonKey(name: 'bangumiid', fromJson: _intFromJson) final int? bangumiid,
+    @JsonKey(fromJson: _intFromJson) final int? season,
     final String? poster,
     final String? backdrop,
     @JsonKey(fromJson: _doubleFromJson) final double? vote,
     final String? description,
-    @JsonKey(fromJson: _intFromJson) final int? season,
+    final String? include,
+    final String? exclude,
+    final String? quality,
+    final String? resolution,
+    final String? effect,
     @JsonKey(name: 'total_episode', fromJson: _intFromJson)
     final int? totalEpisode,
-    @JsonKey(name: 'share_user') final String? shareUser,
-    @JsonKey(name: 'share_time') final String? shareTime,
+    final String? date,
+    @JsonKey(name: 'custom_words') final String? customWords,
+    @JsonKey(name: 'media_category') final String? mediaCategory,
+    @JsonKey(name: 'episode_group') final dynamic episodeGroup,
+    @JsonKey(name: 'count', fromJson: _intFromJson) final int? count,
   }) = _$SubscribeShareItemImpl;
 
   factory _SubscribeShareItem.fromJson(Map<String, dynamic> json) =
@@ -1529,6 +1844,21 @@ abstract class _SubscribeShareItem implements SubscribeShareItem {
   @override
   @JsonKey(fromJson: _intFromJson)
   int? get id;
+  @override
+  @JsonKey(name: 'subscribe_id', fromJson: _intFromJson)
+  int? get subscribeId;
+  @override
+  @JsonKey(name: 'share_title')
+  String? get shareTitle;
+  @override
+  @JsonKey(name: 'share_comment')
+  String? get shareComment;
+  @override
+  @JsonKey(name: 'share_user')
+  String? get shareUser;
+  @override
+  @JsonKey(name: 'share_uid')
+  String? get shareUid;
   @override
   String? get name;
   @override
@@ -1541,6 +1871,15 @@ abstract class _SubscribeShareItem implements SubscribeShareItem {
   @JsonKey(fromJson: _intFromJson)
   int? get tmdbid;
   @override
+  @JsonKey(name: 'doubanid', fromJson: _intFromJson)
+  int? get doubanid;
+  @override
+  @JsonKey(name: 'bangumiid', fromJson: _intFromJson)
+  int? get bangumiid;
+  @override
+  @JsonKey(fromJson: _intFromJson)
+  int? get season;
+  @override
   String? get poster;
   @override
   String? get backdrop;
@@ -1550,17 +1889,32 @@ abstract class _SubscribeShareItem implements SubscribeShareItem {
   @override
   String? get description;
   @override
-  @JsonKey(fromJson: _intFromJson)
-  int? get season;
+  String? get include;
+  @override
+  String? get exclude;
+  @override
+  String? get quality;
+  @override
+  String? get resolution;
+  @override
+  String? get effect;
   @override
   @JsonKey(name: 'total_episode', fromJson: _intFromJson)
   int? get totalEpisode;
   @override
-  @JsonKey(name: 'share_user')
-  String? get shareUser;
+  String? get date;
   @override
-  @JsonKey(name: 'share_time')
-  String? get shareTime;
+  @JsonKey(name: 'custom_words')
+  String? get customWords;
+  @override
+  @JsonKey(name: 'media_category')
+  String? get mediaCategory;
+  @override
+  @JsonKey(name: 'episode_group')
+  dynamic get episodeGroup;
+  @override
+  @JsonKey(name: 'count', fromJson: _intFromJson)
+  int? get count;
 
   /// Create a copy of SubscribeShareItem
   /// with the given fields replaced by the non-null parameter values.
