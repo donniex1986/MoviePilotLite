@@ -7,21 +7,23 @@ enum MultifunctionSectionLayout { mosaic, grouped }
 class MultifunctionItem {
   const MultifunctionItem({
     required this.title,
-    required this.subtitle,
     required this.icon,
     required this.accent,
     required this.style,
+    this.subtitle,
     this.badge,
     this.meta,
+    this.route,
   });
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final IconData icon;
   final Color accent;
   final MultifunctionCardStyle style;
   final String? badge;
   final String? meta;
+  final String? route;
 }
 
 class MultifunctionSection {

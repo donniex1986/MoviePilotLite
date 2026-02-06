@@ -7,11 +7,12 @@ const List<MultifunctionSection> multifunctionSections = [
     items: [
       MultifunctionItem(
         title: '搜索结果',
-        subtitle: '全库快速定位',
+        subtitle: null,
         icon: Icons.search,
-        accent: Color(0xFF6D5DF6),
+        accent: Color(0xFF5C7CFA),
         style: MultifunctionCardStyle.hero,
-        meta: '近期高频',
+        meta: '近期',
+        route: '/search-result',
       ),
     ],
   ),
@@ -36,19 +37,15 @@ const List<MultifunctionSection> multifunctionSections = [
       ),
       MultifunctionItem(
         title: '工作流',
-        subtitle: '自动整理任务',
         icon: Icons.account_tree_outlined,
         accent: Color(0xFF0AA8A8),
         style: MultifunctionCardStyle.compact,
-        meta: '运行中',
       ),
       MultifunctionItem(
         title: '日历',
-        subtitle: '上映排期提醒',
         icon: Icons.event_outlined,
         accent: Color(0xFFFFA000),
         style: MultifunctionCardStyle.compact,
-        meta: '今日 3',
       ),
     ],
   ),
@@ -61,7 +58,6 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.download_outlined,
         accent: Color(0xFF3B82F6),
         style: MultifunctionCardStyle.wide,
-        meta: '进行中 3',
       ),
       MultifunctionItem(
         title: '媒体整理',
@@ -69,7 +65,6 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.folder_outlined,
         accent: Color(0xFF8E44AD),
         style: MultifunctionCardStyle.wide,
-        meta: '待处理 12',
       ),
       MultifunctionItem(
         title: '文件管理',
@@ -77,7 +72,6 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.snippet_folder_outlined,
         accent: Color(0xFF6D5DF6),
         style: MultifunctionCardStyle.wide,
-        meta: '新增 4',
       ),
     ],
   ),
@@ -91,7 +85,6 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.grid_view_outlined,
         accent: Color(0xFF8F67FF),
         style: MultifunctionCardStyle.wide,
-        meta: '已启用 6',
       ),
       MultifunctionItem(
         title: '站点管理',
@@ -99,7 +92,6 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.public_outlined,
         accent: Color(0xFF5C7CFA),
         style: MultifunctionCardStyle.wide,
-        meta: '在线',
       ),
       MultifunctionItem(
         title: '用户管理',
@@ -107,7 +99,6 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.people_outline,
         accent: Color(0xFF00B894),
         style: MultifunctionCardStyle.wide,
-        meta: '成员 8',
       ),
       MultifunctionItem(
         title: '设定',
@@ -115,7 +106,6 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.settings_outlined,
         accent: Color(0xFFFFA000),
         style: MultifunctionCardStyle.wide,
-        meta: '更新 2',
       ),
     ],
   ),

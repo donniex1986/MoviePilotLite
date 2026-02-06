@@ -9,10 +9,16 @@ import 'package:moviepilot_mobile/modules/multifunction/controllers/multifunctio
 import 'package:moviepilot_mobile/modules/multifunction/pages/multifunction_page.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/pages/recommend_page.dart';
+import 'package:moviepilot_mobile/modules/search_result/controllers/search_result_controller.dart';
+import 'package:moviepilot_mobile/modules/search_result/pages/search_result_page.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:moviepilot_mobile/utils/prefs_keys.dart';
 
 class Index extends StatefulWidget {
-  const Index({super.key});
+  const Index({super.key, this.initialIndex});
+
+  final int? initialIndex;
 
   @override
   State<Index> createState() => _IndexState();
@@ -21,6 +27,7 @@ class Index extends StatefulWidget {
 class _IndexState extends State<Index> {
   int _selectedIndex = 0;
   double _lastScrollOffset = 0;
+  bool _initialIndexApplied = false;
 
   // Language toggle for testing locale label updates
   final dashboardController = Get.put(DashboardController());
@@ -32,13 +39,19 @@ class _IndexState extends State<Index> {
   late final ScrollController _recommendScrollController;
   late final ScrollController _discoverScrollController;
   late final ScrollController _multifunctionScrollController;
+  late final ScrollController _searchResultScrollController;
 
   @override
   void initState() {
     super.initState();
+    _applyInitialIndex();
+    if (!_initialIndexApplied) {
+      _restoreSelectedIndex();
+    }
     Get.put(RecommendController());
     Get.put(DiscoverController());
     Get.put(MultifunctionController());
+    Get.put(SearchResultController());
     _homeScrollController = ScrollController()
       ..addListener(() => _onScroll(_homeScrollController));
     _recommendScrollController = ScrollController()
@@ -47,6 +60,8 @@ class _IndexState extends State<Index> {
       ..addListener(() => _onScroll(_discoverScrollController));
     _multifunctionScrollController = ScrollController()
       ..addListener(() => _onScroll(_multifunctionScrollController));
+    _searchResultScrollController = ScrollController()
+      ..addListener(() => _onScroll(_searchResultScrollController));
   }
 
   @override
@@ -55,6 +70,7 @@ class _IndexState extends State<Index> {
     _recommendScrollController.dispose();
     _discoverScrollController.dispose();
     _multifunctionScrollController.dispose();
+    _searchResultScrollController.dispose();
     super.dispose();
   }
 
@@ -71,6 +87,51 @@ class _IndexState extends State<Index> {
     LiquidBottomNavigationBar.handleScroll(offset, delta);
   }
 
+  void _applyInitialIndex() {
+    final raw = widget.initialIndex;
+    if (raw != null) {
+      final clamped = raw.clamp(0, kIndexMaxTab);
+      _selectedIndex = clamped is int ? clamped : clamped.toInt();
+      _lastScrollOffset = 0;
+      _initialIndexApplied = true;
+      return;
+    }
+    final args = Get.arguments;
+    if (args is Map && args['initialIndex'] is int) {
+      final argRaw = args['initialIndex'] as int;
+      final clamped = argRaw.clamp(0, kIndexMaxTab);
+      _selectedIndex = clamped is int ? clamped : clamped.toInt();
+      _lastScrollOffset = 0;
+      _initialIndexApplied = true;
+    }
+  }
+
+  Future<void> _restoreSelectedIndex() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getInt(kIndexLastTabKey);
+      if (stored == null) return;
+      final clamped = stored.clamp(0, kIndexMaxTab);
+      if (clamped == _selectedIndex) return;
+      if (!mounted) return;
+      setState(() {
+        _selectedIndex = clamped is int ? clamped : clamped.toInt();
+        _lastScrollOffset = 0;
+      });
+    } catch (_) {
+      // ignore restore failures
+    }
+  }
+
+  Future<void> _persistSelectedIndex(int index) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(kIndexLastTabKey, index);
+    } catch (_) {
+      // ignore persist failures
+    }
+  }
+
   void _stopCurrentScrollMomentum() {
     ScrollController? controller;
     switch (_selectedIndex) {
@@ -82,6 +143,8 @@ class _IndexState extends State<Index> {
         controller = _discoverScrollController;
       case 3:
         controller = _multifunctionScrollController;
+      case 4:
+        controller = _searchResultScrollController;
     }
     if (controller != null && controller.hasClients) {
       controller.animateTo(
@@ -93,35 +156,6 @@ class _IndexState extends State<Index> {
   }
 
   // Dedicated page for each tab
-
-  Widget _buildSearchPage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(100),
-            ),
-            child: const Icon(Icons.search, size: 64, color: Colors.grey),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Search',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Find what you need',
-            style: TextStyle(fontSize: 16, color: Colors.grey[400]),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,7 +167,9 @@ class _IndexState extends State<Index> {
           RecommendPage(scrollController: _recommendScrollController),
           DiscoverPage(scrollController: _discoverScrollController),
           MultifunctionPage(scrollController: _multifunctionScrollController),
-          _buildSearchPage(),
+          SearchResultPage(
+            scrollController: _searchResultScrollController,
+          ),
         ],
       ),
       bottomNavigationBar: LiquidBottomNavigationBar(
@@ -144,6 +180,7 @@ class _IndexState extends State<Index> {
         onTap: (index) {
           setState(() => _selectedIndex = index);
           _lastScrollOffset = 0;
+          _persistSelectedIndex(index);
           debugPrint('Tab index: $index');
         },
         items: [
@@ -188,6 +225,7 @@ class _IndexState extends State<Index> {
             _selectedIndex = 4;
             _lastScrollOffset = 0;
           });
+          _persistSelectedIndex(4);
         },
         labelVisibility: LabelVisibility.always,
         height: 68,

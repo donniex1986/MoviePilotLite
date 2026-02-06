@@ -8,11 +8,6 @@ import 'package:moviepilot_mobile/utils/toast_util.dart';
 import '../models/cache_model.dart';
 
 class CacheController extends GetxController {
-  static const String _cacheEndpoint =
-      'https://mploser.x.ddnsto.com/api/v1/torrent/cache';
-  static const String _cacheToken =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzA4NjMzOTQsImlhdCI6MTc3MDE3MjE5NCwic3ViIjoiMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJzdXBlcl91c2VyIjp0cnVlLCJsZXZlbCI6MiwicHVycG9zZSI6ImF1dGhlbnRpY2F0aW9uIn0.5NJZS6DTY7BOprwkaUho1s0BtvT5TzHNOQ0BMRkJr5A';
-
   final keywordController = TextEditingController();
 
   final keyword = ''.obs;
@@ -45,17 +40,17 @@ class CacheController extends GetxController {
     statusCode.value = null;
 
     try {
-      final response = await _apiClient.get<dynamic>(
-        _cacheEndpoint,
-        token: _cacheToken,
-      );
+      final response = await _apiClient.get<dynamic>('/api/v1/torrent/cache');
 
       statusCode.value = response.statusCode ?? 0;
       final parsed = _parseResponse(response.data);
       cacheResponse.value = parsed;
 
       if (parsed == null) {
-        errorText.value = _buildErrorMessage(response.statusCode, response.data);
+        errorText.value = _buildErrorMessage(
+          response.statusCode,
+          response.data,
+        );
       } else if (!parsed.success) {
         errorText.value = parsed.message?.trim().isNotEmpty == true
             ? parsed.message
@@ -117,11 +112,7 @@ class CacheController extends GetxController {
     final payload = cacheResponse.value?.data;
     if (payload?.sites != null) return payload!.sites!;
     final items = payload?.items ?? const [];
-    return items
-        .map(_siteLabel)
-        .whereType<String>()
-        .toSet()
-        .length;
+    return items.map(_siteLabel).whereType<String>().toSet().length;
   }
 
   List<String> get siteOptions {

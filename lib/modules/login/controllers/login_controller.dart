@@ -4,6 +4,8 @@ import '../../../utils/toast_util.dart';
 import '../models/login_profile.dart';
 import '../repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/utils/prefs_keys.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
   final _repository = Get.find<AuthRepository>();
@@ -46,7 +48,12 @@ class LoginController extends GetxController {
         // 获取用户信息成功，直接跳转到dashboard页面
         _talker.info('自动登录成功');
         ToastUtil.success('自动登录成功');
-        Get.offAllNamed('/main');
+        final lastIndex = await _loadLastTabIndex();
+        if (lastIndex != null) {
+          Get.offAllNamed('/main', arguments: {'initialIndex': lastIndex});
+        } else {
+          Get.offAllNamed('/main');
+        }
       } else {
         // 获取用户信息失败，需要用户手动登录
         _talker.warning('自动登录失败，需要用户手动登录');
@@ -106,11 +113,28 @@ class LoginController extends GetxController {
       _loadProfiles();
       ToastUtil.success('已保存账号信息', title: '登录成功');
       // 跳转到 Dashboard
-      Get.offAllNamed('/main');
+      final lastIndex = await _loadLastTabIndex();
+      if (lastIndex != null) {
+        Get.offAllNamed('/main', arguments: {'initialIndex': lastIndex});
+      } else {
+        Get.offAllNamed('/main');
+      }
     } catch (e) {
       ToastUtil.error(e.toString(), title: '登录失败');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<int?> _loadLastTabIndex() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getInt(kIndexLastTabKey);
+      if (stored == null) return null;
+      final clamped = stored.clamp(0, kIndexMaxTab);
+      return clamped is int ? clamped : clamped.toInt();
+    } catch (_) {
+      return null;
     }
   }
 }

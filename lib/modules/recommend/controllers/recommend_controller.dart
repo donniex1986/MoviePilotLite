@@ -40,9 +40,7 @@ const List<String> _allSubCategories = <String>[
   ..._chartSubCategories,
 ];
 
-const String _recommendBaseUrl =
-    'https://mploser.x.ddnsto.com/api/v1/recommend/';
-final String _recommendImageProxyBaseUrl = Uri.parse(_recommendBaseUrl).origin;
+const String _recommendBaseUrl = '/api/v1/recommend/';
 
 const Map<String, String> _subCategoryKeyMap = <String, String>{
   '正在热映': 'douban_showing',

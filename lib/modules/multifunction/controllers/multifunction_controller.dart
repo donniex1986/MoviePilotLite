@@ -7,6 +7,11 @@ class MultifunctionController extends GetxController {
   List<MultifunctionSection> get sections => multifunctionSections;
 
   void handleTap(MultifunctionItem item) {
+    final route = item.route;
+    if (route != null && route.isNotEmpty) {
+      Get.toNamed(route);
+      return;
+    }
     ToastUtil.info('${item.title} 暂未开放');
   }
 }

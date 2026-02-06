@@ -138,42 +138,27 @@ class MultifunctionPage extends GetView<MultifunctionController> {
   ) {
     final borderRadius = BorderRadius.circular(18);
     final theme = Theme.of(context);
-    final shadowColor = Colors.black.withOpacity(
-      theme.brightness == Brightness.dark ? 0.18 : 0.08,
-    );
 
-    return Container(
-      decoration: BoxDecoration(
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
         borderRadius: borderRadius,
-        boxShadow: [
-          BoxShadow(
-            color: shadowColor,
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        side: BorderSide(color: AppTheme.borderColor.withOpacity(0.4)),
       ),
-      child: Material(
-        color: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: borderRadius,
-          side: BorderSide(color: AppTheme.borderColor.withOpacity(0.4)),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          children: [
-            for (int index = 0; index < section.items.length; index++) ...[
-              _buildGroupedRow(
-                context,
-                section.items[index],
-                isFirst: index == 0,
-                isLast: index == section.items.length - 1,
-              ),
-              if (index != section.items.length - 1)
-                Divider(height: 1, color: theme.dividerColor.withOpacity(0.4)),
-            ],
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (int index = 0; index < section.items.length; index++) ...[
+            _buildGroupedRow(
+              context,
+              section.items[index],
+              isFirst: index == 0,
+              isLast: index == section.items.length - 1,
+            ),
+            if (index != section.items.length - 1)
+              Divider(height: 1, color: theme.dividerColor.withOpacity(0.4)),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -210,7 +195,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(item.subtitle, style: _secondaryTextStyle(context)),
+                  if (item.subtitle != null)
+                    Text(item.subtitle!, style: _secondaryTextStyle(context)),
                 ],
               ),
             ),
@@ -273,7 +259,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     return _buildCardShell(
       context,
       item,
-      height: 110,
+      height: 100,
       gradient: gradient,
       child: Stack(
         children: [
@@ -287,32 +273,30 @@ class MultifunctionPage extends GetView<MultifunctionController> {
             bottom: -22,
             child: _buildGlowCircle(accent.withOpacity(0.12), 54),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
+          Positioned.fill(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                SizedBox(width: 16),
                 _buildIconBubble(accent, item.icon, size: 50),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        item.title,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(item.subtitle, style: _secondaryTextStyle(context)),
-                      if (item.meta != null) ...[
-                        const SizedBox(height: 8),
-                        _buildMetaChip(context, item.meta!, accent),
-                      ],
-                    ],
+                Text(
+                  item.title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 6),
+                if (item.subtitle != null)
+                  Text(item.subtitle!, style: _secondaryTextStyle(context)),
+                if (item.meta != null) ...[
+                  const SizedBox(height: 12),
+                  _buildMetaChip(context, item.meta!, accent),
+                ],
+                Spacer(),
                 Icon(Icons.chevron_right, color: accent),
+                SizedBox(width: 16),
               ],
             ),
           ),
@@ -348,7 +332,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
                   ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 6),
-                Text(item.subtitle, style: _secondaryTextStyle(context)),
+                if (item.subtitle != null)
+                  Text(item.subtitle!, style: _secondaryTextStyle(context)),
                 if (item.badge != null) ...[
                   const SizedBox(height: 10),
                   _buildBadge(context, item.badge!, accent),
@@ -361,6 +346,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  // 订阅
   Widget _buildCompactCard(BuildContext context, MultifunctionItem item) {
     final accent = item.accent;
     return _buildCardShell(
@@ -385,7 +371,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(item.subtitle, style: _secondaryTextStyle(context)),
+                  if (item.subtitle != null)
+                    Text(item.subtitle!, style: _secondaryTextStyle(context)),
                 ],
               ),
             ),
@@ -399,14 +386,15 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  // 整理
   Widget _buildWideCard(BuildContext context, MultifunctionItem item) {
     final accent = item.accent;
     return _buildCardShell(
       context,
       item,
-      height: 98,
+      height: 100,
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: Row(
           children: [
             _buildIconBubble(accent, item.icon, size: 44),
@@ -423,7 +411,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(item.subtitle, style: _secondaryTextStyle(context)),
+                  if (item.subtitle != null)
+                    Text(item.subtitle!, style: _secondaryTextStyle(context)),
                   if (item.meta != null) ...[
                     const SizedBox(height: 6),
                     Text(
@@ -452,32 +441,18 @@ class MultifunctionPage extends GetView<MultifunctionController> {
   }) {
     final borderRadius = BorderRadius.circular(18);
     final theme = Theme.of(context);
-    final shadowColor = Colors.black.withOpacity(
-      theme.brightness == Brightness.dark ? 0.18 : 0.08,
-    );
     return SizedBox(
       height: height,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => controller.handleTap(item),
-          borderRadius: borderRadius,
-          child: Ink(
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              gradient: gradient,
-              borderRadius: borderRadius,
-              border: Border.all(color: AppTheme.borderColor.withOpacity(0.4)),
-              boxShadow: [
-                BoxShadow(
-                  color: shadowColor,
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: child,
+      child: InkWell(
+        onTap: () => controller.handleTap(item),
+        borderRadius: borderRadius,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            gradient: gradient,
+            borderRadius: borderRadius,
           ),
+          child: ClipRRect(borderRadius: borderRadius, child: child),
         ),
       ),
     );

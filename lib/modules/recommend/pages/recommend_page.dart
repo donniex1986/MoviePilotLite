@@ -30,7 +30,7 @@ class RecommendPage extends GetView<RecommendController> {
         slivers: [
           SliverToBoxAdapter(child: Obx(() => _buildCategoryBar(context))),
           const SliverToBoxAdapter(child: SizedBox(height: 6)),
-          SliverToBoxAdapter(child: Obx(() => _buildSectionList(context))),
+          SliverToBoxAdapter(child: _buildSectionList(context)),
           SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
         ],
       ),
@@ -151,35 +151,41 @@ class RecommendPage extends GetView<RecommendController> {
   }
 
   Widget _buildSectionList(BuildContext context) {
-    final subCategories = controller.currentSubCategories;
-    if (subCategories.isEmpty) {
+    return Obx(() {
+      final subCategories = controller.currentSubCategories;
+      if (subCategories.isEmpty) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Text(
+            '暂无可展示的分组，请在筛选中开启。',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: AppTheme.textSecondaryColor),
+          ),
+        );
+      }
+
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Text(
-          '暂无可展示的分组，请在筛选中开启。',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondaryColor),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: subCategories.map((subCategory) {
+            return KeyedSubtree(
+              key: ValueKey(subCategory),
+              child: Column(
+                children: [
+                  _buildSectionHeader(context, title: subCategory),
+                  SizedBox(height: 8),
+                  _buildPosterRail(context, subCategory),
+                  SizedBox(height: 8),
+                ],
+              ),
+            );
+          }).toList(),
         ),
       );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: subCategories.map((subCategory) {
-          return Column(
-            children: [
-              _buildSectionHeader(context, title: subCategory),
-              SizedBox(height: 8),
-              _buildPosterRail(context, subCategory),
-              SizedBox(height: 8),
-            ],
-          );
-        }).toList(),
-      ),
-    );
+    });
   }
 
   Widget _buildSectionHeader(BuildContext context, {required String title}) {
@@ -217,30 +223,70 @@ class RecommendPage extends GetView<RecommendController> {
   }
 
   Widget _buildPosterRail(BuildContext context, String subCategory) {
-    controller.ensureSubCategoryLoaded(subCategory);
-    final items = controller.itemsForSubCategory(subCategory).take(8).toList();
-    final isLoading = controller.isLoadingForSubCategory(subCategory);
-    final errorText = controller.errorForSubCategory(subCategory);
-    if (items.isEmpty && errorText != null) {
-      return _buildEmptyRail(context, errorText);
-    }
-    return Skeletonizer(enabled: isLoading, child: _buildItemsRail(items));
+    return Obx(() {
+      final items =
+          controller.itemsForSubCategory(subCategory).take(8).toList();
+      final isLoading = controller.isLoadingForSubCategory(subCategory);
+      final errorText = controller.errorForSubCategory(subCategory);
+      if (items.isEmpty && errorText != null) {
+        return _buildEmptyRail(context, errorText);
+      }
+      return Skeletonizer(
+        enabled: isLoading,
+        child: _buildItemsRail(items, storageKey: subCategory),
+      );
+    });
   }
 
-  Widget _buildItemsRail(List<RecommendApiItem> items) {
+  Widget _buildItemsRail(
+    List<RecommendApiItem> items, {
+    required String storageKey,
+  }) {
     return SizedBox(
       height: 200,
       child: ListView.separated(
+        key: PageStorageKey<String>('recommend-rail-$storageKey'),
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(right: 8),
-        itemBuilder: (context, index) => RecommendItemCard(
-          item: items[index],
-          onTap: () => _openDetail(items[index]),
-        ),
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return RecommendItemCard(
+            key: ValueKey(_itemKey(item)),
+            item: item,
+            onTap: () => _openDetail(item),
+          );
+        },
         separatorBuilder: (context, index) => const SizedBox(width: 14),
         itemCount: items.length,
       ),
     );
+  }
+
+  String _itemKey(RecommendApiItem item) {
+    final prefix = item.mediaid_prefix;
+    final mediaId = item.media_id;
+    if (prefix != null &&
+        prefix.isNotEmpty &&
+        mediaId != null &&
+        mediaId.isNotEmpty) {
+      return '$prefix:$mediaId';
+    }
+    final tmdbId = item.tmdb_id;
+    if (tmdbId != null && tmdbId.isNotEmpty) {
+      return 'tmdb:$tmdbId';
+    }
+    final doubanId = item.douban_id;
+    if (doubanId != null && doubanId.isNotEmpty) {
+      return 'douban:$doubanId';
+    }
+    final bangumiId = item.bangumi_id;
+    if (bangumiId != null && bangumiId.isNotEmpty) {
+      return 'bangumi:$bangumiId';
+    }
+    final title = _bestTitle(item) ?? item.title ?? '';
+    final year = item.year ?? '';
+    final type = item.type ?? '';
+    return '$title|$year|$type';
   }
 
   Widget _buildEmptyRail(BuildContext context, String message) {

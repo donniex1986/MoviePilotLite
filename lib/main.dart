@@ -28,6 +28,8 @@ import 'modules/system_message/controllers/system_message_controller.dart';
 import 'modules/system_message/pages/system_message_page.dart';
 import 'modules/media_detail/controllers/media_detail_controller.dart';
 import 'modules/media_detail/pages/media_detail_page.dart';
+import 'modules/search_result/controllers/search_result_controller.dart';
+import 'modules/search_result/pages/search_result_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,7 +63,17 @@ class MyApp extends StatelessWidget {
         routeObserver,
       ],
       getPages: [
-        GetPage(name: '/main', page: () => const Index()),
+        GetPage(
+          name: '/main',
+          page: () {
+            final args = Get.arguments;
+            int? initialIndex;
+            if (args is Map && args['initialIndex'] is int) {
+              initialIndex = args['initialIndex'] as int;
+            }
+            return Index(initialIndex: initialIndex);
+          },
+        ),
         GetPage(name: '/login', page: () => const LoginPage()),
         GetPage(
           name: '/dashboard',
@@ -117,6 +129,13 @@ class MyApp extends StatelessWidget {
           page: () => const CachePage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => CacheController());
+          }),
+        ),
+        GetPage(
+          name: '/search-result',
+          page: () => const SearchResultPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SearchResultController());
           }),
         ),
         GetPage(

@@ -7,11 +7,6 @@ import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/modules/recognize/models/recognize_model.dart';
 
 class RecognizeController extends GetxController {
-  static const String _recognizeEndpoint =
-      'https://mploser.x.ddnsto.com/api/v1/media/recognize';
-  static const String _recognizeToken =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzA4NjMzOTQsImlhdCI6MTc3MDE3MjE5NCwic3ViIjoiMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJzdXBlcl91c2VyIjp0cnVlLCJsZXZlbCI6MiwicHVycG9zZSI6ImF1dGhlbnRpY2F0aW9uIn0.5NJZS6DTY7BOprwkaUho1s0BtvT5TzHNOQ0BMRkJr5A';
-
   final titleController = TextEditingController();
   final subtitleController = TextEditingController();
 
@@ -47,16 +42,15 @@ class RecognizeController extends GetxController {
     recognizeResponse.value = null;
 
     try {
-      final uri = Uri.parse(_recognizeEndpoint).replace(
-        queryParameters: {
-          if (title.isNotEmpty) 'title': title,
-          if (subtitle.isNotEmpty) 'subtitle': subtitle,
-        },
-      );
+      final uri = '/api/v1/media/recognize';
+      final queryParameters = {
+        if (title.isNotEmpty) 'title': title,
+        if (subtitle.isNotEmpty) 'subtitle': subtitle,
+      };
 
       final response = await _apiClient.get<dynamic>(
         uri.toString(),
-        token: _recognizeToken,
+        queryParameters: queryParameters,
       );
 
       statusCode.value = response.statusCode ?? 0;
@@ -66,7 +60,10 @@ class RecognizeController extends GetxController {
       if (response.statusCode == null ||
           response.statusCode! < 200 ||
           response.statusCode! >= 300) {
-        errorText.value = _buildErrorMessage(response.statusCode, response.data);
+        errorText.value = _buildErrorMessage(
+          response.statusCode,
+          response.data,
+        );
       }
     } catch (e) {
       errorText.value = '请求异常: $e';
@@ -131,9 +128,7 @@ class RecognizeController extends GetxController {
         if (!_looksLikeJson(trimmed)) return null;
         final decoded = jsonDecode(trimmed);
         if (decoded is Map) {
-          return RecognizeResponse.fromJson(
-            Map<String, dynamic>.from(decoded),
-          );
+          return RecognizeResponse.fromJson(Map<String, dynamic>.from(decoded));
         }
       }
     } catch (_) {

@@ -53,27 +53,27 @@ class RecommendItemCard extends StatelessWidget {
   }
 
   Widget _buildContent() {
-    final data = item!;
+    final data = item;
     return SizedBox(
       width: _cardWidth,
       height: _cardHeight,
       child: Stack(
         children: [
           _buildPoster(data),
-          if (data.type != null && data.type!.isNotEmpty)
+          if (data?.type != null && data!.type!.isNotEmpty)
             Positioned(left: 10, top: 10, child: _buildPill(data.type!)),
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: _buildTitle(data.title ?? ''),
+            child: _buildTitle(data?.title ?? ''),
           ),
-          if (data.vote_average != null && data.vote_average! > 0)
+          if (data?.vote_average != null && data!.vote_average! > 0)
             Positioned(
               right: 10,
               top: 10,
               child: _buildPill(
-                data.vote_average!.toStringAsFixed(1),
+                data?.vote_average?.toStringAsFixed(1) ?? '',
                 background: const Color(0xFF7C4DFF),
               ),
             ),
@@ -105,8 +105,8 @@ class RecommendItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPoster(RecommendApiItem data) {
-    var imageUrl = data.poster_path;
+  Widget _buildPoster(RecommendApiItem? data) {
+    var imageUrl = data?.poster_path;
     if (imageUrl != null && imageUrl.isNotEmpty) {
       imageUrl = ImageUtil.convertCacheImageUrl(imageUrl);
       return CachedImage(
