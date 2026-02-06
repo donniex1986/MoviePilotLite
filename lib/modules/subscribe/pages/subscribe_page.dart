@@ -29,33 +29,69 @@ class SubscribePage extends GetView<SubscribeController> {
   }
 
   AppBar _buildAppBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
     return AppBar(
       title: Text(controller.subscribeType.displayName),
       centerTitle: false,
       actions: [
-        if (controller.isTv)
-          IconButton(
-            icon: const Icon(CupertinoIcons.share),
+        if (controller.isTv) ...[
+          _buildAppBarAction(
+            context,
+            icon: CupertinoIcons.paperplane_fill,
             tooltip: '订阅分享',
+            backgroundColor: const Color(0xFF0A84FF).withValues(alpha: 0.18),
+            iconColor: const Color(0xFF0A84FF),
             onPressed: () => Get.toNamed(
               '/subscribe-share',
               arguments: controller.subscribeType,
             ),
           ),
-        IconButton(
-          icon: const Icon(CupertinoIcons.flame),
+          const SizedBox(width: 8),
+        ],
+        _buildAppBarAction(
+          context,
+          icon: CupertinoIcons.flame_fill,
           tooltip: '热门订阅',
+          backgroundColor: const Color(0xFFFF9F0A).withValues(alpha: 0.2),
+          iconColor: const Color(0xFFFF9F0A),
           onPressed: () => Get.toNamed(
             '/subscribe-popular',
             arguments: controller.subscribeType,
           ),
         ),
-        IconButton(
-          icon: const Icon(CupertinoIcons.settings_solid),
+        const SizedBox(width: 8),
+        _buildAppBarAction(
+          context,
+          icon: CupertinoIcons.slider_horizontal_3,
           tooltip: '默认规则',
+          backgroundColor: primary.withValues(alpha: 0.15),
+          iconColor: primary,
           onPressed: controller.openDefaultRules,
         ),
+        const SizedBox(width: 12),
       ],
+    );
+  }
+
+  Widget _buildAppBarAction(
+    BuildContext context, {
+    required IconData icon,
+    required String tooltip,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback onPressed,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(10),
+          child: Icon(icon, size: 22, color: iconColor),
+        ),
+      ),
     );
   }
 

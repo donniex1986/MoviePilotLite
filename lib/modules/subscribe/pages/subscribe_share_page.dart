@@ -176,24 +176,10 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
             ),
             SliverToBoxAdapter(
               child: Obx(() {
-                if (controller.isLoading.value && items.isNotEmpty) {
+                if (items.isEmpty) return const SizedBox.shrink();
+                if (!controller.hasMore.value) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                if (!controller.hasMore.value && items.isNotEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+                    padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
                     child: Center(
                       child: Text(
                         '没有更多了',
@@ -208,7 +194,35 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
                     ),
                   );
                 }
-                return const SizedBox.shrink();
+                final loading = controller.isLoading.value;
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 32),
+                  child: Center(
+                    child: CupertinoButton(
+                      onPressed: loading ? null : () => controller.loadMore(),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      child: loading
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            )
+                          : Text(
+                              '加载更多',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              ),
+                            ),
+                    ),
+                  ),
+                );
               }),
             ),
           ],

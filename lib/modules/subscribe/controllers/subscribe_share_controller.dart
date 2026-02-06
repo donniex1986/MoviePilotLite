@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
@@ -33,24 +34,13 @@ class SubscribeShareController extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    scrollController.addListener(_onScroll);
     load();
   }
 
   @override
   void onClose() {
-    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     super.onClose();
-  }
-
-  void _onScroll() {
-    if (!hasMore.value || isLoading.value) return;
-    if (!scrollController.hasClients) return;
-    final position = scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
-      loadMore();
-    }
   }
 
   void ensureUserCookieRefreshed() {
