@@ -15,7 +15,6 @@ class SubscribePopularFilterBar extends StatelessWidget {
     required this.ratingLabel,
     required this.onRatingTap,
     required this.onFilterTap,
-    this.isTv = true,
   });
 
   final String sortValue;
@@ -25,14 +24,10 @@ class SubscribePopularFilterBar extends StatelessWidget {
   final String ratingLabel;
   final VoidCallback onRatingTap;
   final VoidCallback onFilterTap;
-  final bool isTv;
 
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
-    final genreOptions =
-        isTv ? SubscribePopularFilterDefines.tvGenreOptions : SubscribePopularFilterDefines.movieGenreOptions;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: SingleChildScrollView(

@@ -17,25 +17,23 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('订阅分享'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('订阅分享'), centerTitle: false),
       body: CustomScrollView(
         controller: scrollController,
         slivers: [
           SliverToBoxAdapter(child: _buildSearchBar(context)),
           SliverToBoxAdapter(
-            child: Obx(() => SubscribePopularFilterBar(
-                  sortValue: controller.sortType.value,
-                  onSortChanged: controller.setSortType,
-                  genreLabel: controller.genreLabel,
-                  onGenreTap: () => _openFilterSheet(context),
-                  ratingLabel: controller.ratingLabel,
-                  onRatingTap: () => _openFilterSheet(context),
-                  onFilterTap: () => _openFilterSheet(context),
-                  isTv: true,
-                )),
+            child: Obx(
+              () => SubscribePopularFilterBar(
+                sortValue: controller.sortType.value,
+                onSortChanged: controller.setSortType,
+                genreLabel: controller.genreLabel,
+                onGenreTap: () => _openFilterSheet(context),
+                ratingLabel: controller.ratingLabel,
+                onRatingTap: () => _openFilterSheet(context),
+                onFilterTap: () => _openFilterSheet(context),
+              ),
+            ),
           ),
           _buildSliverContent(context),
         ],
@@ -139,21 +137,18 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
           80,
         ),
         sliver: SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: index < items.length - 1 ? _cardSpacing : 0,
-                ),
-                child: SubscribeShareItemCard(
-                  item: items[index],
-                  onTap: () {},
-                  onMoreTap: () {},
-                ),
-              );
-            },
-            childCount: items.length,
-          ),
+          delegate: SliverChildBuilderDelegate((context, index) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: index < items.length - 1 ? _cardSpacing : 0,
+              ),
+              child: SubscribeShareItemCard(
+                item: items[index],
+                onTap: () {},
+                onMoreTap: () {},
+              ),
+            );
+          }, childCount: items.length),
         ),
       );
     });

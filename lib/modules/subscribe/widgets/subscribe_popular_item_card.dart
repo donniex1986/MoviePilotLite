@@ -1,86 +1,98 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 /// 热门订阅/分享 专用卡片，基于 RecommendApiItem 结构
-/// 展示 poster_path、vote_average、title_year、genres 等
+/// 展示 poster_path、vote_average、popularity、title_year 等
 class SubscribePopularItemCard extends StatelessWidget {
-  const SubscribePopularItemCard({
-    super.key,
-    required this.item,
-    this.onTap,
-    this.width,
-  });
+  const SubscribePopularItemCard({super.key, required this.item, this.onTap});
 
   final RecommendApiItem item;
   final VoidCallback? onTap;
-  final double? width;
 
-  static const double cardWidth = 110;
-  static const double cardRadius = 10;
-
-  double get _cardWidth => width ?? cardWidth;
-  double get _cardHeight => _cardWidth * 1.4;
+  static const double cardRadius = 8;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: SizedBox(
-        width: _cardWidth,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildPoster(),
-            const SizedBox(height: 8),
-            Text(
-              item.title ?? item.title_year ?? '未知',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            if (_genreLabel != null)
-              Text(
-                _genreLabel!,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context).hintColor,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPoster() {
-    return SizedBox(
-      width: _cardWidth,
-      height: _cardHeight,
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildPosterImage(),
-          if (item.type != null && item.type!.isNotEmpty)
-            Positioned(left: 6, top: 6, child: _buildPill(item.type!)),
-          if (item.vote_average != null && item.vote_average! > 0)
-            Positioned(
-              right: 6,
-              top: 6,
-              child: _buildPill(
-                item.vote_average!.toStringAsFixed(1),
-                background: const Color(0xFF7C4DFF),
-              ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(cardRadius),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _buildPosterImage(),
+                // 底部渐变 + 标题
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(cardRadius),
+                        bottomRight: Radius.circular(cardRadius),
+                      ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.85),
+                        ],
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(6, 20, 6, 6),
+                      child: Text(
+                        item.title ?? item.title_year ?? '未知',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ),
+                // 类型角标
+                if (item.type != null && item.type!.isNotEmpty)
+                  Positioned(
+                    left: 5,
+                    top: 5,
+                    child: _buildPill(
+                      item.type!,
+                      background: const Color(0xFF4C6FFF),
+                    ),
+                  ),
+                // 评分角标
+                if (item.vote_average != null && item.vote_average! > 0)
+                  Positioned(
+                    right: 5,
+                    top: 5,
+                    child: _buildPill(
+                      '★ ${item.vote_average!.toStringAsFixed(1)}',
+                      background: const Color(0xFF7C4DFF),
+                    ),
+                  ),
+                // 热度角标（右下角，避免与标题重叠）
+                if (_popularityText != null)
+                  Positioned(
+                    right: 5,
+                    bottom: 5,
+                    child: _buildHeatBadge(_popularityText!),
+                  ),
+              ],
             ),
+          ),
         ],
       ),
     );
@@ -90,22 +102,11 @@ class SubscribePopularItemCard extends StatelessWidget {
     final url = item.poster_path;
     if (url != null && url.isNotEmpty) {
       final cacheUrl = ImageUtil.convertCacheImageUrl(url);
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(cardRadius),
-        child: CachedImage(
-          imageUrl: cacheUrl,
-          fit: BoxFit.cover,
-          width: _cardWidth,
-          height: _cardHeight,
-        ),
-      );
+      return CachedImage(imageUrl: cacheUrl, fit: BoxFit.cover);
     }
     return Container(
-      width: _cardWidth,
-      height: _cardHeight,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(cardRadius),
-        gradient: const LinearGradient(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFF9FA8DA), Color(0xFF5C6BC0)],
@@ -116,32 +117,60 @@ class SubscribePopularItemCard extends StatelessWidget {
 
   Widget _buildPill(String text, {Color background = const Color(0xFF4C6FFF)}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: background.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(10),
+        color: background.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         text,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
 
-  String? get _genreLabel {
-    final genres = item.genres;
-    if (genres == null || genres.isEmpty) return null;
-    final list = genres
-        .whereType<Map<String, dynamic>>()
-        .map((e) => e['name'] ?? e['title'])
-        .whereType<String>()
-        .take(2)
-        .toList();
-    if (list.isEmpty) return null;
-    return list.join(' · ');
+  Widget _buildHeatBadge(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.local_fire_department,
+            size: 12,
+            color: Colors.orange.shade300,
+          ),
+          const SizedBox(width: 2),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? get _popularityText {
+    final p = item.popularity;
+    if (p == null || p <= 0) return null;
+    if (p >= 10000) {
+      return '${(p / 10000).toStringAsFixed(1)}万';
+    }
+    if (p >= 1000) {
+      return '${(p / 1000).toStringAsFixed(1)}k';
+    }
+    return p.toInt().toString();
   }
 }

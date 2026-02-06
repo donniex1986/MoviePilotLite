@@ -12,33 +12,33 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
   final ScrollController? scrollController;
 
   static const double _horizontalPadding = 16;
-  static const double _cardSpacing = 12;
   static const double _gridCrossAxisSpacing = 12;
   static const double _gridMainAxisSpacing = 16;
   static const int _crossAxisCount = 3;
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.ensureUserCookieRefreshed();
+    });
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('热门订阅'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('热门订阅'), centerTitle: false),
       body: CustomScrollView(
         controller: scrollController,
         slivers: [
           SliverToBoxAdapter(child: _buildSearchBar(context)),
           SliverToBoxAdapter(
-            child: Obx(() => SubscribePopularFilterBar(
-                  sortValue: controller.sortType.value,
-                  onSortChanged: controller.setSortType,
-                  genreLabel: controller.genreLabel,
-                  onGenreTap: () => _openFilterSheet(context),
-                  ratingLabel: controller.ratingLabel,
-                  onRatingTap: () => _openFilterSheet(context),
-                  onFilterTap: () => _openFilterSheet(context),
-                  isTv: controller.isTv,
-                )),
+            child: Obx(
+              () => SubscribePopularFilterBar(
+                sortValue: controller.sortType.value,
+                onSortChanged: controller.setSortType,
+                genreLabel: controller.genreLabel,
+                onGenreTap: () => _openFilterSheet(context),
+                ratingLabel: controller.ratingLabel,
+                onRatingTap: () => _openFilterSheet(context),
+                onFilterTap: () => _openFilterSheet(context),
+              ),
+            ),
           ),
           _buildSliverContent(context),
         ],
@@ -134,10 +134,6 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
           ),
         );
       }
-      final width = (MediaQuery.of(context).size.width -
-              _horizontalPadding * 2 -
-              _gridCrossAxisSpacing * (_crossAxisCount - 1)) /
-          _crossAxisCount;
       return SliverPadding(
         padding: const EdgeInsets.fromLTRB(
           _horizontalPadding,
@@ -150,18 +146,11 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
             crossAxisCount: _crossAxisCount,
             mainAxisSpacing: _gridMainAxisSpacing,
             crossAxisSpacing: _gridCrossAxisSpacing,
-            childAspectRatio: 0.45,
+            childAspectRatio: 0.58,
           ),
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return SubscribePopularItemCard(
-                item: items[index],
-                width: width,
-                onTap: () {},
-              );
-            },
-            childCount: items.length,
-          ),
+          delegate: SliverChildBuilderDelegate((context, index) {
+            return SubscribePopularItemCard(item: items[index], onTap: () {});
+          }, childCount: items.length),
         ),
       );
     });

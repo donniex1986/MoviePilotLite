@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
 import 'package:moviepilot_mobile/modules/subscribe/defines/subscribe_popular_filter_defines.dart';
@@ -9,9 +10,11 @@ import 'package:moviepilot_mobile/services/app_service.dart';
 class SubscribePopularController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
   final _appService = Get.find<AppService>();
+  final _authRepository = Get.find<AuthRepository>();
   final _log = Get.find<AppLog>();
 
   late final SubscribeType subscribeType;
+  bool _cookieRefreshTriggered = false;
 
   final items = <RecommendApiItem>[].obs;
   final isLoading = false.obs;
@@ -45,6 +48,28 @@ class SubscribePopularController extends GetxController {
   }
 
   bool get isTv => subscribeType == SubscribeType.tv;
+
+  void ensureUserCookieRefreshed() {
+    if (_cookieRefreshTriggered) return;
+    _cookieRefreshTriggered = true;
+    _refreshUserCookie();
+  }
+
+  Future<void> _refreshUserCookie() async {
+    final server = _appService.baseUrl ?? _apiClient.baseUrl;
+    final token = _getToken();
+    if (server == null || server.isEmpty || token == null || token.isEmpty) {
+      return;
+    }
+    try {
+      await _authRepository.getUserGlobalConfig(
+        server: server,
+        accessToken: token,
+      );
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '刷新热门订阅 Cookie 失败');
+    }
+  }
 
   String? _getToken() =>
       _appService.loginResponse?.accessToken ??
@@ -155,8 +180,9 @@ class SubscribePopularController extends GetxController {
       list = list.where((e) {
         final ids = e.genre_ids ?? [];
         for (final g in ids) {
-          final s = g is int ? g.toString() : g?.toString();
-          if (s != null && genres.contains(s)) return true;
+          if (g == null) continue;
+          final s = g is int ? g.toString() : g.toString();
+          if (genres.contains(s)) return true;
         }
         return false;
       }).toList();
