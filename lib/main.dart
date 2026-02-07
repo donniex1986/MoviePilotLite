@@ -33,7 +33,9 @@ import 'modules/search_result/pages/search_result_page.dart';
 import 'modules/subscribe/controllers/subscribe_controller.dart';
 import 'modules/subscribe/controllers/subscribe_popular_controller.dart';
 import 'modules/subscribe/controllers/subscribe_share_controller.dart';
+import 'modules/subscribe/controllers/subscribe_calendar_controller.dart';
 import 'modules/subscribe/controllers/subscribe_share_statistics_controller.dart';
+import 'modules/subscribe/pages/subscribe_calendar_page.dart';
 import 'modules/subscribe/pages/subscribe_page.dart';
 import 'modules/subscribe/pages/subscribe_popular_page.dart';
 import 'modules/subscribe/pages/subscribe_share_page.dart';
@@ -179,6 +181,13 @@ class MyApp extends StatelessWidget {
           page: () => const SubscribeShareStatisticsPage(),
           binding: BindingsBuilder(() {
             Get.put(SubscribeShareStatisticsController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/subscribe-calendar',
+          page: () => const SubscribeCalendarPage(),
+          binding: BindingsBuilder(() {
+            Get.put(SubscribeCalendarController(), permanent: false);
           }),
         ),
         GetPage(
