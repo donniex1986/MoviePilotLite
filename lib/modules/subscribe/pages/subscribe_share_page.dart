@@ -38,6 +38,16 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
               ),
             );
           }),
+          Tooltip(
+            message: '分享统计',
+            child: IconButton(
+              icon: Icon(
+                CupertinoIcons.chart_bar_alt_fill,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              onPressed: () => Get.toNamed('/subscribe-share-statistics'),
+            ),
+          ),
         ],
       ),
       body: CustomScrollView(
@@ -201,7 +211,9 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
                     child: CupertinoButton(
                       onPressed: loading ? null : () => controller.loadMore(),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       color: Theme.of(context).colorScheme.primaryContainer,
                       child: loading
                           ? SizedBox(
@@ -217,7 +229,9 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
                               ),
                             ),
                     ),

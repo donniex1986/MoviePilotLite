@@ -42,9 +42,8 @@ class SubscribeShareItemCard extends StatelessWidget {
                 right: 12,
                 child: _buildContent(context),
               ),
-              Positioned(bottom: 25, left: 12, child: _buildShareInfo()),
-              Positioned(bottom: 25, right: 12, child: _buildDate()),
-              Positioned(top: 12, right: 12, child: _buildMoreButton(context)),
+              Positioned(bottom: 20, left: 12, child: _buildShareInfo()),
+              Positioned(bottom: 20, right: 12, child: _buildDate()),
             ],
           ),
         ),
@@ -109,10 +108,17 @@ class SubscribeShareItemCard extends StatelessWidget {
                 _displayTitle,
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
                 maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                item.shareComment ?? '',
+                style: TextStyle(fontSize: 12, color: Colors.white),
+                maxLines: 5,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -144,13 +150,13 @@ class SubscribeShareItemCard extends StatelessWidget {
         ],
         if (item.count != null && item.count! > 0) ...[
           Icon(
-            CupertinoIcons.arrow_down_circle,
+            CupertinoIcons.flame_fill,
             size: 14,
-            color: Colors.white.withValues(alpha: 0.7),
+            color: const Color(0xFFFF9F0A),
           ),
           const SizedBox(width: 4),
           Text(
-            '${item.count} 人订阅',
+            item.count.toString(),
             style: TextStyle(
               fontSize: 12,
               color: Colors.white.withValues(alpha: 0.8),
