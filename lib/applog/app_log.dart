@@ -33,6 +33,7 @@ class AppLog extends GetxService {
   }
 
   void handle(Object e, {StackTrace? stackTrace, dynamic message}) {
-    _talker.handle(e, stackTrace, message);
+    _talker.error(message);
+    // _talker.handle(e, stackTrace, message);
   }
 }

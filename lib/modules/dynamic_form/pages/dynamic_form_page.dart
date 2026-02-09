@@ -6,6 +6,9 @@ import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/alert_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/chart_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/cron_field_widget.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/widgets/expansion_card_widget.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/widgets/page_header_widget.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/widgets/select_field_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/stat_card_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/switch_field_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/table_widget.dart';
@@ -27,11 +30,19 @@ class _DisplayStatCardGrid extends _DisplayItem {
 }
 
 class DynamicFormPage extends GetView<DynamicFormController> {
-  const DynamicFormPage({super.key});
+  const DynamicFormPage({super.key, this.controllerTag});
+
+  /// 与 binding 中 lazyPut 的 tag 一致，用于正确找到对应 controller（page / form 分离）
+  final String? controllerTag;
 
   static const double _horizontalPadding = 16;
   static const double _cardSpacing = 12;
   static const double _statCardGridSpacing = 8;
+
+  @override
+  DynamicFormController get controller => Get.find<DynamicFormController>(
+        tag: controllerTag ?? (Get.currentRoute.endsWith('/form') ? 'form' : 'page'),
+      );
 
   List<_DisplayItem> _toDisplayItems(List<FormBlock> blocks) {
     final result = <_DisplayItem>[];
@@ -76,17 +87,7 @@ class DynamicFormPage extends GetView<DynamicFormController> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 tooltip: '保存',
-                onPressed: () async {
-                  final success = await controller.save();
-                  if (success) {
-                    Get.back();
-                    Future.delayed(const Duration(seconds: 1), () {
-                      ToastUtil.success('保存成功');
-                    });
-                  } else {
-                    ToastUtil.error('保存失败');
-                  }
-                },
+                onPressed: onSave,
               );
             }
             return const SizedBox.shrink();
@@ -157,7 +158,49 @@ class DynamicFormPage extends GetView<DynamicFormController> {
           },
         );
       }),
+      floatingActionButton: Obx(() {
+        if (controller.formMode.value) {
+          return const SizedBox.shrink();
+        }
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: IconButton.filled(
+            icon: const Icon(Icons.settings, color: CupertinoColors.white),
+            onPressed: () {
+              final args = {
+                'id': controller.pluginId,
+                'title': controller.pageTitle,
+              };
+              Get.toNamed('/plugin/dynamic-form/form', arguments: args);
+            },
+          ),
+        );
+      }),
     );
+  }
+
+  onSave() async {
+    try {
+      ToastUtil.warning(
+        '动态表单可能存在问题，如果发现问题请及时汇报给开发者。是否继续保存？',
+        onConfirm: () async {
+          final success = await controller.save();
+          if (success) {
+            ToastUtil.success('保存成功');
+          } else {
+            ToastUtil.error('保存失败');
+          }
+          Future.delayed(const Duration(seconds: 1), () {
+            Get.back();
+          });
+        },
+      );
+    } catch (e) {
+      ToastUtil.error('保存失败: $e');
+    }
   }
 
   Widget _buildItem(BuildContext context, _DisplayItem item) {
@@ -233,6 +276,17 @@ class DynamicFormPage extends GetView<DynamicFormController> {
               : null,
         ),
       ),
+      selectField: (b) => Obx(
+        () => SelectFieldWidget(
+          block: b,
+          value: controller.hasFormModel ? controller.getValue(b.name) : null,
+          onChanged: b.name != null
+              ? (v) => controller.updateField(b.name, v)
+              : null,
+        ),
+      ),
+      pageHeader: (b) => PageHeaderWidget(block: b),
+      expansionCard: (b) => ExpansionCardWidget(block: b),
       alert: (b) => AlertWidget(block: b),
     );
   }

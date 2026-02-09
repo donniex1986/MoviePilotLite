@@ -7,7 +7,6 @@ import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.
 import 'package:moviepilot_mobile/modules/dynamic_form/services/form_block_converter.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
-import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 /// 动态表单控制器：拉取接口、解析、转换为 FormBlock 列表；配置表单支持保存
 class DynamicFormController extends GetxController {
@@ -15,11 +14,11 @@ class DynamicFormController extends GetxController {
   final _appService = Get.find<AppService>();
   final _log = Get.find<AppLog>();
 
-  /// 接口路径（GET 拉取），如 /api/v1/plugin/ZvideoHelper
+  /// 接口路径（GET 拉取），如 /api/v1/plugin/page/xxx
   late final String apiPath;
 
-  /// 接口路径（PUT 保存），如 /api/v1/plugin/ZvideoHelper
-  late final String apiSavePath;
+  /// 接口路径（PUT 保存），仅配置表单需要，如 /api/v1/plugin/xxx
+  String? apiSavePath;
 
   /// 页面标题，可选，用于 AppBar
   String? pageTitle;
@@ -28,6 +27,8 @@ class DynamicFormController extends GetxController {
   final isLoading = false.obs;
   final errorText = RxnString();
   final saveSuccess = false.obs;
+  final formMode = false.obs;
+  String? pluginId;
 
   /// 配置表单当前数据（key 为 props.model），保存时 PUT 此 Map
   final formModel = Rx<Map<String, dynamic>>({});
@@ -38,9 +39,16 @@ class DynamicFormController extends GetxController {
       _apiClient.token;
 
   /// 初始化：接口路径必填，标题可选
-  void init(String path, {String? title}) {
+  void init(
+    String path, {
+    String? title,
+    bool formMode = false,
+    String? pluginId,
+  }) {
     apiPath = path;
     pageTitle = title;
+    this.formMode.value = formMode;
+    this.pluginId = pluginId;
   }
 
   @override
@@ -126,6 +134,8 @@ class DynamicFormController extends GetxController {
   /// 保存配置（PUT 当前 formModel）
   Future<bool> save() async {
     if (formModel.value.isEmpty) return false;
+    final savePath = apiSavePath;
+    if (savePath == null || savePath.isEmpty) return false;
     final token = _getToken();
     if (token == null || token.isEmpty) {
       errorText.value = '请先登录';
@@ -135,9 +145,9 @@ class DynamicFormController extends GetxController {
     errorText.value = null;
     saveSuccess.value = false;
     try {
-      _log.info('保存配置: $apiPath ${formModel.value}');
+      _log.info('保存配置: $savePath ${formModel.value}');
       final response = await _apiClient.put(
-        apiSavePath,
+        savePath,
         formModel.value,
         token: token,
       );

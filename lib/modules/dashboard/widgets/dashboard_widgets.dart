@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:moviepilot_mobile/modules/dashboard/widgets/recently_playing_widget.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
 import 'schedule_widget.dart';
 import 'storage_widget.dart';
@@ -41,6 +42,8 @@ class DashboardWidgets {
         );
       case '最近添加':
         return const RecentlyAddedWidget();
+      case '继续观看':
+        return const RecentlyPlayingWidget();
       default:
         return Container(
           padding: const EdgeInsets.all(16),

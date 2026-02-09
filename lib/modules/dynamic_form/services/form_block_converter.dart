@@ -19,16 +19,27 @@ class FormBlockConverter {
       return blocks;
     }
 
-    // 展示页：page（统计卡片、图表、表格等）
+    // 展示页：page（统计卡片、图表、表格、标题行、折叠卡片等）
     for (final pageNode in response.page) {
+      if (pageNode.component == 'style') continue; // 忽略 style 节点
       if (pageNode.component == 'VRow') {
+        final header = _extractPageHeader(pageNode);
+        if (header != null) {
+          blocks.add(header);
+          continue;
+        }
         for (final col in pageNode.content) {
           if (col.component != 'VCol') continue;
           final child = col.content.isNotEmpty ? col.content.first : null;
           if (child == null) continue;
           if (child.component == 'VCard') {
-            final card = _extractStatCard(child);
-            if (card != null) blocks.add(card);
+            final expansion = _extractExpansionCard(child);
+            if (expansion != null) {
+              blocks.add(expansion);
+            } else {
+              final card = _extractStatCard(child);
+              if (card != null) blocks.add(card);
+            }
           } else if (child.component == 'VApexChart') {
             final chart = _extractChart(child);
             if (chart != null) blocks.add(chart);
@@ -40,9 +51,138 @@ class FormBlockConverter {
       }
     }
     for (final pageNode in response.page) {
+      if (pageNode.component == 'style') continue;
       _collectFormFields(pageNode, blocks, null);
     }
     return blocks;
+  }
+
+  static PageHeaderBlock? _extractPageHeader(FormNode row) {
+    if (row.content.length != 1) return null;
+    final col = row.content.first;
+    if (col.component != 'VCol') return null;
+    final div = col.content.isNotEmpty ? col.content.first : null;
+    if (div == null || div.component != 'div') return null;
+    String? title;
+    String? subtitle;
+    for (final node in div.content) {
+      if (node.component == 'h2' || node.component == 'h1') {
+        title = _textOf(node);
+        break;
+      }
+    }
+    for (final node in div.content) {
+      if (node.component == 'VChip') {
+        subtitle = _textOf(node);
+        break;
+      }
+    }
+    if (title != null && title.isNotEmpty) {
+      return PageHeaderBlock(title: title, subtitle: subtitle);
+    }
+    return null;
+  }
+
+  static ExpansionCardBlock? _extractExpansionCard(FormNode card) {
+    FormNode? cardTitleNode;
+    FormNode? cardTextNode;
+    for (final node in card.content) {
+      if (node.component == 'VCardTitle') cardTitleNode = node;
+      if (node.component == 'VCardText') cardTextNode = node;
+    }
+    if (cardTextNode == null) return null;
+    FormNode? panelsNode;
+    for (final node in cardTextNode.content) {
+      if (node.component == 'VExpansionPanels') {
+        panelsNode = node;
+        break;
+      }
+    }
+    if (panelsNode == null) return null;
+    final items = <ExpansionItem>[];
+    for (final node in panelsNode.content) {
+      if (node.component == 'VExpansionPanel') {
+        final item = _extractExpansionPanelItem(node);
+        if (item != null) items.add(item);
+      }
+    }
+    if (items.isEmpty) return null;
+    String cardTitle = '';
+    if (cardTitleNode != null) {
+      cardTitle = _collectText(cardTitleNode).trim();
+    }
+    String? cardSubtitle;
+    if (cardTitleNode != null) {
+      for (final node in cardTitleNode.content) {
+        if (node.component == 'VChip') {
+          cardSubtitle = _textOf(node);
+          break;
+        }
+      }
+    }
+    return ExpansionCardBlock(
+      cardTitle: cardTitle.isNotEmpty ? cardTitle : '详情',
+      cardSubtitle: cardSubtitle,
+      items: items,
+    );
+  }
+
+  static ExpansionItem? _extractExpansionPanelItem(FormNode panel) {
+    FormNode? titleNode;
+    FormNode? textNode;
+    for (final node in panel.content) {
+      if (node.component == 'VExpansionPanelTitle') titleNode = node;
+      if (node.component == 'VExpansionPanelText') textNode = node;
+    }
+    if (titleNode == null) return null;
+    String title = '';
+    String? subtitle;
+    for (final inner in titleNode.content) {
+      final div = inner.component == 'div' ? inner : null;
+      if (div != null) {
+        for (final c in div.content) {
+          if (c.component == 'span' && (c.props?['class']?.toString() ?? '').contains('font-weight')) {
+            title = _textOf(c) ?? title;
+          }
+          if (c.component == 'span' && (c.props?['class']?.toString() ?? '').contains('text-caption')) {
+            subtitle = _textOf(c);
+          }
+        }
+        if (title.isEmpty) title = _collectText(div).trim();
+        break;
+      }
+    }
+    if (title.isEmpty && titleNode.content.isNotEmpty) {
+      title = _collectText(titleNode.content.first).trim();
+    }
+    final bodyLines = <String>[];
+    if (textNode != null) {
+      for (final node in textNode.content) {
+        if (node.component == 'VList') {
+          for (final item in node.content) {
+            if (item.component == 'VListItem') {
+              final line = _collectText(item).trim();
+              if (line.isNotEmpty) bodyLines.add(line);
+            }
+          }
+        } else {
+          final line = _collectText(node).trim();
+          if (line.isNotEmpty) bodyLines.add(line);
+        }
+      }
+    }
+    return ExpansionItem(title: title, subtitle: subtitle, bodyLines: bodyLines);
+  }
+
+  static String _collectText(FormNode node) {
+    if (node.text != null) return node.text.toString();
+    final buf = StringBuffer();
+    for (final c in node.content) {
+      final t = _collectText(c);
+      if (buf.isNotEmpty && t.isNotEmpty) buf.write(' ');
+      buf.write(t);
+    }
+    return buf.toString();
   }
 
   static void _collectConfNodes(
@@ -66,6 +206,9 @@ class FormBlockConverter {
     } else if (node.component == 'VAlert') {
       final alert = _extractAlert(node);
       if (alert != null) blocks.add(alert);
+    } else if (node.component == 'VSelect') {
+      final select = _extractSelect(node, model);
+      if (select != null) blocks.add(select);
     }
     for (final c in node.content) {
       _collectConfNodes(c, blocks, model);
@@ -328,5 +471,41 @@ class FormBlockConverter {
       return TableBlock(headers: headers, rows: rows);
     }
     return null;
+  }
+
+  static SelectFieldBlock? _extractSelect(
+    FormNode node,
+    Map<String, dynamic>? model,
+  ) {
+    final props = node.props;
+    if (props == null) return null;
+    final label = props['label']?.toString().trim() ?? '';
+    final name = props['model']?.toString() ?? props['name']?.toString();
+    final multiple = _boolFromDynamic(props['multiple'] ?? false);
+    final itemsRaw = props['items'];
+    if (itemsRaw is! List) return null;
+    final items = <SelectOption>[];
+    for (final item in itemsRaw) {
+      if (item is Map<String, dynamic>) {
+        final title = item['title']?.toString() ?? '';
+        final value = item['value'];
+        if (title.isNotEmpty) {
+          items.add(SelectOption(title: title, value: value));
+        }
+      }
+    }
+    if (items.isEmpty) return null;
+    final raw = _valueFromModel(
+      model,
+      name,
+      props['modelValue'] ?? props['value'],
+    );
+    return SelectFieldBlock(
+      label: label,
+      items: items,
+      value: raw,
+      name: name,
+      multiple: multiple,
+    );
   }
 }

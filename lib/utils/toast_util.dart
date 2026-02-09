@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 /// 提醒工具类，基于 Get 的 snackbar
@@ -54,6 +55,7 @@ class ToastUtil {
     String message, {
     String? title,
     Duration duration = const Duration(seconds: 2),
+    VoidCallback? onConfirm,
   }) {
     Get.snackbar(
       title ?? '警告',
@@ -69,6 +71,15 @@ class ToastUtil {
         color: CupertinoColors.white,
         size: 24,
       ),
+      mainButton: onConfirm != null
+          ? TextButton(
+              onPressed: onConfirm,
+              child: const Text(
+                '确定',
+                style: TextStyle(color: CupertinoColors.white),
+              ),
+            )
+          : null,
     );
   }
 
@@ -96,10 +107,7 @@ class ToastUtil {
   }
 
   /// 显示加载中提醒
-  static void loading({
-    String message = '加载中...',
-    String? title,
-  }) {
+  static void loading({String message = '加载中...', String? title}) {
     Get.snackbar(
       title ?? '加载中',
       message,

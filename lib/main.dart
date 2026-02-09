@@ -237,30 +237,40 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: '/plugin/dynamic-form/page',
-          page: () => const DynamicFormPage(),
+          page: () => const DynamicFormPage(controllerTag: 'page'),
           binding: BindingsBuilder(() {
             final args = Get.arguments;
-            final apiPath = args is Map ? args['apiPath']?.toString() : null;
+            final id = args is Map ? args['id']?.toString() : null;
             final title = args is Map ? args['title']?.toString() : null;
-            Get.put(
-              DynamicFormController()
-                ..init('/api/v1/plugin/page/$apiPath', title: title),
-              permanent: false,
+            Get.lazyPut(
+              () => DynamicFormController()
+                ..init(
+                  '/api/v1/plugin/page/$id',
+                  title: title,
+                  formMode: false,
+                  pluginId: id,
+                ),
+              tag: 'page',
             );
           }),
         ),
         GetPage(
           name: '/plugin/dynamic-form/form',
-          page: () => const DynamicFormPage(),
+          page: () => const DynamicFormPage(controllerTag: 'form'),
           binding: BindingsBuilder(() {
             final args = Get.arguments;
-            final apiPath = args is Map ? args['apiPath']?.toString() : null;
+            final id = args is Map ? args['id']?.toString() : null;
             final title = args is Map ? args['title']?.toString() : null;
-            Get.put(
-              DynamicFormController()
-                ..init('/api/v1/plugin/form/$apiPath', title: title)
-                ..apiSavePath = '/api/v1/plugin/$apiPath',
-              permanent: false,
+            Get.lazyPut(
+              () => DynamicFormController()
+                ..init(
+                  '/api/v1/plugin/form/$id',
+                  title: title,
+                  formMode: true,
+                  pluginId: id,
+                )
+                ..apiSavePath = '/api/v1/plugin/$id',
+              tag: 'form',
             );
           }),
         ),

@@ -24,6 +24,9 @@ class MediaServerController extends GetxController {
   /// 最新添加媒体列表
   final latestMediaList = Rx<List<LatestMedia>>([]);
 
+  /// 正在播放的媒体
+  final playingMedia = Rx<List<LatestMedia>?>(null);
+
   /// 加载状态
   final isLoading = false.obs;
 
@@ -35,7 +38,9 @@ class MediaServerController extends GetxController {
       // 加载媒体库数据
       loadMediaLibraries().then((_) {
         // 加载最近添加媒体列表
-        loadLatestMediaList();
+        loadLatestMediaList(mediaServers.value.first.name);
+        // 加载正在播放的媒体
+        loadPlayingMedia(mediaServers.value.first.name);
       });
     });
   }
@@ -118,7 +123,7 @@ class MediaServerController extends GetxController {
         if (server.enabled) {
           talker.info('加载服务器 ${server.name} 的媒体库数据');
           final response = await apiClient.get<dynamic>(
-            '/api/v1/mediaserver/library?server=${server.type}&hidden=true',
+            '/api/v1/mediaserver/library?server=${server.name}&hidden=true',
           );
           talker.info('服务器 ${server.name} 媒体库API响应状态码: ${response.statusCode}');
           talker.info('服务器 ${server.name} 媒体库API响应数据: ${response.data}');
@@ -196,13 +201,13 @@ class MediaServerController extends GetxController {
   }
 
   /// 加载媒体服务器最新入库数据
-  Future<Map<String, dynamic>?> loadLatestMediaData(String server) async {
+  Future<Map<String, dynamic>?> loadLatestMediaData(String serverName) async {
     try {
-      talker.info('开始加载媒体服务器最新入库数据: $server');
+      talker.info('开始加载媒体服务器最新入库数据: $serverName');
       // 接口返回格式在不同版本中可能是 Map 包装对象或直接 List，
       // 这里使用 dynamic 接收并在本地做兼容处理，避免类型转换错误。
       final response = await apiClient.get<dynamic>(
-        '/api/v1/mediaserver/latest?server=$server',
+        '/api/v1/mediaserver/latest?server=$serverName',
       );
       talker.info('媒体服务器最新入库数据API响应数据: ${response.data}');
       if (response.statusCode == 200) {
@@ -239,7 +244,7 @@ class MediaServerController extends GetxController {
   }
 
   /// 加载所有媒体服务器的最近添加媒体列表
-  Future<void> loadLatestMediaList() async {
+  Future<void> loadLatestMediaList(String serverName) async {
     try {
       isLoading.value = true;
       talker.info('开始加载所有媒体服务器的最近添加媒体列表');
@@ -251,7 +256,7 @@ class MediaServerController extends GetxController {
         if (server.enabled) {
           talker.info('加载服务器 ${server.name} 的最近添加媒体');
           final response = await apiClient.get<dynamic>(
-            '/api/v1/mediaserver/latest?server=${server.type}',
+            '/api/v1/mediaserver/latest?server=${server.name}',
           );
 
           if (response.statusCode == 200) {
@@ -320,6 +325,32 @@ class MediaServerController extends GetxController {
 
   /// 刷新最近添加媒体列表
   Future<void> refreshLatestMediaList() async {
-    await loadLatestMediaList();
+    await loadLatestMediaList(mediaServers.value.first.name);
+  }
+
+  /// 加载正在播放的媒体
+  Future<void> loadPlayingMedia(String serverName) async {
+    try {
+      isLoading.value = true;
+      talker.info('开始加载正在播放的媒体');
+      final response = await apiClient.get<dynamic>(
+        '/api/v1/mediaserver/playing?server=${serverName}',
+      );
+      if (response.statusCode == 200) {
+        final data = response.data!;
+        if (data is List<dynamic>) {
+          playingMedia.value = data
+              .map((item) => LatestMedia.fromJson(item))
+              .toList();
+        } else {
+          playingMedia.value = [LatestMedia.fromJson(data)];
+        }
+      }
+    } catch (e, st) {
+      talker.handle(e, stackTrace: st, message: '加载正在播放的媒体失败');
+      playingMedia.value = null;
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

@@ -55,6 +55,21 @@ mixin _$FormBlock {
     )
     textArea,
     required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -81,6 +96,21 @@ mixin _$FormBlock {
     )?
     textArea,
     TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -107,6 +137,21 @@ mixin _$FormBlock {
     )?
     textArea,
     TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -119,6 +164,9 @@ mixin _$FormBlock {
     required TResult Function(TextFieldBlock value) textField,
     required TResult Function(TextAreaBlock value) textArea,
     required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -130,6 +178,9 @@ mixin _$FormBlock {
     TResult? Function(TextFieldBlock value)? textField,
     TResult? Function(TextAreaBlock value)? textArea,
     TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -141,6 +192,9 @@ mixin _$FormBlock {
     TResult Function(TextFieldBlock value)? textField,
     TResult Function(TextAreaBlock value)? textArea,
     TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 }
@@ -293,6 +347,21 @@ class _$StatCardBlockImpl extends StatCardBlock {
     )
     textArea,
     required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
   }) {
     return statCard(caption, value, iconSrc);
   }
@@ -323,6 +392,21 @@ class _$StatCardBlockImpl extends StatCardBlock {
     )?
     textArea,
     TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
   }) {
     return statCard?.call(caption, value, iconSrc);
   }
@@ -353,6 +437,21 @@ class _$StatCardBlockImpl extends StatCardBlock {
     )?
     textArea,
     TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
     required TResult orElse(),
   }) {
     if (statCard != null) {
@@ -372,6 +471,9 @@ class _$StatCardBlockImpl extends StatCardBlock {
     required TResult Function(TextFieldBlock value) textField,
     required TResult Function(TextAreaBlock value) textArea,
     required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
   }) {
     return statCard(this);
   }
@@ -387,6 +489,9 @@ class _$StatCardBlockImpl extends StatCardBlock {
     TResult? Function(TextFieldBlock value)? textField,
     TResult? Function(TextAreaBlock value)? textArea,
     TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
   }) {
     return statCard?.call(this);
   }
@@ -402,6 +507,9 @@ class _$StatCardBlockImpl extends StatCardBlock {
     TResult Function(TextFieldBlock value)? textField,
     TResult Function(TextAreaBlock value)? textArea,
     TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
     required TResult orElse(),
   }) {
     if (statCard != null) {
@@ -596,6 +704,21 @@ class _$ChartBlockImpl extends ChartBlock {
     )
     textArea,
     required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
   }) {
     return chart(title, labels, series, chartType);
   }
@@ -626,6 +749,21 @@ class _$ChartBlockImpl extends ChartBlock {
     )?
     textArea,
     TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
   }) {
     return chart?.call(title, labels, series, chartType);
   }
@@ -656,6 +794,21 @@ class _$ChartBlockImpl extends ChartBlock {
     )?
     textArea,
     TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
     required TResult orElse(),
   }) {
     if (chart != null) {
@@ -675,6 +828,9 @@ class _$ChartBlockImpl extends ChartBlock {
     required TResult Function(TextFieldBlock value) textField,
     required TResult Function(TextAreaBlock value) textArea,
     required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
   }) {
     return chart(this);
   }
@@ -690,6 +846,9 @@ class _$ChartBlockImpl extends ChartBlock {
     TResult? Function(TextFieldBlock value)? textField,
     TResult? Function(TextAreaBlock value)? textArea,
     TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
   }) {
     return chart?.call(this);
   }
@@ -705,6 +864,9 @@ class _$ChartBlockImpl extends ChartBlock {
     TResult Function(TextFieldBlock value)? textField,
     TResult Function(TextAreaBlock value)? textArea,
     TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
     required TResult orElse(),
   }) {
     if (chart != null) {
@@ -870,6 +1032,21 @@ class _$TableBlockImpl extends TableBlock {
     )
     textArea,
     required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
   }) {
     return table(headers, rows);
   }
@@ -900,6 +1077,21 @@ class _$TableBlockImpl extends TableBlock {
     )?
     textArea,
     TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
   }) {
     return table?.call(headers, rows);
   }
@@ -930,6 +1122,21 @@ class _$TableBlockImpl extends TableBlock {
     )?
     textArea,
     TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
     required TResult orElse(),
   }) {
     if (table != null) {
@@ -949,6 +1156,9 @@ class _$TableBlockImpl extends TableBlock {
     required TResult Function(TextFieldBlock value) textField,
     required TResult Function(TextAreaBlock value) textArea,
     required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
   }) {
     return table(this);
   }
@@ -964,6 +1174,9 @@ class _$TableBlockImpl extends TableBlock {
     TResult? Function(TextFieldBlock value)? textField,
     TResult? Function(TextAreaBlock value)? textArea,
     TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
   }) {
     return table?.call(this);
   }
@@ -979,6 +1192,9 @@ class _$TableBlockImpl extends TableBlock {
     TResult Function(TextFieldBlock value)? textField,
     TResult Function(TextAreaBlock value)? textArea,
     TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
     required TResult orElse(),
   }) {
     if (table != null) {
@@ -1137,6 +1353,21 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
     )
     textArea,
     required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
   }) {
     return switchField(label, value, name);
   }
@@ -1167,6 +1398,21 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
     )?
     textArea,
     TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
   }) {
     return switchField?.call(label, value, name);
   }
@@ -1197,6 +1443,21 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
     )?
     textArea,
     TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
     required TResult orElse(),
   }) {
     if (switchField != null) {
@@ -1216,6 +1477,9 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
     required TResult Function(TextFieldBlock value) textField,
     required TResult Function(TextAreaBlock value) textArea,
     required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
   }) {
     return switchField(this);
   }
@@ -1231,6 +1495,9 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
     TResult? Function(TextFieldBlock value)? textField,
     TResult? Function(TextAreaBlock value)? textArea,
     TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
   }) {
     return switchField?.call(this);
   }
@@ -1246,6 +1513,9 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
     TResult Function(TextFieldBlock value)? textField,
     TResult Function(TextAreaBlock value)? textArea,
     TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
     required TResult orElse(),
   }) {
     if (switchField != null) {
@@ -1415,6 +1685,21 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
     )
     textArea,
     required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
   }) {
     return cronField(label, value, name, hint);
   }
@@ -1445,6 +1730,21 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
     )?
     textArea,
     TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
   }) {
     return cronField?.call(label, value, name, hint);
   }
@@ -1475,6 +1775,21 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
     )?
     textArea,
     TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
     required TResult orElse(),
   }) {
     if (cronField != null) {
@@ -1494,6 +1809,9 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
     required TResult Function(TextFieldBlock value) textField,
     required TResult Function(TextAreaBlock value) textArea,
     required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
   }) {
     return cronField(this);
   }
@@ -1509,6 +1827,9 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
     TResult? Function(TextFieldBlock value)? textField,
     TResult? Function(TextAreaBlock value)? textArea,
     TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
   }) {
     return cronField?.call(this);
   }
@@ -1524,6 +1845,9 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
     TResult Function(TextFieldBlock value)? textField,
     TResult Function(TextAreaBlock value)? textArea,
     TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
     required TResult orElse(),
   }) {
     if (cronField != null) {
@@ -1695,6 +2019,21 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
     )
     textArea,
     required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
   }) {
     return textField(label, value, name, hint);
   }
@@ -1725,6 +2064,21 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
     )?
     textArea,
     TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
   }) {
     return textField?.call(label, value, name, hint);
   }
@@ -1755,6 +2109,21 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
     )?
     textArea,
     TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
     required TResult orElse(),
   }) {
     if (textField != null) {
@@ -1774,6 +2143,9 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
     required TResult Function(TextFieldBlock value) textField,
     required TResult Function(TextAreaBlock value) textArea,
     required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
   }) {
     return textField(this);
   }
@@ -1789,6 +2161,9 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
     TResult? Function(TextFieldBlock value)? textField,
     TResult? Function(TextAreaBlock value)? textArea,
     TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
   }) {
     return textField?.call(this);
   }
@@ -1804,6 +2179,9 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
     TResult Function(TextFieldBlock value)? textField,
     TResult Function(TextAreaBlock value)? textArea,
     TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
     required TResult orElse(),
   }) {
     if (textField != null) {
@@ -1982,6 +2360,21 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
     )
     textArea,
     required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
   }) {
     return textArea(label, value, name, hint, rows);
   }
@@ -2012,6 +2405,21 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
     )?
     textArea,
     TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
   }) {
     return textArea?.call(label, value, name, hint, rows);
   }
@@ -2042,6 +2450,21 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
     )?
     textArea,
     TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
     required TResult orElse(),
   }) {
     if (textArea != null) {
@@ -2061,6 +2484,9 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
     required TResult Function(TextFieldBlock value) textField,
     required TResult Function(TextAreaBlock value) textArea,
     required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
   }) {
     return textArea(this);
   }
@@ -2076,6 +2502,9 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
     TResult? Function(TextFieldBlock value)? textField,
     TResult? Function(TextAreaBlock value)? textArea,
     TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
   }) {
     return textArea?.call(this);
   }
@@ -2091,6 +2520,9 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
     TResult Function(TextFieldBlock value)? textField,
     TResult Function(TextAreaBlock value)? textArea,
     TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
     required TResult orElse(),
   }) {
     if (textArea != null) {
@@ -2237,6 +2669,21 @@ class _$AlertBlockImpl extends AlertBlock {
     )
     textArea,
     required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
   }) {
     return alert(type, text);
   }
@@ -2267,6 +2714,21 @@ class _$AlertBlockImpl extends AlertBlock {
     )?
     textArea,
     TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
   }) {
     return alert?.call(type, text);
   }
@@ -2297,6 +2759,21 @@ class _$AlertBlockImpl extends AlertBlock {
     )?
     textArea,
     TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
     required TResult orElse(),
   }) {
     if (alert != null) {
@@ -2316,6 +2793,9 @@ class _$AlertBlockImpl extends AlertBlock {
     required TResult Function(TextFieldBlock value) textField,
     required TResult Function(TextAreaBlock value) textArea,
     required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
   }) {
     return alert(this);
   }
@@ -2331,6 +2811,9 @@ class _$AlertBlockImpl extends AlertBlock {
     TResult? Function(TextFieldBlock value)? textField,
     TResult? Function(TextAreaBlock value)? textArea,
     TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
   }) {
     return alert?.call(this);
   }
@@ -2346,6 +2829,9 @@ class _$AlertBlockImpl extends AlertBlock {
     TResult Function(TextFieldBlock value)? textField,
     TResult Function(TextAreaBlock value)? textArea,
     TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
     required TResult orElse(),
   }) {
     if (alert != null) {
@@ -2367,5 +2853,1362 @@ abstract class AlertBlock extends FormBlock {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AlertBlockImplCopyWith<_$AlertBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$SelectFieldBlockImplCopyWith<$Res> {
+  factory _$$SelectFieldBlockImplCopyWith(
+    _$SelectFieldBlockImpl value,
+    $Res Function(_$SelectFieldBlockImpl) then,
+  ) = __$$SelectFieldBlockImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({
+    String label,
+    List<SelectOption> items,
+    dynamic value,
+    String? name,
+    bool multiple,
+  });
+}
+
+/// @nodoc
+class __$$SelectFieldBlockImplCopyWithImpl<$Res>
+    extends _$FormBlockCopyWithImpl<$Res, _$SelectFieldBlockImpl>
+    implements _$$SelectFieldBlockImplCopyWith<$Res> {
+  __$$SelectFieldBlockImplCopyWithImpl(
+    _$SelectFieldBlockImpl _value,
+    $Res Function(_$SelectFieldBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? label = null,
+    Object? items = null,
+    Object? value = freezed,
+    Object? name = freezed,
+    Object? multiple = null,
+  }) {
+    return _then(
+      _$SelectFieldBlockImpl(
+        label: null == label
+            ? _value.label
+            : label // ignore: cast_nullable_to_non_nullable
+                  as String,
+        items: null == items
+            ? _value._items
+            : items // ignore: cast_nullable_to_non_nullable
+                  as List<SelectOption>,
+        value: freezed == value
+            ? _value.value
+            : value // ignore: cast_nullable_to_non_nullable
+                  as dynamic,
+        name: freezed == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        multiple: null == multiple
+            ? _value.multiple
+            : multiple // ignore: cast_nullable_to_non_nullable
+                  as bool,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$SelectFieldBlockImpl extends SelectFieldBlock {
+  const _$SelectFieldBlockImpl({
+    required this.label,
+    final List<SelectOption> items = const [],
+    this.value,
+    this.name,
+    this.multiple = false,
+  }) : _items = items,
+       super._();
+
+  @override
+  final String label;
+  final List<SelectOption> _items;
+  @override
+  @JsonKey()
+  List<SelectOption> get items {
+    if (_items is EqualUnmodifiableListView) return _items;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_items);
+  }
+
+  @override
+  final dynamic value;
+  @override
+  final String? name;
+  @override
+  @JsonKey()
+  final bool multiple;
+
+  @override
+  String toString() {
+    return 'FormBlock.selectField(label: $label, items: $items, value: $value, name: $name, multiple: $multiple)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SelectFieldBlockImpl &&
+            (identical(other.label, label) || other.label == label) &&
+            const DeepCollectionEquality().equals(other._items, _items) &&
+            const DeepCollectionEquality().equals(other.value, value) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.multiple, multiple) ||
+                other.multiple == multiple));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    label,
+    const DeepCollectionEquality().hash(_items),
+    const DeepCollectionEquality().hash(value),
+    name,
+    multiple,
+  );
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SelectFieldBlockImplCopyWith<_$SelectFieldBlockImpl> get copyWith =>
+      __$$SelectFieldBlockImplCopyWithImpl<_$SelectFieldBlockImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String caption, String value, String? iconSrc)
+    statCard,
+    required TResult Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )
+    chart,
+    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    table,
+    required TResult Function(String label, bool value, String? name)
+    switchField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+    )
+    cronField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+    )
+    textField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )
+    textArea,
+    required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
+  }) {
+    return selectField(label, items, value, name, multiple);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )?
+    chart,
+    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(String label, bool value, String? name)? switchField,
+    TResult? Function(String label, String value, String? name, String? hint)?
+    cronField,
+    TResult? Function(String label, String value, String? name, String? hint)?
+    textField,
+    TResult? Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )?
+    textArea,
+    TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
+  }) {
+    return selectField?.call(label, items, value, name, multiple);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )?
+    chart,
+    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(String label, bool value, String? name)? switchField,
+    TResult Function(String label, String value, String? name, String? hint)?
+    cronField,
+    TResult Function(String label, String value, String? name, String? hint)?
+    textField,
+    TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )?
+    textArea,
+    TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
+    required TResult orElse(),
+  }) {
+    if (selectField != null) {
+      return selectField(label, items, value, name, multiple);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(StatCardBlock value) statCard,
+    required TResult Function(ChartBlock value) chart,
+    required TResult Function(TableBlock value) table,
+    required TResult Function(SwitchFieldBlock value) switchField,
+    required TResult Function(CronFieldBlock value) cronField,
+    required TResult Function(TextFieldBlock value) textField,
+    required TResult Function(TextAreaBlock value) textArea,
+    required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
+  }) {
+    return selectField(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(StatCardBlock value)? statCard,
+    TResult? Function(ChartBlock value)? chart,
+    TResult? Function(TableBlock value)? table,
+    TResult? Function(SwitchFieldBlock value)? switchField,
+    TResult? Function(CronFieldBlock value)? cronField,
+    TResult? Function(TextFieldBlock value)? textField,
+    TResult? Function(TextAreaBlock value)? textArea,
+    TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
+  }) {
+    return selectField?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(StatCardBlock value)? statCard,
+    TResult Function(ChartBlock value)? chart,
+    TResult Function(TableBlock value)? table,
+    TResult Function(SwitchFieldBlock value)? switchField,
+    TResult Function(CronFieldBlock value)? cronField,
+    TResult Function(TextFieldBlock value)? textField,
+    TResult Function(TextAreaBlock value)? textArea,
+    TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
+    required TResult orElse(),
+  }) {
+    if (selectField != null) {
+      return selectField(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class SelectFieldBlock extends FormBlock {
+  const factory SelectFieldBlock({
+    required final String label,
+    final List<SelectOption> items,
+    final dynamic value,
+    final String? name,
+    final bool multiple,
+  }) = _$SelectFieldBlockImpl;
+  const SelectFieldBlock._() : super._();
+
+  String get label;
+  List<SelectOption> get items;
+  dynamic get value;
+  String? get name;
+  bool get multiple;
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SelectFieldBlockImplCopyWith<_$SelectFieldBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$PageHeaderBlockImplCopyWith<$Res> {
+  factory _$$PageHeaderBlockImplCopyWith(
+    _$PageHeaderBlockImpl value,
+    $Res Function(_$PageHeaderBlockImpl) then,
+  ) = __$$PageHeaderBlockImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String title, String? subtitle});
+}
+
+/// @nodoc
+class __$$PageHeaderBlockImplCopyWithImpl<$Res>
+    extends _$FormBlockCopyWithImpl<$Res, _$PageHeaderBlockImpl>
+    implements _$$PageHeaderBlockImplCopyWith<$Res> {
+  __$$PageHeaderBlockImplCopyWithImpl(
+    _$PageHeaderBlockImpl _value,
+    $Res Function(_$PageHeaderBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? title = null, Object? subtitle = freezed}) {
+    return _then(
+      _$PageHeaderBlockImpl(
+        title: null == title
+            ? _value.title
+            : title // ignore: cast_nullable_to_non_nullable
+                  as String,
+        subtitle: freezed == subtitle
+            ? _value.subtitle
+            : subtitle // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$PageHeaderBlockImpl extends PageHeaderBlock {
+  const _$PageHeaderBlockImpl({required this.title, this.subtitle}) : super._();
+
+  @override
+  final String title;
+  @override
+  final String? subtitle;
+
+  @override
+  String toString() {
+    return 'FormBlock.pageHeader(title: $title, subtitle: $subtitle)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$PageHeaderBlockImpl &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.subtitle, subtitle) ||
+                other.subtitle == subtitle));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, title, subtitle);
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$PageHeaderBlockImplCopyWith<_$PageHeaderBlockImpl> get copyWith =>
+      __$$PageHeaderBlockImplCopyWithImpl<_$PageHeaderBlockImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String caption, String value, String? iconSrc)
+    statCard,
+    required TResult Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )
+    chart,
+    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    table,
+    required TResult Function(String label, bool value, String? name)
+    switchField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+    )
+    cronField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+    )
+    textField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )
+    textArea,
+    required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
+  }) {
+    return pageHeader(title, subtitle);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )?
+    chart,
+    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(String label, bool value, String? name)? switchField,
+    TResult? Function(String label, String value, String? name, String? hint)?
+    cronField,
+    TResult? Function(String label, String value, String? name, String? hint)?
+    textField,
+    TResult? Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )?
+    textArea,
+    TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
+  }) {
+    return pageHeader?.call(title, subtitle);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )?
+    chart,
+    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(String label, bool value, String? name)? switchField,
+    TResult Function(String label, String value, String? name, String? hint)?
+    cronField,
+    TResult Function(String label, String value, String? name, String? hint)?
+    textField,
+    TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )?
+    textArea,
+    TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
+    required TResult orElse(),
+  }) {
+    if (pageHeader != null) {
+      return pageHeader(title, subtitle);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(StatCardBlock value) statCard,
+    required TResult Function(ChartBlock value) chart,
+    required TResult Function(TableBlock value) table,
+    required TResult Function(SwitchFieldBlock value) switchField,
+    required TResult Function(CronFieldBlock value) cronField,
+    required TResult Function(TextFieldBlock value) textField,
+    required TResult Function(TextAreaBlock value) textArea,
+    required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
+  }) {
+    return pageHeader(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(StatCardBlock value)? statCard,
+    TResult? Function(ChartBlock value)? chart,
+    TResult? Function(TableBlock value)? table,
+    TResult? Function(SwitchFieldBlock value)? switchField,
+    TResult? Function(CronFieldBlock value)? cronField,
+    TResult? Function(TextFieldBlock value)? textField,
+    TResult? Function(TextAreaBlock value)? textArea,
+    TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
+  }) {
+    return pageHeader?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(StatCardBlock value)? statCard,
+    TResult Function(ChartBlock value)? chart,
+    TResult Function(TableBlock value)? table,
+    TResult Function(SwitchFieldBlock value)? switchField,
+    TResult Function(CronFieldBlock value)? cronField,
+    TResult Function(TextFieldBlock value)? textField,
+    TResult Function(TextAreaBlock value)? textArea,
+    TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
+    required TResult orElse(),
+  }) {
+    if (pageHeader != null) {
+      return pageHeader(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class PageHeaderBlock extends FormBlock {
+  const factory PageHeaderBlock({
+    required final String title,
+    final String? subtitle,
+  }) = _$PageHeaderBlockImpl;
+  const PageHeaderBlock._() : super._();
+
+  String get title;
+  String? get subtitle;
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$PageHeaderBlockImplCopyWith<_$PageHeaderBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ExpansionCardBlockImplCopyWith<$Res> {
+  factory _$$ExpansionCardBlockImplCopyWith(
+    _$ExpansionCardBlockImpl value,
+    $Res Function(_$ExpansionCardBlockImpl) then,
+  ) = __$$ExpansionCardBlockImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({
+    String cardTitle,
+    String? cardSubtitle,
+    List<ExpansionItem> items,
+  });
+}
+
+/// @nodoc
+class __$$ExpansionCardBlockImplCopyWithImpl<$Res>
+    extends _$FormBlockCopyWithImpl<$Res, _$ExpansionCardBlockImpl>
+    implements _$$ExpansionCardBlockImplCopyWith<$Res> {
+  __$$ExpansionCardBlockImplCopyWithImpl(
+    _$ExpansionCardBlockImpl _value,
+    $Res Function(_$ExpansionCardBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? cardTitle = null,
+    Object? cardSubtitle = freezed,
+    Object? items = null,
+  }) {
+    return _then(
+      _$ExpansionCardBlockImpl(
+        cardTitle: null == cardTitle
+            ? _value.cardTitle
+            : cardTitle // ignore: cast_nullable_to_non_nullable
+                  as String,
+        cardSubtitle: freezed == cardSubtitle
+            ? _value.cardSubtitle
+            : cardSubtitle // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        items: null == items
+            ? _value._items
+            : items // ignore: cast_nullable_to_non_nullable
+                  as List<ExpansionItem>,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
+  const _$ExpansionCardBlockImpl({
+    required this.cardTitle,
+    this.cardSubtitle,
+    final List<ExpansionItem> items = const [],
+  }) : _items = items,
+       super._();
+
+  @override
+  final String cardTitle;
+  @override
+  final String? cardSubtitle;
+  final List<ExpansionItem> _items;
+  @override
+  @JsonKey()
+  List<ExpansionItem> get items {
+    if (_items is EqualUnmodifiableListView) return _items;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_items);
+  }
+
+  @override
+  String toString() {
+    return 'FormBlock.expansionCard(cardTitle: $cardTitle, cardSubtitle: $cardSubtitle, items: $items)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ExpansionCardBlockImpl &&
+            (identical(other.cardTitle, cardTitle) ||
+                other.cardTitle == cardTitle) &&
+            (identical(other.cardSubtitle, cardSubtitle) ||
+                other.cardSubtitle == cardSubtitle) &&
+            const DeepCollectionEquality().equals(other._items, _items));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    cardTitle,
+    cardSubtitle,
+    const DeepCollectionEquality().hash(_items),
+  );
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ExpansionCardBlockImplCopyWith<_$ExpansionCardBlockImpl> get copyWith =>
+      __$$ExpansionCardBlockImplCopyWithImpl<_$ExpansionCardBlockImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String caption, String value, String? iconSrc)
+    statCard,
+    required TResult Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )
+    chart,
+    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    table,
+    required TResult Function(String label, bool value, String? name)
+    switchField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+    )
+    cronField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+    )
+    textField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )
+    textArea,
+    required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )
+    expansionCard,
+  }) {
+    return expansionCard(cardTitle, cardSubtitle, items);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )?
+    chart,
+    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(String label, bool value, String? name)? switchField,
+    TResult? Function(String label, String value, String? name, String? hint)?
+    cronField,
+    TResult? Function(String label, String value, String? name, String? hint)?
+    textField,
+    TResult? Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )?
+    textArea,
+    TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
+  }) {
+    return expansionCard?.call(cardTitle, cardSubtitle, items);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )?
+    chart,
+    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(String label, bool value, String? name)? switchField,
+    TResult Function(String label, String value, String? name, String? hint)?
+    cronField,
+    TResult Function(String label, String value, String? name, String? hint)?
+    textField,
+    TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )?
+    textArea,
+    TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+    )?
+    expansionCard,
+    required TResult orElse(),
+  }) {
+    if (expansionCard != null) {
+      return expansionCard(cardTitle, cardSubtitle, items);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(StatCardBlock value) statCard,
+    required TResult Function(ChartBlock value) chart,
+    required TResult Function(TableBlock value) table,
+    required TResult Function(SwitchFieldBlock value) switchField,
+    required TResult Function(CronFieldBlock value) cronField,
+    required TResult Function(TextFieldBlock value) textField,
+    required TResult Function(TextAreaBlock value) textArea,
+    required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
+  }) {
+    return expansionCard(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(StatCardBlock value)? statCard,
+    TResult? Function(ChartBlock value)? chart,
+    TResult? Function(TableBlock value)? table,
+    TResult? Function(SwitchFieldBlock value)? switchField,
+    TResult? Function(CronFieldBlock value)? cronField,
+    TResult? Function(TextFieldBlock value)? textField,
+    TResult? Function(TextAreaBlock value)? textArea,
+    TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
+  }) {
+    return expansionCard?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(StatCardBlock value)? statCard,
+    TResult Function(ChartBlock value)? chart,
+    TResult Function(TableBlock value)? table,
+    TResult Function(SwitchFieldBlock value)? switchField,
+    TResult Function(CronFieldBlock value)? cronField,
+    TResult Function(TextFieldBlock value)? textField,
+    TResult Function(TextAreaBlock value)? textArea,
+    TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
+    required TResult orElse(),
+  }) {
+    if (expansionCard != null) {
+      return expansionCard(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ExpansionCardBlock extends FormBlock {
+  const factory ExpansionCardBlock({
+    required final String cardTitle,
+    final String? cardSubtitle,
+    final List<ExpansionItem> items,
+  }) = _$ExpansionCardBlockImpl;
+  const ExpansionCardBlock._() : super._();
+
+  String get cardTitle;
+  String? get cardSubtitle;
+  List<ExpansionItem> get items;
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ExpansionCardBlockImplCopyWith<_$ExpansionCardBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$ExpansionItem {
+  String get title => throw _privateConstructorUsedError;
+  String? get subtitle => throw _privateConstructorUsedError;
+  List<String> get bodyLines => throw _privateConstructorUsedError;
+
+  /// Create a copy of ExpansionItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ExpansionItemCopyWith<ExpansionItem> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ExpansionItemCopyWith<$Res> {
+  factory $ExpansionItemCopyWith(
+    ExpansionItem value,
+    $Res Function(ExpansionItem) then,
+  ) = _$ExpansionItemCopyWithImpl<$Res, ExpansionItem>;
+  @useResult
+  $Res call({String title, String? subtitle, List<String> bodyLines});
+}
+
+/// @nodoc
+class _$ExpansionItemCopyWithImpl<$Res, $Val extends ExpansionItem>
+    implements $ExpansionItemCopyWith<$Res> {
+  _$ExpansionItemCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ExpansionItem
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? title = null,
+    Object? subtitle = freezed,
+    Object? bodyLines = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            title: null == title
+                ? _value.title
+                : title // ignore: cast_nullable_to_non_nullable
+                      as String,
+            subtitle: freezed == subtitle
+                ? _value.subtitle
+                : subtitle // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            bodyLines: null == bodyLines
+                ? _value.bodyLines
+                : bodyLines // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$ExpansionItemImplCopyWith<$Res>
+    implements $ExpansionItemCopyWith<$Res> {
+  factory _$$ExpansionItemImplCopyWith(
+    _$ExpansionItemImpl value,
+    $Res Function(_$ExpansionItemImpl) then,
+  ) = __$$ExpansionItemImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String title, String? subtitle, List<String> bodyLines});
+}
+
+/// @nodoc
+class __$$ExpansionItemImplCopyWithImpl<$Res>
+    extends _$ExpansionItemCopyWithImpl<$Res, _$ExpansionItemImpl>
+    implements _$$ExpansionItemImplCopyWith<$Res> {
+  __$$ExpansionItemImplCopyWithImpl(
+    _$ExpansionItemImpl _value,
+    $Res Function(_$ExpansionItemImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ExpansionItem
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? title = null,
+    Object? subtitle = freezed,
+    Object? bodyLines = null,
+  }) {
+    return _then(
+      _$ExpansionItemImpl(
+        title: null == title
+            ? _value.title
+            : title // ignore: cast_nullable_to_non_nullable
+                  as String,
+        subtitle: freezed == subtitle
+            ? _value.subtitle
+            : subtitle // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        bodyLines: null == bodyLines
+            ? _value._bodyLines
+            : bodyLines // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$ExpansionItemImpl implements _ExpansionItem {
+  const _$ExpansionItemImpl({
+    required this.title,
+    this.subtitle,
+    final List<String> bodyLines = const [],
+  }) : _bodyLines = bodyLines;
+
+  @override
+  final String title;
+  @override
+  final String? subtitle;
+  final List<String> _bodyLines;
+  @override
+  @JsonKey()
+  List<String> get bodyLines {
+    if (_bodyLines is EqualUnmodifiableListView) return _bodyLines;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_bodyLines);
+  }
+
+  @override
+  String toString() {
+    return 'ExpansionItem(title: $title, subtitle: $subtitle, bodyLines: $bodyLines)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ExpansionItemImpl &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.subtitle, subtitle) ||
+                other.subtitle == subtitle) &&
+            const DeepCollectionEquality().equals(
+              other._bodyLines,
+              _bodyLines,
+            ));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    title,
+    subtitle,
+    const DeepCollectionEquality().hash(_bodyLines),
+  );
+
+  /// Create a copy of ExpansionItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ExpansionItemImplCopyWith<_$ExpansionItemImpl> get copyWith =>
+      __$$ExpansionItemImplCopyWithImpl<_$ExpansionItemImpl>(this, _$identity);
+}
+
+abstract class _ExpansionItem implements ExpansionItem {
+  const factory _ExpansionItem({
+    required final String title,
+    final String? subtitle,
+    final List<String> bodyLines,
+  }) = _$ExpansionItemImpl;
+
+  @override
+  String get title;
+  @override
+  String? get subtitle;
+  @override
+  List<String> get bodyLines;
+
+  /// Create a copy of ExpansionItem
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ExpansionItemImplCopyWith<_$ExpansionItemImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$SelectOption {
+  String get title => throw _privateConstructorUsedError;
+  dynamic get value => throw _privateConstructorUsedError;
+
+  /// Create a copy of SelectOption
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $SelectOptionCopyWith<SelectOption> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $SelectOptionCopyWith<$Res> {
+  factory $SelectOptionCopyWith(
+    SelectOption value,
+    $Res Function(SelectOption) then,
+  ) = _$SelectOptionCopyWithImpl<$Res, SelectOption>;
+  @useResult
+  $Res call({String title, dynamic value});
+}
+
+/// @nodoc
+class _$SelectOptionCopyWithImpl<$Res, $Val extends SelectOption>
+    implements $SelectOptionCopyWith<$Res> {
+  _$SelectOptionCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of SelectOption
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? title = null, Object? value = freezed}) {
+    return _then(
+      _value.copyWith(
+            title: null == title
+                ? _value.title
+                : title // ignore: cast_nullable_to_non_nullable
+                      as String,
+            value: freezed == value
+                ? _value.value
+                : value // ignore: cast_nullable_to_non_nullable
+                      as dynamic,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$SelectOptionImplCopyWith<$Res>
+    implements $SelectOptionCopyWith<$Res> {
+  factory _$$SelectOptionImplCopyWith(
+    _$SelectOptionImpl value,
+    $Res Function(_$SelectOptionImpl) then,
+  ) = __$$SelectOptionImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String title, dynamic value});
+}
+
+/// @nodoc
+class __$$SelectOptionImplCopyWithImpl<$Res>
+    extends _$SelectOptionCopyWithImpl<$Res, _$SelectOptionImpl>
+    implements _$$SelectOptionImplCopyWith<$Res> {
+  __$$SelectOptionImplCopyWithImpl(
+    _$SelectOptionImpl _value,
+    $Res Function(_$SelectOptionImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of SelectOption
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? title = null, Object? value = freezed}) {
+    return _then(
+      _$SelectOptionImpl(
+        title: null == title
+            ? _value.title
+            : title // ignore: cast_nullable_to_non_nullable
+                  as String,
+        value: freezed == value
+            ? _value.value
+            : value // ignore: cast_nullable_to_non_nullable
+                  as dynamic,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$SelectOptionImpl implements _SelectOption {
+  const _$SelectOptionImpl({required this.title, required this.value});
+
+  @override
+  final String title;
+  @override
+  final dynamic value;
+
+  @override
+  String toString() {
+    return 'SelectOption(title: $title, value: $value)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SelectOptionImpl &&
+            (identical(other.title, title) || other.title == title) &&
+            const DeepCollectionEquality().equals(other.value, value));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    title,
+    const DeepCollectionEquality().hash(value),
+  );
+
+  /// Create a copy of SelectOption
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SelectOptionImplCopyWith<_$SelectOptionImpl> get copyWith =>
+      __$$SelectOptionImplCopyWithImpl<_$SelectOptionImpl>(this, _$identity);
+}
+
+abstract class _SelectOption implements SelectOption {
+  const factory _SelectOption({
+    required final String title,
+    required final dynamic value,
+  }) = _$SelectOptionImpl;
+
+  @override
+  String get title;
+  @override
+  dynamic get value;
+
+  /// Create a copy of SelectOption
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SelectOptionImplCopyWith<_$SelectOptionImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

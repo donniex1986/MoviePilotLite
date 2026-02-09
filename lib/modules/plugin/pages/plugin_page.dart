@@ -190,12 +190,12 @@ class PluginPage extends GetView<PluginController> {
         if (item.hasPage) {
           Get.toNamed(
             '/plugin/dynamic-form/page',
-            arguments: {'apiPath': item.id, 'title': item.pluginName},
+            arguments: {'id': item.id, 'title': item.pluginName},
           );
         } else {
           Get.toNamed(
             '/plugin/dynamic-form/form',
-            arguments: {'apiPath': item.id, 'title': item.pluginName},
+            arguments: {'id': item.id, 'title': item.pluginName},
           );
         }
       },

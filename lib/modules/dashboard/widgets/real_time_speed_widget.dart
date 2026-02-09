@@ -1,6 +1,4 @@
-import 'dart:math';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
@@ -55,7 +53,7 @@ class RealTimeSpeedWidget extends StatelessWidget {
                     Expanded(
                       child: _buildDataCard(
                         '上传速度',
-                        '$uploadSpeed MB/s',
+                        '${SizeFormatter.formatSize(uploadSpeed)}/s',
                         CupertinoIcons.arrow_up,
                         CupertinoColors.activeBlue,
                       ),

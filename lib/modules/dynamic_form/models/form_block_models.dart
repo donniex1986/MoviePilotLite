@@ -65,4 +65,45 @@ sealed class FormBlock with _$FormBlock {
     @Default('info') String type,
     required String text,
   }) = AlertBlock;
+
+  /// 下拉选择：标签 + 选项列表 + 当前值（单选或多选）
+  const factory FormBlock.selectField({
+    required String label,
+    @Default([]) List<SelectOption> items,
+    dynamic value,
+    String? name,
+    @Default(false) bool multiple,
+  }) = SelectFieldBlock;
+
+  /// 页面标题行：标题 + 可选副标题
+  const factory FormBlock.pageHeader({
+    required String title,
+    String? subtitle,
+  }) = PageHeaderBlock;
+
+  /// 折叠卡片：卡片标题 + 副标题 + 可折叠项列表
+  const factory FormBlock.expansionCard({
+    required String cardTitle,
+    String? cardSubtitle,
+    @Default([]) List<ExpansionItem> items,
+  }) = ExpansionCardBlock;
+}
+
+/// 折叠项：标题 + 副标题 + 正文行
+@freezed
+class ExpansionItem with _$ExpansionItem {
+  const factory ExpansionItem({
+    required String title,
+    String? subtitle,
+    @Default([]) List<String> bodyLines,
+  }) = _ExpansionItem;
+}
+
+/// 选择项：标题 + 值
+@freezed
+class SelectOption with _$SelectOption {
+  const factory SelectOption({
+    required String title,
+    required dynamic value,
+  }) = _SelectOption;
 }

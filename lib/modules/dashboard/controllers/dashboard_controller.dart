@@ -33,6 +33,7 @@ class DashboardController extends GetxController {
     '内存',
     '网络流量',
     '我的媒体库',
+    '继续观看',
     '最近添加',
   ];
 
@@ -352,10 +353,14 @@ class DashboardController extends GetxController {
 
   /// 加载媒体服务器最新入库数据
   Future<void> loadLatestMediaData() async {
+    await mediaServerController.loadMediaServers();
+    final servers = mediaServerController.mediaServers.value;
+    if (servers.isEmpty) return;
+    final server = servers.first;
     try {
       talker.info('开始加载媒体服务器最新入库数据');
       // 获取第一个媒体服务器的最新入库数据
-      final data = await mediaServerController.loadLatestMediaData('emby');
+      final data = await mediaServerController.loadLatestMediaData(server.name);
       latestMediaData.value = data;
       talker.info('媒体服务器最新入库数据加载成功');
     } catch (e, st) {
@@ -393,6 +398,9 @@ class DashboardController extends GetxController {
     talker.info('开始刷新所有数据');
     await _loadDataBasedOnConfig();
     await mediaServerController.refreshLatestMediaList();
+    await mediaServerController.loadPlayingMedia(
+      mediaServerController.mediaServers.value.first.name,
+    );
     talker.info('所有数据刷新完成');
   }
 
@@ -512,6 +520,7 @@ class DashboardController extends GetxController {
     if (config.network) widgets.add('网络流量');
     if (config.library) widgets.add('我的媒体库');
     if (config.latest) widgets.add('最近添加');
+    if (config.playing) widgets.add('继续观看');
 
     displayedWidgets.assignAll(widgets);
     talker.info('根据配置更新displayedWidgets: $widgets');
