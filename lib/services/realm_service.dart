@@ -1,4 +1,6 @@
 import 'package:get/get_state_manager/src/rx_flutter/rx_disposable.dart';
+import 'package:moviepilot_mobile/modules/plugin/models/installed_plugin_model_cache.dart';
+import 'package:moviepilot_mobile/modules/plugin/models/plugin_model_cache.dart';
 import 'package:realm/realm.dart';
 
 import '../modules/login/models/login_profile.dart';
@@ -7,7 +9,12 @@ import '../modules/media_detail/models/media_detail_cache.dart';
 class RealmService extends GetxService {
   RealmService() {
     final config = Configuration.local(
-      [LoginProfile.schema, MediaDetailCache.schema],
+      [
+        LoginProfile.schema,
+        MediaDetailCache.schema,
+        PluginModelCache.schema,
+        InstalledPluginModelCache.schema,
+      ],
       schemaVersion: 3, // 增加版本号
       migrationCallback: (migration, oldSchemaVersion) {
         // 处理版本迁移

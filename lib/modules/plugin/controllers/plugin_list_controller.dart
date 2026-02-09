@@ -2,14 +2,18 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/plugin/defines/plugin_list_filter_defines.dart';
+import 'package:moviepilot_mobile/modules/plugin/models/plugin_model_cache.dart';
 import 'package:moviepilot_mobile/modules/plugin/models/plugin_models.dart';
 import 'package:moviepilot_mobile/modules/plugin/services/plugin_palette_cache.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
+import 'package:realm/realm.dart';
 
 class PluginListController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
   final _log = Get.find<AppLog>();
+  final _realm = Get.find<RealmService>();
 
   static const int _pageSize = 40;
 
@@ -69,6 +73,8 @@ class PluginListController extends GetxController {
   Future<void> load() async {
     isLoading.value = true;
     errorText.value = null;
+    loadFromCache();
+
     final installCount = await loadInstallCount();
     try {
       final response = await _apiClient.get<dynamic>(
@@ -100,6 +106,7 @@ class PluginListController extends GetxController {
       items.assignAll(parsed);
       _displayedLimit = _pageSize;
       _preloadPalettes();
+      _saveToCache();
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '获取插件列表失败');
       errorText.value = '请求失败，请稍后重试';
@@ -107,6 +114,70 @@ class PluginListController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> loadFromCache() async {
+    final cache = _realm.realm.all<PluginModelCache>();
+    if (cache.isEmpty) return;
+    final locals = cache
+        .map(
+          (e) => PluginItem(
+            id: e.id,
+            pluginName: e.pluginName,
+            pluginDesc: e.pluginDesc,
+            pluginIcon: e.pluginIcon,
+            pluginVersion: e.pluginVersion,
+            pluginLabel: e.pluginLabel,
+            pluginAuthor: e.pluginAuthor,
+            authorUrl: e.authorUrl,
+            pluginConfigPrefix: e.pluginConfigPrefix,
+            pluginOrder: e.pluginOrder,
+            authLevel: e.authLevel,
+            installed: e.installed,
+            state: e.state,
+            hasPage: e.hasPage,
+            hasUpdate: e.hasUpdate,
+            isLocal: e.isLocal,
+            repoUrl: e.repoUrl,
+            installCount: e.installCount,
+            addTime: e.addTime,
+            pluginPublicKey: e.pluginPublicKey,
+          ),
+        )
+        .toList();
+    items.assignAll(locals);
+  }
+
+  void _saveToCache() {
+    late final List<PluginModelCache> list = [];
+    for (final item in items) {
+      final cache = PluginModelCache(
+        item.id,
+        item.pluginName,
+        item.pluginDesc ?? '',
+        item.pluginIcon ?? '',
+        item.pluginVersion ?? '',
+        item.pluginLabel ?? '',
+        item.pluginAuthor ?? '',
+        item.authorUrl ?? '',
+        item.pluginConfigPrefix ?? '',
+        item.pluginOrder,
+        item.authLevel,
+        item.installed,
+        item.state,
+        item.hasPage,
+        item.hasUpdate,
+        item.isLocal,
+        item.repoUrl ?? '',
+        item.installCount,
+        item.addTime,
+        item.pluginPublicKey ?? '',
+      );
+      list.add(cache);
+    }
+    _realm.realm.write(() {
+      _realm.realm.addAll(list, update: true);
+    });
   }
 
   void loadMore() {
