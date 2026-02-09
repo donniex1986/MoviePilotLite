@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/utils/vuetify_mappings.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 
 /// 表格区块：移动端以卡片列表展示，每行一条卡片
@@ -61,7 +62,6 @@ class _TableRowCard extends StatelessWidget {
     for (var i = 0; i < maxCol; i++) {
       final header = i < headers.length ? headers[i] : '列 ${i + 1}';
       final value = i < row.length ? row[i] : '—';
-      final valueStr = value == null ? '—' : value.toString();
       items.add(
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -82,16 +82,7 @@ class _TableRowCard extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: Text(
-                  valueStr,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: isHeaderRow
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
+                child: _buildCellContent(context, value, theme, isHeaderRow),
               ),
             ],
           ),
@@ -108,6 +99,69 @@ class _TableRowCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: items,
+      ),
+    );
+  }
+
+  Widget _buildCellContent(
+    BuildContext context,
+    dynamic value,
+    ThemeData theme,
+    bool isHeaderRow,
+  ) {
+    if (value == null) {
+      return Text(
+        '—',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: isHeaderRow ? FontWeight.w600 : FontWeight.normal,
+          color: theme.colorScheme.onSurface,
+        ),
+      );
+    }
+    if (value is Map<String, dynamic>) {
+      final iconName = value['icon']?.toString();
+      final colorName = value['color']?.toString();
+      final label = value['label']?.toString();
+      final iconData = iconName != null ? VuetifyMappings.iconFromMdi(iconName) : null;
+      final color = colorName != null ? VuetifyMappings.colorFromVuetify(colorName) : null;
+      final effectiveColor = color ?? theme.colorScheme.onSurface;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (iconData != null) ...[
+            Icon(iconData, size: 18, color: effectiveColor),
+            const SizedBox(width: 6),
+          ],
+          if (label != null && label.isNotEmpty)
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isHeaderRow ? FontWeight.w600 : FontWeight.normal,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            )
+          else if (iconData == null)
+            Text(
+              '—',
+              style: TextStyle(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+        ],
+      );
+    }
+    final valueStr = value.toString();
+    return Text(
+      valueStr.isEmpty ? '—' : valueStr,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: isHeaderRow ? FontWeight.w600 : FontWeight.normal,
+        color: theme.colorScheme.onSurface,
       ),
     );
   }

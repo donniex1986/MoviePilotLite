@@ -22,6 +22,25 @@ class FormBlockConverter {
     // 展示页：page（统计卡片、图表、表格、标题行、折叠卡片等）
     for (final pageNode in response.page) {
       if (pageNode.component == 'style') continue; // 忽略 style 节点
+      // 兼容顶层 VCard（如飞牛论坛签到历史：VCard > VCardTitle + VCardText > VTable）
+      if (pageNode.component == 'VCard') {
+        final expansion = _extractExpansionCard(pageNode);
+        if (expansion != null) {
+          blocks.add(expansion);
+          continue;
+        }
+        final tableCard = _extractTableFromCard(pageNode);
+        if (tableCard != null) {
+          if (tableCard.$1.isNotEmpty) {
+            blocks.add(PageHeaderBlock(title: tableCard.$1, subtitle: null));
+          }
+          blocks.add(tableCard.$2);
+          continue;
+        }
+        final statCard = _extractStatCard(pageNode);
+        if (statCard != null) blocks.add(statCard);
+        continue;
+      }
       if (pageNode.component == 'VRow') {
         final header = _extractPageHeader(pageNode);
         if (header != null) {
@@ -455,14 +474,60 @@ class FormBlockConverter {
     );
   }
 
+  /// 从 VCard（VCardTitle + VCardText > VTable）中提取标题与表格
+  static (String title, TableBlock table)? _extractTableFromCard(FormNode card) {
+    FormNode? cardTitleNode;
+    FormNode? cardTextNode;
+    for (final node in card.content) {
+      if (node.component == 'VCardTitle') cardTitleNode = node;
+      if (node.component == 'VCardText') cardTextNode = node;
+    }
+    if (cardTextNode == null) return null;
+    final tableNode = _findComponent(cardTextNode, 'VTable');
+    if (tableNode == null) return null;
+    final table = _extractTable(tableNode);
+    if (table == null) return null;
+    String title = '';
+    if (cardTitleNode != null) title = _collectText(cardTitleNode).trim();
+    return (title, table);
+  }
+
+  /// 解析 td：若含 VIcon 则返回 {icon, color, label?}，否则返回纯文本
+  static dynamic _extractTableCell(FormNode td) {
+    final iconNode = _findComponent(td, 'VIcon');
+    if (iconNode != null) {
+      final iconName = iconNode.text?.toString().trim();
+      final color = iconNode.props?['color']?.toString().trim();
+      final label = _collectText(td).replaceAll(iconName ?? '', '').trim();
+      return <String, dynamic>{
+        'icon': iconName ?? '',
+        'color': color ?? '',
+        if (label.isNotEmpty) 'label': label,
+      };
+    }
+    final cell = td.text?.toString().trim();
+    return cell != null && cell.isNotEmpty ? cell : _collectText(td).trim();
+  }
+
   static TableBlock? _extractTable(FormNode table) {
-    List<String> headers = [];
-    List<List<dynamic>> rows = [];
+    final headers = <String>[];
+    final rows = <List<dynamic>>[];
     for (final node in table.content) {
       if (node.component == 'thead') {
-        for (final th in node.content) {
-          if (th.component == 'th') {
-            headers.add(_textOf(th) ?? '');
+        // thead 可能为 thead > tr > th
+        for (final tr in node.content) {
+          if (tr.component == 'tr') {
+            for (final th in tr.content) {
+              if (th.component == 'th') {
+                headers.add(_collectText(th).trim());
+              }
+            }
+            break;
+          }
+        }
+        if (headers.isEmpty) {
+          for (final th in node.content) {
+            if (th.component == 'th') headers.add(_collectText(th).trim());
           }
         }
       } else if (node.component == 'tbody') {
@@ -471,7 +536,7 @@ class FormBlockConverter {
             final row = <dynamic>[];
             for (final td in tr.content) {
               if (td.component == 'td') {
-                row.add(td.text);
+                row.add(_extractTableCell(td));
               }
             }
             rows.add(row);
