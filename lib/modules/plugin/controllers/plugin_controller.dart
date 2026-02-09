@@ -19,9 +19,7 @@ class PluginController extends GetxController {
   List<PluginItem> get visibleItems {
     final key = keyword.value.trim().toLowerCase();
     if (key.isEmpty) return items.toList();
-    return items
-        .where((item) => _matchKeyword(item, key))
-        .toList();
+    return items.where((item) => _matchKeyword(item, key)).toList();
   }
 
   bool _matchKeyword(PluginItem item, String keywordLower) {
@@ -42,9 +40,19 @@ class PluginController extends GetxController {
     load();
   }
 
+  Future<Map<String, dynamic>> loadInstallCount() async {
+    final response = await _apiClient.get<dynamic>('/api/v1/plugin/statistic');
+    final status = response.statusCode ?? 0;
+    if (status >= 400) {
+      return {};
+    }
+    return response.data ?? {};
+  }
+
   Future<void> load() async {
     isLoading.value = true;
     errorText.value = null;
+    final installCount = await loadInstallCount();
     try {
       final response = await _apiClient.get<dynamic>(
         '/api/v1/plugin/',
@@ -62,7 +70,10 @@ class PluginController extends GetxController {
       for (final item in list) {
         if (item is Map<String, dynamic>) {
           try {
-            parsed.add(PluginItem.fromJson(item));
+            final pluginItem = PluginItem.fromJson(
+              item,
+            ).copyWith(installCount: installCount[item['id']] ?? 0);
+            parsed.add(pluginItem);
           } catch (e, st) {
             _log.handle(e, stackTrace: st, message: '解析插件失败');
           }
@@ -83,10 +94,11 @@ class PluginController extends GetxController {
     try {
       final cache = Get.find<PluginPaletteCache>();
       final urls = visibleItems
-          .map((e) =>
-              e.pluginIcon != null && e.pluginIcon!.isNotEmpty
-                  ? ImageUtil.convertPluginIconUrl(e.pluginIcon!)
-                  : '')
+          .map(
+            (e) => e.pluginIcon != null && e.pluginIcon!.isNotEmpty
+                ? ImageUtil.convertPluginIconUrl(e.pluginIcon!)
+                : '',
+          )
           .where((s) => s.isNotEmpty);
       cache.preload(urls);
     } catch (_) {}

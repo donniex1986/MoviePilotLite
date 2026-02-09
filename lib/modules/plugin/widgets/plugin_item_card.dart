@@ -11,14 +11,14 @@ class PluginItemCard extends StatelessWidget {
     required this.item,
     required this.iconUrl,
     this.onMoreTap,
+    required this.installCount,
   });
 
   final PluginItem item;
   final String iconUrl;
   final VoidCallback? onMoreTap;
-
+  final int installCount;
   static const double _cardRadius = 12;
-  static const Color _darkBg = Color(0xFF1A2024);
   static const double _iconSize = 48;
 
   @override
@@ -58,11 +58,11 @@ class PluginItemCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
-            themeColor.withValues(alpha: 0.85),
-            _darkBg,
+            Colors.black.withValues(alpha: 0.9),
+            themeColor.withValues(alpha: 0.8),
           ],
         ),
       ),
@@ -79,15 +79,29 @@ class PluginItemCard extends StatelessWidget {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Flexible(
-                      child: Text(
-                        item.pluginName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: item.state ? Colors.green : Colors.grey,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.pluginName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
                     if (item.pluginVersion != null &&
@@ -157,7 +171,11 @@ class PluginItemCard extends StatelessWidget {
   List<String> get _labelList {
     final raw = item.pluginLabel;
     if (raw == null || raw.trim().isEmpty) return [];
-    return raw.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    return raw
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
   }
 
   Widget _buildLightSection(BuildContext context) {
@@ -193,7 +211,7 @@ class PluginItemCard extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            _formatInstallCount(item.installCount),
+            _formatInstallCount(installCount),
             style: TextStyle(
               fontSize: 12,
               color: Theme.of(context).colorScheme.outline,
@@ -238,11 +256,7 @@ class PluginItemCard extends StatelessWidget {
           color: fallbackColor.withValues(alpha: 0.5),
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          Icons.extension_outlined,
-          size: 24,
-          color: Colors.white,
-        ),
+        child: Icon(Icons.extension_outlined, size: 24, color: Colors.white),
       );
     }
     return Container(

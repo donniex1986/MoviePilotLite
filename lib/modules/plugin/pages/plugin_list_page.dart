@@ -86,7 +86,12 @@ class PluginListPage extends GetView<PluginListController> {
 
   Widget _buildToolbar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(_horizontalPadding, 0, _horizontalPadding, 8),
+      padding: const EdgeInsets.fromLTRB(
+        _horizontalPadding,
+        0,
+        _horizontalPadding,
+        8,
+      ),
       child: SizedBox(
         height: 40,
         child: Row(
@@ -156,10 +161,12 @@ class PluginListPage extends GetView<PluginListController> {
               Icon(
                 CupertinoIcons.slider_horizontal_3,
                 size: 16,
-                color: hasFilters ? accent : CupertinoDynamicColor.resolve(
-                  CupertinoColors.tertiaryLabel,
-                  context,
-                ),
+                color: hasFilters
+                    ? accent
+                    : CupertinoDynamicColor.resolve(
+                        CupertinoColors.tertiaryLabel,
+                        context,
+                      ),
               ),
               if (hasFilters)
                 Positioned(
@@ -208,7 +215,8 @@ class PluginListPage extends GetView<PluginListController> {
         height: 32,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) => _buildFilterPill(context, items[index]),
+          itemBuilder: (context, index) =>
+              _buildFilterPill(context, items[index]),
           separatorBuilder: (_, __) => const SizedBox(width: 6),
           itemCount: items.length,
         ),
@@ -225,7 +233,9 @@ class PluginListPage extends GetView<PluginListController> {
     };
     final chipColor = chipColors[item.filterType] ?? const Color(0xFF6B7280);
     final bgColor = hasCount ? chipColor : chipColor.withValues(alpha: 0.12);
-    final borderColor = hasCount ? chipColor : chipColor.withValues(alpha: 0.35);
+    final borderColor = hasCount
+        ? chipColor
+        : chipColor.withValues(alpha: 0.35);
 
     return CupertinoButton(
       padding: EdgeInsets.zero,
@@ -287,7 +297,8 @@ class PluginListPage extends GetView<PluginListController> {
         title: _filterSectionTitles[PluginListFilterType.author]!,
         options: controller.availableAuthors,
         selected: controller.selectedAuthors.toSet(),
-        onToggle: (v) => controller.toggleFilter(PluginListFilterType.author, v),
+        onToggle: (v) =>
+            controller.toggleFilter(PluginListFilterType.author, v),
       ),
       PluginListFilterSectionConfig(
         filterType: PluginListFilterType.label,
@@ -306,7 +317,10 @@ class PluginListPage extends GetView<PluginListController> {
     ];
   }
 
-  Future<void> _openFilterSheet(BuildContext context, [PluginListFilterType? filterMode]) {
+  Future<void> _openFilterSheet(
+    BuildContext context, [
+    PluginListFilterType? filterMode,
+  ]) {
     return showCupertinoModalBottomSheet<void>(
       context: context,
       builder: (sheetContext) {
@@ -368,7 +382,8 @@ class PluginListPage extends GetView<PluginListController> {
           hasScrollBody: false,
           child: Center(
             child: Text(
-              controller.keyword.value.trim().isEmpty && !controller.hasActiveFilters
+              controller.keyword.value.trim().isEmpty &&
+                      !controller.hasActiveFilters
                   ? '暂无插件'
                   : '未找到匹配的插件',
               style: TextStyle(
@@ -397,11 +412,12 @@ class PluginListPage extends GetView<PluginListController> {
               ),
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: ((width - _horizontalPadding * 2) /
-                          (_itemWidth + _gridSpacing))
-                      .floor()
-                      .clamp(1, 10)
-                      .toInt(),
+                  crossAxisCount:
+                      ((width - _horizontalPadding * 2) /
+                              (_itemWidth + _gridSpacing))
+                          .floor()
+                          .clamp(1, 10)
+                          .toInt(),
                   mainAxisSpacing: _gridSpacing,
                   crossAxisSpacing: _gridSpacing,
                   childAspectRatio: 0.75,
@@ -430,9 +446,7 @@ class PluginListPage extends GetView<PluginListController> {
                 ),
               ),
             ),
-          SliverToBoxAdapter(
-            child: _buildLoadMoreFooter(context),
-          ),
+          SliverToBoxAdapter(child: _buildLoadMoreFooter(context)),
         ],
       );
     });
@@ -490,7 +504,11 @@ class PluginListPage extends GetView<PluginListController> {
     final iconUrl = item.pluginIcon != null && item.pluginIcon!.isNotEmpty
         ? ImageUtil.convertPluginIconUrl(item.pluginIcon!)
         : '';
-    return PluginItemCard(item: item, iconUrl: iconUrl);
+    return PluginItemCard(
+      item: item,
+      iconUrl: iconUrl,
+      installCount: item.installCount,
+    );
   }
 }
 

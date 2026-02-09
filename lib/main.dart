@@ -47,6 +47,8 @@ import 'modules/plugin/controllers/plugin_list_controller.dart';
 import 'modules/plugin/pages/plugin_page.dart';
 import 'modules/plugin/pages/plugin_list_page.dart';
 import 'modules/plugin/services/plugin_palette_cache.dart';
+import 'modules/dynamic_form/controllers/dynamic_form_controller.dart';
+import 'modules/dynamic_form/pages/dynamic_form_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -231,6 +233,35 @@ class MyApp extends StatelessWidget {
           page: () => const MediaDetailPage(),
           binding: BindingsBuilder(() {
             Get.create(() => MediaDetailController());
+          }),
+        ),
+        GetPage(
+          name: '/plugin/dynamic-form/page',
+          page: () => const DynamicFormPage(),
+          binding: BindingsBuilder(() {
+            final args = Get.arguments;
+            final apiPath = args is Map ? args['apiPath']?.toString() : null;
+            final title = args is Map ? args['title']?.toString() : null;
+            Get.put(
+              DynamicFormController()
+                ..init('/api/v1/plugin/page/$apiPath', title: title),
+              permanent: false,
+            );
+          }),
+        ),
+        GetPage(
+          name: '/plugin/dynamic-form/form',
+          page: () => const DynamicFormPage(),
+          binding: BindingsBuilder(() {
+            final args = Get.arguments;
+            final apiPath = args is Map ? args['apiPath']?.toString() : null;
+            final title = args is Map ? args['title']?.toString() : null;
+            Get.put(
+              DynamicFormController()
+                ..init('/api/v1/plugin/form/$apiPath', title: title)
+                ..apiSavePath = '/api/v1/plugin/$apiPath',
+              permanent: false,
+            );
           }),
         ),
       ],

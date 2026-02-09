@@ -57,9 +57,19 @@ class PluginListController extends GetxController {
     return _displayedLimit < all.length;
   }
 
+  Future<Map<String, dynamic>> loadInstallCount() async {
+    final response = await _apiClient.get<dynamic>('/api/v1/plugin/statistic');
+    final status = response.statusCode ?? 0;
+    if (status >= 400) {
+      return {};
+    }
+    return response.data ?? {};
+  }
+
   Future<void> load() async {
     isLoading.value = true;
     errorText.value = null;
+    final installCount = await loadInstallCount();
     try {
       final response = await _apiClient.get<dynamic>(
         '/api/v1/plugin/',
@@ -77,7 +87,11 @@ class PluginListController extends GetxController {
       for (final item in list) {
         if (item is Map<String, dynamic>) {
           try {
-            parsed.add(PluginItem.fromJson(item));
+            parsed.add(
+              PluginItem.fromJson(
+                item,
+              ).copyWith(installCount: installCount[item['id']] ?? 0),
+            );
           } catch (e, st) {
             _log.handle(e, stackTrace: st, message: '解析插件失败');
           }
@@ -108,10 +122,11 @@ class PluginListController extends GetxController {
     try {
       final cache = Get.find<PluginPaletteCache>();
       final urls = visibleItems
-          .map((e) =>
-              e.pluginIcon != null && e.pluginIcon!.isNotEmpty
-                  ? ImageUtil.convertPluginIconUrl(e.pluginIcon!)
-                  : '')
+          .map(
+            (e) => e.pluginIcon != null && e.pluginIcon!.isNotEmpty
+                ? ImageUtil.convertPluginIconUrl(e.pluginIcon!)
+                : '',
+          )
           .where((s) => s.isNotEmpty);
       cache.preload(urls);
     } catch (_) {}
@@ -152,9 +167,12 @@ class PluginListController extends GetxController {
       selectedLabels.isNotEmpty ||
       selectedRepos.isNotEmpty;
 
-  List<String> get availableAuthors => _uniqueOptions(items.map((e) => e.pluginAuthor));
-  List<String> get availableLabels => _uniqueOptions(items.map((e) => e.pluginLabel));
-  List<String> get availableRepos => _uniqueOptions(items.map((e) => _repoLabel(e.repoUrl)));
+  List<String> get availableAuthors =>
+      _uniqueOptions(items.map((e) => e.pluginAuthor));
+  List<String> get availableLabels =>
+      _uniqueOptions(items.map((e) => e.pluginLabel));
+  List<String> get availableRepos =>
+      _uniqueOptions(items.map((e) => _repoLabel(e.repoUrl)));
 
   List<PluginItem> get visibleItems {
     final all = _computeFilteredAndSorted();
@@ -173,10 +191,13 @@ class PluginListController extends GetxController {
       results = results.where((item) => _matchKeyword(item, key)).toList();
     }
     results = results.where((item) {
-      if (authors.isNotEmpty && (item.pluginAuthor == null || !authors.contains(item.pluginAuthor!))) {
+      if (authors.isNotEmpty &&
+          (item.pluginAuthor == null ||
+              !authors.contains(item.pluginAuthor!))) {
         return false;
       }
-      if (labels.isNotEmpty && (item.pluginLabel == null || !labels.contains(item.pluginLabel!))) {
+      if (labels.isNotEmpty &&
+          (item.pluginLabel == null || !labels.contains(item.pluginLabel!))) {
         return false;
       }
       if (repos.isNotEmpty) {

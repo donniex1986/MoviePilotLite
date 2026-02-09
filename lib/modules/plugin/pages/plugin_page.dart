@@ -58,7 +58,12 @@ class PluginPage extends GetView<PluginController> {
 
   Widget _buildSearchBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(_horizontalPadding, 12, _horizontalPadding, 8),
+      padding: const EdgeInsets.fromLTRB(
+        _horizontalPadding,
+        12,
+        _horizontalPadding,
+        8,
+      ),
       child: CupertinoSearchTextField(
         onSubmitted: controller.updateKeyword,
         placeholder: '搜索插件名称、描述、作者…',
@@ -113,9 +118,7 @@ class PluginPage extends GetView<PluginController> {
           hasScrollBody: false,
           child: Center(
             child: Text(
-              controller.keyword.value.trim().isEmpty
-                  ? '暂无已安装插件'
-                  : '未找到匹配的插件',
+              controller.keyword.value.trim().isEmpty ? '暂无已安装插件' : '未找到匹配的插件',
               style: TextStyle(
                 color: CupertinoDynamicColor.resolve(
                   CupertinoColors.secondaryLabel,
@@ -132,8 +135,9 @@ class PluginPage extends GetView<PluginController> {
 
       if (useGrid) {
         final availableWidth = width - _horizontalPadding * 2;
-        final crossAxisCount =
-            (availableWidth / (_itemWidth + _gridSpacing)).floor().clamp(1, 10);
+        final crossAxisCount = (availableWidth / (_itemWidth + _gridSpacing))
+            .floor()
+            .clamp(1, 10);
 
         return SliverPadding(
           padding: const EdgeInsets.fromLTRB(
@@ -181,6 +185,25 @@ class PluginPage extends GetView<PluginController> {
     final iconUrl = item.pluginIcon != null && item.pluginIcon!.isNotEmpty
         ? ImageUtil.convertPluginIconUrl(item.pluginIcon!)
         : '';
-    return PluginItemCard(item: item, iconUrl: iconUrl);
+    return GestureDetector(
+      onTap: () {
+        if (item.hasPage) {
+          Get.toNamed(
+            '/plugin/dynamic-form/page',
+            arguments: {'apiPath': item.id, 'title': item.pluginName},
+          );
+        } else {
+          Get.toNamed(
+            '/plugin/dynamic-form/form',
+            arguments: {'apiPath': item.id, 'title': item.pluginName},
+          );
+        }
+      },
+      child: PluginItemCard(
+        item: item,
+        iconUrl: iconUrl,
+        installCount: item.installCount,
+      ),
+    );
   }
 }
