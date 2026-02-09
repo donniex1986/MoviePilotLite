@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
@@ -18,7 +19,8 @@ class _MultiSelectPickerSheet extends StatefulWidget {
   final ValueChanged<Set<dynamic>> onConfirm;
 
   @override
-  State<_MultiSelectPickerSheet> createState() => _MultiSelectPickerSheetState();
+  State<_MultiSelectPickerSheet> createState() =>
+      _MultiSelectPickerSheetState();
 }
 
 class _MultiSelectPickerSheetState extends State<_MultiSelectPickerSheet> {
@@ -32,88 +34,97 @@ class _MultiSelectPickerSheetState extends State<_MultiSelectPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.7,
-      ),
-      decoration: BoxDecoration(
-        color: CupertinoDynamicColor.resolve(
-          CupertinoColors.systemGroupedBackground,
-          context,
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
         ),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: CupertinoDynamicColor.resolve(
-                    CupertinoColors.separator,
-                    context,
-                  ),
+        decoration: BoxDecoration(
+          color: CupertinoDynamicColor.resolve(
+            CupertinoColors.systemGroupedBackground,
+            context,
+          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('取消'),
-                ),
-                Text(
-                  widget.label,
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: CupertinoDynamicColor.resolve(
-                      CupertinoColors.label,
-                      context,
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: CupertinoDynamicColor.resolve(
+                        CupertinoColors.separator,
+                        context,
+                      ),
                     ),
                   ),
                 ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => widget.onConfirm(_selectedValues),
-                  child: const Text('确定'),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('取消'),
+                    ),
+                    Text(
+                      widget.label,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: CupertinoDynamicColor.resolve(
+                          CupertinoColors.label,
+                          context,
+                        ),
+                      ),
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => widget.onConfirm(_selectedValues),
+                      child: const Text('确定'),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: widget.items.length,
-              itemBuilder: (context, index) {
-                final item = widget.items[index];
-                final isSelected = _selectedValues.contains(item.value);
-                return CupertinoListTile(
-                  title: Text(item.title),
-                  trailing: isSelected
-                      ? Icon(
-                          CupertinoIcons.check_mark,
-                          color: CupertinoColors.activeBlue,
-                        )
-                      : null,
-                  onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedValues.remove(item.value);
-                      } else {
-                        _selectedValues.add(item.value);
-                      }
-                    });
+              ),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.items.length,
+                  itemBuilder: (context, index) {
+                    final item = widget.items[index];
+                    final isSelected = _selectedValues.contains(item.value);
+                    return CupertinoListTile(
+                      title: Text(item.title),
+                      trailing: isSelected
+                          ? Icon(
+                              CupertinoIcons.check_mark,
+                              color: CupertinoColors.activeBlue,
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          if (isSelected) {
+                            _selectedValues.remove(item.value);
+                          } else {
+                            _selectedValues.add(item.value);
+                          }
+                        });
+                      },
+                    );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -165,94 +176,104 @@ class SelectFieldWidget extends StatelessWidget {
 
     showCupertinoModalBottomSheet<void>(
       context: context,
-      builder: (context) => Container(
-        height: 300,
-        decoration: BoxDecoration(
-          color: CupertinoDynamicColor.resolve(
-            CupertinoColors.systemGroupedBackground,
-            context,
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Container(
+          height: 300,
+          decoration: BoxDecoration(
+            color: CupertinoDynamicColor.resolve(
+              CupertinoColors.systemGroupedBackground,
+              context,
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: CupertinoDynamicColor.resolve(
-                      CupertinoColors.separator,
-                      context,
-                    ),
-                  ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('取消'),
-                  ),
-                  Text(
-                    block.label,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
                       color: CupertinoDynamicColor.resolve(
-                        CupertinoColors.label,
+                        CupertinoColors.separator,
                         context,
                       ),
                     ),
                   ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      if (onChanged != null && selectedIndex < block.items.length) {
-                        onChanged!(block.items[selectedIndex].value);
-                      }
-                    },
-                    child: const Text('确定'),
-                  ),
-                ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('取消'),
+                    ),
+                    Text(
+                      block.label,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: CupertinoDynamicColor.resolve(
+                          CupertinoColors.label,
+                          context,
+                        ),
+                      ),
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        if (onChanged != null &&
+                            selectedIndex < block.items.length) {
+                          onChanged!(block.items[selectedIndex].value);
+                        }
+                      },
+                      child: const Text('确定'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: CupertinoPicker(
-                scrollController: FixedExtentScrollController(initialItem: selectedIndex),
-                itemExtent: 44,
-                onSelectedItemChanged: (index) {
-                  selectedIndex = index;
-                },
-                children: block.items
-                    .map(
-                      (item) => Center(
-                        child: Text(
-                          item.title,
-                          style: TextStyle(
-                            fontSize: 17,
-                            color: CupertinoDynamicColor.resolve(
-                              CupertinoColors.label,
-                              context,
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(
+                    initialItem: selectedIndex,
+                  ),
+                  itemExtent: 44,
+                  onSelectedItemChanged: (index) {
+                    selectedIndex = index;
+                  },
+                  children: block.items
+                      .map(
+                        (item) => Center(
+                          child: Text(
+                            item.title,
+                            style: TextStyle(
+                              fontSize: 17,
+                              color: CupertinoDynamicColor.resolve(
+                                CupertinoColors.label,
+                                context,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    )
-                    .toList(),
+                      )
+                      .toList(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
   void _showMultiSelectPicker(BuildContext context) {
-    final initialValues = (value is List ? (value as List).toSet() : <dynamic>{}).toSet();
+    final initialValues =
+        (value is List ? (value as List).toSet() : <dynamic>{}).toSet();
 
     showCupertinoModalBottomSheet<void>(
       context: context,
