@@ -83,6 +83,24 @@ class FormBlockConverter {
     return null;
   }
 
+  static FormNode? _findComponent(FormNode node, String component) {
+    if (node.component == component) return node;
+    for (final c in node.content) {
+      final found = _findComponent(c, component);
+      if (found != null) return found;
+    }
+    return null;
+  }
+
+  static void _collectComponents(FormNode node, String component, List<FormNode> out) {
+    if (node.component == component) {
+      out.add(node);
+    }
+    for (final c in node.content) {
+      _collectComponents(c, component, out);
+    }
+  }
+
   static ExpansionCardBlock? _extractExpansionCard(FormNode card) {
     FormNode? cardTitleNode;
     FormNode? cardTextNode;
@@ -91,20 +109,14 @@ class FormBlockConverter {
       if (node.component == 'VCardText') cardTextNode = node;
     }
     if (cardTextNode == null) return null;
-    FormNode? panelsNode;
-    for (final node in cardTextNode.content) {
-      if (node.component == 'VExpansionPanels') {
-        panelsNode = node;
-        break;
-      }
-    }
+    final panelsNode = _findComponent(cardTextNode, 'VExpansionPanels');
     if (panelsNode == null) return null;
     final items = <ExpansionItem>[];
-    for (final node in panelsNode.content) {
-      if (node.component == 'VExpansionPanel') {
-        final item = _extractExpansionPanelItem(node);
-        if (item != null) items.add(item);
-      }
+    final panelList = <FormNode>[];
+    _collectComponents(panelsNode, 'VExpansionPanel', panelList);
+    for (final node in panelList) {
+      final item = _extractExpansionPanelItem(node);
+      if (item != null) items.add(item);
     }
     if (items.isEmpty) return null;
     String cardTitle = '';
