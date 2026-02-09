@@ -54,13 +54,13 @@ const List<MultifunctionSection> multifunctionSections = [
   MultifunctionSection(
     title: '整理',
     items: [
-      MultifunctionItem(
-        title: '下载管理',
-        subtitle: '任务队列与速度',
-        icon: Icons.download_outlined,
-        accent: Color(0xFF3B82F6),
-        style: MultifunctionCardStyle.wide,
-      ),
+      // MultifunctionItem(
+      //   title: '下载管理',
+      //   subtitle: '任务队列与速度',
+      //   icon: Icons.download_outlined,
+      //   accent: Color(0xFF3B82F6),
+      //   style: MultifunctionCardStyle.wide,
+      // ),
       MultifunctionItem(
         title: '媒体整理',
         subtitle: '命名、归档与去重',
@@ -69,13 +69,13 @@ const List<MultifunctionSection> multifunctionSections = [
         style: MultifunctionCardStyle.wide,
         route: '/media-organize',
       ),
-      MultifunctionItem(
-        title: '文件管理',
-        subtitle: '批量清理与归档',
-        icon: Icons.snippet_folder_outlined,
-        accent: Color(0xFF6D5DF6),
-        style: MultifunctionCardStyle.wide,
-      ),
+      // MultifunctionItem(
+      //   title: '文件管理',
+      //   subtitle: '批量清理与归档',
+      //   icon: Icons.snippet_folder_outlined,
+      //   accent: Color(0xFF6D5DF6),
+      //   style: MultifunctionCardStyle.wide,
+      // ),
     ],
   ),
   MultifunctionSection(
@@ -88,6 +88,7 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.grid_view_outlined,
         accent: Color(0xFF8F67FF),
         style: MultifunctionCardStyle.wide,
+        route: '/plugin',
       ),
       MultifunctionItem(
         title: '站点管理',

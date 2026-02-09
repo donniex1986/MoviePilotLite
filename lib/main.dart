@@ -42,6 +42,11 @@ import 'modules/subscribe/pages/subscribe_share_page.dart';
 import 'modules/subscribe/pages/subscribe_share_statistics_page.dart';
 import 'modules/media_organize/controllers/media_organize_controller.dart';
 import 'modules/media_organize/pages/media_organize_page.dart';
+import 'modules/plugin/controllers/plugin_controller.dart';
+import 'modules/plugin/controllers/plugin_list_controller.dart';
+import 'modules/plugin/pages/plugin_page.dart';
+import 'modules/plugin/pages/plugin_list_page.dart';
+import 'modules/plugin/services/plugin_palette_cache.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -197,6 +202,28 @@ class MyApp extends StatelessWidget {
           page: () => const MediaOrganizePage(),
           binding: BindingsBuilder(() {
             Get.put(MediaOrganizeController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/plugin',
+          page: () => const PluginPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut<PluginPaletteCache>(
+              () => PluginPaletteCache(),
+              fenix: true,
+            );
+            Get.put(PluginController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/plugin-list',
+          page: () => const PluginListPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut<PluginPaletteCache>(
+              () => PluginPaletteCache(),
+              fenix: true,
+            );
+            Get.put(PluginListController(), permanent: false);
           }),
         ),
         GetPage(

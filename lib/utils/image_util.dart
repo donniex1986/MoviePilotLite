@@ -1,6 +1,5 @@
-import 'package:moviepilot_mobile/services/api_client.dart';
-import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/services/api_client.dart';
 
 /// 图片工具类
 class ImageUtil {
@@ -42,10 +41,26 @@ class ImageUtil {
     baseUrl ??= apiClient.baseUrl ?? '';
     if (baseUrl.isEmpty) return imageUrl;
 
-    final sanitizedBase = baseUrl.endsWith('/')
-        ? baseUrl.substring(0, baseUrl.length - 1)
-        : baseUrl;
+    final sanitizedBase =
+        baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
     final encodedImageUrl = Uri.encodeComponent(imageUrl);
     return '$sanitizedBase/api/v1/system/cache/image?url=$encodedImageUrl';
+  }
+
+  /// 将插件图标地址转换为可访问的 URL
+  ///
+  /// [pluginIcon] 插件图标：若以 http 开头，则通过 api/v1/system/img/1 代理；否则使用 baseUrl/plugin_icon/{pluginIcon}
+  static String convertPluginIconUrl(String pluginIcon, {String? baseUrl}) {
+    if (pluginIcon.isEmpty) return '';
+    final apiClient = Get.find<ApiClient>();
+    baseUrl ??= apiClient.baseUrl ?? '';
+    if (baseUrl.isEmpty) return pluginIcon;
+    final sanitizedBase =
+        baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    if (pluginIcon.toLowerCase().startsWith('http')) {
+      final encoded = Uri.encodeComponent(pluginIcon);
+      return '$sanitizedBase/api/v1/system/img/1?imgurl=$encoded';
+    }
+    return '$sanitizedBase/plugin_icon/$pluginIcon';
   }
 }
