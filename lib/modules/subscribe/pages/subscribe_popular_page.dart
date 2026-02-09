@@ -170,7 +170,9 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
                 return SubscribePopularItemCard(
-                    item: items[index], onTap: () {});
+                  item: items[index],
+                  onTap: () {},
+                );
               }, childCount: items.length),
             ),
             SliverToBoxAdapter(
@@ -200,7 +202,9 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
                     child: CupertinoButton(
                       onPressed: loading ? null : () => controller.loadMore(),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       color: Theme.of(context).colorScheme.primaryContainer,
                       child: loading
                           ? SizedBox(
@@ -216,7 +220,9 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
                               ),
                             ),
                     ),

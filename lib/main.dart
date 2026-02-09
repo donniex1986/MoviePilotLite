@@ -40,6 +40,8 @@ import 'modules/subscribe/pages/subscribe_page.dart';
 import 'modules/subscribe/pages/subscribe_popular_page.dart';
 import 'modules/subscribe/pages/subscribe_share_page.dart';
 import 'modules/subscribe/pages/subscribe_share_statistics_page.dart';
+import 'modules/media_organize/controllers/media_organize_controller.dart';
+import 'modules/media_organize/pages/media_organize_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -188,6 +190,13 @@ class MyApp extends StatelessWidget {
           page: () => const SubscribeCalendarPage(),
           binding: BindingsBuilder(() {
             Get.put(SubscribeCalendarController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/media-organize',
+          page: () => const MediaOrganizePage(),
+          binding: BindingsBuilder(() {
+            Get.put(MediaOrganizeController(), permanent: false);
           }),
         ),
         GetPage(

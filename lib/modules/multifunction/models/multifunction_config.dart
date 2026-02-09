@@ -67,6 +67,7 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.folder_outlined,
         accent: Color(0xFF8E44AD),
         style: MultifunctionCardStyle.wide,
+        route: '/media-organize',
       ),
       MultifunctionItem(
         title: '文件管理',
