@@ -19,11 +19,29 @@ class MediaOrganizeController extends GetxController {
   final storageNameMap = <String, String>{}.obs;
   final isLoading = false.obs;
   final errorText = RxnString();
+  final allKeys = <String>[].obs;
 
+  /// 内部用 Set 做去重
+  final _keySet = <String>{};
   @override
   void onReady() {
     super.onReady();
     loadStorages().then((_) => load());
+    ever<List<MediaOrganizeTransferItem>>(items, (list) {
+      final newKeys = list.map((e) => e.title).whereType<String>();
+
+      bool changed = false;
+
+      for (final key in newKeys) {
+        if (_keySet.add(key)) {
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        allKeys.assignAll(_keySet.toList());
+      }
+    });
   }
 
   @override
@@ -70,7 +88,14 @@ class MediaOrganizeController extends GetxController {
     return storageNameMap[type] ?? type;
   }
 
-  Future<void> load() async {
+  final searchController = TextEditingController();
+
+  void search(String value) {
+    searchController.text = value;
+    load(search: value);
+  }
+
+  Future<void> load({String? search}) async {
     isLoading.value = true;
     errorText.value = null;
     _page = 1;
@@ -78,7 +103,11 @@ class MediaOrganizeController extends GetxController {
     try {
       final response = await _apiClient.get<dynamic>(
         '/api/v1/history/transfer',
-        queryParameters: {'page': _page, 'count': _pageSize},
+        queryParameters: {
+          'page': _page,
+          'count': _pageSize,
+          if (search != null && search.isNotEmpty) 'title': search,
+        },
       );
       final status = response.statusCode ?? 0;
       if (status >= 400) {

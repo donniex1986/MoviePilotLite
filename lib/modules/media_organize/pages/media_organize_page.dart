@@ -39,7 +39,73 @@ class MediaOrganizePage extends GetView<MediaOrganizeController> {
         },
         child: CustomScrollView(
           controller: controller.scrollController,
-          slivers: [_buildSliverContent(context)],
+          slivers: [_buildSearchBar(context), _buildSliverContent(context)],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      sliver: SliverToBoxAdapter(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CupertinoSearchTextField(
+              controller: controller.searchController,
+              placeholder: '搜索整理记录',
+              onSubmitted: (value) {
+                controller.search(value);
+              },
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CupertinoSlidingSegmentedControl(
+                  backgroundColor: CupertinoColors.systemGrey6,
+                  thumbColor: Theme.of(context).colorScheme.primary,
+                  children: const {'成功': Text('成功'), '失败': Text('失败')},
+                  onValueChanged: (value) {
+                    controller.search(value ?? '');
+                  },
+                ),
+                Expanded(
+                  child: Obx(() {
+                    final keys = controller.allKeys;
+                    if (keys.isEmpty) return const SizedBox.shrink();
+                    return SizedBox(
+                      height: 44,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) {
+                          final key = keys[index];
+                          return GestureDetector(
+                            onTap: () {
+                              controller.search(key);
+                            },
+                            child: Chip(
+                              label: Text(
+                                key,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: CupertinoColors.secondaryLabel,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        itemCount: keys.length,
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
