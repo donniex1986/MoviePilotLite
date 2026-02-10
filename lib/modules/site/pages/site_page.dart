@@ -5,8 +5,11 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/site/controllers/site_controller.dart';
+import 'package:moviepilot_mobile/modules/site/controllers/site_statistic_controller.dart';
 import 'package:moviepilot_mobile/modules/site/models/site_models.dart';
+import 'package:moviepilot_mobile/modules/site/pages/site_statistic_page.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
@@ -23,8 +26,8 @@ class SitePage extends GetView<SiteController> {
         actions: [
           CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: controller.load,
-            child: const Icon(CupertinoIcons.refresh),
+            onPressed: () => _openStatistic(context),
+            child: const Icon(CupertinoIcons.chart_bar),
           ),
         ],
       ),
@@ -56,7 +59,7 @@ class SitePage extends GetView<SiteController> {
         }
         return CustomScrollView(
           slivers: [
-            // CupertinoSliverRefreshControl(onRefresh: controller.load),
+            CupertinoSliverRefreshControl(onRefresh: controller.load),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -105,6 +108,19 @@ class SitePage extends GetView<SiteController> {
         'site': item.site.toJson(),
       },
     );
+  }
+
+  void _openStatistic(BuildContext context) {
+    Get.put(SiteStatisticController(), permanent: false);
+    showCupertinoModalBottomSheet<void>(
+      context: context,
+      expand: true,
+      builder: (sheetContext) {
+        return const SiteStatisticPage();
+      },
+    ).then((_) {
+      Get.delete<SiteStatisticController>();
+    });
   }
 }
 
