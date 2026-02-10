@@ -291,16 +291,7 @@ class MediaDetailController extends GetxController {
       return;
     }
     try {
-      final payload = <String, dynamic>{
-        'path': _args.path,
-        if (detail.media_id != null && detail.media_id!.isNotEmpty)
-          'media_id': detail.media_id,
-        if (detail.tmdb_id != null) 'tmdb_id': detail.tmdb_id,
-        if (detail.douban_id != null) 'douban_id': detail.douban_id,
-        if (detail.title != null && detail.title!.isNotEmpty)
-          'title': detail.title,
-        if (detail.year != null && detail.year!.isNotEmpty) 'year': detail.year,
-      };
+      final payload = detail.toJson();
       final list = await _mediaDetailService.getMediaNotExists(payload);
       mediaNotExists.assignAll(list);
     } catch (e) {

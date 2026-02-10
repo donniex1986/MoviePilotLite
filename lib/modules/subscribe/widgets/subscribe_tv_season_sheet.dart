@@ -35,7 +35,7 @@ class SeasonStateInfo {
   bool get isMissing =>
       mediaNotExists != null &&
       ((mediaNotExists!.episodes?.isNotEmpty ?? false) ||
-          (mediaNotExists!.total_episodes ?? 0) > 0);
+          (mediaNotExists!.total_episode ?? 0) > 0);
 }
 
 class _SubscribeTvSeasonSheetState extends State<SubscribeTvSeasonSheet> {
@@ -101,10 +101,7 @@ class _SubscribeTvSeasonSheetState extends State<SubscribeTvSeasonSheet> {
             notExists = mediaNotExists.where((e) => e.season == sn).first;
           } catch (_) {}
         }
-        merged.add(SeasonStateInfo(
-          seasonInfo: el,
-          mediaNotExists: notExists,
-        ));
+        merged.add(SeasonStateInfo(seasonInfo: el, mediaNotExists: notExists));
       }
       if (!mounted) return;
       setState(() {
@@ -146,7 +143,9 @@ class _SubscribeTvSeasonSheetState extends State<SubscribeTvSeasonSheet> {
     for (final seasonNum in _selectedSeasonNumbers) {
       final ok = await _subscribeController.submitTvSubscribe(
         doubanid: doubanId,
-        episode_group: _selectedEpisodeGroupId.isEmpty ? '' : _selectedEpisodeGroupId,
+        episode_group: _selectedEpisodeGroupId.isEmpty
+            ? ''
+            : _selectedEpisodeGroupId,
         mediaid: mediaId.isEmpty ? '' : mediaId,
         name: name,
         season: seasonNum,
@@ -195,37 +194,37 @@ class _SubscribeTvSeasonSheetState extends State<SubscribeTvSeasonSheet> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _loadError != null
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _loadError!,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  color: theme.colorScheme.error,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              FilledButton(
-                                onPressed: _loadData,
-                                child: const Text('重试'),
-                              ),
-                            ],
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _loadError!,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: theme.colorScheme.error,
+                            ),
                           ),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        itemCount: _seasonInfoList.length,
-                        itemBuilder: (context, index) =>
-                            _buildSeasonItem(context, _seasonInfoList[index]),
+                          const SizedBox(height: 16),
+                          FilledButton(
+                            onPressed: _loadData,
+                            child: const Text('重试'),
+                          ),
+                        ],
                       ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    itemCount: _seasonInfoList.length,
+                    itemBuilder: (context, index) =>
+                        _buildSeasonItem(context, _seasonInfoList[index]),
+                  ),
           ),
           _buildBottomButton(theme),
         ],
@@ -284,9 +283,7 @@ class _SubscribeTvSeasonSheetState extends State<SubscribeTvSeasonSheet> {
     final seasonNum = s.season_number ?? -1;
     final canSelect = !state.isMissing;
     final selected = _selectedSeasonNumbers.contains(seasonNum);
-    final imageUrl = ImageUtil.convertMediaSeasonImageUrl(
-      s.poster_path ?? '',
-    );
+    final imageUrl = ImageUtil.convertMediaSeasonImageUrl(s.poster_path ?? '');
     final year = s.air_date != null && s.air_date!.length >= 4
         ? s.air_date!.substring(0, 4)
         : '';
@@ -429,9 +426,7 @@ class _SubscribeTvSeasonSheetState extends State<SubscribeTvSeasonSheet> {
                   width: 22,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(
-                  count > 0 ? '订阅 $count 季' : '请选择订阅季',
-                ),
+              : Text(count > 0 ? '订阅 $count 季' : '请选择订阅季'),
         ),
       ),
     );

@@ -7,8 +7,8 @@ part 'media_notexists.g.dart';
 class MediaNotExists with _$MediaNotExists {
   const factory MediaNotExists({
     @JsonKey(fromJson: _intFromJson) int? season,
-    List<String>? episodes,
-    @JsonKey(fromJson: _intFromJson) int? total_episodes,
+    @JsonKey(fromJson: _stringListFromJson) List<String?>? episodes,
+    @JsonKey(fromJson: _intFromJson) int? total_episode,
     @JsonKey(fromJson: _intFromJson) int? start_episode,
   }) = _MediaNotExists;
 
@@ -18,3 +18,6 @@ class MediaNotExists with _$MediaNotExists {
 
 int _intFromJson(dynamic json) =>
     json is int ? json : int.parse(json.toString());
+
+List<String?> _stringListFromJson(dynamic json) =>
+    json is List ? json.map((e) => e as String?).toList() : [];

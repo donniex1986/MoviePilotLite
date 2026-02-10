@@ -23,9 +23,10 @@ MediaNotExists _$MediaNotExistsFromJson(Map<String, dynamic> json) {
 mixin _$MediaNotExists {
   @JsonKey(fromJson: _intFromJson)
   int? get season => throw _privateConstructorUsedError;
-  List<String>? get episodes => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _stringListFromJson)
+  List<String?>? get episodes => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _intFromJson)
-  int? get total_episodes => throw _privateConstructorUsedError;
+  int? get total_episode => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _intFromJson)
   int? get start_episode => throw _privateConstructorUsedError;
 
@@ -48,8 +49,8 @@ abstract class $MediaNotExistsCopyWith<$Res> {
   @useResult
   $Res call({
     @JsonKey(fromJson: _intFromJson) int? season,
-    List<String>? episodes,
-    @JsonKey(fromJson: _intFromJson) int? total_episodes,
+    @JsonKey(fromJson: _stringListFromJson) List<String?>? episodes,
+    @JsonKey(fromJson: _intFromJson) int? total_episode,
     @JsonKey(fromJson: _intFromJson) int? start_episode,
   });
 }
@@ -71,7 +72,7 @@ class _$MediaNotExistsCopyWithImpl<$Res, $Val extends MediaNotExists>
   $Res call({
     Object? season = freezed,
     Object? episodes = freezed,
-    Object? total_episodes = freezed,
+    Object? total_episode = freezed,
     Object? start_episode = freezed,
   }) {
     return _then(
@@ -83,10 +84,10 @@ class _$MediaNotExistsCopyWithImpl<$Res, $Val extends MediaNotExists>
             episodes: freezed == episodes
                 ? _value.episodes
                 : episodes // ignore: cast_nullable_to_non_nullable
-                      as List<String>?,
-            total_episodes: freezed == total_episodes
-                ? _value.total_episodes
-                : total_episodes // ignore: cast_nullable_to_non_nullable
+                      as List<String?>?,
+            total_episode: freezed == total_episode
+                ? _value.total_episode
+                : total_episode // ignore: cast_nullable_to_non_nullable
                       as int?,
             start_episode: freezed == start_episode
                 ? _value.start_episode
@@ -109,8 +110,8 @@ abstract class _$$MediaNotExistsImplCopyWith<$Res>
   @useResult
   $Res call({
     @JsonKey(fromJson: _intFromJson) int? season,
-    List<String>? episodes,
-    @JsonKey(fromJson: _intFromJson) int? total_episodes,
+    @JsonKey(fromJson: _stringListFromJson) List<String?>? episodes,
+    @JsonKey(fromJson: _intFromJson) int? total_episode,
     @JsonKey(fromJson: _intFromJson) int? start_episode,
   });
 }
@@ -131,7 +132,7 @@ class __$$MediaNotExistsImplCopyWithImpl<$Res>
   $Res call({
     Object? season = freezed,
     Object? episodes = freezed,
-    Object? total_episodes = freezed,
+    Object? total_episode = freezed,
     Object? start_episode = freezed,
   }) {
     return _then(
@@ -143,10 +144,10 @@ class __$$MediaNotExistsImplCopyWithImpl<$Res>
         episodes: freezed == episodes
             ? _value._episodes
             : episodes // ignore: cast_nullable_to_non_nullable
-                  as List<String>?,
-        total_episodes: freezed == total_episodes
-            ? _value.total_episodes
-            : total_episodes // ignore: cast_nullable_to_non_nullable
+                  as List<String?>?,
+        total_episode: freezed == total_episode
+            ? _value.total_episode
+            : total_episode // ignore: cast_nullable_to_non_nullable
                   as int?,
         start_episode: freezed == start_episode
             ? _value.start_episode
@@ -162,8 +163,8 @@ class __$$MediaNotExistsImplCopyWithImpl<$Res>
 class _$MediaNotExistsImpl implements _MediaNotExists {
   const _$MediaNotExistsImpl({
     @JsonKey(fromJson: _intFromJson) this.season,
-    final List<String>? episodes,
-    @JsonKey(fromJson: _intFromJson) this.total_episodes,
+    @JsonKey(fromJson: _stringListFromJson) final List<String?>? episodes,
+    @JsonKey(fromJson: _intFromJson) this.total_episode,
     @JsonKey(fromJson: _intFromJson) this.start_episode,
   }) : _episodes = episodes;
 
@@ -173,9 +174,10 @@ class _$MediaNotExistsImpl implements _MediaNotExists {
   @override
   @JsonKey(fromJson: _intFromJson)
   final int? season;
-  final List<String>? _episodes;
+  final List<String?>? _episodes;
   @override
-  List<String>? get episodes {
+  @JsonKey(fromJson: _stringListFromJson)
+  List<String?>? get episodes {
     final value = _episodes;
     if (value == null) return null;
     if (_episodes is EqualUnmodifiableListView) return _episodes;
@@ -185,14 +187,14 @@ class _$MediaNotExistsImpl implements _MediaNotExists {
 
   @override
   @JsonKey(fromJson: _intFromJson)
-  final int? total_episodes;
+  final int? total_episode;
   @override
   @JsonKey(fromJson: _intFromJson)
   final int? start_episode;
 
   @override
   String toString() {
-    return 'MediaNotExists(season: $season, episodes: $episodes, total_episodes: $total_episodes, start_episode: $start_episode)';
+    return 'MediaNotExists(season: $season, episodes: $episodes, total_episode: $total_episode, start_episode: $start_episode)';
   }
 
   @override
@@ -202,8 +204,8 @@ class _$MediaNotExistsImpl implements _MediaNotExists {
             other is _$MediaNotExistsImpl &&
             (identical(other.season, season) || other.season == season) &&
             const DeepCollectionEquality().equals(other._episodes, _episodes) &&
-            (identical(other.total_episodes, total_episodes) ||
-                other.total_episodes == total_episodes) &&
+            (identical(other.total_episode, total_episode) ||
+                other.total_episode == total_episode) &&
             (identical(other.start_episode, start_episode) ||
                 other.start_episode == start_episode));
   }
@@ -214,7 +216,7 @@ class _$MediaNotExistsImpl implements _MediaNotExists {
     runtimeType,
     season,
     const DeepCollectionEquality().hash(_episodes),
-    total_episodes,
+    total_episode,
     start_episode,
   );
 
@@ -238,8 +240,8 @@ class _$MediaNotExistsImpl implements _MediaNotExists {
 abstract class _MediaNotExists implements MediaNotExists {
   const factory _MediaNotExists({
     @JsonKey(fromJson: _intFromJson) final int? season,
-    final List<String>? episodes,
-    @JsonKey(fromJson: _intFromJson) final int? total_episodes,
+    @JsonKey(fromJson: _stringListFromJson) final List<String?>? episodes,
+    @JsonKey(fromJson: _intFromJson) final int? total_episode,
     @JsonKey(fromJson: _intFromJson) final int? start_episode,
   }) = _$MediaNotExistsImpl;
 
@@ -250,10 +252,11 @@ abstract class _MediaNotExists implements MediaNotExists {
   @JsonKey(fromJson: _intFromJson)
   int? get season;
   @override
-  List<String>? get episodes;
+  @JsonKey(fromJson: _stringListFromJson)
+  List<String?>? get episodes;
   @override
   @JsonKey(fromJson: _intFromJson)
-  int? get total_episodes;
+  int? get total_episode;
   @override
   @JsonKey(fromJson: _intFromJson)
   int? get start_episode;

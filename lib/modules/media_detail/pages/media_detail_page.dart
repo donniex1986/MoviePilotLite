@@ -619,7 +619,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
   ) {
     final theme = Theme.of(context);
     return SizedBox(
-      height: 200,
+      height: 180,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: seasons.length,
@@ -639,7 +639,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           final isMissing =
               notExists != null &&
               ((notExists.episodes?.isNotEmpty ?? false) ||
-                  (notExists.total_episodes ?? 0) > 0);
+                  (notExists.total_episode ?? 0) > 0);
           final isSubscribed = sn != null && seasonSubscribeMap[sn] != null;
           final posterUrl = ImageUtil.convertMediaSeasonImageUrl(
             season.poster_path ?? '',

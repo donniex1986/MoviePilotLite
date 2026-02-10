@@ -28,8 +28,10 @@ class MediaDetailService extends GetxService {
       if (response.statusCode != 200) {
         throw ApiAuthException(response.statusCode!, response.statusMessage);
       }
-      return (response.data! as List<dynamic>)
-          .map((e) => MediaNotExists.fromJson(e))
+      final list = response.data as List;
+
+      return list
+          .map((e) => MediaNotExists.fromJson(e as Map<String, dynamic>))
           .toList();
     } catch (e) {
       _log.handle(e, message: '获取媒体不存在信息失败');
