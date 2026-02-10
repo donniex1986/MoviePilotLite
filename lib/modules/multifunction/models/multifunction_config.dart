@@ -21,7 +21,6 @@ const List<MultifunctionSection> multifunctionSections = [
     items: [
       MultifunctionItem(
         title: '电影订阅',
-        subtitle: '上映更新提醒',
         icon: Icons.movie_outlined,
         accent: Color(0xFF5C7CFA),
         style: MultifunctionCardStyle.tall,
@@ -29,7 +28,6 @@ const List<MultifunctionSection> multifunctionSections = [
       ),
       MultifunctionItem(
         title: '电视剧订阅',
-        subtitle: '本周新集',
         icon: Icons.tv,
         accent: Color(0xFF00B894),
         style: MultifunctionCardStyle.tall,

@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:liquid_tabbar_minimize/liquid_tabbar_minimize.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/index.dart';
+import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_service.dart';
+import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
@@ -28,6 +30,7 @@ import 'modules/system_message/controllers/system_message_controller.dart';
 import 'modules/system_message/pages/system_message_page.dart';
 import 'modules/media_detail/controllers/media_detail_controller.dart';
 import 'modules/media_detail/pages/media_detail_page.dart';
+import 'modules/media_detail/pages/media_season_detail_page.dart';
 import 'modules/search_result/controllers/search_result_controller.dart';
 import 'modules/search_result/pages/search_result_page.dart';
 import 'modules/subscribe/controllers/subscribe_controller.dart';
@@ -62,6 +65,7 @@ void main() {
   Get.put(AppService());
   Get.put(RealmService());
   Get.put(ApiClient());
+  Get.put(MediaDetailService());
   runApp(const MyApp());
 }
 
@@ -241,6 +245,7 @@ class MyApp extends StatelessWidget {
             Get.create(() => MediaDetailController());
           }),
         ),
+
         GetPage(
           name: '/site',
           page: () => const SitePage(),

@@ -4,9 +4,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
+import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_service.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_cache.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_model.dart';
+import 'package:moviepilot_mobile/modules/media_detail/models/media_notexists.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
@@ -20,11 +23,20 @@ class MediaDetailController extends GetxController {
   final _appService = Get.find<AppService>();
   final _log = Get.find<AppLog>();
   final _realmService = Get.find<RealmService>();
+  final MediaDetailService _mediaDetailService = Get.find<MediaDetailService>();
 
   final isLoading = false.obs;
   final mediaDetail = Rxn<MediaDetail>();
   final errorText = RxnString();
   final statusCode = RxnInt();
+
+  final mediaNotExists = <MediaNotExists>[].obs;
+
+  /// 季号 -> 该季的订阅项（有则已订阅）
+  final seasonSubscribeMap = <int, SubscribeItem>{}.obs;
+
+  /// 电影时的订阅项（有则已订阅）
+  final movieSubscribeItem = Rxn<SubscribeItem>();
 
   final similarItems = <RecommendApiItem>[].obs;
   final recommendItems = <RecommendApiItem>[].obs;
@@ -167,6 +179,8 @@ class MediaDetailController extends GetxController {
         mediaDetail.value = detail;
         _cacheDetail(detail);
         _fetchRelated(detail);
+        _fetchMediaNotExists(detail);
+        _fetchSubscribeStatus(detail);
       }
 
       if (response.statusCode == null ||
@@ -266,6 +280,98 @@ class MediaDetailController extends GetxController {
     final first = input[0];
     final last = input[input.length - 1];
     return (first == '{' && last == '}') || (first == '[' && last == ']');
+  }
+
+  Future<void> _fetchMediaNotExists(MediaDetail detail) async {
+    final isTv =
+        (detail.number_of_seasons ?? 0) > 0 ||
+        (detail.season_info != null && detail.season_info!.isNotEmpty);
+    if (!isTv) {
+      mediaNotExists.clear();
+      return;
+    }
+    try {
+      final payload = <String, dynamic>{
+        'path': _args.path,
+        if (detail.media_id != null && detail.media_id!.isNotEmpty)
+          'media_id': detail.media_id,
+        if (detail.tmdb_id != null) 'tmdb_id': detail.tmdb_id,
+        if (detail.douban_id != null) 'douban_id': detail.douban_id,
+        if (detail.title != null && detail.title!.isNotEmpty)
+          'title': detail.title,
+        if (detail.year != null && detail.year!.isNotEmpty) 'year': detail.year,
+      };
+      final list = await _mediaDetailService.getMediaNotExists(payload);
+      mediaNotExists.assignAll(list);
+    } catch (e) {
+      _log.handle(e, message: '获取缺失季信息失败');
+      mediaNotExists.clear();
+    }
+  }
+
+  String subscribeMediaKey(MediaDetail detail) {
+    if (_args.path.trim().isNotEmpty) return _args.path.trim();
+    if (detail.tmdb_id != null) return 'tmdb:${detail.tmdb_id}';
+    if (detail.douban_id != null) return 'douban:${detail.douban_id}';
+    if (detail.bangumi_id != null) return 'bangumi:${detail.bangumi_id}';
+    if (detail.mediaid_prefix != null &&
+        detail.mediaid_prefix!.isNotEmpty &&
+        detail.media_id != null &&
+        detail.media_id!.isNotEmpty) {
+      return '${detail.mediaid_prefix}:${detail.media_id}';
+    }
+    return '';
+  }
+
+  String seasonMediaKey(MediaDetail detail, int seasonNumber) {
+    final key = '/tmdb/${detail.tmdb_id}/$seasonNumber';
+    if (key.isNotEmpty) return key;
+    return '';
+  }
+
+  Future<void> _fetchSubscribeStatus(MediaDetail detail) async {
+    final mediaKey = subscribeMediaKey(detail);
+    if (mediaKey.isEmpty) {
+      seasonSubscribeMap.clear();
+      movieSubscribeItem.value = null;
+      return;
+    }
+    final title = detail.title?.trim();
+    final isTv =
+        (detail.number_of_seasons ?? 0) > 0 ||
+        (detail.season_info != null && detail.season_info!.isNotEmpty);
+    try {
+      if (isTv &&
+          detail.season_info != null &&
+          detail.season_info!.isNotEmpty) {
+        seasonSubscribeMap.clear();
+        for (final s in detail.season_info!) {
+          final sn = s.season_number;
+          if (sn == null) continue;
+          final item = await _mediaDetailService.getSubscribeMediaStatus(
+            mediaKey,
+            season: sn,
+            title: title,
+          );
+          if (item != null) {
+            seasonSubscribeMap[sn] = item;
+          }
+        }
+        movieSubscribeItem.value = null;
+      } else {
+        final item = await _mediaDetailService.getSubscribeMediaStatus(
+          mediaKey,
+          season: 0,
+          title: title,
+        );
+        movieSubscribeItem.value = item;
+        seasonSubscribeMap.clear();
+      }
+    } catch (e) {
+      _log.handle(e, message: '获取订阅状态失败');
+      seasonSubscribeMap.clear();
+      movieSubscribeItem.value = null;
+    }
   }
 
   void _fetchRelated(MediaDetail detail, {bool force = false}) {

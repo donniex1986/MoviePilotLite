@@ -1,8 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_controller.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_model.dart';
+import 'package:moviepilot_mobile/modules/media_detail/models/media_notexists.dart';
+import 'package:moviepilot_mobile/modules/media_detail/pages/media_season_detail_page.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
 import 'package:moviepilot_mobile/modules/search/pages/search_page.dart';
@@ -354,15 +358,44 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         ],
         _buildSectionTitle('简介'),
         Section(
-          child: Text(
-            overview ?? '',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text(overview, style: Theme.of(context).textTheme.bodyMedium),
         ),
         if (_hasExternalLinks(detail)) ...[
           const SizedBox(height: 12),
           _buildSectionTitle('相关链接'),
           Section(child: _buildExternalLinks(detail, isLoading)),
+        ],
+        const SizedBox(height: 16),
+        _buildSectionTitle('核心信息'),
+        Section(child: _buildInfoList(context, detail)),
+        const SizedBox(height: 16),
+        if (detail.genres != null && detail.genres!.isNotEmpty) ...[
+          _buildSectionTitle('类型'),
+          Section(child: _buildGenreChips(detail)),
+          const SizedBox(height: 16),
+        ],
+        if (detail.season_info != null && detail.season_info!.isNotEmpty) ...[
+          _buildSectionTitle('季度信息'),
+          Obx(
+            () => _buildSeasonList(
+              context,
+              detail.season_info!,
+              detail,
+              controller.mediaNotExists.toList(),
+              Map<int, SubscribeItem>.from(controller.seasonSubscribeMap),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        if (detail.actors != null && detail.actors!.isNotEmpty) ...[
+          _buildSectionTitle('主演'),
+          _buildActorList(detail.actors!),
+          const SizedBox(height: 16),
+        ],
+        if (detail.created_by != null && detail.created_by!.isNotEmpty) ...[
+          _buildSectionTitle('主创'),
+          _buildCreatorList(detail.created_by!),
+          const SizedBox(height: 16),
         ],
         if (similarSupported &&
             _shouldShowRelatedSection(
@@ -394,40 +427,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
             errorText: recommendError,
           ),
         ],
-        const SizedBox(height: 16),
-        _buildSectionTitle('核心信息'),
-        Section(child: _buildInfoList(context, detail)),
-        const SizedBox(height: 16),
-        if (detail.genres != null && detail.genres!.isNotEmpty) ...[
-          _buildSectionTitle('类型'),
-          Section(child: _buildGenreChips(detail)),
-          const SizedBox(height: 16),
-        ],
-        if (detail.next_episode_to_air != null) ...[
-          _buildSectionTitle('下一集'),
-          Section(child: _buildNextEpisode(detail.next_episode_to_air!)),
-          const SizedBox(height: 16),
-        ],
-        if (detail.season_info != null && detail.season_info!.isNotEmpty) ...[
-          _buildSectionTitle('季度信息'),
-          _buildSeasonList(detail.season_info!),
-          const SizedBox(height: 16),
-        ],
-        if (detail.actors != null && detail.actors!.isNotEmpty) ...[
-          _buildSectionTitle('主演'),
-          _buildActorList(detail.actors!),
-          const SizedBox(height: 16),
-        ],
-        if (detail.created_by != null && detail.created_by!.isNotEmpty) ...[
-          _buildSectionTitle('主创'),
-          _buildCreatorList(detail.created_by!),
-          const SizedBox(height: 16),
-        ],
-        // if (detail.names != null && detail.names!.isNotEmpty) ...[
-        //   _buildSectionTitle('别名'),
-        //   Section(child: _buildAliases(detail.names!)),
-        //   const SizedBox(height: 24),
-        // ],
       ],
     );
   }
@@ -467,7 +466,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       return Text('暂无核心信息', style: Theme.of(context).textTheme.bodyMedium);
     }
     final infoItems = <MapEntry<String, String>>[];
-    final firstAir = detail?.first_air_date ?? detail?.release_date;
+    final firstAir = detail.first_air_date ?? detail.release_date;
     if (firstAir != null && firstAir.isNotEmpty) {
       infoItems.add(MapEntry('首播', firstAir));
     }
@@ -611,72 +610,209 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     );
   }
 
-  Widget _buildSeasonList(List<SeasonInfo> seasons) {
+  Widget _buildSeasonList(
+    BuildContext context,
+    List<SeasonInfo> seasons,
+    MediaDetail detail,
+    List<MediaNotExists> notExistsList,
+    Map<int, SubscribeItem> seasonSubscribeMap,
+  ) {
+    final theme = Theme.of(context);
     return SizedBox(
-      height: 210,
+      height: 200,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: seasons.length,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final season = seasons[index];
-          final posterUrl = _resolveImageUrl(season.poster_path);
-          return Container(
-            width: 150,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+          final sn = season.season_number;
+          MediaNotExists? notExists;
+          if (sn != null) {
+            for (final e in notExistsList) {
+              if (e.season == sn) {
+                notExists = e;
+                break;
+              }
+            }
+          }
+          final isMissing =
+              notExists != null &&
+              ((notExists.episodes?.isNotEmpty ?? false) ||
+                  (notExists.total_episodes ?? 0) > 0);
+          final isSubscribed = sn != null && seasonSubscribeMap[sn] != null;
+          final posterUrl = ImageUtil.convertMediaSeasonImageUrl(
+            season.poster_path ?? '',
+          );
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => showCupertinoModalBottomSheet(
+                context: context,
+                builder: (context) => MediaSeasonDetailPage(
+                  reqPath: controller.seasonMediaKey(detail, sn ?? 0),
+                  tmdbId: detail.tmdb_id?.toString() ?? '',
+                  seasonNumber: sn ?? 0,
+                  title: detail.title ?? '',
+                  year: detail.year ?? '',
+                  doubanId: detail.douban_id?.toString() ?? '',
+                  mediaId: detail.media_id ?? '',
+                ),
+              ),
               borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (posterUrl != null)
-                  CachedImage(
-                    imageUrl: posterUrl,
-                    height: 120,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    borderRadius: BorderRadius.circular(10),
-                  )
-                else
-                  Container(
-                    height: 120,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: 140,
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    child: const Icon(
-                      CupertinoIcons.photo,
-                      color: CupertinoColors.systemGrey,
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(14),
+                          ),
+                          child: CachedImage(
+                            imageUrl: posterUrl,
+                            height: 105,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorWidget: Container(
+                              height: 105,
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              child: Icon(
+                                Icons.tv_outlined,
+                                color: theme.colorScheme.onSurfaceVariant,
+                                size: 32,
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (isMissing)
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.errorContainer,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '缺失',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onErrorContainer,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (isSubscribed)
+                          Positioned(
+                            top: 6,
+                            left: 6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '已订阅',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (season.vote_average != null &&
+                            season.vote_average! > 0)
+                          Positioned(
+                            bottom: 6,
+                            left: 6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    size: 12,
+                                    color: Colors.amber,
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    season.vote_average!.toStringAsFixed(1),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                const SizedBox(height: 8),
-                Text(
-                  _seasonTitle(season),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _seasonTitle(season),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            season.air_date ?? '未定档',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontSize: 11,
+                            ),
+                          ),
+                          if (season.episode_count != null)
+                            Text(
+                              '${season.episode_count} 集',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontSize: 11,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  season.air_date ?? '未定档',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                if (season.episode_count != null)
-                  Text(
-                    '${season.episode_count} 集',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-              ],
+              ),
             ),
           );
         },
@@ -686,7 +822,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
 
   Widget _buildActorList(List<Actor> actors) {
     return SizedBox(
-      height: 180,
+      height: 120,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: actors.length,
@@ -751,7 +887,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
                   CachedAvatar(imageUrl: avatarUrl, radius: 28)
                 else
                   const CircleAvatar(
-                    radius: 28,
+                    radius: 32,
                     backgroundColor: CupertinoColors.systemGrey5,
                     child: Icon(
                       CupertinoIcons.person,
@@ -774,60 +910,56 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     );
   }
 
-  Widget _buildAliases(List<String> names) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: names
-          .map(
-            (name) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(name, style: const TextStyle(fontSize: 12)),
-            ),
-          )
-          .toList(),
-    );
-  }
-
   Widget _buildActionButtons(
     BuildContext context,
     MediaDetail detail,
     bool isLoading,
   ) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final subscribe = _buildPrimaryAction(
-          label: '订阅',
-          icon: CupertinoIcons.heart_fill,
-          onPressed: isLoading ? null : _handleSubscribe,
-          backgroundColor: Theme.of(context).colorScheme.primary,
-        );
-        final search = _buildPrimaryAction(
-          label: '搜索资源',
-          icon: CupertinoIcons.search,
-          onPressed: isLoading ? null : () => _openSearch(context),
-          backgroundColor: Theme.of(context).colorScheme.secondary,
-        );
-        final isNarrow = constraints.maxWidth < 340;
-        if (isNarrow) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [subscribe, const SizedBox(height: 10), search],
+    final isTv = _isTv(detail);
+    return Obx(() {
+      final movieSubscribed = controller.movieSubscribeItem.value != null;
+      final seasons = detail.season_info;
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final search = _buildPrimaryAction(
+            label: '搜索资源',
+            icon: CupertinoIcons.search,
+            onPressed: isLoading ? null : () => _openSearch(context),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
           );
-        }
-        return Row(
-          children: [
-            Expanded(child: subscribe),
-            const SizedBox(width: 12),
-            Expanded(child: search),
-          ],
-        );
-      },
-    );
+          if (isTv && seasons?.isNotEmpty == true) {
+            return Row(children: [Expanded(child: search)]);
+          }
+          final subscribe = _buildPrimaryAction(
+            label: movieSubscribed ? '已订阅' : '订阅',
+            icon: CupertinoIcons.heart_fill,
+            onPressed: isLoading
+                ? null
+                : movieSubscribed
+                ? _cancelSubscribe
+                : _handleSubscribe,
+            backgroundColor: movieSubscribed
+                ? Colors.red
+                : Theme.of(context).colorScheme.primary,
+            foregroundColor: movieSubscribed ? Colors.white : null,
+          );
+          final isNarrow = constraints.maxWidth < 340;
+          if (isNarrow) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [subscribe, const SizedBox(height: 10), search],
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: subscribe),
+              const SizedBox(width: 12),
+              Expanded(child: search),
+            ],
+          );
+        },
+      );
+    });
   }
 
   Widget _buildActionSection(
@@ -1054,6 +1186,10 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     ToastUtil.info('订阅功能开发中');
   }
 
+  void _cancelSubscribe() {
+    ToastUtil.warning('确定取消订阅吗？', onConfirm: () => ToastUtil.info('取消订阅功能开发中'));
+  }
+
   void _openSearch(BuildContext context) {
     Get.to(
       () => const SearchPage(),
@@ -1148,10 +1284,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     if (path == null || path.trim().isEmpty) return null;
     final trimmed = path.trim();
     return ImageUtil.convertCacheImageUrl(trimmed);
-    final url = trimmed.startsWith('http')
-        ? trimmed
-        : 'https://image.tmdb.org/t/p/original$trimmed';
-    return ImageUtil.convertCacheImageUrl(url);
   }
 
   MediaDetail _skeletonDetail() {

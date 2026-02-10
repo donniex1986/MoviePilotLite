@@ -232,4 +232,76 @@ class SubscribeController extends GetxController {
       return dateStr;
     }
   }
+
+  Future<bool> submitSubscribe(
+    String mediaType, {
+    required Map<String, dynamic> payload,
+  }) async {
+    try {
+      final path = 'api/v1/subscribe/';
+      final response = await _apiClient.post(path, data: payload);
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      _log.handle(e, message: '提交订阅失败');
+      return false;
+    }
+  }
+
+  Future<bool> submitMovieSubscribe({
+    String? bangumiid,
+    int? bestVersion = 0,
+    required String doubanid,
+    String? episodeGroup = '',
+    String? mediaid = '',
+    required String name,
+    int? season = 0,
+    String? tmdbid,
+    String? year = '',
+  }) async {
+    final payload = {
+      'bangumiid': bangumiid,
+      'best_version': bestVersion,
+      'doubanid': doubanid,
+      'episode_group': episodeGroup,
+      'mediaid': mediaid,
+      'name': name,
+      'season': season,
+      'tmdbid': tmdbid,
+      'year': year,
+    };
+    return await submitSubscribe('movie', payload: payload);
+  }
+
+  Future<bool> submitTvSubscribe({
+    required String doubanid,
+    String? episode_group = '',
+    String? mediaid = '',
+    required String name,
+    int? season = 0,
+    String? tmdbid,
+    String? year = '',
+  }) async {
+    final payload = {
+      'doubanid': doubanid,
+      'episode_group': episode_group,
+      'mediaid': mediaid,
+      'name': name,
+      'season': season,
+      'tmdbid': tmdbid,
+      'year': year,
+    };
+    return await submitSubscribe('tv', payload: payload);
+  }
+
+  Future<bool> cancelSubscribe(String mediaKey) async {
+    final path = '/api/v1/subscribe/cancel/$mediaKey';
+    final response = await _apiClient.post(path);
+    if (response.statusCode == 200) {
+      return true;
+    }
+    return false;
+  }
 }
