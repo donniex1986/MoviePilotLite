@@ -54,13 +54,13 @@ const List<MultifunctionSection> multifunctionSections = [
   MultifunctionSection(
     title: '整理',
     items: [
-      // MultifunctionItem(
-      //   title: '下载管理',
-      //   subtitle: '任务队列与速度',
-      //   icon: Icons.download_outlined,
-      //   accent: Color(0xFF3B82F6),
-      //   style: MultifunctionCardStyle.wide,
-      // ),
+      MultifunctionItem(
+        title: 'TODO://下载管理',
+        subtitle: '任务队列与速度',
+        icon: Icons.download_outlined,
+        accent: Color(0xFF3B82F6),
+        style: MultifunctionCardStyle.wide,
+      ),
       MultifunctionItem(
         title: '媒体整理',
         subtitle: '命名、归档与去重',
@@ -69,13 +69,13 @@ const List<MultifunctionSection> multifunctionSections = [
         style: MultifunctionCardStyle.wide,
         route: '/media-organize',
       ),
-      // MultifunctionItem(
-      //   title: '文件管理',
-      //   subtitle: '批量清理与归档',
-      //   icon: Icons.snippet_folder_outlined,
-      //   accent: Color(0xFF6D5DF6),
-      //   style: MultifunctionCardStyle.wide,
-      // ),
+      MultifunctionItem(
+        title: 'TODO://文件管理',
+        subtitle: '批量清理与归档',
+        icon: Icons.snippet_folder_outlined,
+        accent: Color(0xFF6D5DF6),
+        style: MultifunctionCardStyle.wide,
+      ),
     ],
   ),
   MultifunctionSection(
@@ -96,6 +96,7 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.public_outlined,
         accent: Color(0xFF5C7CFA),
         style: MultifunctionCardStyle.wide,
+        route: '/site',
       ),
       MultifunctionItem(
         title: '用户管理',
@@ -103,6 +104,7 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.people_outline,
         accent: Color(0xFF00B894),
         style: MultifunctionCardStyle.wide,
+        route: '/profile',
       ),
       MultifunctionItem(
         title: '设定',
@@ -110,6 +112,7 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.settings_outlined,
         accent: Color(0xFFFFA000),
         style: MultifunctionCardStyle.wide,
+        route: '/settings',
       ),
     ],
   ),

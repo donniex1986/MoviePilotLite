@@ -1,6 +1,9 @@
 import 'package:get/get_state_manager/src/rx_flutter/rx_disposable.dart';
 import 'package:moviepilot_mobile/modules/plugin/models/installed_plugin_model_cache.dart';
 import 'package:moviepilot_mobile/modules/plugin/models/plugin_model_cache.dart';
+import 'package:moviepilot_mobile/modules/site/models/site_icon_cache.dart';
+import 'package:moviepilot_mobile/modules/site/models/site_model_cache.dart';
+import 'package:moviepilot_mobile/modules/site/models/site_userdata_cache.dart';
 import 'package:realm/realm.dart';
 
 import '../modules/login/models/login_profile.dart';
@@ -14,16 +17,16 @@ class RealmService extends GetxService {
         MediaDetailCache.schema,
         PluginModelCache.schema,
         InstalledPluginModelCache.schema,
+        SiteIconCache.schema,
+        SiteModelCache.schema,
+        SiteUserDataCache.schema,
       ],
-      schemaVersion: 3, // 增加版本号
+      schemaVersion: 4, // 站点列表与 icon 缓存
       migrationCallback: (migration, oldSchemaVersion) {
-        // 处理版本迁移
-        if (oldSchemaVersion < 2) {
-          // 当从版本1迁移到版本2时，处理avatar字段变为可选的情况
-          // Realm会自动处理字段从必填变为可选的情况，不需要特殊操作
-        }
-        if (oldSchemaVersion < 3) {
-          // 新增媒体详情缓存表
+        if (oldSchemaVersion < 2) {}
+        if (oldSchemaVersion < 3) {}
+        if (oldSchemaVersion < 4) {
+          // 新增站点相关缓存表
         }
       },
     );

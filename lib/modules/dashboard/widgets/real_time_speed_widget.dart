@@ -44,7 +44,7 @@ class RealTimeSpeedWidget extends StatelessWidget {
                     Expanded(
                       child: _buildDataCard(
                         '下载速度',
-                        '$downloadSpeed MB/s',
+                        '${SizeFormatter.formatSize(downloadSpeed)}/s',
                         CupertinoIcons.arrow_down,
                         CupertinoColors.activeGreen,
                       ),

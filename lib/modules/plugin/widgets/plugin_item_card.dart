@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/plugin/models/plugin_models.dart';
 import 'package:moviepilot_mobile/modules/plugin/services/plugin_palette_cache.dart';
+import 'package:moviepilot_mobile/theme/section.dart';
 
 /// 插件卡片，两段式布局：深色渐变区 + 浅色信息区，主题色由 PluginPaletteCache 缓存
 class PluginItemCard extends StatelessWidget {
@@ -23,22 +24,10 @@ class PluginItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final cache = Get.find<PluginPaletteCache>();
-      final themeColor =
-          cache.watchColor(iconUrl) ?? PluginPaletteCache.defaultColor;
-
-      return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(_cardRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+    final themeColor = _resolveThemeColor();
+    return RepaintBoundary(
+      child: Section(
+        padding: const EdgeInsets.all(0),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(_cardRadius),
           child: Column(
@@ -50,120 +39,134 @@ class PluginItemCard extends StatelessWidget {
             ],
           ),
         ),
-      );
-    });
+      ),
+    );
+  }
+
+  /// 仅读缓存，不订阅 Rx，避免任一 palette 更新导致所有卡片重建引发卡顿
+  Color _resolveThemeColor() {
+    try {
+      final cache = Get.find<PluginPaletteCache>();
+      return cache.getCached(iconUrl) ?? PluginPaletteCache.defaultColor;
+    } catch (_) {
+      return PluginPaletteCache.defaultColor;
+    }
   }
 
   Widget _buildDarkSection(BuildContext context, Color themeColor) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withValues(alpha: 0.9),
-            themeColor.withValues(alpha: 0.8),
-          ],
+    return SizedBox(
+      height: 100,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black.withValues(alpha: 0.9),
+              themeColor.withValues(alpha: 0.8),
+            ],
+          ),
         ),
-      ),
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Flexible(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: item.state ? Colors.green : Colors.grey,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            item.pluginName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (item.pluginVersion != null &&
-                        item.pluginVersion!.isNotEmpty) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        'v${item.pluginVersion}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                if (item.pluginDesc != null && item.pluginDesc!.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    item.pluginDesc!,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-                if (_labelList.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: _labelList
-                        .map(
-                          (l) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: themeColor.withValues(alpha: 0.4),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              l,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: item.state ? Colors.green : Colors.grey,
+                                shape: BoxShape.circle,
                               ),
                             ),
+                            const SizedBox(width: 4),
+                            Text(
+                              item.pluginName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (item.pluginVersion != null &&
+                          item.pluginVersion!.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          'v${item.pluginVersion}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.85),
                           ),
-                        )
-                        .toList(),
+                        ),
+                      ],
+                    ],
                   ),
+                  if (item.pluginDesc != null &&
+                      item.pluginDesc!.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      item.pluginDesc!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  if (_labelList.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: _labelList
+                          .map(
+                            (l) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: themeColor.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                l,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          _buildIcon(themeColor),
-        ],
+            const SizedBox(width: 12),
+            _buildIcon(themeColor),
+          ],
+        ),
       ),
     );
   }
@@ -275,6 +278,8 @@ class PluginItemCard extends StatelessWidget {
           width: _iconSize,
           height: _iconSize,
           fit: BoxFit.cover,
+          memCacheWidth: 96,
+          memCacheHeight: 96,
           placeholder: (_, __) => Container(
             color: fallbackColor.withValues(alpha: 0.5),
             child: const Center(

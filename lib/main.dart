@@ -49,6 +49,12 @@ import 'modules/plugin/pages/plugin_list_page.dart';
 import 'modules/plugin/services/plugin_palette_cache.dart';
 import 'modules/dynamic_form/controllers/dynamic_form_controller.dart';
 import 'modules/dynamic_form/pages/dynamic_form_page.dart';
+import 'modules/site/controllers/site_controller.dart';
+import 'modules/site/controllers/site_detail_controller.dart';
+import 'modules/site/controllers/site_resource_controller.dart';
+import 'modules/site/pages/site_page.dart';
+import 'modules/site/pages/site_detail_page.dart';
+import 'modules/site/pages/site_resource_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -233,6 +239,27 @@ class MyApp extends StatelessWidget {
           page: () => const MediaDetailPage(),
           binding: BindingsBuilder(() {
             Get.create(() => MediaDetailController());
+          }),
+        ),
+        GetPage(
+          name: '/site',
+          page: () => const SitePage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SiteController());
+          }),
+        ),
+        GetPage(
+          name: '/site-resource',
+          page: () => const SiteResourcePage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SiteResourceController());
+          }),
+        ),
+        GetPage(
+          name: '/site-detail',
+          page: () => const SiteDetailPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SiteDetailController());
           }),
         ),
         GetPage(

@@ -47,6 +47,7 @@ class PluginPage extends GetView<PluginController> {
       body: RefreshIndicator(
         onRefresh: controller.load,
         child: CustomScrollView(
+          cacheExtent: 400,
           slivers: [
             SliverToBoxAdapter(child: _buildSearchBar(context)),
             _buildSliverContent(context),
@@ -151,11 +152,13 @@ class PluginPage extends GetView<PluginController> {
               crossAxisCount: crossAxisCount,
               mainAxisSpacing: _gridSpacing,
               crossAxisSpacing: _gridSpacing,
-              childAspectRatio: 0.75,
+              mainAxisExtent: 140,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) => _buildCard(context, items[index]),
               childCount: items.length,
+              addAutomaticKeepAlives: true,
+              addRepaintBoundaries: true,
             ),
           ),
         );
@@ -175,6 +178,8 @@ class PluginPage extends GetView<PluginController> {
               child: _buildCard(context, items[index]),
             ),
             childCount: items.length,
+            addAutomaticKeepAlives: true,
+            addRepaintBoundaries: true,
           ),
         ),
       );
