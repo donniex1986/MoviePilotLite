@@ -24,7 +24,19 @@ class SiteController extends GetxController {
     load();
   }
 
-  Future<void> load() async {
+  void search(String? keyword) {
+    if (keyword != null && keyword.isNotEmpty) {
+      items.value = items
+          .where(
+            (item) =>
+                item.site.name.contains(keyword) ||
+                item.site.domain.contains(keyword),
+          )
+          .toList();
+    }
+  }
+
+  Future<void> load({String? keyword}) async {
     isLoading.value = true;
     errorText.value = null;
     loadFromCache();

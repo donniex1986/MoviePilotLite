@@ -3,9 +3,14 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/site/controllers/site_detail_controller.dart';
+import 'package:moviepilot_mobile/modules/site/widgets/site_resource_filter_sheet.dart';
+import 'package:moviepilot_mobile/modules/site/widgets/site_resource_item_card.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/utils/open_url.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class SiteDetailPage extends GetView<SiteDetailController> {
@@ -15,34 +20,36 @@ class SiteDetailPage extends GetView<SiteDetailController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(controller.siteName.isNotEmpty ? controller.siteName : '站点详情'),
+        title: Text(
+          controller.siteName.isNotEmpty ? controller.siteName : '站点详情',
+        ),
         actions: [
           CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: controller.loadUserdataHistory,
+            onPressed: controller.refreshAll,
             child: const Icon(CupertinoIcons.refresh),
           ),
         ],
       ),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            CupertinoSliverRefreshControl(onRefresh: controller.loadUserdataHistory),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildBasicInfoSection(context),
-                    const SizedBox(height: 16),
-                    Obx(() => _buildChartsSection(context)),
-                  ],
-                ),
+      body: CustomScrollView(
+        slivers: [
+          CupertinoSliverRefreshControl(onRefresh: controller.refreshAll),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildBasicInfoSection(context),
+                  const SizedBox(height: 16),
+                  Obx(() => _buildChartsSection(context)),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          SliverToBoxAdapter(child: _buildResourceSectionHeader(context)),
+          Obx(() => _buildResourceSliverContent(context)),
+        ],
       ),
     );
   }
@@ -58,7 +65,12 @@ class SiteDetailPage extends GetView<SiteDetailController> {
         children: [
           Row(
             children: [
-              Obx(() => _buildIcon(controller.iconBase64.value)),
+              Obx(
+                () => Hero(
+                  tag: 'site-icon-${controller.siteId ?? 0}',
+                  child: _buildIcon(controller.iconBase64.value),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -74,12 +86,21 @@ class SiteDetailPage extends GetView<SiteDetailController> {
             const SizedBox(height: 12),
             const Divider(height: 1),
             const SizedBox(height: 10),
-            _buildInfoRow('域名', s.domain),
-            _buildInfoRow('地址', s.url),
-            _buildInfoRow('优先级', '${s.pri}'),
-            _buildInfoRow('状态', s.isActive ? '启用' : '禁用'),
-            _buildInfoRow('超时', '${s.timeout} 秒'),
-            if (s.note != null && s.note!.isNotEmpty) _buildInfoRow('备注', s.note!),
+            _buildInfoRow(context, '域名', s.domain),
+            _buildInfoRow(
+              context,
+              '地址',
+              s.url,
+              withSelectable: true,
+              onSelectablePressed: () {
+                WebUtil.open(url: s.url);
+              },
+            ),
+            _buildInfoRow(context, '优先级', '${s.pri}'),
+            _buildInfoRow(context, '状态', s.isActive ? '启用' : '禁用'),
+            _buildInfoRow(context, '超时', '${s.timeout} 秒'),
+            if (s.note != null && s.note!.isNotEmpty)
+              _buildInfoRow(context, '备注', s.note!),
           ],
         ],
       ),
@@ -123,7 +144,13 @@ class SiteDetailPage extends GetView<SiteDetailController> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool withSelectable = false,
+    VoidCallback? onSelectablePressed,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
@@ -140,9 +167,22 @@ class SiteDetailPage extends GetView<SiteDetailController> {
             ),
           ),
           Expanded(
-            child: SelectableText(
-              value,
-              style: const TextStyle(fontSize: 13),
+            child: GestureDetector(
+              onTap: withSelectable ? onSelectablePressed : null,
+              child: Text(
+                value,
+                style: TextStyle(
+                  decoration: withSelectable
+                      ? TextDecoration.underline
+                      : null, // ⭐ 底部横线
+                  decorationThickness: withSelectable ? 1.5 : 0,
+                  color: withSelectable
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
@@ -193,23 +233,22 @@ class SiteDetailPage extends GetView<SiteDetailController> {
         child: Center(
           child: Text(
             '暂无用户数据历史',
-            style: TextStyle(
-              color: CupertinoColors.systemGrey,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: CupertinoColors.systemGrey, fontSize: 14),
           ),
         ),
       );
     }
 
     final chartData = items
-        .map((e) => _ChartPoint(
-              e.updatedDay,
-              e.upload,
-              e.download,
-              e.seeding,
-              e.seedingSize,
-            ))
+        .map(
+          (e) => _ChartPoint(
+            e.updatedDay,
+            e.upload,
+            e.download,
+            e.seeding,
+            e.seedingSize,
+          ),
+        )
         .toList();
 
     return Column(
@@ -267,20 +306,30 @@ class SiteDetailPage extends GetView<SiteDetailController> {
                 LineSeries<_ChartPoint, String>(
                   dataSource: chartData,
                   xValueMapper: (_ChartPoint d, _) => d.date,
-                  yValueMapper: (_ChartPoint d, _) => d.upload,
-                  name: '上传',
+                  yValueMapper: (_ChartPoint d, _) =>
+                      d.upload / 1024 / 1024 / 1024,
+                  name: '上传 (GB)',
                   color: primary,
                   width: 2,
-                  markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
+                  markerSettings: const MarkerSettings(
+                    isVisible: true,
+                    height: 4,
+                    width: 4,
+                  ),
                 ),
                 LineSeries<_ChartPoint, String>(
                   dataSource: chartData,
                   xValueMapper: (_ChartPoint d, _) => d.date,
-                  yValueMapper: (_ChartPoint d, _) => d.download,
-                  name: '下载',
+                  yValueMapper: (_ChartPoint d, _) =>
+                      d.download / 1024 / 1024 / 1024,
+                  name: '下载 (GB)',
                   color: secondary,
                   width: 2,
-                  markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
+                  markerSettings: const MarkerSettings(
+                    isVisible: true,
+                    height: 4,
+                    width: 4,
+                  ),
                 ),
               ],
             ),
@@ -290,10 +339,7 @@ class SiteDetailPage extends GetView<SiteDetailController> {
     );
   }
 
-  Widget _buildSeedingChart(
-    BuildContext context,
-    List<_ChartPoint> chartData,
-  ) {
+  Widget _buildSeedingChart(BuildContext context, List<_ChartPoint> chartData) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
@@ -333,13 +379,197 @@ class SiteDetailPage extends GetView<SiteDetailController> {
                   name: '做种数',
                   color: primary,
                   width: 2,
-                  markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
+                  markerSettings: const MarkerSettings(
+                    isVisible: true,
+                    height: 4,
+                    width: 4,
+                  ),
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  static const double _resourceHorizontalPadding = 16;
+  static const double _resourceCardSpacing = 12;
+
+  Widget _buildResourceSectionHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '站点资源',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: CupertinoSearchTextField(
+                  placeholder: '搜索资源…',
+                  onSubmitted: controller.onResourceSearchSubmitted,
+                  backgroundColor: CupertinoDynamicColor.resolve(
+                    CupertinoColors.tertiarySystemFill,
+                    context,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              _buildResourceFilterButton(context),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResourceFilterButton(BuildContext context) {
+    return Obx(() {
+      final hasFilters = controller.hasActiveResourceFilters;
+      final accent = Theme.of(context).colorScheme.primary;
+      return CupertinoButton(
+        padding: EdgeInsets.zero,
+        pressedOpacity: 0.7,
+        onPressed: () => _openResourceFilterSheet(context),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: accent.withOpacity(0.2),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                CupertinoIcons.line_horizontal_3_decrease_circle_fill,
+                size: 20,
+                color: hasFilters ? accent : accent.withOpacity(0.7),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                controller.resourceCategoryFilterLabel,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: hasFilters
+                      ? accent
+                      : CupertinoDynamicColor.resolve(
+                          CupertinoColors.secondaryLabel,
+                          context,
+                        ),
+                ),
+              ),
+              if (hasFilters) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: accent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    '1',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildResourceSliverContent(BuildContext context) {
+    final loading = controller.resourceLoading.value;
+    final error = controller.resourceErrorText.value;
+    final items = controller.resourceItems;
+
+    if (error != null) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: SizedBox(
+          height: 160,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(error, textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  CupertinoButton.filled(
+                    onPressed: controller.loadResources,
+                    child: const Text('重试'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Skeletonizer.sliver(
+      enabled: items.isEmpty,
+      child: SliverList.builder(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(
+              left: _resourceHorizontalPadding,
+              right: _resourceHorizontalPadding,
+              bottom: index < items.length - 1 ? _resourceCardSpacing : 0,
+            ),
+            child: SiteResourceItemCard(item: items[index]),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _openResourceFilterSheet(BuildContext context) {
+    return showCupertinoModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        return SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.4,
+          child: Obx(
+            () => SiteResourceFilterSheet(
+              categories: controller.resourceCategories,
+              selectedCategoryId: controller.selectedResourceCategoryId.value,
+              onSelectCategory: (id) {
+                controller.setResourceCategoryFilter(id);
+                Navigator.of(sheetContext).pop();
+                controller.loadResources();
+              },
+              onClear: () {
+                controller.clearResourceCategoryFilter();
+                Navigator.of(sheetContext).pop();
+                controller.loadResources();
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }

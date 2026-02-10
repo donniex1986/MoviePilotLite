@@ -41,8 +41,9 @@ class DynamicFormPage extends GetView<DynamicFormController> {
 
   @override
   DynamicFormController get controller => Get.find<DynamicFormController>(
-        tag: controllerTag ?? (Get.currentRoute.endsWith('/form') ? 'form' : 'page'),
-      );
+    tag:
+        controllerTag ?? (Get.currentRoute.endsWith('/form') ? 'form' : 'page'),
+  );
 
   List<_DisplayItem> _toDisplayItems(List<FormBlock> blocks) {
     final result = <_DisplayItem>[];
@@ -185,7 +186,7 @@ class DynamicFormPage extends GetView<DynamicFormController> {
   onSave() async {
     try {
       ToastUtil.warning(
-        '动态表单可能存在问题，如果发现问题请及时汇报给开发者。是否继续保存？',
+        '是否继续保存？',
         onConfirm: () async {
           final success = await controller.save();
           if (success) {

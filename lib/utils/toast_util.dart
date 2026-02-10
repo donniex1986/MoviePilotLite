@@ -63,7 +63,7 @@ class ToastUtil {
       backgroundColor: CupertinoColors.systemOrange.withOpacity(0.9),
       colorText: CupertinoColors.white,
       duration: duration,
-      snackPosition: SnackPosition.TOP,
+      snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
       borderRadius: 12,
       icon: const Icon(
@@ -73,6 +73,10 @@ class ToastUtil {
       ),
       mainButton: onConfirm != null
           ? TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: CupertinoColors.systemRed,
+                foregroundColor: CupertinoColors.white,
+              ),
               onPressed: onConfirm,
               child: const Text(
                 '确定',

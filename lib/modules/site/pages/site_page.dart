@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
@@ -9,6 +10,7 @@ import 'package:moviepilot_mobile/modules/site/models/site_models.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class SitePage extends GetView<SiteController> {
   const SitePage({super.key});
@@ -26,231 +28,254 @@ class SitePage extends GetView<SiteController> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Obx(() {
-          if (controller.isLoading.value && controller.items.isEmpty) {
-            return const Center(child: CupertinoActivityIndicator());
-          }
-          if (controller.errorText.value != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    controller.errorText.value ?? '',
-                    style: TextStyle(
-                      color: CupertinoColors.systemGrey,
-                      fontSize: 14,
-                    ),
-                    textAlign: TextAlign.center,
+      body: Obx(() {
+        if (controller.isLoading.value && controller.items.isEmpty) {
+          return const Center(child: CupertinoActivityIndicator());
+        }
+        if (controller.errorText.value != null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  controller.errorText.value ?? '',
+                  style: TextStyle(
+                    color: CupertinoColors.systemGrey,
+                    fontSize: 14,
                   ),
-                  const SizedBox(height: 16),
-                  CupertinoButton(
-                    onPressed: controller.load,
-                    child: const Text('重试'),
-                  ),
-                ],
-              ),
-            );
-          }
-          final list = controller.items;
-          if (list.isEmpty) {
-            return Center(
-              child: Text(
-                '暂无站点',
-                style: TextStyle(
-                  color: CupertinoColors.systemGrey,
-                  fontSize: 15,
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            );
-          }
-          return CustomScrollView(
-            slivers: [
-              CupertinoSliverRefreshControl(onRefresh: controller.load),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final siteItem = list[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _SiteItemCard(
-                          item: siteItem,
-                          onTapDetail: () => Get.toNamed(
-                            '/site-detail',
-                            arguments: {
-                              'siteId': siteItem.site.id,
-                              'siteName': siteItem.site.name,
-                              'site': siteItem.site.toJson(),
-                            },
-                          ),
-                          onTapResource: () => Get.toNamed(
-                            '/site-resource',
-                            arguments: {
-                              'siteId': siteItem.site.id,
-                              'siteName': siteItem.site.name,
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: list.length,
-                    addAutomaticKeepAlives: true,
-                    addRepaintBoundaries: true,
-                  ),
+                const SizedBox(height: 16),
+                CupertinoButton(
+                  onPressed: controller.load,
+                  child: const Text('重试'),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
-        }),
-      ),
+        }
+        return CustomScrollView(
+          slivers: [
+            // CupertinoSliverRefreshControl(onRefresh: controller.load),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: CupertinoSearchTextField(
+                  placeholder: '搜索站点',
+                  onSubmitted: (value) {
+                    controller.search(value);
+                  },
+                ),
+              ),
+            ),
+
+            Skeletonizer.sliver(
+              enabled: controller.isLoading.value,
+              child: SliverList.builder(
+                itemBuilder: (context, index) {
+                  final items = controller.items;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: InkWell(
+                      onTap: () {
+                        _selectItem(items[index]);
+                      },
+                      child: _SiteItemCard(item: items[index]),
+                    ),
+                  );
+                },
+                itemCount: controller.items.length,
+              ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  void _selectItem(SiteItem item) {
+    Get.toNamed(
+      '/site-detail',
+      arguments: {
+        'siteId': item.site.id,
+        'siteName': item.site.name,
+        'site': item.site.toJson(),
+      },
     );
   }
 }
 
 class _SiteItemCard extends StatelessWidget {
-  const _SiteItemCard({required this.item, this.onTapDetail, this.onTapResource});
+  const _SiteItemCard({this.item});
 
-  final SiteItem item;
-  final VoidCallback? onTapDetail;
-  final VoidCallback? onTapResource;
+  final SiteItem? item;
 
   @override
   Widget build(BuildContext context) {
-    final site = item.site;
-    final user = item.userData;
+    final site = item?.site;
+    final user = item?.userData;
     final theme = Theme.of(context);
 
     return Section(
       padding: const EdgeInsets.all(12),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 分区一：站点标识（icon + 站点名）+ 资源入口
           Row(
             children: [
-              _buildIcon(item.iconBytes, item.iconBase64),
+              Hero(
+                tag: 'site-icon-${item?.site.id}',
+                child: item != null
+                    ? _buildIcon(item!.iconBytes, item!.iconBase64)
+                    : _placeholderIcon(),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  site.name,
+                  site?.name ?? '',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              if (onTapDetail != null)
-                CupertinoButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  minSize: 0,
-                  onPressed: onTapDetail,
-                  child: Text(
-                    '详情',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
-              if (onTapResource != null)
-                CupertinoButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  minSize: 0,
-                  onPressed: onTapResource,
-                  child: Text(
-                    '资源',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
             ],
           ),
-          if (user != null) ...[
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 10),
-            // 分区二：用户信息（User Name、user id、user level）
-            _buildRow('用户', '${user.username} (${user.userid})'),
+          if (user != null) _buildUserInfo(context, user),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserInfo(BuildContext context, SiteUserDataModel? user) {
+    if (user == null) return const SizedBox.shrink();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 12),
+        const Divider(height: 1),
+        const SizedBox(height: 10),
+        Wrap(
+          children: [
+            _buildRow(
+              CupertinoIcons.person,
+              Theme.of(context).colorScheme.primary,
+              '${user.username} (ID: ${user.userid})',
+            ),
+            const SizedBox(width: 16),
             if (user.userLevel.isNotEmpty)
-              _buildRow('等级', user.userLevel),
-            const SizedBox(height: 10),
-            const Divider(height: 1),
-            const SizedBox(height: 10),
-            // 分区三：上传 / 下载 / 比例（按比例着色）
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  '上传 ',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                Text(
-                  SizeFormatter.formatSize(user.upload),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '下载 ',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                Text(
-                  SizeFormatter.formatSize(user.download),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '比例 ',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                Text(
-                  user.ratio.toStringAsFixed(2),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: _ratioColor(user.ratio),
-                  ),
-                ),
-              ],
+              _buildRow(
+                Icons.star_border,
+                Theme.of(context).colorScheme.primary,
+                user.userLevel,
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        const Divider(height: 1),
+        const SizedBox(height: 10),
+        _buildUploadDownload(
+          context,
+          user.upload.toDouble(),
+          user.download.toDouble(),
+        ),
+        // 分区三：上传 / 下载 / 比例（按比例着色）
+        const SizedBox(height: 10),
+        const Divider(height: 1),
+        const SizedBox(height: 10),
+        // 分区四：做种 / 下载中 / 未读消息
+        Row(
+          children: [
+            _buildChip('做种 ${user.seeding}', CupertinoColors.systemGreen),
+            const SizedBox(width: 8),
+            _buildChip('下载 ${user.leeching}', CupertinoColors.systemOrange),
+            if (user.messageUnread > 0) ...[
+              const SizedBox(width: 8),
+              _buildChip('未读 ${user.messageUnread}', AppTheme.errorColor),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUploadDownload(
+    BuildContext context,
+    double upload,
+    double download,
+  ) {
+    final uploadProgress = upload != 0 ? max(upload / download, 0.05) : 0;
+    final downloadProgress = download != 0 ? max(download / upload, 0.05) : 0;
+    double dl = 0.0;
+    double ul = 0.0;
+    if (upload > download) {
+      dl = downloadProgress.toDouble();
+      ul = 1;
+    } else {
+      dl = 1;
+      ul = uploadProgress.toDouble();
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Icon(
+              CupertinoIcons.arrow_up,
+              size: 16,
+              color: Theme.of(context).colorScheme.primary,
             ),
-            const SizedBox(height: 10),
-            const Divider(height: 1),
-            const SizedBox(height: 10),
-            // 分区四：做种 / 下载中 / 未读消息
-            Row(
-              children: [
-                _buildChip('做种 ${user.seeding}', CupertinoColors.systemGreen),
-                const SizedBox(width: 8),
-                _buildChip('下载 ${user.leeching}', CupertinoColors.systemOrange),
-                if (user.messageUnread > 0) ...[
-                  const SizedBox(width: 8),
-                  _buildChip(
-                    '未读 ${user.messageUnread}',
-                    AppTheme.errorColor,
-                  ),
-                ],
-              ],
+            ConstrainedBox(
+              constraints: BoxConstraints(minWidth: 50, maxWidth: 200),
+              child: Text(
+                SizeFormatter.formatSize(upload),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+              ),
             ),
-          ] else ...[
-            const SizedBox(height: 8),
-            Text(
-              '暂无用户数据',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: CupertinoColors.systemGrey,
+            const SizedBox(width: 8),
+            Expanded(
+              child: LinearProgressIndicator(
+                value: ul.toDouble(),
+                color: Theme.of(context).colorScheme.primary,
+                backgroundColor: Colors.transparent,
               ),
             ),
           ],
-        ],
-      ),
+        ),
+        Row(
+          children: [
+            Icon(
+              CupertinoIcons.arrow_down,
+              size: 16,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+            ConstrainedBox(
+              constraints: BoxConstraints(minWidth: 50, maxWidth: 200),
+              child: Text(
+                SizeFormatter.formatSize(download),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: LinearProgressIndicator(
+                value: dl,
+                color: Theme.of(context).colorScheme.secondary,
+                backgroundColor: Colors.transparent,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -304,28 +329,15 @@ class _SiteItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String label, String value) {
+  Widget _buildRow(IconData icon, Color iconColors, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            width: 56,
-            child: Text(
-              '$label：',
-              style: TextStyle(
-                fontSize: 13,
-                color: CupertinoColors.systemGrey,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 13),
-            ),
-          ),
+          Icon(icon, size: 16, color: iconColors),
+          Text(value, style: const TextStyle(fontSize: 13)),
         ],
       ),
     );
