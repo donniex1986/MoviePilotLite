@@ -26,8 +26,16 @@ class SiteDetailPage extends GetView<SiteDetailController> {
         actions: [
           CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: controller.refreshAll,
-            child: const Icon(CupertinoIcons.refresh),
+            onPressed: () {
+              Get.toNamed(
+                '/site-resource',
+                arguments: {
+                  'siteId': controller.siteId,
+                  'siteName': controller.siteName,
+                },
+              );
+            },
+            child: const Icon(Icons.mediation),
           ),
         ],
       ),
@@ -47,8 +55,6 @@ class SiteDetailPage extends GetView<SiteDetailController> {
               ),
             ),
           ),
-          SliverToBoxAdapter(child: _buildResourceSectionHeader(context)),
-          Obx(() => _buildResourceSliverContent(context)),
         ],
       ),
     );

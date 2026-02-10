@@ -5,6 +5,7 @@ import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/index.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_service.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
+import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_service.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
@@ -66,6 +67,7 @@ void main() {
   Get.put(RealmService());
   Get.put(ApiClient());
   Get.put(MediaDetailService());
+  Get.put(SubscribeService());
   runApp(const MyApp());
 }
 

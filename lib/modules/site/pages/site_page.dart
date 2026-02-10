@@ -76,7 +76,8 @@ class SitePage extends GetView<SiteController> {
             ),
 
             Skeletonizer.sliver(
-              enabled: controller.isLoading.value,
+              enabled:
+                  controller.isLoading.value && controller.items.isNotEmpty,
               child: SliverList.builder(
                 itemBuilder: (context, index) {
                   final items = controller.items;

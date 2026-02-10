@@ -358,12 +358,18 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         ],
         _buildSectionTitle('简介'),
         Section(
-          child: Text(overview, style: Theme.of(context).textTheme.bodyMedium),
+          child: SizedBox(
+            width: double.infinity,
+            child: Text(
+              overview,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
         ),
         if (_hasExternalLinks(detail)) ...[
           const SizedBox(height: 12),
           _buildSectionTitle('相关链接'),
-          Section(child: _buildExternalLinks(detail, isLoading)),
+          _buildExternalLinks(detail, isLoading),
         ],
         const SizedBox(height: 16),
         _buildSectionTitle('核心信息'),
@@ -371,7 +377,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         const SizedBox(height: 16),
         if (detail.genres != null && detail.genres!.isNotEmpty) ...[
           _buildSectionTitle('类型'),
-          Section(child: _buildGenreChips(detail)),
+          _buildGenreChips(detail),
           const SizedBox(height: 16),
         ],
         if (detail.season_info != null && detail.season_info!.isNotEmpty) ...[
@@ -395,7 +401,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         if (detail.created_by != null && detail.created_by!.isNotEmpty) ...[
           _buildSectionTitle('主创'),
           _buildCreatorList(detail.created_by!),
-          const SizedBox(height: 16),
         ],
         if (similarSupported &&
             _shouldShowRelatedSection(
@@ -651,6 +656,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
                 context: context,
                 builder: (context) => MediaSeasonDetailPage(
                   reqPath: controller.seasonMediaKey(detail, sn ?? 0),
+                  subscribeMediaKey: controller.subscribeMediaKey(detail),
                   tmdbId: detail.tmdb_id?.toString() ?? '',
                   seasonNumber: sn ?? 0,
                   title: detail.title ?? '',
@@ -720,28 +726,27 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
                               ),
                             ),
                           ),
-                        if (isSubscribed)
-                          Positioned(
-                            top: 6,
-                            left: 6,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '已订阅',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.onPrimaryContainer,
-                                  fontSize: 10,
-                                ),
+                        Positioned(
+                          top: 6,
+                          left: 6,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              isSubscribed ? '已订阅' : '未订阅',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onPrimaryContainer,
+                                fontSize: 10,
                               ),
                             ),
                           ),
+                        ),
                         if (season.vote_average != null &&
                             season.vote_average! > 0)
                           Positioned(

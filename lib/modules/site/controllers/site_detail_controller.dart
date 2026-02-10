@@ -91,7 +91,7 @@ class SiteDetailController extends GetxController {
         final comma = base64.indexOf(',');
         base64 = base64.substring(comma + 1).trim();
       }
-      if (base64.isEmpty) return;
+      if (base64.isEmpty || iconBase64.value == base64) return;
       iconBase64.value = base64;
       if (siteUrl.isNotEmpty) {
         _realm.realm.write(() {
@@ -107,7 +107,9 @@ class SiteDetailController extends GetxController {
     isLoading.value = true;
     errorText.value = null;
     try {
-      final response = await _apiClient.get<dynamic>('/api/v1/site/userdata/$id');
+      final response = await _apiClient.get<dynamic>(
+        '/api/v1/site/userdata/$id',
+      );
       final status = response.statusCode ?? 0;
       if (status >= 400) {
         errorText.value = '获取用户数据失败 (HTTP $status)';
@@ -163,7 +165,9 @@ class SiteDetailController extends GetxController {
     final id = siteId;
     if (id == null) return;
     try {
-      final response = await _apiClient.get<dynamic>('/api/v1/site/category/$id');
+      final response = await _apiClient.get<dynamic>(
+        '/api/v1/site/category/$id',
+      );
       if ((response.statusCode ?? 0) >= 400) return;
       final raw = response.data;
       final list = raw is List ? raw : <dynamic>[];

@@ -4,13 +4,17 @@ import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_service.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/season_episode_detail.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
+import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_service.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 class MediaSeasonDetailPage extends StatefulWidget {
   const MediaSeasonDetailPage({
     super.key,
     required this.reqPath,
+    required this.subscribeMediaKey,
     required this.tmdbId,
     required this.seasonNumber,
     required this.title,
@@ -19,6 +23,7 @@ class MediaSeasonDetailPage extends StatefulWidget {
     required this.mediaId,
   });
   final String reqPath;
+  final String subscribeMediaKey;
   final String tmdbId;
   final int seasonNumber;
   final String title;
@@ -31,7 +36,7 @@ class MediaSeasonDetailPage extends StatefulWidget {
 
 class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
   final _mediaDetailService = Get.find<MediaDetailService>();
-
+  final _subscribeService = Get.find<SubscribeService>();
   List<SeasonEpisodeDetail> _episodes = [];
   bool _loading = true;
   String? _error;
@@ -43,10 +48,26 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
   String? get _mediaId => widget.mediaId;
   bool _submitting = false;
   String? get _reqPath => widget.reqPath;
+
+  final _subscribeItem = Rx<SubscribeItem?>(null);
+
+  bool get _isSubscribed =>
+      _subscribeItem.value != null && _subscribeItem.value!.id != null;
   @override
   void initState() {
     super.initState();
     _loadEpisodes();
+    _loadSubscribeStatus();
+  }
+
+  Future<void> _loadSubscribeStatus() async {
+    final subscribeItem = await _mediaDetailService.getSubscribeMediaStatus(
+      widget.subscribeMediaKey,
+      season: _seasonNumber ?? 0,
+      title: _title ?? '',
+    );
+    if (!mounted) return;
+    _subscribeItem.value = subscribeItem;
   }
 
   Future<void> _loadEpisodes() async {
@@ -84,9 +105,28 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
   }
 
   Future<void> _onSubscribeTap() async {
-    if (!Get.isRegistered<SubscribeController>()) {
-      Get.put(SubscribeController(), permanent: false);
+    if (_isSubscribed) {
+      ToastUtil.warning(
+        '是否取消订阅${_title ?? ''}第 $_seasonNumber 季？',
+        onConfirm: () async {
+          final success = await _subscribeService.cancelSubscribe(
+            _subscribeItem.value!.id!.toString(),
+          );
+          if (success) {
+            _subscribeItem.value = null;
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
+          }
+        },
+      );
+    } else {
+      ToastUtil.warning(
+        'TODO://是否订阅${_title ?? ''}第 $_seasonNumber 季？',
+        onConfirm: () async {},
+      );
     }
+
     final subscribeController = Get.find<SubscribeController>();
     final ok = await showDialog<bool>(
       context: context,
@@ -134,18 +174,11 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
       appBar: AppBar(
         title: Text(_title != null ? '$_title · $seasonTitle' : seasonTitle),
         actions: [
-          if (_tmdbId != null && _seasonNumber != null)
+          if (_isSubscribed)
             IconButton(
-              icon: _submitting
-                  ? SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: theme.colorScheme.onPrimary,
-                      ),
-                    )
-                  : const Icon(Icons.add_circle_outline),
+              icon: _isSubscribed
+                  ? const Icon(CupertinoIcons.heart_fill)
+                  : const Icon(CupertinoIcons.heart),
               tooltip: '订阅该季',
               onPressed: _submitting ? null : _onSubscribeTap,
             ),
