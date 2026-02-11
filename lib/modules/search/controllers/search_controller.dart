@@ -16,7 +16,7 @@ class SearchMediaController extends GetxController {
   var mtype = '电影';
   var area = 'title';
   var year = '';
-  var season = '';
+  String? season;
   var sites = <int>[];
 
   final items = <SearchResultItem>[].obs;
@@ -173,14 +173,18 @@ class SearchMediaController extends GetxController {
         'area': area,
         if (searchText.value.isNotEmpty) 'title': searchText.value,
         if (year.isNotEmpty) 'year': year,
-        if (season.isNotEmpty) 'season': season,
         'sites': sites.join(','),
       };
+
+      if (season != null && season!.isNotEmpty && season != '0') {
+        queryParameters['season'] = season!;
+      }
 
       final response = await _apiClient.get<dynamic>(
         '/api/v1/search/media/$mediaSearchKey',
         queryParameters: queryParameters,
         token: token,
+        timeout: 60,
       );
 
       final status = response.statusCode ?? 0;
@@ -199,7 +203,7 @@ class SearchMediaController extends GetxController {
         );
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '搜索失败');
-      errorText.value = '请求失败，请稍后重试';
+      errorText.value = '请求失败，请稍后重试 $e';
     } finally {
       isLoading.value = false;
     }

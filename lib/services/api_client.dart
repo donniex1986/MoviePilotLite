@@ -240,6 +240,7 @@ class ApiClient extends g.GetxController {
     Map<String, dynamic>? data,
     Map<String, dynamic>? queryParameters,
     String? token,
+    int? timeout,
   }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
@@ -247,6 +248,7 @@ class ApiClient extends g.GetxController {
       'API POST请求: $path, token: ${authToken != null ? '***' : 'null'}',
     );
     final options = Options(
+      receiveTimeout: Duration(seconds: timeout ?? 15),
       headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
@@ -289,11 +291,13 @@ class ApiClient extends g.GetxController {
     String path, {
     Map<String, dynamic>? queryParameters,
     String? token,
+    int? timeout,
   }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
     _log.info('API请求: $path, token: ${authToken != null ? '***' : 'null'}');
     final options = Options(
+      receiveTimeout: Duration(seconds: timeout ?? 15),
       headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误

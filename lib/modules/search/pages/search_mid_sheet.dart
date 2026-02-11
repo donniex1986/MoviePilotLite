@@ -32,20 +32,20 @@ class _SearchMidSheetState extends State<SearchMidSheet> {
       ToastUtil.error('请选择至少一个站点');
       return;
     }
+    var params = {
+      'mediaSearchKey': widget.searchKey,
+      'area': area.value,
+      'sites': selectedSite.join(','),
+      'year': widget.year ?? '',
 
+      'mtype': widget.mtype ?? 'movie',
+      'title': widget.title ?? '',
+    };
+    if (widget.season != null && widget.season!.isNotEmpty) {
+      params['season'] = widget.season!;
+    }
     // 关闭 bottom sheet
-    Get.offAndToNamed(
-      '/search-media-result',
-      parameters: {
-        'mediaSearchKey': widget.searchKey,
-        'area': area.value,
-        'sites': selectedSite.join(','),
-        'year': widget.year ?? '',
-        'season': widget.season ?? '',
-        'mtype': widget.mtype ?? 'movie',
-        'title': widget.title ?? '',
-      },
-    );
+    Get.offAndToNamed('/search-media-result', parameters: params);
   }
 
   @override

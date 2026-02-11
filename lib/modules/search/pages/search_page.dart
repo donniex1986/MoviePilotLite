@@ -19,7 +19,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
 
   static const double _horizontalPadding = 16;
   static const double _cardSpacing = 12;
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -278,11 +278,11 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
                     value: controller.year,
                     color: const Color(0xFFAF52DE),
                   ),
-                if (controller.season.isNotEmpty)
+                if (controller.season != null && controller.season!.isNotEmpty)
                   _buildFilterChip(
                     context,
                     label: '季',
-                    value: controller.season,
+                    value: controller.season!,
                     color: const Color(0xFF5AC8FA),
                   ),
                 _buildFilterChip(

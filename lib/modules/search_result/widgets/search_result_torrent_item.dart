@@ -5,6 +5,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 import 'package:moviepilot_mobile/modules/download/controllers/download_controller.dart';
 import 'package:moviepilot_mobile/modules/download/widgets/download_sheet.dart';
+import 'package:moviepilot_mobile/modules/setting/controllers/setting_controller.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
@@ -29,120 +30,123 @@ class SearchResultTorrentItem extends StatelessWidget {
     final tags = _buildTags(item);
     final promotion = _promotionBadgeLabel(item);
 
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: accent.withOpacity(0.18)),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withOpacity(0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+    return GestureDetector(
+      onTap: () => _openDownloadSheet(context, item),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: accent.withOpacity(0.18)),
+          boxShadow: [
+            BoxShadow(
+              color: accent.withOpacity(0.08),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-              if (season != null) _buildSeasonChip(season, accent: accent),
-              if (promotion != null) ...[
-                const SizedBox(width: 8),
-                _buildPromotionBadge(promotion),
+                if (season != null) _buildSeasonChip(season, accent: accent),
+                if (promotion != null) ...[
+                  const SizedBox(width: 8),
+                  _buildPromotionBadge(promotion),
+                ],
               ],
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _buildSiteBadge(_siteName(item)),
-              const Spacer(),
-              if ((torrent?.seeders ?? 0) > 0) ...[
-                Icon(
-                  Icons.arrow_upward,
-                  size: 18,
-                  color: Colors.green.shade600,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${torrent?.seeders ?? 0}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-                ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                _buildSiteBadge(_siteName(item)),
+                const Spacer(),
+                if ((torrent?.seeders ?? 0) > 0) ...[
+                  Icon(
+                    Icons.arrow_upward,
+                    size: 18,
+                    color: Colors.green.shade600,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${torrent?.seeders ?? 0}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 10),
+                if ((torrent?.peers ?? 0) > 0) ...[
+                  Icon(
+                    Icons.arrow_downward,
+                    size: 18,
+                    color: Colors.red.shade600,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${torrent?.peers ?? 0}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ],
-              const SizedBox(width: 10),
-              if ((torrent?.peers ?? 0) > 0) ...[
-                Icon(
-                  Icons.arrow_downward,
-                  size: 18,
-                  color: Colors.red.shade600,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${torrent?.peers ?? 0}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            torrent?.title ?? meta?.title ?? '',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          if ((meta?.subtitle ?? torrent?.description)?.isNotEmpty ??
-              false) ...[
-            const SizedBox(height: 6),
+            ),
+            const SizedBox(height: 10),
             Text(
-              meta?.subtitle ?? torrent?.description ?? '',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textSecondaryColor,
-              ),
+              torrent?.title ?? meta?.title ?? '',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-          ],
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Icon(
-                Icons.schedule,
-                size: 18,
-                color: AppTheme.textSecondaryColor,
-              ),
-              const SizedBox(width: 6),
+            if ((meta?.subtitle ?? torrent?.description)?.isNotEmpty ??
+                false) ...[
+              const SizedBox(height: 6),
               Text(
-                _timeLabel(item),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                meta?.subtitle ?? torrent?.description ?? '',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppTheme.textSecondaryColor,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
-          ),
-          if (tags.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Wrap(spacing: 8, runSpacing: 8, children: tags),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(
+                  Icons.schedule,
+                  size: 18,
+                  color: AppTheme.textSecondaryColor,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  _timeLabel(item),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ),
+            if (tags.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Wrap(spacing: 8, runSpacing: 8, children: tags),
+            ],
+            _buildMoreFooter(context, item),
           ],
-          _buildMoreFooter(context, item),
-        ],
+        ),
       ),
     );
   }
@@ -174,12 +178,7 @@ class SearchResultTorrentItem extends StatelessWidget {
               Spacer(),
               _buildSizePill(context, item),
               const SizedBox(width: 6),
-              InkWell(
-                onTap: () => _openDownloadSheet(context, item),
-                child: Icon(CupertinoIcons.cloud_download, color: context.primaryColor),
-              ),
-              const SizedBox(width: 6),
-              InkWell(
+              GestureDetector(
                 onTap: () => _openInfoSheet(context, item),
                 child: Icon(Icons.info_outline, color: context.primaryColor),
               ),
@@ -429,7 +428,10 @@ class SearchResultTorrentItem extends StatelessWidget {
   }
 
   void _openDownloadSheet(BuildContext context, SearchResultItem item) {
-    // 确保 DownloadController 已初始化
+    // 确保 SettingController 和 DownloadController 已初始化
+    if (!Get.isRegistered<SettingController>()) {
+      Get.put(SettingController());
+    }
     if (!Get.isRegistered<DownloadController>()) {
       Get.put(DownloadController());
     }

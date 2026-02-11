@@ -183,7 +183,7 @@ class MyApp extends StatelessWidget {
                   .whereType<int>()
                   .toList();
               c.year = args['year'] ?? '';
-              c.season = args['season'] ?? '';
+              c.season = args['season'];
               c.mtype = args['mtype'] ?? 'movie';
               c.searchText.value = args['title'] ?? '';
               return c;
