@@ -5,7 +5,7 @@ import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/index.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_service.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/search_controller.dart';
-import 'package:moviepilot_mobile/modules/search/pages/search_page.dart';
+import 'package:moviepilot_mobile/modules/search/pages/search_media_result_page.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';

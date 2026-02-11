@@ -17,7 +17,7 @@ import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
 
 import '../controllers/dashboard_controller.dart';
 import '../widgets/dashboard_widgets.dart';
-import '../../search/pages/search_page.dart';
+import '../../search/pages/search_media_result_page.dart';
 import 'edit_dashboard_page.dart';
 
 class DashboardPage extends GetView<DashboardController> {
