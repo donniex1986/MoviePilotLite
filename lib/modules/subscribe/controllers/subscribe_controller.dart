@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_submit_resp.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 
@@ -233,24 +234,24 @@ class SubscribeController extends GetxController {
     }
   }
 
-  Future<bool> submitSubscribe(
+  Future<SubscribeSubmitResp> submitSubscribe(
     String mediaType, {
     required Map<String, dynamic> payload,
   }) async {
     try {
-      final path = 'api/v1/subscribe/';
+      final path = '/api/v1/subscribe/';
       final response = await _apiClient.post(path, data: payload);
       if (response.statusCode == 200) {
-        return true;
+        return SubscribeSubmitResp.fromJson(response.data);
       }
-      return false;
+      return SubscribeSubmitResp(success: false, message: '请求失败');
     } catch (e) {
       _log.handle(e, message: '提交订阅失败');
-      return false;
+      return SubscribeSubmitResp(success: false, message: '请求失败');
     }
   }
 
-  Future<bool> submitMovieSubscribe({
+  Future<SubscribeSubmitResp> submitMovieSubscribe({
     String? bangumiid,
     int? bestVersion = 0,
     required String doubanid,
@@ -272,10 +273,11 @@ class SubscribeController extends GetxController {
       'tmdbid': tmdbid,
       'year': year,
     };
-    return await submitSubscribe('movie', payload: payload);
+    final resp = await submitSubscribe('movie', payload: payload);
+    return resp;
   }
 
-  Future<bool> submitTvSubscribe({
+  Future<SubscribeSubmitResp> submitTvSubscribe({
     required String doubanid,
     String? episode_group = '',
     String? mediaid = '',
@@ -292,16 +294,25 @@ class SubscribeController extends GetxController {
       'season': season,
       'tmdbid': tmdbid,
       'year': year,
+      'best_version': 0,
+      'type': '电视剧',
     };
     return await submitSubscribe('tv', payload: payload);
   }
 
-  Future<bool> cancelSubscribe(String mediaKey) async {
-    final path = '/api/v1/subscribe/cancel/$mediaKey';
-    final response = await _apiClient.post(path);
-    if (response.statusCode == 200) {
-      return true;
-    }
-    return false;
+  Future<bool> deleteMediaSubscribe(
+    String mediaKey, {
+    String season = '0',
+  }) async {
+    final response = await _apiClient.delete(
+      '/api/v1/subscribe/media/$mediaKey',
+      queryParameters: {'season': season},
+    );
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> deleteSubscribes(String id) async {
+    final response = await _apiClient.delete('/api/v1/subscribe/$id');
+    return response.statusCode == 200 && response.data['success'] == true;
   }
 }

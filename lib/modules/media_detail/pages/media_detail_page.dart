@@ -6,11 +6,11 @@ import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_
 import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_model.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_notexists.dart';
 import 'package:moviepilot_mobile/modules/media_detail/pages/media_season_detail_page.dart';
-import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
+import 'package:moviepilot_mobile/modules/search/pages/search_mid_sheet.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
-import 'package:moviepilot_mobile/modules/search/pages/search_page.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
@@ -382,15 +382,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         ],
         if (detail.season_info != null && detail.season_info!.isNotEmpty) ...[
           _buildSectionTitle('季度信息'),
-          Obx(
-            () => _buildSeasonList(
-              context,
-              detail.season_info!,
-              detail,
-              controller.mediaNotExists.toList(),
-              Map<int, SubscribeItem>.from(controller.seasonSubscribeMap),
-            ),
-          ),
+          _buildSeasonList(context, detail.season_info!, detail),
           const SizedBox(height: 16),
         ],
         if (detail.actors != null && detail.actors!.isNotEmpty) ...[
@@ -619,10 +611,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     BuildContext context,
     List<SeasonInfo> seasons,
     MediaDetail detail,
-    List<MediaNotExists> notExistsList,
-    Map<int, SubscribeItem> seasonSubscribeMap,
   ) {
-    final theme = Theme.of(context);
     return SizedBox(
       height: 180,
       child: ListView.separated(
@@ -631,198 +620,210 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final season = seasons[index];
-          final sn = season.season_number;
-          MediaNotExists? notExists;
-          if (sn != null) {
-            for (final e in notExistsList) {
-              if (e.season == sn) {
-                notExists = e;
-                break;
-              }
-            }
-          }
-          final isMissing =
-              notExists != null &&
-              ((notExists.episodes?.isNotEmpty ?? false) ||
-                  (notExists.total_episode ?? 0) > 0);
-          final isSubscribed = sn != null && seasonSubscribeMap[sn] != null;
-          final posterUrl = ImageUtil.convertMediaSeasonImageUrl(
-            season.poster_path ?? '',
-          );
-          return Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => showCupertinoModalBottomSheet(
-                context: context,
-                builder: (context) => MediaSeasonDetailPage(
-                  reqPath: controller.seasonMediaKey(detail, sn ?? 0),
-                  subscribeMediaKey: controller.subscribeMediaKey(detail),
-                  tmdbId: detail.tmdb_id?.toString() ?? '',
-                  seasonNumber: sn ?? 0,
-                  title: detail.title ?? '',
-                  year: detail.year ?? '',
-                  doubanId: detail.douban_id?.toString() ?? '',
-                  mediaId: detail.media_id ?? '',
-                ),
-              ),
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                width: 140,
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(14),
-                          ),
-                          child: CachedImage(
-                            imageUrl: posterUrl,
-                            height: 105,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorWidget: Container(
-                              height: 105,
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              child: Icon(
-                                Icons.tv_outlined,
-                                color: theme.colorScheme.onSurfaceVariant,
-                                size: 32,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (isMissing)
-                          Positioned(
-                            top: 6,
-                            right: 6,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.errorContainer,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '缺失',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.onErrorContainer,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                          ),
-                        Positioned(
-                          top: 6,
-                          left: 6,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              isSubscribed ? '已订阅' : '未订阅',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: theme.colorScheme.onPrimaryContainer,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (season.vote_average != null &&
-                            season.vote_average! > 0)
-                          Positioned(
-                            bottom: 6,
-                            left: 6,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black54,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    size: 12,
-                                    color: Colors.amber,
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    season.vote_average!.toStringAsFixed(1),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _seasonTitle(season),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            season.air_date ?? '未定档',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontSize: 11,
-                            ),
-                          ),
-                          if (season.episode_count != null)
-                            Text(
-                              '${season.episode_count} 集',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontSize: 11,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
+          return _buildSeasonListContent(context, season);
         },
       ),
     );
+  }
+
+  Widget _buildSeasonListContent(BuildContext context, SeasonInfo season) {
+    return Obx(() {
+      final theme = Theme.of(context);
+      final posterUrl = ImageUtil.convertMediaSeasonImageUrl(
+        season.poster_path ?? '',
+      );
+      final sn = season.season_number;
+      MediaNotExists? notExists = controller.mediaNotExists.firstWhereOrNull(
+        (e) => e.season == sn,
+      );
+      final subscribeItem = controller.seasonSubscribeMap[sn];
+      final isSubscribed = sn != null && subscribeItem?.id != null;
+      final isMissing =
+          notExists != null &&
+          ((notExists.episodes?.isNotEmpty ?? false) ||
+              (notExists.total_episode ?? 0) > 0);
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            final detail = controller.mediaDetail.value;
+            if (detail == null) return;
+            final reqPath = controller.seasonMediaKey(
+              detail,
+              season.season_number ?? 0,
+            );
+            showCupertinoModalBottomSheet(
+              context: context,
+              builder: (context) => MediaSeasonDetailPage(
+                reqPath: reqPath,
+                subscribeMediaKey: controller.args.path,
+                tmdbId: detail.tmdb_id?.toString() ?? '',
+                seasonNumber: season.season_number ?? 0,
+                title: detail.title ?? '',
+                year: detail.year ?? '',
+                doubanId: detail.douban_id?.toString() ?? '',
+                mediaId: detail.media_id ?? '',
+                subscribeItem: subscribeItem,
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: 140,
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(14),
+                      ),
+                      child: CachedImage(
+                        imageUrl: posterUrl,
+                        height: 105,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorWidget: Container(
+                          height: 105,
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child: Icon(
+                            Icons.tv_outlined,
+                            color: theme.colorScheme.onSurfaceVariant,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (isMissing)
+                      Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.errorContainer,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '缺失',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onErrorContainer,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      top: 6,
+                      left: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSubscribed
+                              ? CupertinoColors.systemRed
+                              : theme.colorScheme.primary,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          isSubscribed ? '已订阅' : '未订阅',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (season.vote_average != null && season.vote_average! > 0)
+                      Positioned(
+                        bottom: 6,
+                        left: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                size: 12,
+                                color: Colors.amber,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                season.vote_average!.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _seasonTitle(season),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        season.air_date ?? '未定档',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 11,
+                        ),
+                      ),
+                      if (season.episode_count != null)
+                        Text(
+                          '${season.episode_count} 集',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 11,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildActorList(List<Actor> actors) {
@@ -935,18 +936,11 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           if (isTv && seasons?.isNotEmpty == true) {
             return Row(children: [Expanded(child: search)]);
           }
-          final subscribe = _buildPrimaryAction(
-            label: movieSubscribed ? '已订阅' : '订阅',
-            icon: CupertinoIcons.heart_fill,
-            onPressed: isLoading
-                ? null
-                : movieSubscribed
-                ? _cancelSubscribe
-                : _handleSubscribe,
-            backgroundColor: movieSubscribed
-                ? Colors.red
-                : Theme.of(context).colorScheme.primary,
-            foregroundColor: movieSubscribed ? Colors.white : null,
+          final subscribe = _buildSubscribeButton(
+            context,
+            detail,
+            isLoading,
+            movieSubscribed,
           );
           final isNarrow = constraints.maxWidth < 340;
           if (isNarrow) {
@@ -963,6 +957,51 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
             ],
           );
         },
+      );
+    });
+  }
+
+  Widget _buildSubscribeButton(
+    BuildContext context,
+    MediaDetail detail,
+    bool isLoading,
+    bool isSubscribed,
+  ) {
+    return Obx(() {
+      if (controller.subscribeLoadingState.value) {
+        return _buildPrimaryAction(
+          label: 'loading...',
+          icon: Icons.local_dining_outlined,
+          onPressed: null,
+          backgroundColor: Colors.grey,
+          foregroundColor: Colors.white,
+        );
+      }
+      return _buildPrimaryAction(
+        label: isSubscribed ? '已订阅' : '订阅',
+        icon: isSubscribed
+            ? CupertinoIcons.heart_slash_fill
+            : CupertinoIcons.heart_fill,
+        onPressed: () async {
+          try {
+            final (success, x) = await controller.handleSubscribe();
+            if (!success) {
+              ToastUtil.error('${isSubscribed ? '取消' : ''}订阅失败');
+            } else if (isSubscribed) {
+              ToastUtil.success('${isSubscribed ? '取消' : ''}订阅成功');
+            } else {
+              ToastUtil.info('${isSubscribed ? '取消' : ''}订阅成功');
+            }
+          } catch (e) {
+            ToastUtil.error('请求失败 $e');
+          }
+        },
+        backgroundColor: isLoading
+            ? Colors.grey
+            : isSubscribed
+            ? Colors.red
+            : Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
       );
     });
   }
@@ -1132,27 +1171,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
   }
 
   String? _buildMediaPath(RecommendApiItem item) {
-    final prefix = item.mediaid_prefix;
-    final mediaId = item.media_id;
-    if (prefix != null &&
-        prefix.isNotEmpty &&
-        mediaId != null &&
-        mediaId.isNotEmpty) {
-      return '$prefix:$mediaId';
-    }
-    final tmdbId = item.tmdb_id;
-    if (tmdbId != null && tmdbId.isNotEmpty) {
-      return 'tmdb:$tmdbId';
-    }
-    final doubanId = item.douban_id;
-    if (doubanId != null && doubanId.isNotEmpty) {
-      return 'douban:$doubanId';
-    }
-    final bangumiId = item.bangumi_id;
-    if (bangumiId != null && bangumiId.isNotEmpty) {
-      return 'bangumi:$bangumiId';
-    }
-    return null;
+    return HttpPathBuilderUtil.buildMediaPath(item);
   }
 
   Widget _buildPrimaryAction({
@@ -1187,23 +1206,8 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     );
   }
 
-  void _handleSubscribe() {
-    ToastUtil.info('订阅功能开发中');
-  }
-
-  void _cancelSubscribe() {
-    ToastUtil.warning('确定取消订阅吗？', onConfirm: () => ToastUtil.info('取消订阅功能开发中'));
-  }
-
   void _openSearch(BuildContext context) {
-    Get.to(
-      () => const SearchPage(),
-      // binding: BindingsBuilder(() {
-      //   if (!Get.isRegistered<SearchPageController>()) {
-      //     Get.put(SearchController());
-      //   }
-      // }),
-    );
+    Get.bottomSheet(SearchMidSheet(searchKey: ''));
   }
 
   String? _tmdbUrl(MediaDetail detail) {

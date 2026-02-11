@@ -6,6 +6,7 @@ import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_contro
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommond_category_group_edit_pannel.dart';
@@ -264,30 +265,7 @@ class RecommendPage extends GetView<RecommendController> {
   }
 
   String _itemKey(RecommendApiItem item) {
-    final prefix = item.mediaid_prefix;
-    final mediaId = item.media_id;
-    if (prefix != null &&
-        prefix.isNotEmpty &&
-        mediaId != null &&
-        mediaId.isNotEmpty) {
-      return '$prefix:$mediaId';
-    }
-    final tmdbId = item.tmdb_id;
-    if (tmdbId != null && tmdbId.isNotEmpty) {
-      return 'tmdb:$tmdbId';
-    }
-    final doubanId = item.douban_id;
-    if (doubanId != null && doubanId.isNotEmpty) {
-      return 'douban:$doubanId';
-    }
-    final bangumiId = item.bangumi_id;
-    if (bangumiId != null && bangumiId.isNotEmpty) {
-      return 'bangumi:$bangumiId';
-    }
-    final title = _bestTitle(item) ?? item.title ?? '';
-    final year = item.year ?? '';
-    final type = item.type ?? '';
-    return '$title|$year|$type';
+    return HttpPathBuilderUtil.buildMediaPath(item);
   }
 
   Widget _buildEmptyRail(BuildContext context, String message) {

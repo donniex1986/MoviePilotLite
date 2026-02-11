@@ -16,7 +16,7 @@ class ToastUtil {
       backgroundColor: CupertinoColors.systemGreen.withOpacity(0.9),
       colorText: CupertinoColors.white,
       duration: duration,
-      snackPosition: SnackPosition.TOP,
+      snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
       borderRadius: 12,
       icon: const Icon(
@@ -60,10 +60,10 @@ class ToastUtil {
     Get.snackbar(
       title ?? '警告',
       message,
-      backgroundColor: CupertinoColors.systemOrange.withOpacity(0.9),
+      backgroundColor: CupertinoColors.systemOrange.withValues(alpha: 0.9),
       colorText: CupertinoColors.white,
       duration: duration,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       margin: const EdgeInsets.all(16),
       borderRadius: 12,
       icon: const Icon(
@@ -74,13 +74,17 @@ class ToastUtil {
       mainButton: onConfirm != null
           ? TextButton(
               style: TextButton.styleFrom(
+                shape: CircleBorder(),
                 backgroundColor: CupertinoColors.systemRed,
                 foregroundColor: CupertinoColors.white,
               ),
               onPressed: onConfirm,
-              child: const Text(
-                '确定',
-                style: TextStyle(color: CupertinoColors.white),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: const Text(
+                  '确定',
+                  style: TextStyle(color: CupertinoColors.white),
+                ),
               ),
             )
           : null,
@@ -99,7 +103,7 @@ class ToastUtil {
       backgroundColor: CupertinoColors.systemBlue.withOpacity(0.9),
       colorText: CupertinoColors.white,
       duration: duration,
-      snackPosition: SnackPosition.TOP,
+      snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
       borderRadius: 12,
       icon: const Icon(

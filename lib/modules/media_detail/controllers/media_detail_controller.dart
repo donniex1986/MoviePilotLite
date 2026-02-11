@@ -9,6 +9,7 @@ import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_cache
 import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_model.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_notexists.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
+import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
 import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
@@ -23,8 +24,9 @@ class MediaDetailController extends GetxController {
   final _appService = Get.find<AppService>();
   final _log = Get.find<AppLog>();
   final _realmService = Get.find<RealmService>();
-  final MediaDetailService _mediaDetailService = Get.find<MediaDetailService>();
-
+  final _mediaDetailService = Get.find<MediaDetailService>();
+  final _subscribeController = Get.put(SubscribeController());
+  final subscribeLoadingState = false.obs;
   final isLoading = false.obs;
   final mediaDetail = Rxn<MediaDetail>();
   final errorText = RxnString();
@@ -300,20 +302,6 @@ class MediaDetailController extends GetxController {
     }
   }
 
-  String subscribeMediaKey(MediaDetail detail) {
-    if (_args.path.trim().isNotEmpty) return _args.path.trim();
-    if (detail.tmdb_id != null) return 'tmdb:${detail.tmdb_id}';
-    if (detail.douban_id != null) return 'douban:${detail.douban_id}';
-    if (detail.bangumi_id != null) return 'bangumi:${detail.bangumi_id}';
-    if (detail.mediaid_prefix != null &&
-        detail.mediaid_prefix!.isNotEmpty &&
-        detail.media_id != null &&
-        detail.media_id!.isNotEmpty) {
-      return '${detail.mediaid_prefix}:${detail.media_id}';
-    }
-    return '';
-  }
-
   String seasonMediaKey(MediaDetail detail, int seasonNumber) {
     final key = '/tmdb/${detail.tmdb_id}/$seasonNumber';
     if (key.isNotEmpty) return key;
@@ -321,16 +309,16 @@ class MediaDetailController extends GetxController {
   }
 
   Future<void> _fetchSubscribeStatus(MediaDetail detail) async {
-    final mediaKey = subscribeMediaKey(detail);
+    subscribeLoadingState.value = true;
+    final mediaKey = args.path;
     if (mediaKey.isEmpty) {
       seasonSubscribeMap.clear();
       movieSubscribeItem.value = null;
+      subscribeLoadingState.value = false;
       return;
     }
     final title = detail.title?.trim();
-    final isTv =
-        (detail.number_of_seasons ?? 0) > 0 ||
-        (detail.season_info != null && detail.season_info!.isNotEmpty);
+    final isTv = _isTv(detail);
     try {
       if (isTv &&
           detail.season_info != null &&
@@ -348,7 +336,7 @@ class MediaDetailController extends GetxController {
             seasonSubscribeMap[sn] = item;
           }
         }
-        movieSubscribeItem.value = null;
+        subscribeLoadingState.value = false;
       } else {
         final item = await _mediaDetailService.getSubscribeMediaStatus(
           mediaKey,
@@ -362,6 +350,8 @@ class MediaDetailController extends GetxController {
       _log.handle(e, message: '获取订阅状态失败');
       seasonSubscribeMap.clear();
       movieSubscribeItem.value = null;
+    } finally {
+      subscribeLoadingState.value = false;
     }
   }
 
@@ -601,6 +591,92 @@ class MediaDetailController extends GetxController {
     errorRecommend.value = null;
     isLoadingSimilar.value = false;
     isLoadingRecommend.value = false;
+  }
+
+  bool _isSubscribed(MediaDetail detail, int? season) {
+    final isTv =
+        (detail.number_of_seasons ?? 0) > 0 ||
+        (detail.season_info != null && detail.season_info!.isNotEmpty);
+    if (isTv) {
+      return seasonSubscribeMap.containsKey(season);
+    }
+    return movieSubscribeItem.value?.id != null;
+  }
+
+  Future<(bool, bool)> handleSubscribe({int? season}) async {
+    subscribeLoadingState.value = true;
+    if (_isSubscribed(mediaDetail.value!, season)) {
+      final mediaKey = args.path;
+      final ok = await _subscribeController.deleteMediaSubscribe(
+        mediaKey,
+        season: season == null ? '0' : season.toString(),
+      );
+      subscribeLoadingState.value = false;
+      if (ok) {
+        seasonSubscribeMap.remove(season);
+        movieSubscribeItem.value = null;
+      }
+      return (ok, false);
+    } else {
+      final detail = mediaDetail.value;
+      if (detail == null) {
+        ToastUtil.error('媒体详情不存在');
+        subscribeLoadingState.value = false;
+        return (false, false);
+      }
+      final isTv = _isTv(detail);
+      if (isTv) {
+        final ok = await _subscribeController.submitTvSubscribe(
+          doubanid: detail.douban_id?.toString() ?? '',
+          name: detail.title?.trim() ?? '',
+          season: season,
+          year: detail.year?.trim() ?? '',
+          tmdbid: detail.tmdb_id?.toString(),
+        );
+        if (ok.success == true) {
+          final tvItem = SubscribeItem(
+            id: ok.data?.id ?? 0,
+            name: detail.title?.trim() ?? '',
+            season: season ?? 0,
+            year: detail.year?.trim() ?? '',
+            tmdbid: detail.tmdb_id?.toInt(),
+          );
+          if (detail.season_info != null && detail.season_info!.isNotEmpty) {
+            seasonSubscribeMap[season ?? 0] = tvItem;
+          } else {
+            movieSubscribeItem.value = tvItem;
+          }
+          subscribeLoadingState.value = false;
+        }
+        subscribeLoadingState.value = false;
+        return (ok.success == true, true);
+      } else {
+        final ok = await _subscribeController.submitMovieSubscribe(
+          doubanid: detail.douban_id?.toString() ?? '',
+          name: detail.title?.trim() ?? '',
+          season: season,
+          year: detail.year?.trim() ?? '',
+          tmdbid: detail.tmdb_id?.toString(),
+        );
+        if (ok.success == true) {
+          await _fetchSubscribeStatus(detail);
+        }
+        subscribeLoadingState.value = false;
+        return (ok.success == true, true);
+      }
+    }
+  }
+
+  bool _isTv(MediaDetail detail) {
+    final rawValue = detail.type ?? _args.typeName ?? '';
+    final raw = rawValue.toLowerCase();
+    if (raw.contains('剧') || raw.contains('tv') || raw.contains('series')) {
+      return true;
+    }
+    if ((detail.number_of_seasons ?? 0) > 0) {
+      return true;
+    }
+    return false;
   }
 }
 

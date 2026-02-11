@@ -66,7 +66,6 @@ void main() {
   Get.put(RealmService());
   Get.put(ApiClient());
   Get.put(MediaDetailService());
-  Get.put(SubscribeService());
   runApp(const MyApp());
 }
 

@@ -104,8 +104,9 @@ class MediaDetailService extends GetxService {
       final path = '/api/v1/subscribe/media/$mediaKey';
       final query = <String, dynamic>{};
       if (season != null) query['season'] = season;
-      if (title != null && title.trim().isNotEmpty)
+      if (title != null && title.trim().isNotEmpty) {
         query['title'] = title.trim();
+      }
       final response = await _apiClient.get<dynamic>(
         path,
         queryParameters: query.isNotEmpty ? query : null,

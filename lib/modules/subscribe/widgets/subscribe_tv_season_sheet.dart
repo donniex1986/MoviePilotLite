@@ -152,7 +152,11 @@ class _SubscribeTvSeasonSheetState extends State<SubscribeTvSeasonSheet> {
         tmdbid: tmdbId.isEmpty ? null : tmdbId,
         year: year.isEmpty ? null : year,
       );
-      if (ok) successCount++;
+      if (ok.success == true) {
+        successCount++;
+      } else {
+        Get.snackbar('订阅失败', ok.message ?? '请稍后重试');
+      }
     }
     if (!mounted) return;
     setState(() => _submitting = false);

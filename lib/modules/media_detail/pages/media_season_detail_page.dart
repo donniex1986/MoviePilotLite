@@ -2,9 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_service.dart';
+import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_controller.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/season_episode_detail.dart';
-import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
-import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_service.dart';
 import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
@@ -21,6 +20,7 @@ class MediaSeasonDetailPage extends StatefulWidget {
     required this.year,
     required this.doubanId,
     required this.mediaId,
+    required this.subscribeItem,
   });
   final String reqPath;
   final String subscribeMediaKey;
@@ -30,13 +30,14 @@ class MediaSeasonDetailPage extends StatefulWidget {
   final String year;
   final String doubanId;
   final String mediaId;
+  final SubscribeItem? subscribeItem;
   @override
   State<MediaSeasonDetailPage> createState() => _MediaSeasonDetailPageState();
 }
 
 class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
   final _mediaDetailService = Get.find<MediaDetailService>();
-  final _subscribeService = Get.find<SubscribeService>();
+  final _mediaDetailController = Get.find<MediaDetailController>();
   List<SeasonEpisodeDetail> _episodes = [];
   bool _loading = true;
   String? _error;
@@ -56,8 +57,11 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
   @override
   void initState() {
     super.initState();
+    _subscribeItem.value = widget.subscribeItem;
     _loadEpisodes();
-    _loadSubscribeStatus();
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      _loadSubscribeStatus();
+    });
   }
 
   Future<void> _loadSubscribeStatus() async {
@@ -66,7 +70,6 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
       season: _seasonNumber ?? 0,
       title: _title ?? '',
     );
-    if (!mounted) return;
     _subscribeItem.value = subscribeItem;
   }
 
@@ -105,65 +108,19 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
   }
 
   Future<void> _onSubscribeTap() async {
+    final (success, x) = await _mediaDetailController.handleSubscribe(
+      season: _seasonNumber,
+    );
+    if (!success) {
+      ToastUtil.error('${_isSubscribed ? '取消' : ''}订阅失败');
+      return;
+    }
     if (_isSubscribed) {
-      ToastUtil.warning(
-        '是否取消订阅${_title ?? ''}第 $_seasonNumber 季？',
-        onConfirm: () async {
-          final success = await _subscribeService.cancelSubscribe(
-            _subscribeItem.value!.id!.toString(),
-          );
-          if (success) {
-            _subscribeItem.value = null;
-            if (mounted) {
-              Navigator.of(context).pop();
-            }
-          }
-        },
-      );
+      ToastUtil.success('${_isSubscribed ? '取消' : ''}订阅成功');
     } else {
-      ToastUtil.warning(
-        'TODO://是否订阅${_title ?? ''}第 $_seasonNumber 季？',
-        onConfirm: () async {},
-      );
+      ToastUtil.info('${_isSubscribed ? '取消' : ''}订阅成功');
     }
-
-    final subscribeController = Get.find<SubscribeController>();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('确认订阅'),
-        content: Text('确定要订阅《${_title ?? ''}》第 $_seasonNumber 季吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('确定'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true || _seasonNumber == null) return;
-    setState(() => _submitting = true);
-    final success = await subscribeController.submitTvSubscribe(
-      doubanid: _doubanId ?? '',
-      episode_group: '',
-      mediaid: _mediaId ?? '',
-      name: _title ?? '',
-      season: _seasonNumber!,
-      tmdbid: _tmdbId,
-      year: _year,
-    );
-    if (!mounted) return;
-    setState(() => _submitting = false);
-    if (success) {
-      Get.snackbar('订阅成功', '已提交第 $_seasonNumber 季订阅');
-      Navigator.of(context).pop();
-    } else {
-      Get.snackbar('订阅失败', '请稍后重试');
-    }
+    _loadSubscribeStatus();
   }
 
   @override
@@ -174,14 +131,19 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
       appBar: AppBar(
         title: Text(_title != null ? '$_title · $seasonTitle' : seasonTitle),
         actions: [
-          if (_isSubscribed)
-            IconButton(
-              icon: _isSubscribed
-                  ? const Icon(CupertinoIcons.heart_fill)
-                  : const Icon(CupertinoIcons.heart),
-              tooltip: '订阅该季',
-              onPressed: _submitting ? null : _onSubscribeTap,
-            ),
+          Obx(() {
+            if (_mediaDetailController.subscribeLoadingState.value) {
+              return const CupertinoActivityIndicator();
+            } else {
+              return TextButton.icon(
+                icon: _isSubscribed
+                    ? const Icon(CupertinoIcons.heart_fill, color: Colors.red)
+                    : const Icon(CupertinoIcons.heart),
+                label: Text(_isSubscribed ? '已订阅' : '订阅该季'),
+                onPressed: _submitting ? null : _onSubscribeTap,
+              );
+            }
+          }),
         ],
       ),
       body: _loading

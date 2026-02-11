@@ -8,6 +8,7 @@ import 'package:moviepilot_mobile/modules/discover/widgets/discover_filter_sheet
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 class DiscoverPage extends GetView<DiscoverController> {
@@ -420,8 +421,8 @@ class DiscoverPage extends GetView<DiscoverController> {
   }
 
   void _openDetail(RecommendApiItem item) {
-    final path = _buildMediaPath(item);
-    if (path == null) {
+    final path = HttpPathBuilderUtil.buildMediaPath(item);
+    if (path.isEmpty) {
       ToastUtil.info('暂无可用详情信息');
       return;
     }
@@ -443,30 +444,6 @@ class DiscoverPage extends GetView<DiscoverController> {
     final original = item.original_title ?? item.original_name;
     if (original != null && original.trim().isNotEmpty) {
       return original.trim();
-    }
-    return null;
-  }
-
-  String? _buildMediaPath(RecommendApiItem item) {
-    final prefix = item.mediaid_prefix;
-    final mediaId = item.media_id;
-    if (prefix != null &&
-        prefix.isNotEmpty &&
-        mediaId != null &&
-        mediaId.isNotEmpty) {
-      return '$prefix:$mediaId';
-    }
-    final tmdbId = item.tmdb_id;
-    if (tmdbId != null && tmdbId.isNotEmpty) {
-      return 'tmdb:$tmdbId';
-    }
-    final doubanId = item.douban_id;
-    if (doubanId != null && doubanId.isNotEmpty) {
-      return 'douban:$doubanId';
-    }
-    final bangumiId = item.bangumi_id;
-    if (bangumiId != null && bangumiId.isNotEmpty) {
-      return 'bangumi:$bangumiId';
     }
     return null;
   }

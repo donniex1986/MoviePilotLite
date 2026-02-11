@@ -174,20 +174,21 @@ class SubscribeItemCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Icon(
-            CupertinoIcons.person_solid,
-            size: 14,
-            color: Colors.white.withValues(alpha: 0.85),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            item.username ?? 'admin',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-          ),
         ],
+        Icon(
+          CupertinoIcons.person_solid,
+          size: 14,
+          color: Colors.white.withValues(alpha: 0.85),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          item.username ?? 'admin',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+        ),
       ],
     );
   }

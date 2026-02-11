@@ -23,6 +23,7 @@ class SitePage extends GetView<SiteController> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('站点管理'),
+        centerTitle: false,
         actions: [
           CupertinoButton(
             padding: EdgeInsets.zero,
@@ -82,7 +83,11 @@ class SitePage extends GetView<SiteController> {
                 itemBuilder: (context, index) {
                   final items = controller.items;
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(
+                      bottom: 12,
+                      right: 16,
+                      left: 16,
+                    ),
                     child: InkWell(
                       onTap: () {
                         _selectItem(items[index]);
