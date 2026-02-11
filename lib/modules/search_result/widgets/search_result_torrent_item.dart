@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:intl/intl.dart';
+import 'package:moviepilot_mobile/modules/download/controllers/download_controller.dart';
+import 'package:moviepilot_mobile/modules/download/widgets/download_sheet.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
@@ -168,6 +173,11 @@ class SearchResultTorrentItem extends StatelessWidget {
               ],
               Spacer(),
               _buildSizePill(context, item),
+              const SizedBox(width: 6),
+              InkWell(
+                onTap: () => _openDownloadSheet(context, item),
+                child: Icon(CupertinoIcons.cloud_download, color: context.primaryColor),
+              ),
               const SizedBox(width: 6),
               InkWell(
                 onTap: () => _openInfoSheet(context, item),
@@ -416,5 +426,22 @@ class SearchResultTorrentItem extends StatelessWidget {
 
   _openInfoSheet(BuildContext context, SearchResultItem item) async {
     WebUtil.open(url: item.torrent_info?.page_url);
+  }
+
+  void _openDownloadSheet(BuildContext context, SearchResultItem item) {
+    // 确保 DownloadController 已初始化
+    if (!Get.isRegistered<DownloadController>()) {
+      Get.put(DownloadController());
+    }
+
+    showCupertinoModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        return SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.85,
+          child: DownloadSheet(item: item),
+        );
+      },
+    );
   }
 }

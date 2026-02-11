@@ -4,6 +4,8 @@ import 'package:liquid_tabbar_minimize/liquid_tabbar_minimize.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/index.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_service.dart';
+import 'package:moviepilot_mobile/modules/search/controllers/search_controller.dart';
+import 'package:moviepilot_mobile/modules/search/pages/search_page.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
@@ -163,6 +165,29 @@ class MyApp extends StatelessWidget {
           page: () => const SearchResultPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => SearchResultController());
+          }),
+        ),
+        GetPage(
+          name: '/search-media-result',
+          page: () => const SearchMediaResultPage(),
+          binding: BindingsBuilder(() {
+            final args = Get.parameters;
+            Get.lazyPut(() {
+              final c = SearchMediaController();
+              c.mediaSearchKey = args['mediaSearchKey'] ?? '';
+              c.area = args['area'] ?? 'title';
+              c.sites = (args['sites'] ?? '')
+                  .split(',')
+                  .where((s) => s.trim().isNotEmpty)
+                  .map(int.tryParse)
+                  .whereType<int>()
+                  .toList();
+              c.year = args['year'] ?? '';
+              c.season = args['season'] ?? '';
+              c.mtype = args['mtype'] ?? 'movie';
+              c.searchText.value = args['title'] ?? '';
+              return c;
+            });
           }),
         ),
         GetPage(

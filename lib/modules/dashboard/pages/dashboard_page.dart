@@ -207,11 +207,6 @@ class DashboardPage extends GetView<DashboardController> {
     );
   }
 
-  /// 显示搜索
-  void _showSearch(BuildContext context) {
-    Get.to(() => const SearchPage());
-  }
-
   /// 显示捷径
   void _showShortcuts(BuildContext context) {
     final overlay = Overlay.of(context);

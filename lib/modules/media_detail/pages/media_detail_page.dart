@@ -1207,7 +1207,18 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
   }
 
   void _openSearch(BuildContext context) {
-    Get.bottomSheet(SearchMidSheet(searchKey: ''));
+    final searchKey = controller.args.path;
+    final detail = controller.mediaDetail.value;
+    final season = detail?.season_info?.firstOrNull?.season_number;
+    Get.bottomSheet(
+      SearchMidSheet(
+        searchKey: searchKey,
+        title: detail?.title,
+        year: detail?.year,
+        season: season?.toString(),
+        mtype: detail?.type,
+      ),
+    );
   }
 
   String? _tmdbUrl(MediaDetail detail) {
