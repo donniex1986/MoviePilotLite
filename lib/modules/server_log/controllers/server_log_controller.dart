@@ -17,6 +17,8 @@ class ServerLogController extends GetxController {
   final _log = Get.find<AppLog>();
   final _realmService = Get.find<RealmService>();
   final _authRepository = Get.find<AuthRepository>();
+  String logFile = 'moviepilot.log';
+  String title = '服务器';
 
   /// 是否正在加载日志
   final isLoading = false.obs;
@@ -64,7 +66,7 @@ class ServerLogController extends GetxController {
     _startIdleTimer();
     try {
       final stream = await _apiClient.streamLines(
-        '/api/v1/system/logging?logfile=moviepilot.log',
+        '/api/v1/system/logging?logfile=$logFile',
       );
       _subscription = stream.listen(
         (line) {

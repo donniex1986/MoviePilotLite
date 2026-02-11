@@ -31,7 +31,6 @@ import 'modules/system_message/controllers/system_message_controller.dart';
 import 'modules/system_message/pages/system_message_page.dart';
 import 'modules/media_detail/controllers/media_detail_controller.dart';
 import 'modules/media_detail/pages/media_detail_page.dart';
-import 'modules/media_detail/pages/media_season_detail_page.dart';
 import 'modules/search_result/controllers/search_result_controller.dart';
 import 'modules/search_result/pages/search_result_page.dart';
 import 'modules/subscribe/controllers/subscribe_controller.dart';
@@ -227,6 +226,22 @@ class MyApp extends StatelessWidget {
               fenix: true,
             );
             Get.put(PluginController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/plugin/dynamic-form/log',
+          page: () => const ServerLogPage(),
+          binding: BindingsBuilder(() {
+            final id = Get.arguments['id']?.toString() ?? '';
+            final title = Get.arguments['title']?.toString() ?? '';
+            final file = id.isEmpty
+                ? 'moviepilot.log'
+                : 'plugins/${id.toLowerCase()}.log';
+            Get.lazyPut(
+              () => ServerLogController()
+                ..logFile = file
+                ..title = title,
+            );
           }),
         ),
         GetPage(

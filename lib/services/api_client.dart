@@ -301,6 +301,30 @@ class ApiClient extends g.GetxController {
     );
   }
 
+  Future<Response<T>> delete<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    String? token,
+  }) async {
+    await _ensureReady();
+    final authToken = token ?? this.token;
+    _log.info(
+      'API DELETE请求: $path, token: ${authToken != null ? '***' : 'null'}',
+    );
+    final options = Options(
+      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      validateStatus: (status) {
+        // 允许所有状态码，让调用者自己处理错误
+        return true;
+      },
+    );
+    return _dio.delete<T>(
+      path,
+      queryParameters: queryParameters,
+      options: options,
+    );
+  }
+
   /// SSE / 流式 GET，请求 `text/event-stream` 并返回按行解码后的字符串流。
   Future<Stream<String>> streamLines(String path, {String? token}) async {
     await _ensureReady();

@@ -111,14 +111,17 @@ class PluginController extends GetxController {
       list.add(cache);
     }
     _realm.realm.write(() {
+      _realm.realm.deleteAll<InstalledPluginModelCache>();
       _realm.realm.addAll(list, update: true);
     });
   }
 
-  Future<void> load() async {
+  Future<void> load({bool force = false}) async {
     isLoading.value = true;
     errorText.value = null;
-    loadFromCache();
+    if (!force) {
+      loadFromCache();
+    }
     final installCount = await loadInstallCount();
     try {
       final response = await _apiClient.get<dynamic>(
@@ -170,5 +173,24 @@ class PluginController extends GetxController {
           .where((s) => s.isNotEmpty);
       cache.preload(urls);
     } catch (_) {}
+  }
+
+  Future<bool> installPlugin(PluginItem item) async {
+    final queryParameters = {'repo_url': item.repoUrl ?? '', 'force': false};
+    final response = await _apiClient.get<dynamic>(
+      '/api/v1/plugin/install/${item.id}',
+      queryParameters: queryParameters,
+    );
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> resetPlugin(String id) async {
+    final response = await _apiClient.get<dynamic>('/api/v1/plugin/reset/$id');
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> uninstallPlugin(String id) async {
+    final response = await _apiClient.delete<dynamic>('/api/v1/plugin/$id');
+    return response.statusCode == 200 && response.data['success'] == true;
   }
 }

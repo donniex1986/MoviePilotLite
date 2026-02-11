@@ -5,6 +5,8 @@ import 'package:moviepilot_mobile/modules/plugin/controllers/plugin_controller.d
 import 'package:moviepilot_mobile/modules/plugin/models/plugin_models.dart';
 import 'package:moviepilot_mobile/modules/plugin/widgets/plugin_item_card.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
+import 'package:moviepilot_mobile/utils/open_url.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 class PluginPage extends GetView<PluginController> {
   const PluginPage({super.key});
@@ -191,6 +193,7 @@ class PluginPage extends GetView<PluginController> {
         ? ImageUtil.convertPluginIconUrl(item.pluginIcon!)
         : '';
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         if (item.hasPage) {
           Get.toNamed(
@@ -205,10 +208,80 @@ class PluginPage extends GetView<PluginController> {
         }
       },
       child: PluginItemCard(
+        onHandleTap: (type) {
+          switch (type) {
+            case PluginHandleType.web:
+              if (item.authorUrl != null && item.authorUrl!.isNotEmpty) {
+                WebUtil.open(url: item.authorUrl!);
+              }
+              break;
+            case PluginHandleType.settings:
+              if (item.pluginConfigPrefix != null &&
+                  item.pluginConfigPrefix!.isNotEmpty) {
+                Get.toNamed(
+                  '/plugin/dynamic-form/page',
+                  arguments: {'id': item.id, 'title': item.pluginName},
+                );
+              }
+              break;
+            case PluginHandleType.log:
+              _showLog(item);
+              break;
+            case PluginHandleType.reset:
+              _resetPlugin(item);
+              break;
+            case PluginHandleType.uninstall:
+              _uninstallPlugin(item);
+              break;
+          }
+        },
         item: item,
         iconUrl: iconUrl,
         installCount: item.installCount,
       ),
+    );
+  }
+
+  _resetPlugin(PluginItem item) {
+    ToastUtil.warning(
+      '是否重置插件？',
+      onConfirm: () {
+        controller
+            .resetPlugin(item.id)
+            .then((success) {
+              if (success) {
+                controller.load();
+              }
+            })
+            .catchError((error) {
+              ToastUtil.error('重置插件失败: $error');
+            });
+      },
+    );
+  }
+
+  _uninstallPlugin(PluginItem item) {
+    ToastUtil.warning(
+      '是否卸载插件？',
+      onConfirm: () {
+        controller
+            .uninstallPlugin(item.id)
+            .then((success) {
+              if (success) {
+                controller.load();
+              }
+            })
+            .catchError((error) {
+              ToastUtil.error('卸载插件失败: $error');
+            });
+      },
+    );
+  }
+
+  _showLog(PluginItem item) {
+    Get.toNamed(
+      '/plugin/dynamic-form/log',
+      arguments: {'id': item.id, 'title': item.pluginName},
     );
   }
 }

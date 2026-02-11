@@ -13,7 +13,7 @@ class ServerLogPage extends GetView<ServerLogController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('服务器日志'),
+        title: Text('${controller.title}日志'),
         actions: [Obx(() => _buildStreamIndicator(controller))],
       ),
       body: SafeArea(

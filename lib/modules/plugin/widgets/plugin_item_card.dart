@@ -5,20 +5,30 @@ import 'package:moviepilot_mobile/modules/plugin/models/plugin_models.dart';
 import 'package:moviepilot_mobile/modules/plugin/services/plugin_palette_cache.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 
+enum PluginHandleType {
+  settings,
+  // repeat,
+  reset,
+  uninstall,
+  log,
+  web,
+}
+
 /// 插件卡片，两段式布局：深色渐变区 + 浅色信息区，主题色由 PluginPaletteCache 缓存
 class PluginItemCard extends StatelessWidget {
   const PluginItemCard({
     super.key,
     required this.item,
     required this.iconUrl,
-    this.onMoreTap,
     required this.installCount,
+    this.onHandleTap,
   });
 
   final PluginItem item;
   final String iconUrl;
-  final VoidCallback? onMoreTap;
   final int installCount;
+  final Function(PluginHandleType type)? onHandleTap;
+
   static const double _cardRadius = 12;
   static const double _iconSize = 48;
 
@@ -187,8 +197,10 @@ class PluginItemCard extends StatelessWidget {
 
     return Container(
       color: surfaceColor,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
             Icons.person_outline,
@@ -220,18 +232,42 @@ class PluginItemCard extends StatelessWidget {
               color: Theme.of(context).colorScheme.outline,
             ),
           ),
-          if (onMoreTap != null) ...[
+          if (onHandleTap != null) ...[
             const SizedBox(width: 8),
-            GestureDetector(
-              onTap: onMoreTap,
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Icon(
-                  Icons.more_vert,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.outline,
-                ),
+            PopupMenuButton(
+              padding: EdgeInsets.zero,
+              onSelected: onHandleTap,
+              itemBuilder: (context) {
+                return PluginHandleType.values
+                    .map(
+                      (type) => PopupMenuItem(
+                        value: type,
+                        child: Row(
+                          children: [
+                            Icon(
+                              _getHandleTypeIcon(type),
+                              size: 16,
+                              color: _getHandleTypeColor(context, type),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _getHandleTypeLabel(type),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: _getHandleTypeColor(context, type),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    .toList();
+              },
+              child: Icon(
+                Icons.more_vert,
+                size: 20,
+                color: Theme.of(context).colorScheme.outline,
               ),
             ),
           ],
@@ -300,5 +336,52 @@ class PluginItemCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getHandleTypeLabel(PluginHandleType type) {
+    switch (type) {
+      case PluginHandleType.settings:
+        return '设置';
+      case PluginHandleType.log:
+        return '日志';
+      case PluginHandleType.reset:
+        return '重置';
+      case PluginHandleType.uninstall:
+        return '卸载';
+      case PluginHandleType.web:
+        return '查看作者主页';
+    }
+  }
+
+  IconData _getHandleTypeIcon(PluginHandleType type) {
+    switch (type) {
+      case PluginHandleType.settings:
+        return Icons.settings;
+      case PluginHandleType.log:
+        return Icons.event_note;
+      case PluginHandleType.reset:
+        return Icons.refresh;
+      case PluginHandleType.uninstall:
+        return Icons.delete;
+      case PluginHandleType.web:
+        return Icons.web;
+    }
+  }
+
+  Color _getHandleTypeColor(BuildContext context, PluginHandleType type) {
+    switch (type) {
+      case PluginHandleType.settings:
+        return Theme.of(context).colorScheme.primary;
+      case PluginHandleType.log:
+        return Theme.of(context).colorScheme.onSurface;
+      case PluginHandleType.reset:
+        return Theme.of(context).colorScheme.secondary;
+      case PluginHandleType.uninstall:
+        return Theme.of(context).colorScheme.error;
+      case PluginHandleType.web:
+        return Theme.of(context).colorScheme.primary;
+      default:
+        return Theme.of(context).colorScheme.primary;
+    }
   }
 }

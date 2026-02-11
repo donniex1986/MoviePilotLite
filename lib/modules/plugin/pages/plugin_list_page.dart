@@ -5,6 +5,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/plugin/controllers/plugin_list_controller.dart';
 import 'package:moviepilot_mobile/modules/plugin/defines/plugin_list_filter_defines.dart';
 import 'package:moviepilot_mobile/modules/plugin/models/plugin_models.dart';
+import 'package:moviepilot_mobile/modules/plugin/pages/plugin_info_sheet.dart';
 import 'package:moviepilot_mobile/modules/plugin/widgets/plugin_item_card.dart';
 import 'package:moviepilot_mobile/modules/plugin/widgets/plugin_list_filter_sheet.dart';
 import 'package:moviepilot_mobile/modules/search_result/widgets/sort_pull_down_widget.dart';
@@ -509,10 +510,15 @@ class PluginListPage extends GetView<PluginListController> {
     final iconUrl = item.pluginIcon != null && item.pluginIcon!.isNotEmpty
         ? ImageUtil.convertPluginIconUrl(item.pluginIcon!)
         : '';
-    return PluginItemCard(
-      item: item,
-      iconUrl: iconUrl,
-      installCount: item.installCount,
+    return GestureDetector(
+      onTap: () {
+        Get.bottomSheet(PluginInfoSheet(item: item));
+      },
+      child: PluginItemCard(
+        item: item,
+        iconUrl: iconUrl,
+        installCount: item.installCount,
+      ),
     );
   }
 }

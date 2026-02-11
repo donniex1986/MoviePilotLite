@@ -70,10 +70,12 @@ class PluginListController extends GetxController {
     return response.data ?? {};
   }
 
-  Future<void> load() async {
+  Future<void> load({bool force = false}) async {
     isLoading.value = true;
     errorText.value = null;
-    loadFromCache();
+    if (!force) {
+      loadFromCache();
+    }
 
     final installCount = await loadInstallCount();
     try {
@@ -176,6 +178,7 @@ class PluginListController extends GetxController {
       list.add(cache);
     }
     _realm.realm.write(() {
+      _realm.realm.deleteAll<PluginModelCache>();
       _realm.realm.addAll(list, update: true);
     });
   }

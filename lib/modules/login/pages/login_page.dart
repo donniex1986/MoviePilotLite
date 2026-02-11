@@ -267,7 +267,7 @@ class LoginPage extends GetView<LoginController> {
                 decoration: BoxDecoration(
                   color: selected?.id == p.id
                       ? context.primaryColor.withOpacity(0.15)
-                      : CupertinoColors.systemGrey5,
+                      : Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: selected?.id == p.id
