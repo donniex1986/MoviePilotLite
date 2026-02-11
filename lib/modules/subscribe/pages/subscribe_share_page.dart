@@ -101,6 +101,7 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
         right: _horizontalPadding,
       ),
       child: CupertinoSearchTextField(
+        controller: controller.searchController,
         onSubmitted: controller.updateKeyword,
         placeholder: '搜索订阅名称…',
         backgroundColor: CupertinoDynamicColor.resolve(

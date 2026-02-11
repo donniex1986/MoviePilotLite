@@ -87,12 +87,14 @@ class MediaOrganizePage extends GetView<MediaOrganizeController> {
                             onTap: () {
                               controller.search(key);
                             },
-                            child: Chip(
-                              label: Text(
-                                key,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: CupertinoColors.secondaryLabel,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: Chip(
+                                label: Text(
+                                  key,
+                                  style: TextStyle(fontSize: 12),
                                 ),
                               ),
                             ),
@@ -115,7 +117,7 @@ class MediaOrganizePage extends GetView<MediaOrganizeController> {
     return Obx(() {
       final loading = controller.isLoading.value;
       final error = controller.errorText.value;
-      final items = controller.items;
+      final items = controller.filteredItems;
 
       if (loading && items.isEmpty) {
         return SliverFillRemaining(

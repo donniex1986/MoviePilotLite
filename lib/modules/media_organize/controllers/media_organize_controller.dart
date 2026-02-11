@@ -23,6 +23,15 @@ class MediaOrganizeController extends GetxController {
 
   /// 内部用 Set 做去重
   final _keySet = <String>{};
+  List<MediaOrganizeTransferItem> get filteredItems => items
+      .where(
+        (e) =>
+            e.title?.toLowerCase().contains(
+              searchController.text.toLowerCase(),
+            ) ??
+            false,
+      )
+      .toList();
   @override
   void onReady() {
     super.onReady();

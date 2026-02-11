@@ -30,10 +30,11 @@ class SubscribeShareController extends GetxController {
   final sortType = 'time'.obs;
   final selectedGenres = <String>[].obs;
   final voteMin = 0.obs;
-
+  final searchController = TextEditingController();
   @override
   void onReady() {
     super.onReady();
+    searchController.text = keyword.value;
     load();
   }
 
@@ -177,6 +178,7 @@ class SubscribeShareController extends GetxController {
 
   void updateKeyword(String value) {
     keyword.value = value.trim();
+    searchController.text = value.trim();
     load();
   }
 

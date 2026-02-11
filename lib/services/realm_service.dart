@@ -8,6 +8,7 @@ import 'package:realm/realm.dart';
 
 import '../modules/login/models/login_profile.dart';
 import '../modules/media_detail/models/media_detail_cache.dart';
+import '../modules/search/models/search_history.dart';
 
 class RealmService extends GetxService {
   RealmService() {
@@ -20,13 +21,17 @@ class RealmService extends GetxService {
         SiteIconCache.schema,
         SiteModelCache.schema,
         SiteUserDataCache.schema,
+        SearchHistoryEntry.schema,
       ],
-      schemaVersion: 4, // 站点列表与 icon 缓存
+      schemaVersion: 5, // 新增搜索历史缓存
       migrationCallback: (migration, oldSchemaVersion) {
         if (oldSchemaVersion < 2) {}
         if (oldSchemaVersion < 3) {}
         if (oldSchemaVersion < 4) {
           // 新增站点相关缓存表
+        }
+        if (oldSchemaVersion < 5) {
+          // 新增本地搜索历史
         }
       },
     );

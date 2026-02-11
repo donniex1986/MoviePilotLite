@@ -4,7 +4,9 @@ import 'package:liquid_tabbar_minimize/liquid_tabbar_minimize.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/index.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_service.dart';
+import 'package:moviepilot_mobile/modules/search/controllers/media_search_list_controller.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/search_controller.dart';
+import 'package:moviepilot_mobile/modules/search/pages/media_search_list_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/search_media_result_page.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
@@ -191,6 +193,27 @@ class MyApp extends StatelessWidget {
           }),
         ),
         GetPage(
+          name: '/media-search-list',
+          page: () => const MediaSearchListPage(),
+          binding: BindingsBuilder(() {
+            final args = Get.arguments;
+            final params = Get.parameters;
+            String? keyword;
+            if (args is Map && args['keyword'] != null) {
+              keyword = args['keyword']?.toString();
+            } else if (params.containsKey('keyword')) {
+              keyword = params['keyword'];
+            }
+            String? type = params['type'] ?? args['type'];
+            Get.put(
+              MediaSearchListController(
+                initialKeyword: keyword,
+                initialType: type,
+              ),
+            );
+          }),
+        ),
+        GetPage(
           name: '/subscribe-tv',
           page: () => const SubscribePage(),
           binding: BindingsBuilder(() {
@@ -215,7 +238,11 @@ class MyApp extends StatelessWidget {
           name: '/subscribe-share',
           page: () => const SubscribeSharePage(),
           binding: BindingsBuilder(() {
-            Get.put(SubscribeShareController(), permanent: false);
+            final keyword = Get.parameters['keyword'];
+            Get.put(
+              SubscribeShareController()..keyword.value = keyword ?? '',
+              permanent: false,
+            );
           }),
         ),
         GetPage(
@@ -236,7 +263,11 @@ class MyApp extends StatelessWidget {
           name: '/media-organize',
           page: () => const MediaOrganizePage(),
           binding: BindingsBuilder(() {
-            Get.put(MediaOrganizeController(), permanent: false);
+            final keyword = Get.parameters['keyword'];
+            Get.put(
+              MediaOrganizeController()..searchController.text = keyword ?? '',
+              permanent: false,
+            );
           }),
         ),
         GetPage(

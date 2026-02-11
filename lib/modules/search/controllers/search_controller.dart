@@ -174,6 +174,7 @@ class SearchMediaController extends GetxController {
         if (searchText.value.isNotEmpty) 'title': searchText.value,
         if (year.isNotEmpty) 'year': year,
         'sites': sites.join(','),
+        'keyword': searchText.value,
       };
 
       if (season != null && season!.isNotEmpty && season != '0') {

@@ -9,6 +9,8 @@ import 'package:moviepilot_mobile/modules/multifunction/controllers/multifunctio
 import 'package:moviepilot_mobile/modules/multifunction/pages/multifunction_page.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/pages/recommend_page.dart';
+import 'package:moviepilot_mobile/modules/search/controllers/search_index_controller.dart';
+import 'package:moviepilot_mobile/modules/search/pages/search_index_page.dart';
 import 'package:moviepilot_mobile/modules/search_result/controllers/search_result_controller.dart';
 import 'package:moviepilot_mobile/modules/search_result/pages/search_result_page.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
@@ -32,7 +34,7 @@ class _IndexState extends State<Index> {
   // Language toggle for testing locale label updates
   final dashboardController = Get.put(DashboardController());
   // Dynamic labels based on language
-  List<String> get _labels => ['仪表盘', '推荐', '探索', '更多'];
+  List<String> get _labels => ['仪表盘', '推荐', '探索', '更多', '搜索'];
 
   // Separate ScrollController for each page
   late final ScrollController _homeScrollController;
@@ -51,6 +53,7 @@ class _IndexState extends State<Index> {
     Get.put(RecommendController());
     Get.put(DiscoverController());
     Get.put(MultifunctionController());
+    Get.put(SearchIndexController());
     _homeScrollController = ScrollController()
       ..addListener(() => _onScroll(_homeScrollController));
     _recommendScrollController = ScrollController()
@@ -166,6 +169,7 @@ class _IndexState extends State<Index> {
           RecommendPage(scrollController: _recommendScrollController),
           DiscoverPage(scrollController: _discoverScrollController),
           MultifunctionPage(scrollController: _multifunctionScrollController),
+          const SearchIndexPage(),
         ],
       ),
       bottomNavigationBar: LiquidBottomNavigationBar(
@@ -209,7 +213,7 @@ class _IndexState extends State<Index> {
             label: _labels[3],
           ),
         ],
-        showActionButton: false,
+        showActionButton: true,
         actionButton: ActionButtonConfig(
           const Icon(Icons.search),
           'magnifyingglass',
