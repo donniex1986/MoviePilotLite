@@ -3,6 +3,7 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:talker/talker.dart';
@@ -92,11 +93,11 @@ class ApiClient extends g.GetxController {
       TalkerDioLogger(
         talker: _log.talker,
         settings: const TalkerDioLoggerSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printResponseMessage: true,
-          printRequestData: true,
-          printResponseData: true,
+          printRequestHeaders: false,
+          printResponseHeaders: false,
+          printResponseMessage: false,
+          printRequestData: false,
+          printResponseData: false,
           logLevel: LogLevel.info,
         ),
       ),
@@ -250,6 +251,8 @@ class ApiClient extends g.GetxController {
     final options = Options(
       receiveTimeout: Duration(seconds: timeout ?? 15),
       headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      followRedirects: true,
+      maxRedirects: 5,
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
         return true;
