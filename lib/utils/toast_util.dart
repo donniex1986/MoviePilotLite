@@ -57,38 +57,67 @@ class ToastUtil {
     Duration duration = const Duration(seconds: 2),
     VoidCallback? onConfirm,
   }) {
-    Get.snackbar(
-      title ?? '警告',
-      message,
-      backgroundColor: CupertinoColors.systemOrange.withValues(alpha: 0.9),
-      colorText: CupertinoColors.white,
-      duration: duration,
-      snackPosition: SnackPosition.TOP,
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      icon: const Icon(
-        CupertinoIcons.exclamationmark_triangle_fill,
-        color: CupertinoColors.white,
-        size: 24,
+    Get.dialog(
+      CupertinoAlertDialog(
+        title: Text(
+          title ?? '警告',
+          style: TextStyle(color: CupertinoColors.label),
+        ),
+        content: Text(
+          message,
+          style: TextStyle(color: CupertinoColors.secondaryLabel),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Get.back(),
+            child: Text('取消', style: TextStyle(color: CupertinoColors.label)),
+          ),
+          CupertinoDialogAction(
+            onPressed: () {
+              Get.back();
+              onConfirm?.call();
+            },
+            child: Text(
+              '确定',
+              style: TextStyle(color: CupertinoColors.systemRed),
+            ),
+          ),
+        ],
       ),
-      mainButton: onConfirm != null
-          ? TextButton(
-              style: TextButton.styleFrom(
-                shape: CircleBorder(),
-                backgroundColor: CupertinoColors.systemRed,
-                foregroundColor: CupertinoColors.white,
-              ),
-              onPressed: onConfirm,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: const Text(
-                  '确定',
-                  style: TextStyle(color: CupertinoColors.white),
-                ),
-              ),
-            )
-          : null,
+      barrierDismissible: true,
     );
+    // Get.snackbar(
+    //   title ?? '警告',
+    //   message,
+    //   backgroundColor: CupertinoColors.systemOrange.withValues(alpha: 0.9),
+    //   colorText: CupertinoColors.white,
+    //   duration: duration,
+    //   snackPosition: SnackPosition.BOTTOM,
+    //   margin: const EdgeInsets.all(16),
+    //   borderRadius: 12,
+    //   icon: const Icon(
+    //     CupertinoIcons.exclamationmark_triangle_fill,
+    //     color: CupertinoColors.white,
+    //     size: 24,
+    //   ),
+    //   mainButton: onConfirm != null
+    //       ? TextButton(
+    //           style: TextButton.styleFrom(
+    //             shape: CircleBorder(),
+    //             backgroundColor: CupertinoColors.systemRed,
+    //             foregroundColor: CupertinoColors.white,
+    //           ),
+    //           onPressed: onConfirm,
+    //           child: Padding(
+    //             padding: const EdgeInsets.all(8.0),
+    //             child: const Text(
+    //               '确定',
+    //               style: TextStyle(color: CupertinoColors.white),
+    //             ),
+    //           ),
+    //         )
+    //       : null,
+    // );
   }
 
   /// 显示信息提醒

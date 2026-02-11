@@ -315,4 +315,85 @@ class SubscribeController extends GetxController {
     final response = await _apiClient.delete('/api/v1/subscribe/$id');
     return response.statusCode == 200 && response.data['success'] == true;
   }
+
+  Future updateSubscribeData(
+    String id, {
+    SubscribeItem? item,
+    Map<String, dynamic>? extraPayload,
+  }) async {
+    Map<String, dynamic> data = {};
+    if (item != null) {
+      data = item.toJson();
+    }
+    if (extraPayload != null) {
+      data.addAll(extraPayload);
+    }
+    final payload = {'id': id, 'payload': data};
+    return await _apiClient.put('/api/v1/subscribe/', payload);
+  }
+
+  Future<bool> pauseSubscribe(String id) async {
+    final payload = {'state': 'S'};
+    final response = await _apiClient.put(
+      '/api/v1/subscribe/status/$id',
+      payload,
+      queryParameters: payload,
+    );
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> resumeSubscribe(String id) async {
+    final payload = {'state': 'R'};
+    final response = await _apiClient.put(
+      '/api/v1/subscribe/status/$id',
+      payload,
+      queryParameters: payload,
+    );
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> resetSubscribeState(String id) async {
+    final response = await _apiClient.get('/api/v1/subscribe/reset/$id');
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> searchSubscribe(String id) async {
+    final response = await _apiClient.get('/api/v1/subscribe/search/$id');
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> shareSubscribe({
+    required String id,
+    String? title,
+    String? description,
+    String? shareComment,
+    String? shareUser,
+  }) async {
+    final data = {
+      'share_comment': shareComment,
+      'share_title': title,
+      'share_user': shareUser,
+      'subscribe_id': id,
+    };
+    final response = await _apiClient.post(
+      '/api/v1/subscribe/share',
+      data: data,
+    );
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<SubscribeSubmitResp> forkSubscribe({SubscribeShareItem? item}) async {
+    Map<String, dynamic> data = {};
+    if (item != null) {
+      data = item.toJson();
+    }
+    final response = await _apiClient.post(
+      '/api/v1/subscribe/fork',
+      data: data,
+    );
+    if (response.statusCode == 200) {
+      return SubscribeSubmitResp.fromJson(response.data);
+    }
+    return SubscribeSubmitResp(success: false, message: '请求失败');
+  }
 }

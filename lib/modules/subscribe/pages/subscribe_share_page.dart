@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_share_controller.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
+import 'package:moviepilot_mobile/modules/subscribe/widgets/shared_subscribe_detail_sheet.dart';
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_popular_filter_bar.dart';
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_popular_filter_sheet.dart';
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_share_item_card.dart';
@@ -172,13 +175,14 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
           slivers: [
             SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
+                final item = items[index];
                 return Padding(
                   padding: EdgeInsets.only(
                     bottom: index < items.length - 1 ? _cardSpacing : 0,
                   ),
                   child: SubscribeShareItemCard(
-                    item: items[index],
-                    onTap: () {},
+                    item: item,
+                    onTap: () => _openSharedSubscribeDetailSheet(context, item),
                     onMoreTap: () {},
                   ),
                 );
@@ -243,5 +247,15 @@ class SubscribeSharePage extends GetView<SubscribeShareController> {
         ),
       );
     });
+  }
+
+  void _openSharedSubscribeDetailSheet(
+    BuildContext context,
+    SubscribeShareItem item,
+  ) {
+    showCupertinoModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SharedSubscribeDetailSheet(item: item),
+    );
   }
 }

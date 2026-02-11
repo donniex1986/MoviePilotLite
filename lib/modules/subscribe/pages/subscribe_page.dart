@@ -2,9 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:moviepilot_mobile/modules/discover/controllers/discover_controller.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_filter_sheet.dart';
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_item_card.dart';
+import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 class SubscribePage extends GetView<SubscribeController> {
   const SubscribePage({super.key, this.scrollController});
@@ -248,21 +252,162 @@ class SubscribePage extends GetView<SubscribeController> {
         ),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
+            final item = items[index];
             return Padding(
               padding: EdgeInsets.only(
                 bottom: index < items.length - 1 ? _cardSpacing : 0,
               ),
               child: SubscribeItemCard(
-                item: items[index],
+                item: item,
                 isTv: controller.isTv,
                 onTap: () {},
-                onMoreTap: () {},
+                onMoreTap: (type) {
+                  switch (type) {
+                    case SubscribeItemCardType.edit:
+                      _openEditSheet(context, item);
+                      break;
+                    case SubscribeItemCardType.detail:
+                      _mediaDetail(context, item);
+                      break;
+                    case SubscribeItemCardType.pause:
+                      _pauseSubscribe(context, item);
+                      break;
+                    case SubscribeItemCardType.resume:
+                      _resumeSubscribe(context, item);
+                      break;
+                    case SubscribeItemCardType.reset:
+                      _resetSubscribeState(context, item);
+                      break;
+                    case SubscribeItemCardType.shared:
+                      _shareSubscribe(context, item);
+                      break;
+                    case SubscribeItemCardType.delete:
+                      _deleteSubscribe(context, item);
+                      break;
+                    case SubscribeItemCardType.search:
+                      _searchSubscribe(context, item);
+                      break;
+                  }
+                },
               ),
             );
           }, childCount: items.length),
         ),
       );
     });
+  }
+
+  Future<void> _openEditSheet(BuildContext context, SubscribeItem item) {
+    return showCupertinoModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        return SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.4,
+          child: Text('编辑'),
+        );
+      },
+    );
+  }
+
+  _pauseSubscribe(BuildContext context, SubscribeItem item) {
+    ToastUtil.warning(
+      '确定暂停该订阅吗？',
+      onConfirm: () async {
+        try {
+          final result = await controller.pauseSubscribe(item.id.toString());
+          if (context.mounted && result) {
+            ToastUtil.success('暂停成功');
+            controller.loadUserSubscribes();
+          }
+        } catch (e) {
+          ToastUtil.error('暂停失败: $e');
+        }
+      },
+    );
+  }
+
+  _resumeSubscribe(BuildContext context, SubscribeItem item) {
+    ToastUtil.warning(
+      '确定继续该订阅吗？',
+      onConfirm: () async {
+        final result = await controller.resumeSubscribe(item.id.toString());
+        if (context.mounted && result) {
+          ToastUtil.success('继续成功');
+          controller.loadUserSubscribes();
+        }
+      },
+    );
+  }
+
+  _resetSubscribeState(BuildContext context, SubscribeItem item) {
+    ToastUtil.warning(
+      '确定重置该订阅状态吗？',
+      onConfirm: () async {
+        final result = await controller.resetSubscribeState(item.id.toString());
+        if (context.mounted && result) {
+          ToastUtil.success('重置成功');
+          controller.loadUserSubscribes();
+        }
+      },
+    );
+  }
+
+  _mediaDetail(BuildContext context, SubscribeItem item) {
+    final path = HttpPathBuilderUtil.buildHttpPath(
+      DiscoverSource.tmdb,
+      item.tmdbid.toString(),
+    );
+    if (path.isEmpty) {
+      ToastUtil.info('暂无可用详情信息');
+      return;
+    }
+    final title = item.name;
+    final params = <String, String>{
+      'path': path,
+      if (title != null && title.isNotEmpty) 'title': title,
+      if (item.year != null && item.year!.isNotEmpty) 'year': item.year!,
+      if (item.type != null && item.type!.isNotEmpty) 'type_name': item.type!,
+    };
+    Get.toNamed('/media-detail', parameters: params);
+  }
+
+  _shareSubscribe(BuildContext context, SubscribeItem item) {
+    final path = HttpPathBuilderUtil.buildHttpPath(
+      DiscoverSource.tmdb,
+      item.tmdbid.toString(),
+    );
+    if (path.isEmpty) {
+      ToastUtil.info('暂无可用详情信息');
+      return;
+    }
+    final title = item.name;
+    final params = <String, String>{
+      'path': path,
+      if (title != null && title.isNotEmpty) 'title': title,
+      if (item.year != null && item.year!.isNotEmpty) 'year': item.year!,
+      if (item.type != null && item.type!.isNotEmpty) 'type_name': item.type!,
+    };
+    Get.toNamed('/media-detail', parameters: params);
+  }
+
+  _deleteSubscribe(BuildContext context, SubscribeItem item) {
+    ToastUtil.warning(
+      '确定删除该订阅吗？',
+      onConfirm: () async {
+        final result = await controller.deleteSubscribes(item.id.toString());
+        if (context.mounted && result) {
+          ToastUtil.success('删除成功');
+          controller.loadUserSubscribes();
+        }
+      },
+    );
+  }
+
+  _searchSubscribe(BuildContext context, SubscribeItem item) async {
+    final result = await controller.searchSubscribe(item.id.toString());
+    if (context.mounted && result) {
+      ToastUtil.success('搜索任务已创建');
+    }
   }
 
   Future<void> _openFilterSheet(BuildContext context) {

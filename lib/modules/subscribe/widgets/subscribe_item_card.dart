@@ -5,6 +5,17 @@ import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
+enum SubscribeItemCardType {
+  edit,
+  search,
+  detail,
+  pause,
+  resume,
+  reset,
+  shared,
+  delete,
+}
+
 /// 订阅项大卡片：以 backdrop 为背景，左上角小海报 + 标题/季/集数/订阅者/更新时间，底部进度条
 class SubscribeItemCard extends StatelessWidget {
   const SubscribeItemCard({
@@ -18,7 +29,7 @@ class SubscribeItemCard extends StatelessWidget {
   final SubscribeItem item;
   final bool isTv;
   final VoidCallback? onTap;
-  final VoidCallback? onMoreTap;
+  final Function(SubscribeItemCardType type)? onMoreTap;
 
   static const double _cardRadius = 12;
   static const double _posterWidth = 80;
@@ -218,23 +229,130 @@ class SubscribeItemCard extends StatelessWidget {
   }
 
   Widget _buildMoreButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        onMoreTap?.call();
-      },
+    final isPaused = item.state?.toUpperCase() == 'S';
+    final isRunning = item.state?.toUpperCase() == 'R';
+    final items = [
+      SubscribeItemCardType.edit,
+      SubscribeItemCardType.search,
+      SubscribeItemCardType.detail,
+    ];
+    if (isPaused) {
+      items.add(SubscribeItemCardType.resume);
+    }
+    if (isRunning) {
+      items.add(SubscribeItemCardType.pause);
+    }
+    items.add(SubscribeItemCardType.reset);
+    if (isTv) {
+      items.add(SubscribeItemCardType.shared);
+    }
+    items.add(SubscribeItemCardType.delete);
+    return PopupMenuButton(
+      onSelected: onMoreTap,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      padding: EdgeInsets.zero,
+      elevation: 4,
+      shadowColor: Colors.black.withValues(alpha: 0.1),
+      offset: Offset(0, 10),
+      surfaceTintColor: Colors.white,
+      itemBuilder: (context) => items
+          .map(
+            (e) => PopupMenuItem(
+              value: e,
+              child: Row(
+                children: [
+                  Icon(_iconButton(e), size: 16, color: _iconButtonColor(e)),
+                  const SizedBox(width: 8),
+                  Text(
+                    _iconButtonLabel(e),
+                    style: TextStyle(fontSize: 14, color: _iconButtonColor(e)),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
       child: Container(
-        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.4),
-          shape: BoxShape.circle,
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          CupertinoIcons.ellipsis_vertical,
-          size: 16,
-          color: Colors.white.withValues(alpha: 0.9),
-        ),
+        width: 24,
+        height: 24,
+        child: Icon(Icons.more_vert, size: 16, color: Colors.white),
       ),
     );
+  }
+
+  IconData _iconButton(SubscribeItemCardType type) {
+    switch (type) {
+      case SubscribeItemCardType.edit:
+        return Icons.edit;
+      case SubscribeItemCardType.detail:
+        return Icons.info;
+      case SubscribeItemCardType.pause:
+        return Icons.pause;
+      case SubscribeItemCardType.resume:
+        return Icons.play_arrow;
+      case SubscribeItemCardType.reset:
+        return Icons.refresh;
+      case SubscribeItemCardType.shared:
+        return Icons.share;
+      case SubscribeItemCardType.delete:
+        return Icons.delete;
+      case SubscribeItemCardType.search:
+        return Icons.search;
+      default:
+        return Icons.more_vert;
+    }
+  }
+
+  String _iconButtonLabel(SubscribeItemCardType type) {
+    switch (type) {
+      case SubscribeItemCardType.edit:
+        return '编辑';
+      case SubscribeItemCardType.detail:
+        return '详情';
+
+      case SubscribeItemCardType.pause:
+        return '暂停';
+      case SubscribeItemCardType.resume:
+        return '继续';
+      case SubscribeItemCardType.reset:
+        return '重置';
+      case SubscribeItemCardType.shared:
+        return '分享';
+      case SubscribeItemCardType.delete:
+        return '删除';
+      case SubscribeItemCardType.search:
+        return '搜索';
+      default:
+        return '更多';
+    }
+  }
+
+  Color _iconButtonColor(SubscribeItemCardType type) {
+    switch (type) {
+      case SubscribeItemCardType.edit:
+        return Colors.blue;
+      case SubscribeItemCardType.detail:
+        return Colors.green;
+
+      case SubscribeItemCardType.pause:
+        return Colors.orange;
+      case SubscribeItemCardType.resume:
+        return Colors.green;
+      case SubscribeItemCardType.reset:
+        return Colors.blue;
+      case SubscribeItemCardType.shared:
+        return Colors.purple;
+      case SubscribeItemCardType.delete:
+        return Colors.red;
+      case SubscribeItemCardType.search:
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildProgressBar(BuildContext context) {

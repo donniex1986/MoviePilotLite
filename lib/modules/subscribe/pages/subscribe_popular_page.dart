@@ -1,10 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_popular_controller.dart';
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_popular_filter_bar.dart';
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_popular_filter_sheet.dart';
 import 'package:moviepilot_mobile/modules/subscribe/widgets/subscribe_popular_item_card.dart';
+import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 class SubscribePopularPage extends GetView<SubscribePopularController> {
   const SubscribePopularPage({super.key});
@@ -169,9 +172,10 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
                 childAspectRatio: 0.85,
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
+                final item = items[index];
                 return SubscribePopularItemCard(
-                  item: items[index],
-                  onTap: () {},
+                  item: item,
+                  onTap: () => _openDetail(item),
                 );
               }, childCount: items.length),
             ),
@@ -234,5 +238,21 @@ class SubscribePopularPage extends GetView<SubscribePopularController> {
         ),
       );
     });
+  }
+
+  void _openDetail(RecommendApiItem item) {
+    final path = HttpPathBuilderUtil.buildMediaPath(item);
+    if (path.isEmpty) {
+      ToastUtil.info('暂无可用详情信息');
+      return;
+    }
+    final title = item.title;
+    final params = <String, String>{
+      'path': path,
+      if (title != null && title.isNotEmpty) 'title': title,
+      if (item.year != null && item.year!.isNotEmpty) 'year': item.year!,
+      if (item.type != null && item.type!.isNotEmpty) 'type_name': item.type!,
+    };
+    Get.toNamed('/media-detail', parameters: params);
   }
 }

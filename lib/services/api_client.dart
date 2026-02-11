@@ -263,7 +263,8 @@ class ApiClient extends g.GetxController {
 
   Future<Response<T>> put<T>(
     String path,
-    Map<String, dynamic> data, {
+    Map<String, dynamic>? data, {
+    Map<String, dynamic>? queryParameters,
     String? token,
   }) async {
     await _ensureReady();
@@ -276,7 +277,12 @@ class ApiClient extends g.GetxController {
         return true;
       },
     );
-    return _dio.put<T>(path, data: data, options: options);
+    return _dio.put<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
   }
 
   Future<Response<T>> get<T>(

@@ -9,7 +9,7 @@ part of 'media_notexists.dart';
 _$MediaNotExistsImpl _$$MediaNotExistsImplFromJson(Map<String, dynamic> json) =>
     _$MediaNotExistsImpl(
       season: _intFromJson(json['season']),
-      episodes: _stringListFromJson(json['episodes']),
+      episodes: _intListFromJson(json['episodes']),
       total_episode: _intFromJson(json['total_episode']),
       start_episode: _intFromJson(json['start_episode']),
     );

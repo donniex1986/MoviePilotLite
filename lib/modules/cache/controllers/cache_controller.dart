@@ -71,7 +71,7 @@ class CacheController extends GetxController {
   }
 
   void updateSelectedSites(Set<String> values) {
-    selectedSites.value = Set<String>.from(values);
+    selectedSites.addAll(values);
   }
 
   void toggleActions() {
@@ -85,7 +85,7 @@ class CacheController extends GetxController {
   void clearFilters() {
     keywordController.text = '';
     keyword.value = '';
-    selectedSites.value = <String>{};
+    selectedSites.clear();
   }
 
   bool get hasFilter {
@@ -176,12 +176,12 @@ class CacheController extends GetxController {
     if (selectedSites.isEmpty) return;
     final options = siteOptions.toSet();
     if (options.isEmpty) {
-      selectedSites.value = <String>{};
+      selectedSites.clear();
       return;
     }
     final next = selectedSites.where(options.contains).toSet();
     if (next.length != selectedSites.length) {
-      selectedSites.value = next;
+      selectedSites.addAll(next);
     }
   }
 

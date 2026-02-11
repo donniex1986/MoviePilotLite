@@ -23,8 +23,8 @@ MediaNotExists _$MediaNotExistsFromJson(Map<String, dynamic> json) {
 mixin _$MediaNotExists {
   @JsonKey(fromJson: _intFromJson)
   int? get season => throw _privateConstructorUsedError;
-  @JsonKey(fromJson: _stringListFromJson)
-  List<String?>? get episodes => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _intListFromJson)
+  List<int?>? get episodes => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _intFromJson)
   int? get total_episode => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _intFromJson)
@@ -49,7 +49,7 @@ abstract class $MediaNotExistsCopyWith<$Res> {
   @useResult
   $Res call({
     @JsonKey(fromJson: _intFromJson) int? season,
-    @JsonKey(fromJson: _stringListFromJson) List<String?>? episodes,
+    @JsonKey(fromJson: _intListFromJson) List<int?>? episodes,
     @JsonKey(fromJson: _intFromJson) int? total_episode,
     @JsonKey(fromJson: _intFromJson) int? start_episode,
   });
@@ -84,7 +84,7 @@ class _$MediaNotExistsCopyWithImpl<$Res, $Val extends MediaNotExists>
             episodes: freezed == episodes
                 ? _value.episodes
                 : episodes // ignore: cast_nullable_to_non_nullable
-                      as List<String?>?,
+                      as List<int?>?,
             total_episode: freezed == total_episode
                 ? _value.total_episode
                 : total_episode // ignore: cast_nullable_to_non_nullable
@@ -110,7 +110,7 @@ abstract class _$$MediaNotExistsImplCopyWith<$Res>
   @useResult
   $Res call({
     @JsonKey(fromJson: _intFromJson) int? season,
-    @JsonKey(fromJson: _stringListFromJson) List<String?>? episodes,
+    @JsonKey(fromJson: _intListFromJson) List<int?>? episodes,
     @JsonKey(fromJson: _intFromJson) int? total_episode,
     @JsonKey(fromJson: _intFromJson) int? start_episode,
   });
@@ -144,7 +144,7 @@ class __$$MediaNotExistsImplCopyWithImpl<$Res>
         episodes: freezed == episodes
             ? _value._episodes
             : episodes // ignore: cast_nullable_to_non_nullable
-                  as List<String?>?,
+                  as List<int?>?,
         total_episode: freezed == total_episode
             ? _value.total_episode
             : total_episode // ignore: cast_nullable_to_non_nullable
@@ -163,7 +163,7 @@ class __$$MediaNotExistsImplCopyWithImpl<$Res>
 class _$MediaNotExistsImpl implements _MediaNotExists {
   const _$MediaNotExistsImpl({
     @JsonKey(fromJson: _intFromJson) this.season,
-    @JsonKey(fromJson: _stringListFromJson) final List<String?>? episodes,
+    @JsonKey(fromJson: _intListFromJson) final List<int?>? episodes,
     @JsonKey(fromJson: _intFromJson) this.total_episode,
     @JsonKey(fromJson: _intFromJson) this.start_episode,
   }) : _episodes = episodes;
@@ -174,10 +174,10 @@ class _$MediaNotExistsImpl implements _MediaNotExists {
   @override
   @JsonKey(fromJson: _intFromJson)
   final int? season;
-  final List<String?>? _episodes;
+  final List<int?>? _episodes;
   @override
-  @JsonKey(fromJson: _stringListFromJson)
-  List<String?>? get episodes {
+  @JsonKey(fromJson: _intListFromJson)
+  List<int?>? get episodes {
     final value = _episodes;
     if (value == null) return null;
     if (_episodes is EqualUnmodifiableListView) return _episodes;
@@ -240,7 +240,7 @@ class _$MediaNotExistsImpl implements _MediaNotExists {
 abstract class _MediaNotExists implements MediaNotExists {
   const factory _MediaNotExists({
     @JsonKey(fromJson: _intFromJson) final int? season,
-    @JsonKey(fromJson: _stringListFromJson) final List<String?>? episodes,
+    @JsonKey(fromJson: _intListFromJson) final List<int?>? episodes,
     @JsonKey(fromJson: _intFromJson) final int? total_episode,
     @JsonKey(fromJson: _intFromJson) final int? start_episode,
   }) = _$MediaNotExistsImpl;
@@ -252,8 +252,8 @@ abstract class _MediaNotExists implements MediaNotExists {
   @JsonKey(fromJson: _intFromJson)
   int? get season;
   @override
-  @JsonKey(fromJson: _stringListFromJson)
-  List<String?>? get episodes;
+  @JsonKey(fromJson: _intListFromJson)
+  List<int?>? get episodes;
   @override
   @JsonKey(fromJson: _intFromJson)
   int? get total_episode;

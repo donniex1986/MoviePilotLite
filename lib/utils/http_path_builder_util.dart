@@ -1,5 +1,6 @@
 import 'package:moviepilot_mobile/modules/discover/controllers/discover_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 
 class HttpPathBuilderUtil {
   static String buildHttpPath(DiscoverSource source, String mediaId) {
