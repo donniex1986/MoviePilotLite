@@ -19,25 +19,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.24.5'
-          channel: 'stable'
-          cache: true
+      - name: Run iOS CI script
+        env:
+          CI_PRIMARY_REPOSITORY_PATH: ${{ github.workspace }}
+        run: bash ios/ci_scripts/ci_post_clone.sh
+
+      - name: Add Flutter to PATH
+        run: echo "$HOME/flutter/bin" >> $GITHUB_PATH
+
+      - name: Flutter precache (Android)
+        run: flutter precache --android
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Flutter precache
-        run: flutter precache --ios --android
-
-      - name: Install CocoaPods dependencies
-        run: |
-          cd ios && pod install && cd ..
 
       - name: Decode Android Keystore
         run: |
@@ -60,9 +57,6 @@ jobs:
           echo "${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
           uuid=$(grep -aA1 UUID profile.mobileprovision | grep -o "[-A-Za-z0-9]\{36\}" | head -1)
           cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$uuid.mobileprovision
-
-      - name: Flutter pub get
-        run: flutter pub get
 
       - name: Install Fastlane
         run: brew install fastlane
