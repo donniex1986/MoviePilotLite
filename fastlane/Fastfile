@@ -9,18 +9,14 @@
 
 default_platform(:ios)
 
-platform :ios do
-  desc "构建 iOS Release IPA"
-  lane :ios do
-    sh("flutter", "build", "ipa")
-  end
+desc "构建 Android Release APK"
+lane :android do
+  sh("flutter", "build", "apk", "--release")
 end
 
-platform :android do
-  desc "构建 Android Release APK"
-  lane :android do
-    sh("flutter", "build", "apk", "--release")
-  end
+desc "构建 iOS Release IPA"
+lane :ios do
+  sh("flutter", "build", "ipa")
 end
 
 desc "构建 iOS 和 Android Release 包"
