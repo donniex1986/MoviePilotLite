@@ -60,6 +60,10 @@ openssl base64 -A -in moviepilot-release.keystore | tr -d '\n' | pbcopy
 
 需在仓库 Settings → Secrets and variables → Actions 中配置：
 
+**变量（Variables）**：启用 iOS 打包时，新建变量 `BUILD_IOS` 并设为 `true`。不设置则仅打包 Android。
+
+**Secrets**：
+
 | Secret | 说明 |
 |--------|------|
 | `ANDROID_KEYSTORE_BASE64` | Base64 编码的 keystore 文件内容 |
@@ -71,7 +75,7 @@ openssl base64 -A -in moviepilot-release.keystore | tr -d '\n' | pbcopy
 | `APPLE_PROVISIONING_PROFILE_BASE64` | iOS Provisioning Profile Base64 编码 |
 | `KEYCHAIN_PASSWORD` | 临时 keychain 密码（任意字符串） |
 
-未配置 iOS 相关 Secrets 时，将仅打包 Android APK。
+未设置变量 `BUILD_IOS=true` 时，将仅打包 Android APK。
 
 ## 未来路线
 

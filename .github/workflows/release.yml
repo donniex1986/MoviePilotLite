@@ -48,7 +48,7 @@ jobs:
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
 
       - name: Setup iOS Code Signing
-        if: ${{ secrets.APPLE_CERTIFICATE_BASE64 != '' }}
+        if: vars.BUILD_IOS == 'true'
         run: |
           security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
           security default-keychain -s build.keychain
@@ -71,7 +71,7 @@ jobs:
         run: fastlane android
 
       - name: Build iOS IPA
-        if: ${{ secrets.APPLE_CERTIFICATE_BASE64 != '' }}
+        if: vars.BUILD_IOS == 'true'
         run: fastlane ios
 
       - name: Get version from pubspec
