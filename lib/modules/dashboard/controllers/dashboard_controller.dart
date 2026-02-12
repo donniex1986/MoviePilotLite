@@ -582,6 +582,7 @@ class DashboardController extends GetxController {
       final response = await apiClient.postForm<Map<String, dynamic>>(
         '/api/v1/user/config/DashboardOrder',
         {'value': order},
+        timeout: 30,
       );
 
       if (response.statusCode == 200) {

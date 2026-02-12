@@ -31,6 +31,7 @@ dependencies:
   liquid_tabbar_minimize: ^1.0.9
   path_provider: ^2.1.2
   palette_generator: ^0.3.3+7
+  umeng_common_sdk: ^1.2.8
 dev_dependencies:
   flutter_test:
     sdk: flutter

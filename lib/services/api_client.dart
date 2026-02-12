@@ -47,7 +47,7 @@ class ApiClient extends g.GetxController {
   Uri? _cachedCookieUri;
   DateTime? _cachedCookieAt;
 
-  static const Duration _cookieCacheTtl = Duration(seconds: 15);
+  static const Duration _cookieCacheTtl = Duration(seconds: 30);
 
   String? get baseUrl {
     if (_dioReady) return _dio.options.baseUrl;
@@ -65,8 +65,8 @@ class ApiClient extends g.GetxController {
       BaseOptions(
         // 初始时 baseUrl 为空，后续在登录时根据服务器地址进行配置。
         baseUrl: _appService.baseUrl ?? '',
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 15),
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
         // FormData 需要 multipart/form-data；这里不强行设置，
         // 让 dio 根据 data 类型自动推导 Content-Type。
         headers: const {'accept': 'application/json'},
@@ -229,11 +229,16 @@ class ApiClient extends g.GetxController {
 
   Future<Response<T>> postForm<T>(
     String path,
-    Map<String, dynamic> data,
-  ) async {
+    Map<String, dynamic> data, {
+    int? timeout,
+  }) async {
     await _ensureReady();
     final formData = FormData.fromMap(data);
-    return _dio.post<T>(path, data: formData);
+    return _dio.post<T>(
+      path,
+      data: formData,
+      options: Options(receiveTimeout: Duration(seconds: timeout ?? 30)),
+    );
   }
 
   Future<Response<T>> post<T>(
@@ -249,7 +254,8 @@ class ApiClient extends g.GetxController {
       'API POST请求: $path, token: ${authToken != null ? '***' : 'null'}',
     );
     final options = Options(
-      receiveTimeout: Duration(seconds: timeout ?? 15),
+      receiveTimeout: Duration(seconds: timeout ?? 30),
+      sendTimeout: Duration(seconds: timeout ?? 30),
       headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
       followRedirects: true,
       maxRedirects: 5,
@@ -300,7 +306,8 @@ class ApiClient extends g.GetxController {
     final authToken = token ?? this.token;
     _log.info('API请求: $path, token: ${authToken != null ? '***' : 'null'}');
     final options = Options(
-      receiveTimeout: Duration(seconds: timeout ?? 15),
+      sendTimeout: Duration(seconds: timeout ?? 30),
+      receiveTimeout: Duration(seconds: timeout ?? 30),
       headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
@@ -318,6 +325,7 @@ class ApiClient extends g.GetxController {
     String path, {
     Map<String, dynamic>? queryParameters,
     String? token,
+    int? timeout,
   }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
@@ -325,6 +333,8 @@ class ApiClient extends g.GetxController {
       'API DELETE请求: $path, token: ${authToken != null ? '***' : 'null'}',
     );
     final options = Options(
+      sendTimeout: Duration(seconds: timeout ?? 30),
+      receiveTimeout: Duration(seconds: timeout ?? 30),
       headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
@@ -339,7 +349,11 @@ class ApiClient extends g.GetxController {
   }
 
   /// SSE / 流式 GET，请求 `text/event-stream` 并返回按行解码后的字符串流。
-  Future<Stream<String>> streamLines(String path, {String? token}) async {
+  Future<Stream<String>> streamLines(
+    String path, {
+    String? token,
+    int? timeout = 30,
+  }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
     _log.info('API流式请求: $path, token: ${authToken != null ? '***' : 'null'}');
@@ -347,7 +361,8 @@ class ApiClient extends g.GetxController {
       path,
       options: Options(
         responseType: ResponseType.stream,
-        receiveTimeout: Duration.zero,
+        sendTimeout: Duration(seconds: timeout ?? 30),
+        receiveTimeout: Duration(seconds: timeout ?? 30),
         headers: {
           'accept': 'text/event-stream',
           if (authToken != null) 'authorization': 'Bearer $authToken',
