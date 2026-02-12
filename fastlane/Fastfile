@@ -16,7 +16,10 @@ end
 
 desc "构建 iOS Release IPA"
 lane :ios do
-  sh("flutter", "build", "ipa")
+  # 在 CI 环境中，代码签名已通过 workflow 设置
+  # Flutter build ipa 会自动查找 ios/ExportOptions.plist（如果存在）
+  # 并自动使用已导入的证书和 provisioning profile
+  sh("flutter", "build", "ipa", "--release")
 end
 
 desc "构建 iOS 和 Android Release 包"
