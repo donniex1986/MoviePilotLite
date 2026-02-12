@@ -229,7 +229,7 @@ class _IndexState extends State<Index> {
         },
         labelVisibility: LabelVisibility.always,
         height: 68,
-        forceCustomBar: false,
+        forceCustomBar: true,
         collapseStartOffset: 100,
         animationDuration: const Duration(milliseconds: 100),
       ),
