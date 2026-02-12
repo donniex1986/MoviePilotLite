@@ -1,0 +1,30 @@
+# Fastfile - MoviePilot Mobile 构建配置
+# 使用方式:
+#   fastlane android     - 仅打包 Android APK
+#   fastlane ios         - 仅打包 iOS IPA
+#   fastlane build_all   - 打包 iOS + Android
+#
+# Android 打包需要预先设置环境变量:
+#   ANDROID_KEYSTORE_PATH, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
+
+default_platform(:ios)
+
+platform :ios do
+  desc "构建 iOS Release IPA"
+  lane :ios do
+    sh("flutter", "build", "ipa")
+  end
+end
+
+platform :android do
+  desc "构建 Android Release APK"
+  lane :android do
+    sh("flutter", "build", "apk", "--release")
+  end
+end
+
+desc "构建 iOS 和 Android Release 包"
+lane :build_all do
+  sh("flutter", "build", "apk", "--release")
+  sh("flutter", "build", "ipa")
+end

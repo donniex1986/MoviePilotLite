@@ -20,6 +20,59 @@
 - ✅ 登录响应数据持久化
 - ✅ Dashboard 仪表盘（存储空间、媒体统计、实时速率、后台任务、最新入库）
 
+## 发布打包
+
+### Fastlane 本地打包
+
+```bash
+# 仅打包 Android APK
+fastlane android
+
+# 仅打包 iOS IPA
+fastlane ios
+
+# 同时打包 iOS + Android
+fastlane build_all
+```
+
+Android Release 打包需要预先设置环境变量：`ANDROID_KEYSTORE_PATH`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`。
+
+### 生成 Android Release Keystore
+
+首次打包前需生成 keystore（仅执行一次）：
+
+```bash
+keytool -genkey -v -keystore moviepilot-release.keystore \
+  -alias moviepilot -keyalg RSA -keysize 2048 -validity 10000
+```
+
+将 keystore 转为 Base64 存入 GitHub Secrets：
+
+```bash
+openssl base64 -A -in moviepilot-release.keystore | tr -d '\n' | pbcopy
+```
+
+### GitHub Actions 自动打包
+
+- **触发器**：每周五 UTC 00:00 自动执行，或通过 Actions 页面手动触发
+- **产物**：在 GitHub Release 中上传 APK 和 IPA
+- **Release 命名**：`yyyy-MM-dd-HH-mm-{version}`（如 `2025-02-14-09-30-1.0.0`）
+
+需在仓库 Settings → Secrets and variables → Actions 中配置：
+
+| Secret | 说明 |
+|--------|------|
+| `ANDROID_KEYSTORE_BASE64` | Base64 编码的 keystore 文件内容 |
+| `KEYSTORE_PASSWORD` | keystore 密码 |
+| `KEY_ALIAS` | 密钥别名（如 `moviepilot`） |
+| `KEY_PASSWORD` | 密钥密码 |
+| `APPLE_CERTIFICATE_BASE64` | iOS 证书（.p12）Base64 编码 |
+| `APPLE_CERTIFICATE_PASSWORD` | iOS 证书密码 |
+| `APPLE_PROVISIONING_PROFILE_BASE64` | iOS Provisioning Profile Base64 编码 |
+| `KEYCHAIN_PASSWORD` | 临时 keychain 密码（任意字符串） |
+
+未配置 iOS 相关 Secrets 时，将仅打包 Android APK。
+
 ## 未来路线
 
 - ✅ Dashboard 已完成  
