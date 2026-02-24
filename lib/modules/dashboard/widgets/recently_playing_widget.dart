@@ -29,17 +29,6 @@ class RecentlyPlayingWidget extends StatelessWidget {
         const SizedBox(height: 12),
         Obx(() {
           final playingMedia = mediaServerController.playingMedia;
-          final isLoading = mediaServerController.isLoading;
-
-          if (isLoading.value) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 40),
-                child: CupertinoActivityIndicator(radius: 20),
-              ),
-            );
-          }
-
           if (playingMedia.value == null || playingMedia.value!.isEmpty) {
             return const Center(
               child: Padding(

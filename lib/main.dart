@@ -47,6 +47,8 @@ import 'modules/subscribe/pages/subscribe_share_page.dart';
 import 'modules/subscribe/pages/subscribe_share_statistics_page.dart';
 import 'modules/media_organize/controllers/media_organize_controller.dart';
 import 'modules/media_organize/pages/media_organize_page.dart';
+import 'modules/downloader/controllers/downloader_controller.dart';
+import 'modules/downloader/pages/downloader_page.dart';
 import 'modules/plugin/controllers/plugin_controller.dart';
 import 'modules/plugin/controllers/plugin_list_controller.dart';
 import 'modules/plugin/pages/plugin_page.dart';
@@ -275,6 +277,13 @@ class MyApp extends StatelessWidget {
               MediaOrganizeController()..searchController.text = keyword ?? '',
               permanent: false,
             );
+          }),
+        ),
+        GetPage(
+          name: '/downloader',
+          page: () => const DownloaderPage(),
+          binding: BindingsBuilder(() {
+            Get.put(DownloaderController(), permanent: false);
           }),
         ),
         GetPage(

@@ -74,6 +74,13 @@ class DashboardController extends GetxController {
   /// 最近入库数据（一周内每天的入库量）
   final transferData = <int>[].obs;
 
+  /// CPU 图表滚动数据（用于波浪图）
+  static const int _chartDataLength = 20;
+  final cpuChartData = <ChartDataPoint>[].obs;
+
+  /// 内存图表滚动数据（用于波浪图）
+  final memoryChartData = <ChartDataPoint>[].obs;
+
   /// API客户端
   late final ApiClient apiClient;
 
@@ -142,11 +149,7 @@ class DashboardController extends GetxController {
     // 避免在后续定时任务中访问到未初始化的字段。
     mediaServerController = Get.put(MediaServerController());
 
-    // 延迟一秒后加载媒体库数据，确保MediaServerController已完全初始化
-    Future.delayed(const Duration(seconds: 1), () {
-      talker.info('手动触发加载媒体库数据');
-      mediaServerController.loadMediaLibraries();
-    });
+    // 媒体库数据由 _loadDataBasedOnConfig 在显示「我的媒体库」组件时加载
   }
 
   /// 设置数据加载
@@ -156,7 +159,7 @@ class DashboardController extends GetxController {
 
   /// 启动周期性刷新
   void _startPeriodicRefresh() {
-    final duration = const Duration(seconds: kDebugMode ? 60 : 10);
+    final duration = const Duration(seconds: 5);
     // 初始化定时任务队列，每5秒获取一次数据，根据开关配置获取对应的数据
     _cpuTimer = Timer.periodic(duration, (_) {
       _loadDataBasedOnConfig();
@@ -206,9 +209,9 @@ class DashboardController extends GetxController {
         final newUsage = response.data!;
         // 添加适当的随机波动，使数据变化更自然明显
         final fluctuation = (Random().nextDouble() * 2 - 1) * 2.0;
-        final finalUsage = newUsage + fluctuation;
-        // 确保CPU使用率在合理范围内
-        cpuUsage.value = finalUsage.clamp(0.0, 100.0);
+        final finalUsage = (newUsage + fluctuation).clamp(0.0, 100.0);
+        cpuUsage.value = finalUsage;
+        _appendCpuChartData(finalUsage);
         talker.info('CPU数据加载成功: ${cpuUsage.value.toStringAsFixed(1)}%');
       } else if (response.statusCode == 401) {
         talker.error('CPU数据加载失败: 未授权，请重新登录');
@@ -397,10 +400,15 @@ class DashboardController extends GetxController {
   Future<void> refreshData() async {
     talker.info('开始刷新所有数据');
     await _loadDataBasedOnConfig();
+    if (displayedWidgets.contains('我的媒体库')) {
+      await mediaServerController.loadMediaLibraries();
+    }
     await mediaServerController.refreshLatestMediaList();
-    await mediaServerController.loadPlayingMedia(
-      mediaServerController.mediaServers.value.first.name,
-    );
+    if (mediaServerController.mediaServers.value.isNotEmpty) {
+      await mediaServerController.loadPlayingMedia(
+        mediaServerController.mediaServers.value.first.name,
+      );
+    }
     talker.info('所有数据刷新完成');
   }
 
@@ -457,6 +465,7 @@ class DashboardController extends GetxController {
           final memoryUsed = data[0] as int;
           final memoryUsage = data[1] as int;
           memoryData.value = [memoryUsed, memoryUsage];
+          _appendMemoryChartData(memoryUsage.toDouble());
           talker.info('内存数据加载成功: 使用 $memoryUsed 字节, 使用率 $memoryUsage%');
         }
       } else if (response.statusCode == 401) {
@@ -545,6 +554,37 @@ class DashboardController extends GetxController {
     if (displayedWidgets.contains('后台任务')) loadScheduleData();
     if (displayedWidgets.contains('最近添加')) loadLatestMediaData();
     if (displayedWidgets.contains('最近入库')) loadTransferData();
+    if (displayedWidgets.contains('我的媒体库')) {
+      mediaServerController.loadMediaLibraries();
+    }
+  }
+
+  void _appendCpuChartData(double value) {
+    var list = List<ChartDataPoint>.from(cpuChartData);
+    if (list.isEmpty) {
+      list = List.generate(_chartDataLength, (i) => ChartDataPoint(i, value));
+    } else {
+      if (list.length >= _chartDataLength) list.removeAt(0);
+      for (var i = 0; i < list.length; i++) {
+        list[i] = ChartDataPoint(i, list[i].value);
+      }
+      list.add(ChartDataPoint(list.length, value));
+    }
+    cpuChartData.assignAll(list);
+  }
+
+  void _appendMemoryChartData(double value) {
+    var list = List<ChartDataPoint>.from(memoryChartData);
+    if (list.isEmpty) {
+      list = List.generate(_chartDataLength, (i) => ChartDataPoint(i, value));
+    } else {
+      if (list.length >= _chartDataLength) list.removeAt(0);
+      for (var i = 0; i < list.length; i++) {
+        list[i] = ChartDataPoint(i, list[i].value);
+      }
+      list.add(ChartDataPoint(list.length, value));
+    }
+    memoryChartData.assignAll(list);
   }
 
   /// 更新dashboard配置
@@ -815,4 +855,11 @@ class DashboardController extends GetxController {
     final userId = appService.loginResponse?.userId ?? appService.userInfo?.id;
     return '${baseUrl}::${userId ?? 0}';
   }
+}
+
+/// 图表数据点（供 CPU/内存波浪图使用）
+class ChartDataPoint {
+  const ChartDataPoint(this.index, this.value);
+  final int index;
+  final double value;
 }

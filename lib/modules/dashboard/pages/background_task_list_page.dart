@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_controller.dart';
 
@@ -18,9 +19,9 @@ class _BackgroundTaskListPageState extends State<BackgroundTaskListPage> {
   Widget build(BuildContext context) {
     final controller = Get.find<DashboardController>();
 
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(middle: const Text('后台任务列表')),
-      child: SafeArea(
+    return Scaffold(
+      appBar: AppBar(title: const Text('后台任务列表'), centerTitle: false),
+      body: SafeArea(
         child: Obx(() {
           final scheduleList = controller.scheduleData.value;
 
@@ -156,7 +157,7 @@ class _BackgroundTaskListPageState extends State<BackgroundTaskListPage> {
                 Text(schedule.next_run, style: const TextStyle(fontSize: 14)),
                 const SizedBox(height: 4),
                 // 执行按钮
-                CupertinoButton(
+                CupertinoButton.filled(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 4,
@@ -166,13 +167,7 @@ class _BackgroundTaskListPageState extends State<BackgroundTaskListPage> {
                     // 执行任务
                     await controller.runScheduler(schedule.id);
                   },
-                  child: const Text(
-                    '执行',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: CupertinoColors.activeBlue,
-                    ),
-                  ),
+                  child: const Text('执行', style: TextStyle(fontSize: 12)),
                 ),
               ],
             ),

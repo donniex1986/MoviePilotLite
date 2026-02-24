@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../controllers/dashboard_controller.dart';
@@ -58,20 +59,19 @@ class RecentAddedWidget extends StatelessWidget {
                       ColumnSeries<Map<String, dynamic>, String>(
                         dataSource: chartData,
                         xValueMapper: (data, index) {
-                          final dayIndex = data['day'] as int;
-                          const labels = [
-                            '周一',
-                            '周二',
-                            '周三',
-                            '周四',
-                            '周五',
-                            '周六',
-                            '周日',
-                          ];
-                          if (dayIndex >= 0 && dayIndex < labels.length) {
-                            return labels[dayIndex];
-                          }
-                          return '';
+                          final maxDay = 7;
+                          final now = DateTime.now();
+                          final startDate = now.subtract(
+                            Duration(days: maxDay),
+                          );
+
+                          final dateCache = List.generate(
+                            maxDay + 1,
+                            (i) => DateFormat(
+                              'MM/dd',
+                            ).format(startDate.add(Duration(days: i))),
+                          );
+                          return dateCache[index];
                         },
                         yValueMapper: (data, _) => data['count'] as int,
                         borderRadius: const BorderRadius.all(

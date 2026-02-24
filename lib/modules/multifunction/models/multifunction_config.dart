@@ -53,11 +53,12 @@ const List<MultifunctionSection> multifunctionSections = [
     title: '整理',
     items: [
       MultifunctionItem(
-        title: 'TODO://下载管理',
+        title: '下载管理',
         subtitle: '任务队列与速度',
         icon: Icons.download_outlined,
         accent: Color(0xFF3B82F6),
         style: MultifunctionCardStyle.wide,
+        route: '/downloader',
       ),
       MultifunctionItem(
         title: '媒体整理',

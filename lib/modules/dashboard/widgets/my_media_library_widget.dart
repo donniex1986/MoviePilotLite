@@ -12,13 +12,8 @@ class MyMediaLibraryWidget extends StatelessWidget {
   final Function(MediaLibrary library)? onTap;
   @override
   Widget build(BuildContext context) {
-    // 尝试获取 MediaServerController，如果不存在则获取 DashboardController 来初始化它
+    // 数据由 DashboardController._loadDataBasedOnConfig 统一加载，此处仅做展示
     final mediaServerController = Get.find<MediaServerController>();
-
-    // 加载媒体库数据
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      mediaServerController.loadMediaLibraries();
-    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,11 +31,6 @@ class MyMediaLibraryWidget extends StatelessWidget {
         const SizedBox(height: 12),
         Obx(() {
           final libraries = mediaServerController.mediaLibraries.value;
-          final isLoading = mediaServerController.isLoading.value;
-
-          if (isLoading) {
-            return const Center(child: CupertinoActivityIndicator());
-          }
 
           if (libraries.isEmpty) {
             return const Center(child: Text('暂无媒体库数据'));
