@@ -36,8 +36,15 @@ class SearchResultPage extends GetView<SearchResultController> {
         return CustomScrollView(
           controller: scrollController,
           slivers: [
-            SliverToBoxAdapter(child: _buildSearchBar(context)),
-            SliverToBoxAdapter(child: _buildToolbar(context)),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: _horizontalPadding,
+                vertical: 15,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: _buildSearchAndToolbar(context),
+              ),
+            ),
             if (isLoading && items.isEmpty)
               SliverFillRemaining(
                 child: Center(
@@ -61,60 +68,51 @@ class SearchResultPage extends GetView<SearchResultController> {
     return AppBar(title: const Text('搜索结果'), centerTitle: false);
   }
 
-  Widget _buildSearchBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        _horizontalPadding,
-        15,
-        _horizontalPadding,
-        5,
-      ),
-      child: CupertinoSearchTextField(
-        decoration: BoxDecoration(
-          color: CupertinoColors.tertiarySystemFill,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        onSubmitted: controller.updateKeyword,
-        placeholder: '搜索标题、描述、站点…',
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+  Widget _buildSearchAndToolbar(BuildContext context) {
+    return Section(
+      child: Column(
+        children: [
+          CupertinoSearchTextField(
+            decoration: BoxDecoration(
+              color: CupertinoColors.tertiarySystemFill,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            onSubmitted: controller.updateKeyword,
+            placeholder: '搜索标题、描述、站点…',
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          ),
+          const SizedBox(height: 10),
+          _buildToolbar(context),
+        ],
       ),
     );
   }
 
   Widget _buildToolbar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        _horizontalPadding,
-        0,
-        _horizontalPadding,
-        8,
-      ),
-      child: SizedBox(
-        height: 40,
-        child: Row(
-          children: [
-            Obx(
-              () => SortPullDownWidget<SearchResultSortKey>(
-                isAscending:
-                    controller.sortDirection.value == SortDirection.asc,
-                currentValue: controller.sortKey.value,
-                options: SearchResultSortKey.values,
-                labelBuilder: _sortLabel,
-                onDirectionChanged: (asc) {
-                  final want = asc ? SortDirection.asc : SortDirection.desc;
-                  if (controller.sortDirection.value != want) {
-                    controller.toggleSortDirection();
-                  }
-                },
-                onValueChanged: controller.updateSortKey,
-              ),
+    return SizedBox(
+      height: 40,
+      child: Row(
+        children: [
+          Obx(
+            () => SortPullDownWidget<SearchResultSortKey>(
+              isAscending: controller.sortDirection.value == SortDirection.asc,
+              currentValue: controller.sortKey.value,
+              options: SearchResultSortKey.values,
+              labelBuilder: _sortLabel,
+              onDirectionChanged: (asc) {
+                final want = asc ? SortDirection.asc : SortDirection.desc;
+                if (controller.sortDirection.value != want) {
+                  controller.toggleSortDirection();
+                }
+              },
+              onValueChanged: controller.updateSortKey,
             ),
-            const SizedBox(width: 6),
-            Expanded(child: _buildFilterBar(context)),
-            const SizedBox(width: 6),
-            _buildFilterButton(context),
-          ],
-        ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(child: _buildFilterBar(context)),
+          const SizedBox(width: 6),
+          _buildFilterButton(context),
+        ],
       ),
     );
   }
