@@ -13,6 +13,7 @@ import 'package:moviepilot_mobile/modules/search_result/widgets/search_result_fi
 import 'package:moviepilot_mobile/modules/search_result/widgets/search_result_torrent_item.dart';
 import 'package:moviepilot_mobile/modules/search_result/widgets/sort_pull_down_widget.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/theme/section.dart';
 
 class SearchMediaResultPage extends GetView<SearchMediaController> {
   const SearchMediaResultPage({super.key});
@@ -33,8 +34,15 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
 
         return CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(child: _buildSearchBar(context)),
-            SliverToBoxAdapter(child: _buildToolbar(context)),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: _horizontalPadding,
+                vertical: 15,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: _buildSearchAndToolbar(context),
+              ),
+            ),
             if (isLoading && controller.items.isEmpty)
               SliverFillRemaining(
                 child: Center(
@@ -55,39 +63,30 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
   }
 
   Widget _buildToolbar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        _horizontalPadding,
-        0,
-        _horizontalPadding,
-        8,
-      ),
-      child: SizedBox(
-        height: 40,
-        child: Row(
-          children: [
-            Obx(
-              () => SortPullDownWidget<SearchResultSortKey>(
-                isAscending:
-                    controller.sortDirection.value == SortDirection.asc,
-                currentValue: controller.sortKey.value,
-                options: SearchResultSortKey.values,
-                labelBuilder: _sortLabel,
-                onDirectionChanged: (asc) {
-                  final want = asc ? SortDirection.asc : SortDirection.desc;
-                  if (controller.sortDirection.value != want) {
-                    controller.toggleSortDirection();
-                  }
-                },
-                onValueChanged: controller.updateSortKey,
-              ),
+    return SizedBox(
+      height: 40,
+      child: Row(
+        children: [
+          Obx(
+            () => SortPullDownWidget<SearchResultSortKey>(
+              isAscending: controller.sortDirection.value == SortDirection.asc,
+              currentValue: controller.sortKey.value,
+              options: SearchResultSortKey.values,
+              labelBuilder: _sortLabel,
+              onDirectionChanged: (asc) {
+                final want = asc ? SortDirection.asc : SortDirection.desc;
+                if (controller.sortDirection.value != want) {
+                  controller.toggleSortDirection();
+                }
+              },
+              onValueChanged: controller.updateSortKey,
             ),
-            const SizedBox(width: 6),
-            Expanded(child: _buildFilterBar(context)),
-            const SizedBox(width: 6),
-            _buildFilterButton(context),
-          ],
-        ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(child: _buildFilterBar(context)),
+          const SizedBox(width: 6),
+          _buildFilterButton(context),
+        ],
       ),
     );
   }
@@ -227,14 +226,8 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        _horizontalPadding,
-        12,
-        _horizontalPadding,
-        8,
-      ),
+  Widget _buildSearchAndToolbar(BuildContext context) {
+    return Section(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -294,6 +287,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
               ],
             ),
           ),
+          _buildToolbar(context),
         ],
       ),
     );
@@ -309,7 +303,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) => Padding(
-            padding: const EdgeInsets.only(bottom: _cardSpacing),
+            padding: const EdgeInsets.only(bottom: 5),
             child: _buildListCard(context, items[index]),
           ),
           childCount: items.length,
