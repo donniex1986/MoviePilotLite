@@ -46,15 +46,10 @@ class UserManagementController extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    if (!isSuperuser) {
-      errorText.value = '仅超级管理员可访问';
-      return;
-    }
     load();
   }
 
   Future<void> load() async {
-    if (!isSuperuser) return;
     isLoading.value = true;
     errorText.value = null;
 

@@ -21,23 +21,6 @@ class UserManagementPage extends GetView<UserManagementController> {
         ),
       ),
       body: Obx(() {
-        if (!controller.isSuperuser) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  controller.errorText.value ?? '仅超级管理员可访问',
-                  style: const TextStyle(
-                    color: CupertinoColors.systemGrey,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
-        }
         if (controller.isLoading.value && controller.items.isEmpty) {
           return const Center(child: CupertinoActivityIndicator());
         }
