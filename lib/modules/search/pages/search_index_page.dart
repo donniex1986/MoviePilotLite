@@ -157,7 +157,7 @@ class SearchIndexPage extends GetView<SearchIndexController> {
           borderRadius: BorderRadius.circular(24),
           color: Theme.of(context).colorScheme.surface,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
             child: Row(
               children: [
                 const SizedBox(width: 8),

@@ -104,7 +104,10 @@ class SearchIndexController extends GetxController {
         Get.bottomSheet(SearchMidSheet(searchKey: term));
         break;
       default:
-        Get.toNamed('/media-search-list', parameters: {'keyword': term});
+        Get.toNamed(
+          '/media-search-list',
+          parameters: {'keyword': term, 'type': 'media'},
+        );
         break;
     }
   }
