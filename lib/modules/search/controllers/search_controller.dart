@@ -6,6 +6,8 @@ import 'package:moviepilot_mobile/modules/search_result/models/search_result_mod
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 
+enum SearchType { media, title }
+
 class SearchMediaController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
   final _appService = Get.find<AppService>();
@@ -18,6 +20,7 @@ class SearchMediaController extends GetxController {
   var year = '';
   String? season;
   var sites = <int>[];
+  late SearchType searchType;
 
   final items = <SearchResultItem>[].obs;
   final isLoading = false.obs;
@@ -180,9 +183,12 @@ class SearchMediaController extends GetxController {
       if (season != null && season!.isNotEmpty && season != '0') {
         queryParameters['season'] = season!;
       }
-
+      final endpoint = switch (searchType) {
+        SearchType.media => '/api/v1/search/media/$mediaSearchKey',
+        SearchType.title => '/api/v1/search/title',
+      };
       final response = await _apiClient.get<dynamic>(
-        '/api/v1/search/media/$mediaSearchKey',
+        endpoint,
         queryParameters: queryParameters,
         token: token,
         timeout: 60,

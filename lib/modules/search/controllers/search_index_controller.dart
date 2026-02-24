@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:moviepilot_mobile/modules/search/pages/search_mid_sheet.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 import '../models/search_history.dart';
 import '../models/search_suggestion.dart';
@@ -67,7 +69,10 @@ class SearchIndexController extends GetxController {
 
   void submit([String? value]) => openMediaSearch(value ?? keyword.value);
 
-  void openMediaSearch(String keyword, {SearchSuggestionItem? suggestion}) {
+  void openMediaSearch(
+    String keyword, {
+    SearchSuggestionItem? suggestion,
+  }) async {
     final term = keyword.trim();
     if (term.isEmpty) return;
     saveHistory(term);
@@ -101,7 +106,22 @@ class SearchIndexController extends GetxController {
         Get.toNamed('/subscribe-tv', parameters: {'keyword': term});
         break;
       case SearchSuggestionCategory.site:
-        Get.bottomSheet(SearchMidSheet(searchKey: term));
+        final result = await Get.bottomSheet<({String area, List<int> sites})>(
+          SiteSelectSheet(hasSegment: false),
+        );
+        if (result == null) return;
+        final (area, sites) = (result.area, result.sites);
+        if (sites.isEmpty) {
+          ToastUtil.info('请至少选择一个站点');
+          return;
+        }
+        final params = <String, String>{
+          'mediaSearchKey': 'search/title',
+          'area': area,
+          'sites': sites.join(','),
+          'title': term,
+        };
+        Get.toNamed('/search-media-result', parameters: params);
         break;
       default:
         Get.toNamed(

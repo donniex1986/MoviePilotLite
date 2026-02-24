@@ -176,6 +176,11 @@ class MyApp extends StatelessWidget {
             final args = Get.parameters;
             Get.lazyPut(() {
               final c = SearchMediaController();
+              c.searchType = switch (args['type'] ?? 'title') {
+                'media' => SearchType.media,
+                'title' => SearchType.title,
+                _ => SearchType.title,
+              };
               c.mediaSearchKey = args['mediaSearchKey'] ?? '';
               c.area = args['area'] ?? 'title';
               c.sites = (args['sites'] ?? '')

@@ -2,50 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/site/controllers/site_controller.dart';
 import 'package:moviepilot_mobile/modules/site/models/site_models.dart';
-import 'package:moviepilot_mobile/utils/toast_util.dart';
 
-class SearchMidSheet extends StatefulWidget {
-  const SearchMidSheet({
-    super.key,
-    required this.searchKey,
-    this.title,
-    this.year,
-    this.season,
-    this.mtype,
-  });
-  final String searchKey;
-  final String? title;
-  final String? year;
-  final String? season;
-  final String? mtype;
+class SiteSelectSheet extends StatefulWidget {
+  const SiteSelectSheet({super.key, this.hasSegment = false});
+  final bool hasSegment;
   @override
-  State<SearchMidSheet> createState() => _SearchMidSheetState();
+  State<SiteSelectSheet> createState() => _SiteSelectSheetState();
 }
 
-class _SearchMidSheetState extends State<SearchMidSheet> {
+class _SiteSelectSheetState extends State<SiteSelectSheet> {
   final siteController = Get.put(SiteController());
   final selectedSite = <int>[].obs;
   final area = 'title'.obs;
 
-  void _performSearch() {
-    if (selectedSite.isEmpty) {
-      ToastUtil.error('请选择至少一个站点');
-      return;
-    }
-    var params = {
-      'mediaSearchKey': widget.searchKey,
-      'area': area.value,
-      'sites': selectedSite.join(','),
-      'year': widget.year ?? '',
-
-      'mtype': widget.mtype ?? 'movie',
-      'title': widget.title ?? '',
-    };
-    if (widget.season != null && widget.season!.isNotEmpty) {
-      params['season'] = widget.season!;
-    }
-    // 关闭 bottom sheet
-    Get.offAndToNamed('/search-media-result', parameters: params);
+  void _done() {
+    // 使用 Navigator.pop 确保关闭当前 bottom sheet 并返回结果。
+    // Get.back() 会优先关闭 snackbar，导致 bottom sheet 不会被 pop，await 永不完结。
+    Navigator.of(context).pop((area: area.value, sites: selectedSite.toList()));
   }
 
   @override
@@ -61,7 +34,7 @@ class _SearchMidSheetState extends State<SearchMidSheet> {
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () => Get.back(),
+                  onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(Icons.close, size: 20),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
@@ -73,43 +46,46 @@ class _SearchMidSheetState extends State<SearchMidSheet> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: Obx(
-                    () => Container(
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Expanded(
-                            child: _buildSegmentTab(
-                              theme,
-                              'title',
-                              '标题',
-                              area.value == 'title',
+                if (widget.hasSegment)
+                  Expanded(
+                    child: Obx(
+                      () => Container(
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                              child: _buildSegmentTab(
+                                theme,
+                                'title',
+                                '标题',
+                                area.value == 'title',
+                              ),
                             ),
-                          ),
-                          Expanded(
-                            child: _buildSegmentTab(
-                              theme,
-                              'imdb',
-                              'IMDB',
-                              area.value == 'imdb',
+                            Expanded(
+                              child: _buildSegmentTab(
+                                theme,
+                                'imdb',
+                                'IMDB',
+                                area.value == 'imdb',
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  )
+                else
+                  Spacer(),
                 const SizedBox(width: 8),
                 Obx(
                   () => FilledButton(
-                    onPressed: selectedSite.isEmpty ? null : _performSearch,
+                    onPressed: _done,
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,

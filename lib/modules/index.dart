@@ -176,7 +176,8 @@ class _IndexState extends State<Index> {
         selectedItemColor: context.primaryColor,
         unselectedItemColor: context.textSecondaryColor,
         enableMinimize: true,
-        currentIndex: _selectedIndex,
+        // action 按钮不在 items 中，currentIndex 需限定在 0..3，否则 collapsed 时会越界
+        currentIndex: _selectedIndex.clamp(0, 3),
         onTap: (index) {
           setState(() => _selectedIndex = index);
           _lastScrollOffset = 0;

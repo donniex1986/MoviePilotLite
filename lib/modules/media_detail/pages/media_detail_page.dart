@@ -1206,19 +1206,31 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     );
   }
 
-  void _openSearch(BuildContext context) {
+  void _openSearch(BuildContext context) async {
     final searchKey = controller.args.path;
     final detail = controller.mediaDetail.value;
     final season = detail?.season_info?.firstOrNull?.season_number;
-    Get.bottomSheet(
-      SearchMidSheet(
-        searchKey: searchKey,
-        title: detail?.title,
-        year: detail?.year,
-        season: season?.toString(),
-        mtype: detail?.type,
-      ),
+    final result = await Get.bottomSheet<({String area, List<int> sites})>(
+      SiteSelectSheet(hasSegment: true),
     );
+    if (result == null) return;
+    final (area, sites) = (result.area, result.sites);
+    if (sites.isEmpty) {
+      ToastUtil.info('请至少选择一个站点');
+      return;
+    }
+    var params = <String, String>{
+      'mediaSearchKey': searchKey,
+      'area': area,
+      'sites': sites.join(','),
+      'year': detail?.year ?? '',
+      'mtype': detail?.type ?? 'movie',
+      'title': detail?.title ?? '',
+    };
+    if (season != null) {
+      params['season'] = season.toString();
+    }
+    Get.toNamed('/search-media-result', parameters: params);
   }
 
   String? _tmdbUrl(MediaDetail detail) {
