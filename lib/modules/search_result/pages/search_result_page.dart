@@ -12,6 +12,7 @@ import 'package:moviepilot_mobile/modules/search_result/widgets/search_result_fi
 import 'package:moviepilot_mobile/modules/search_result/widgets/search_result_torrent_item.dart';
 import 'package:moviepilot_mobile/modules/search_result/widgets/sort_pull_down_widget.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/theme/section.dart';
 
 class SearchResultPage extends GetView<SearchResultController> {
   const SearchResultPage({super.key, this.scrollController});
@@ -64,15 +65,18 @@ class SearchResultPage extends GetView<SearchResultController> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         _horizontalPadding,
-        12,
+        15,
         _horizontalPadding,
-        8,
+        5,
       ),
       child: CupertinoSearchTextField(
+        decoration: BoxDecoration(
+          color: CupertinoColors.tertiarySystemFill,
+          borderRadius: BorderRadius.circular(24),
+        ),
         onSubmitted: controller.updateKeyword,
         placeholder: '搜索标题、描述、站点…',
-        backgroundColor: Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       ),
     );
   }

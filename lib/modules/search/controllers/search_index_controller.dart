@@ -207,8 +207,8 @@ class SearchIndexController extends GetxController {
       ),
       SearchSuggestionItem(
         category: SearchSuggestionCategory.site,
-        leading: 'TODO://站点',
-        title: '站点资源 $quoted',
+        leading: '站点',
+        title: '站点搜索 $quoted',
         subtitle: '跨站点检索',
         keyword: term,
       ),
