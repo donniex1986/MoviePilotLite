@@ -102,7 +102,7 @@ const List<MultifunctionSection> multifunctionSections = [
         icon: Icons.people_outline,
         accent: Color(0xFF00B894),
         style: MultifunctionCardStyle.wide,
-        route: '/profile',
+        route: '/user-management',
       ),
       MultifunctionItem(
         title: '设定',

@@ -60,6 +60,8 @@ import 'modules/site/controllers/site_resource_controller.dart';
 import 'modules/site/pages/site_page.dart';
 import 'modules/site/pages/site_detail_page.dart';
 import 'modules/site/pages/site_resource_page.dart';
+import 'modules/user_management/controllers/user_management_controller.dart';
+import 'modules/user_management/pages/user_management_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -340,6 +342,13 @@ class MyApp extends StatelessWidget {
           page: () => const SiteDetailPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => SiteDetailController());
+          }),
+        ),
+        GetPage(
+          name: '/user-management',
+          page: () => const UserManagementPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => UserManagementController());
           }),
         ),
         GetPage(

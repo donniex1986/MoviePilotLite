@@ -163,6 +163,18 @@ class AuthRepository extends GetxService {
     return parts.join('; ');
   }
 
+  /// 获取用户列表（需超级管理员权限）
+  Future<List<UserInfo>> listUsers() async {
+    final response = await _api.get<dynamic>('/api/v1/user/');
+    final data = response.data;
+    if (data == null) return [];
+    final list = data is List ? data : <dynamic>[];
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map((e) => UserInfo.fromJson(e))
+        .toList();
+  }
+
   Future<UserInfo?> getUserInfoByRole({required String role}) async {
     final response = await _api.get<Map<String, dynamic>>('/api/v1/user/$role');
     final data = response.data;
