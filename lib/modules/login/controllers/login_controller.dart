@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../../../utils/toast_util.dart';
@@ -21,11 +24,113 @@ class LoginController extends GetxController {
   final isLoading = false.obs;
   final isPasswordVisible = false.obs;
 
+  /// 当前步骤：1=仅服务器，2=账号密码
+  final step = 1.obs;
+
+  /// 壁纸 URL 列表
+  final wallpapers = <String>[].obs;
+
+  /// 当前显示的壁纸索引（用于轮播）
+  final currentWallpaperIndex = 0.obs;
+
+  Timer? _wallpaperTimer;
+
   @override
   void onInit() {
+    _loadSavedWallpapers();
     _loadProfiles();
     _autoLogin();
     super.onInit();
+  }
+
+  /// 加载上次登录保存的壁纸
+  Future<void> _loadSavedWallpapers() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final json = prefs.getString(kLoginWallpapersKey);
+      if (json == null || json.isEmpty) return;
+
+      final decoded = jsonDecode(json);
+      final list = decoded is List
+          ? decoded.whereType<String>().where((s) => s.startsWith('http')).toList()
+          : <String>[];
+      if (list.isNotEmpty) {
+        wallpapers.assignAll(list);
+        currentWallpaperIndex.value = 0;
+        _startWallpaperTimer();
+      }
+    } catch (e) {
+      _talker.warning('加载壁纸缓存失败: $e');
+    }
+  }
+
+  /// 保存壁纸列表供下次登录使用
+  Future<void> _saveWallpapers() async {
+    if (wallpapers.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(kLoginWallpapersKey, jsonEncode(wallpapers.toList()));
+    } catch (e) {
+      _talker.warning('保存壁纸缓存失败: $e');
+    }
+  }
+
+  @override
+  void onClose() {
+    _wallpaperTimer?.cancel();
+    super.onClose();
+  }
+
+  /// 进入下一步：验证服务器、获取壁纸、进入步骤 2
+  Future<void> goToNextStep() async {
+    final server = serverController.text.trim();
+    if (server.isEmpty) {
+      ToastUtil.info('请输入服务器地址');
+      return;
+    }
+
+    // 简单校验 URL 格式
+    final uri = Uri.tryParse(server);
+    if (uri == null || !uri.hasScheme) {
+      ToastUtil.info('请输入有效的服务器地址（含协议，如 https://example.com）');
+      return;
+    }
+
+    isLoading.value = true;
+    try {
+      final list = await _repository.fetchWallpapers(server);
+      wallpapers.assignAll(list);
+      currentWallpaperIndex.value = 0;
+      step.value = 2;
+      _startWallpaperTimer();
+    } catch (e) {
+      _talker.warning('获取壁纸失败: $e');
+      step.value = 2;
+      wallpapers.clear();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 返回步骤 1（保留壁纸以保持背景一致）
+  void goToStep1() {
+    step.value = 1;
+    // 不清理壁纸，保持与步骤 2 相同的背景效果
+  }
+
+  void _startWallpaperTimer() {
+    _stopWallpaperTimer();
+    if (wallpapers.isEmpty || wallpapers.length < 2) return;
+
+    _wallpaperTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      currentWallpaperIndex.value =
+          (currentWallpaperIndex.value + 1) % wallpapers.length;
+    });
+  }
+
+  void _stopWallpaperTimer() {
+    _wallpaperTimer?.cancel();
+    _wallpaperTimer = null;
   }
 
   /// 自动登录
@@ -89,6 +194,11 @@ class LoginController extends GetxController {
     serverController.text = profile.server;
     usernameController.text = profile.username;
     passwordController.text = profile.password;
+
+    // 若当前在步骤 1，选中历史账号后直接进入步骤 2 并拉取壁纸
+    if (step.value == 1) {
+      goToNextStep();
+    }
   }
 
   Future<void> submitLogin() async {
@@ -110,6 +220,7 @@ class LoginController extends GetxController {
         password: password,
         otpPassword: otpPassword,
       );
+      await _saveWallpapers();
       _loadProfiles();
       ToastUtil.success('已保存账号信息', title: '登录成功');
       // 跳转到 Dashboard
@@ -132,7 +243,7 @@ class LoginController extends GetxController {
       final stored = prefs.getInt(kIndexLastTabKey);
       if (stored == null) return null;
       final clamped = stored.clamp(0, kIndexMaxTab);
-      return clamped is int ? clamped : clamped.toInt();
+      return clamped;
     } catch (_) {
       return null;
     }

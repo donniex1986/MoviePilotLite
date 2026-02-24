@@ -188,6 +188,29 @@ class AuthRepository extends GetxService {
     return userInfo;
   }
 
+  /// 获取登录页壁纸列表（无需鉴权）
+  /// API: GET /api/v1/login/wallpapers，返回图片 URL 数组
+  Future<List<String>> fetchWallpapers(String server) async {
+    try {
+      final normalizedServer = _normalizeServer(server.trim());
+      if (normalizedServer.isEmpty) return [];
+
+      _api.setBaseUrl(normalizedServer);
+      final response = await _api.get<dynamic>('/api/v1/login/wallpapers');
+      final data = response.data;
+      if (data == null) return [];
+
+      final list = data is List ? data : <dynamic>[];
+      return list
+          .whereType<String>()
+          .where((s) => s.isNotEmpty && s.startsWith('http'))
+          .toList();
+    } catch (e) {
+      _talker.warning('获取壁纸列表失败: $e');
+      return [];
+    }
+  }
+
   List<LoginProfile> getProfiles() {
     final list = _realm.all<LoginProfile>().toList();
     list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));

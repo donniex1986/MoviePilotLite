@@ -4,7 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 import '../../../theme/app_theme.dart';
 import '../../../widgets/custom_button.dart';
@@ -18,92 +19,220 @@ class LoginPage extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Obx(
-          () => Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 24),
-                    _buildHeader(context),
-                    const SizedBox(height: 32),
-                    _buildFormSection(context),
-                    const SizedBox(height: 16),
-                    _buildProfilePicker(context),
-                    const SizedBox(height: 24),
-                    Obx(
-                      () => CustomButton(
-                        text: '登录并保存',
-                        icon: CupertinoIcons.check_mark,
-                        isLoading: controller.isLoading.value,
-                        onPressed: () => controller.submitLogin(),
-                        borderRadius: 12,
-                      ),
+      body: Obx(() {
+        final stepValue = controller.step.value;
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildBackground(context),
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 24,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (stepValue == 2) _buildBackButton(context),
+                        const SizedBox(height: 24),
+                        _buildHeader(context),
+                        const SizedBox(height: 32),
+                        if (stepValue == 1) ...[
+                          _buildServerStep(context),
+                          const SizedBox(height: 16),
+                          _buildProfilePicker(context),
+                        ] else ...[
+                          _buildCredentialsStep(context),
+                          const SizedBox(height: 16),
+                          _buildProfilePicker(context),
+                          const SizedBox(height: 24),
+                          Obx(
+                            () => CustomButton(
+                              text: '登录并保存',
+                              icon: CupertinoIcons.check_mark,
+                              isLoading: controller.isLoading.value,
+                              onPressed: () => controller.submitLogin(),
+                              borderRadius: 12,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  /// 背景逻辑：有壁纸则显示壁纸+遮罩，否则显示渐变色（步骤 1、2 一致）
+  Widget _buildBackground(BuildContext context) {
+    return Obx(() {
+      final list = controller.wallpapers;
+      if (list.isEmpty) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.background,
+                Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF1a1a2e)
+                    : const Color(0xFFe8eaf6),
+              ],
+            ),
+          ),
+        );
+      }
+
+      final idx = controller.currentWallpaperIndex.value % list.length;
+      final url = list[idx];
+
+      return AnimatedSwitcher(
+        duration: const Duration(milliseconds: 800),
+        switchInCurve: Curves.easeIn,
+        switchOutCurve: Curves.easeOut,
+        child: Stack(
+          key: ValueKey(url),
+          fit: StackFit.expand,
+          children: [
+            CachedImage(imageUrl: url, fit: BoxFit.cover),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.5),
+                    Colors.black.withOpacity(0.7),
+                    Colors.black.withOpacity(0.85),
                   ],
                 ),
               ),
             ),
-          ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: CupertinoButton(
+        padding: const EdgeInsets.only(left: 0, top: 8, bottom: 8),
+        minSize: 0,
+        onPressed: () => controller.goToStep1(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(CupertinoIcons.back, color: CupertinoColors.white),
+            const SizedBox(width: 6),
+            Text(
+              '更换服务器',
+              style: TextStyle(color: CupertinoColors.white, fontSize: 16),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildTextField(
-    TextEditingController controller,
+    TextEditingController textController,
     String placeholder, {
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
     Widget? prefix,
     bool autocorrect = true,
     bool enableSuggestions = true,
+    void Function(String)? onSubmitted,
+    TextInputAction? textInputAction,
   }) {
+    final hasWallpapers = controller.wallpapers.isNotEmpty;
+    final textColor = hasWallpapers ? CupertinoColors.white : null;
+    final placeholderStyle = hasWallpapers
+        ? TextStyle(color: CupertinoColors.white.withOpacity(0.7))
+        : null;
+    final fillColor = hasWallpapers
+        ? CupertinoColors.white.withOpacity(0.15)
+        : CupertinoColors.systemGrey6;
+    final borderColor = hasWallpapers
+        ? CupertinoColors.white.withOpacity(0.3)
+        : CupertinoColors.systemGrey4;
+    final prefixColor = hasWallpapers
+        ? CupertinoColors.white
+        : CupertinoColors.systemGrey;
+
     return CupertinoTextField(
-      controller: controller,
+      controller: textController,
       placeholder: placeholder,
+      placeholderStyle: placeholderStyle,
+      style: textColor != null ? TextStyle(color: textColor) : null,
       obscureText: obscureText,
       keyboardType: keyboardType,
       autocorrect: autocorrect,
       enableSuggestions: enableSuggestions,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
       prefix: prefix != null
           ? Padding(
               padding: const EdgeInsets.only(left: 12),
               child: IconTheme(
-                data: const IconThemeData(
-                  size: 18,
-                  color: CupertinoColors.systemGrey,
-                ),
+                data: IconThemeData(size: 18, color: prefixColor),
                 child: prefix,
               ),
             )
           : null,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey6,
+        color: fillColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: CupertinoColors.systemGrey4),
+        border: Border.all(color: borderColor),
       ),
       clearButtonMode: OverlayVisibilityMode.editing,
     );
   }
 
   Widget _buildPasswordField() {
-    return Obx(
-      () => CupertinoTextField(
+    return Obx(() {
+      final hasWallpapers = controller.wallpapers.isNotEmpty;
+      final textColor = hasWallpapers ? CupertinoColors.white : null;
+      final fillColor = hasWallpapers
+          ? CupertinoColors.white.withOpacity(0.15)
+          : CupertinoColors.systemGrey6;
+      final borderColor = hasWallpapers
+          ? CupertinoColors.white.withOpacity(0.3)
+          : CupertinoColors.systemGrey4;
+      final prefixColor = hasWallpapers
+          ? CupertinoColors.white
+          : CupertinoColors.systemGrey;
+      final suffixColor = hasWallpapers
+          ? CupertinoColors.white
+          : CupertinoColors.systemGrey;
+
+      return CupertinoTextField(
         controller: controller.passwordController,
         placeholder: '密码',
+        placeholderStyle: hasWallpapers
+            ? TextStyle(color: CupertinoColors.white.withOpacity(0.7))
+            : null,
+        style: textColor != null ? TextStyle(color: textColor) : null,
         obscureText: !controller.isPasswordVisible.value,
         keyboardType: TextInputType.text,
-        prefix: const Padding(
-          padding: EdgeInsets.only(left: 12),
+        prefix: Padding(
+          padding: const EdgeInsets.only(left: 12),
           child: IconTheme(
-            data: IconThemeData(size: 18, color: CupertinoColors.systemGrey),
-            child: Icon(CupertinoIcons.lock),
+            data: IconThemeData(size: 18, color: prefixColor),
+            child: const Icon(CupertinoIcons.lock),
           ),
         ),
         suffix: CupertinoButton(
@@ -118,21 +247,30 @@ class LoginPage extends GetView<LoginController> {
                 ? CupertinoIcons.eye_slash
                 : CupertinoIcons.eye,
             size: 20,
-            color: CupertinoColors.systemGrey,
+            color: suffixColor,
           ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          color: CupertinoColors.systemGrey6,
+          color: fillColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: CupertinoColors.systemGrey4),
+          border: Border.all(color: borderColor),
         ),
         clearButtonMode: OverlayVisibilityMode.editing,
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildHeader(BuildContext context) {
+    final hasWallpapers = controller.wallpapers.isNotEmpty;
+    final stepValue = controller.step.value;
+    final primary = hasWallpapers
+        ? CupertinoColors.white
+        : context.primaryColor;
+    final subtitleColor = hasWallpapers
+        ? CupertinoColors.white.withOpacity(0.9)
+        : CupertinoColors.systemGrey;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -141,31 +279,33 @@ class LoginPage extends GetView<LoginController> {
           height: 56,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: CupertinoColors.systemGrey5,
+            color: primary.withOpacity(0.2),
           ),
           padding: const EdgeInsets.all(10),
           child: SvgPicture.asset(
             'assets/logo.svg',
             width: 32,
             height: 32,
-            colorFilter: ColorFilter.mode(
-              context.primaryColor,
-              BlendMode.srcIn,
-            ),
+            colorFilter: ColorFilter.mode(primary, BlendMode.srcIn),
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          '使用你的账户登录以访问 MoviePilot 服务',
+        Text(
+          stepValue == 2 ? '输入账号密码登录' : '使用你的账户登录以访问 MoviePilot 服务',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 14, color: CupertinoColors.systemGrey),
+          style: TextStyle(fontSize: 14, color: subtitleColor),
         ),
       ],
     );
   }
 
-  Widget _buildFormSection(BuildContext context) {
-    return Section(
+  Widget _buildServerStep(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: CupertinoColors.black.withOpacity(0.35),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         children: [
           _buildTextField(
@@ -175,8 +315,31 @@ class LoginPage extends GetView<LoginController> {
             prefix: const Icon(CupertinoIcons.link),
             autocorrect: false,
             enableSuggestions: false,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => controller.goToNextStep(),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: CupertinoButton.filled(
+              onPressed: () => controller.goToNextStep(),
+              child: Text('下一步'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCredentialsStep(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: CupertinoColors.black.withOpacity(0.35),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
           _buildTextField(
             controller.usernameController,
             '用户名',
@@ -201,15 +364,25 @@ class LoginPage extends GetView<LoginController> {
 
   Widget _buildProfilePicker(BuildContext context) {
     final selected = controller.selectedProfile.value;
+    final hasWallpapers = controller.wallpapers.isNotEmpty;
+    final titleColor = hasWallpapers ? CupertinoColors.white : null;
+    final subtitleColor = hasWallpapers
+        ? CupertinoColors.white.withOpacity(0.8)
+        : CupertinoColors.systemGrey;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               '历史账号',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: titleColor ?? CupertinoColors.label,
+              ),
             ),
             Row(
               children: [
@@ -218,17 +391,21 @@ class LoginPage extends GetView<LoginController> {
                   onPressed: controller.profiles.isEmpty
                       ? null
                       : () => _showPicker(context, controller.profiles),
-                  child: const Text('更多'),
+                  child: Text(
+                    '更多',
+                    style: TextStyle(
+                      color: hasWallpapers
+                          ? CupertinoColors.white
+                          : CupertinoColors.activeBlue,
+                    ),
+                  ),
                 ),
               ],
             ),
           ],
         ),
         if (controller.profiles.isEmpty)
-          const Text(
-            '暂无已保存账号',
-            style: TextStyle(color: CupertinoColors.systemGrey),
-          )
+          Text('暂无已保存账号', style: TextStyle(color: subtitleColor))
         else ...[
           Builder(
             builder: (context) =>
@@ -239,7 +416,11 @@ class LoginPage extends GetView<LoginController> {
               padding: const EdgeInsets.only(top: 6),
               child: Text(
                 '${selected.username} @ ${selected.server}',
-                style: const TextStyle(color: CupertinoColors.activeGreen),
+                style: TextStyle(
+                  color: hasWallpapers
+                      ? CupertinoColors.white.withOpacity(0.95)
+                      : context.primaryColor,
+                ),
               ),
             ),
         ],
@@ -252,6 +433,8 @@ class LoginPage extends GetView<LoginController> {
     List<LoginProfile> profiles,
     LoginProfile? selected,
   ) {
+    final hasWallpapers = controller.wallpapers.isNotEmpty;
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -266,21 +449,33 @@ class LoginPage extends GetView<LoginController> {
                 ),
                 decoration: BoxDecoration(
                   color: selected?.id == p.id
-                      ? context.primaryColor.withOpacity(0.15)
-                      : Theme.of(context).colorScheme.surface,
+                      ? (hasWallpapers
+                            ? CupertinoColors.white.withOpacity(0.25)
+                            : context.primaryColor.withOpacity(0.15))
+                      : (hasWallpapers
+                            ? CupertinoColors.white.withOpacity(0.15)
+                            : Theme.of(context).colorScheme.surface),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: selected?.id == p.id
-                        ? context.primaryColor
-                        : CupertinoColors.systemGrey4,
+                        ? (hasWallpapers
+                              ? CupertinoColors.white
+                              : context.primaryColor)
+                        : (hasWallpapers
+                              ? CupertinoColors.white.withOpacity(0.4)
+                              : CupertinoColors.systemGrey4),
                   ),
                 ),
                 child: Text(
                   p.username,
                   style: TextStyle(
                     color: selected?.id == p.id
-                        ? context.primaryColor
-                        : CupertinoColors.label,
+                        ? (hasWallpapers
+                              ? CupertinoColors.white
+                              : context.primaryColor)
+                        : (hasWallpapers
+                              ? CupertinoColors.white.withOpacity(0.9)
+                              : CupertinoColors.label),
                   ),
                 ),
               ),
