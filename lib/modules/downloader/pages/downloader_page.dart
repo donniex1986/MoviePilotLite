@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/downloader/controllers/downloader_controller.dart';
 import 'package:moviepilot_mobile/modules/downloader/models/download_task.dart';
+import 'package:moviepilot_mobile/modules/downloader/models/downloader_stats.dart';
+import 'package:moviepilot_mobile/modules/setting/models/setting_models.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
@@ -19,7 +21,30 @@ class DownloaderPage extends GetView<DownloaderController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Obx(() => _buildDownloaderTabs(context)),
+          Obx(() => _buildDownloaderStats(context)),
           Expanded(child: _buildTaskList(context)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDownloaderStats(BuildContext context) {
+    if (controller.downloaders.isEmpty) return const SizedBox.shrink();
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: Row(
+        children: [
+          for (int i = 0; i < controller.downloaders.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Obx(() => _DownloaderStatsCard(
+                downloader: controller.downloaders[i],
+                stats: controller.statsFor(controller.downloaders[i].name),
+                isSelected: controller.selectedIndex.value == i,
+                onTap: () => controller.switchDownloader(i),
+              )),
+            ),
         ],
       ),
     );
@@ -369,5 +394,147 @@ class _DownloadTaskCard extends StatelessWidget {
   String _formatSize(double? bytes) {
     if (bytes == null || bytes <= 0) return '0 B';
     return SizeFormatter.formatSize(bytes, 2);
+  }
+}
+
+class _DownloaderStatsCard extends StatelessWidget {
+  const _DownloaderStatsCard({
+    required this.downloader,
+    required this.stats,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final DownloadClient downloader;
+  final DownloaderStats? stats;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cardColor = isSelected
+        ? theme.colorScheme.primary.withOpacity(0.12)
+        : theme.cardColor;
+    final borderColor = isSelected
+        ? theme.colorScheme.primary.withOpacity(0.5)
+        : theme.dividerColor;
+
+    return Material(
+      color: cardColor,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 200,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                downloader.name,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : theme.textTheme.bodyLarge?.color,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (stats != null) ...[
+                const SizedBox(height: 8),
+                _StatRow(
+                  label: '下载速度',
+                  value: _formatSpeed(stats!.downloadSpeed),
+                  valueColor: const Color(0xFF66BB6A),
+                ),
+                const SizedBox(height: 4),
+                _StatRow(
+                  label: '上传速度',
+                  value: _formatSpeed(stats!.uploadSpeed),
+                  valueColor: const Color(0xFF4DD0E1),
+                ),
+                const SizedBox(height: 4),
+                _StatRow(
+                  label: '已下载',
+                  value: SizeFormatter.formatSize(stats!.downloadSize, 2),
+                ),
+                const SizedBox(height: 4),
+                _StatRow(
+                  label: '已上传',
+                  value: SizeFormatter.formatSize(stats!.uploadSize, 2),
+                ),
+                const SizedBox(height: 4),
+                _StatRow(
+                  label: '剩余空间',
+                  value: SizeFormatter.formatSize(stats!.freeSpace, 2),
+                ),
+              ] else
+                const Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatSpeed(double bytesPerSecond) {
+    if (bytesPerSecond <= 0) return '0 B/s';
+    return '${SizeFormatter.formatSize(bytesPerSecond, 2)}/s';
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  const _StatRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: theme.textTheme.bodySmall?.color?.withOpacity(0.8) ??
+                CupertinoColors.tertiaryLabel,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: valueColor ?? theme.textTheme.bodyMedium?.color,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
   }
 }

@@ -69,6 +69,10 @@ import 'modules/settings/controllers/settings_sub_list_controller.dart';
 import 'modules/settings/pages/settings_page.dart';
 import 'modules/settings/pages/settings_sub_list_page.dart';
 import 'modules/settings/pages/settings_detail_placeholder_page.dart';
+import 'modules/settings/controllers/settings_advanced_list_controller.dart';
+import 'modules/settings/controllers/settings_basic_controller.dart';
+import 'modules/settings/pages/settings_advanced_list_page.dart';
+import 'modules/settings/pages/settings_basic_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -388,6 +392,20 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: '/settings/detail',
           page: () => const SettingsDetailPlaceholderPage(),
+        ),
+        GetPage(
+          name: '/settings/system/basic',
+          page: () => const SettingsBasicPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SettingsBasicController());
+          }),
+        ),
+        GetPage(
+          name: '/settings/system/advanced',
+          page: () => const SettingsAdvancedListPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SettingsAdvancedListController());
+          }),
         ),
         GetPage(
           name: '/plugin/dynamic-form/page',

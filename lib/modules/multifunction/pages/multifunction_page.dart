@@ -4,6 +4,11 @@ import 'package:moviepilot_mobile/modules/multifunction/controllers/multifunctio
 import 'package:moviepilot_mobile/modules/multifunction/models/multifunction_models.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 
+/// 多功能页（More）：按 section 展示功能入口。
+///
+/// 每个 section 有两种布局：
+/// - [MultifunctionSectionLayout.grouped]：分组列表，单列垂直堆叠，每行「图标 + 标题/副标题 + meta/右箭头」
+/// - [MultifunctionSectionLayout.mosaic]：网格/卡片，按 [MultifunctionCardStyle] 决定每张卡样式与宽度
 class MultifunctionPage extends GetView<MultifunctionController> {
   const MultifunctionPage({super.key, this.scrollController});
 
@@ -45,6 +50,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  /// 构建单个 section：上方标题 + 下方内容。
+  /// grouped 时用 [_buildGroupedSection]，否则用 Wrap 布局各卡片，宽度由 [_itemWidth] 决定。
   Widget _buildSection(BuildContext context, MultifunctionSection section) {
     final theme = Theme.of(context);
     final isGrouped = section.layout == MultifunctionSectionLayout.grouped;
@@ -132,6 +139,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     }
   }
 
+  /// 分组列表样式：圆角边框卡片，内部多行，行间 Divider。
+  /// 每行由 [_buildGroupedRow] 生成，样式：左图标气泡 + 标题/副标题 + 右 meta + 右箭头。
   Widget _buildGroupedSection(
     BuildContext context,
     MultifunctionSection section,
@@ -140,7 +149,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     final theme = Theme.of(context);
 
     return Material(
-      color: Colors.transparent,
+      color: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: borderRadius,
         side: BorderSide(color: AppTheme.borderColor.withOpacity(0.4)),
@@ -163,6 +172,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  /// 分组行：水平布局 [图标 38x38] [标题/副标题] [meta?] [右箭头]，点击跳转。
   Widget _buildGroupedRow(
     BuildContext context,
     MultifunctionItem item, {
@@ -221,6 +231,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  /// 按样式返回卡片宽度：hero/wide 全宽，tall/compact 半宽（可并排 2 个）。
   double _itemWidth(
     MultifunctionCardStyle style,
     double fullWidth,
@@ -236,6 +247,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     }
   }
 
+  /// 根据 item.style 分发到对应卡片构建方法。
   Widget _buildItemCard(BuildContext context, MultifunctionItem item) {
     switch (item.style) {
       case MultifunctionCardStyle.hero:
@@ -249,6 +261,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     }
   }
 
+  /// hero：全宽，高 100，渐变背景 + 光晕，横向 [大图标 50] [标题/副标题] [meta 芯片?] [右箭头]。
+  /// 例：搜索结果
   Widget _buildHeroCard(BuildContext context, MultifunctionItem item) {
     final accent = item.accent;
     final gradient = LinearGradient(
@@ -305,6 +319,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  /// tall：半宽，高 170，纵向 [图标 44] [Spacer] [标题] [副标题] [badge?]，右下光晕。
+  /// 例：电影订阅、电视剧订阅（可并排）
   Widget _buildTallCard(BuildContext context, MultifunctionItem item) {
     final accent = item.accent;
     return _buildCardShell(
@@ -346,7 +362,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
-  // 订阅
+  /// compact：半宽，高 88，横向 [图标 38] [标题/副标题] [meta 芯片 或 右箭头]。
+  /// 例：工作流、订阅日历（可并排）
   Widget _buildCompactCard(BuildContext context, MultifunctionItem item) {
     final accent = item.accent;
     return _buildCardShell(
@@ -386,15 +403,16 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
-  // 整理
+  /// wide：全宽，高 100，横向 [图标 44] [标题/副标题/meta] [右侧迷你柱状图]。
+  /// 例：下载管理、媒体整理
   Widget _buildWideCard(BuildContext context, MultifunctionItem item) {
     final accent = item.accent;
     return _buildCardShell(
       context,
       item,
-      height: 100,
+      height: 80,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         child: Row(
           children: [
             _buildIconBubble(accent, item.icon, size: 44),
@@ -432,6 +450,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  /// 卡片外壳：固定高度、圆角、主题色底，内嵌 child，点击跳转。
   Widget _buildCardShell(
     BuildContext context,
     MultifunctionItem item, {
@@ -464,6 +483,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
         TextStyle(color: context.textSecondaryColor, fontSize: 13);
   }
 
+  /// 图标气泡：圆角方形容器，accent 色底 + 图标。
   Widget _buildIconBubble(Color accent, IconData icon, {double size = 40}) {
     return Container(
       width: size,
@@ -476,6 +496,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  /// 徽标：accent 色背景的小标签，用于 tall 卡片。
   Widget _buildBadge(BuildContext context, String text, Color accent) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -493,6 +514,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  /// meta 芯片：右侧小标签（如「近期」），用于 hero / compact 卡片。
   Widget _buildMetaChip(BuildContext context, String text, Color accent) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -510,6 +532,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  /// 迷你柱状图：3 条递减宽度的小横条，用于 wide 卡片右侧装饰。
   Widget _buildMiniBars(Color accent) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -534,6 +557,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     );
   }
 
+  /// 光晕圆：用于 hero / tall 卡片背景装饰。
   Widget _buildGlowCircle(Color color, double size) {
     return Container(
       width: size,

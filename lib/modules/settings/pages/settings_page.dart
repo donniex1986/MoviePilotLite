@@ -17,19 +17,18 @@ class SettingsPage extends GetView<SettingsController> {
           child: const Icon(CupertinoIcons.back),
         ),
         middle: const Text('设定', style: TextStyle(fontWeight: FontWeight.w600)),
-        backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(context),
+        backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(
+          context,
+        ),
         border: null,
       ),
-      child: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverCupertinoListSection(
-              categories: controller.categories,
-              onRowTap: controller.onRowTap,
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          ],
-        ),
+      child: CustomScrollView(
+        slivers: [
+          SliverCupertinoListSection(
+            categories: controller.categories,
+            onRowTap: controller.onRowTap,
+          ),
+        ],
       ),
     );
   }
@@ -44,12 +43,13 @@ class SliverCupertinoListSection extends StatelessWidget {
   });
 
   final List<SettingsCategory> categories;
-  final void Function(SettingsCategory category, SettingsSubItem? item) onRowTap;
+  final void Function(SettingsCategory category, SettingsSubItem? item)
+  onRowTap;
 
   static Color _iconColorForCategory(SettingsCategory category) {
     switch (category.id) {
       case SettingsCategoryId.system:
-        return CupertinoColors.systemGrey;
+        return CupertinoColors.systemIndigo;
       case SettingsCategoryId.storage:
         return CupertinoColors.systemBrown;
       case SettingsCategoryId.site:
@@ -72,44 +72,44 @@ class SliverCupertinoListSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final category = categories[index];
-          final isServiceRow = category.directRoute != null && category.items.isEmpty;
-          final rowCount = isServiceRow ? 1 : category.items.length;
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final category = categories[index];
+        final isServiceRow =
+            category.directRoute != null && category.items.isEmpty;
+        final rowCount = isServiceRow ? 1 : category.items.length;
 
-          return Padding(
-            padding: EdgeInsets.only(top: index == 0 ? 8 : 22),
-            child: CupertinoListSection.insetGrouped(
-              header: Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 6),
-                child: Text(
-                  category.title,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: CupertinoColors.secondaryLabel.resolveFrom(context),
-                  ),
-                ),
+        return CupertinoListSection.insetGrouped(
+          header: Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 6),
+            child: Text(
+              category.title,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                color: CupertinoColors.secondaryLabel.resolveFrom(context),
               ),
-              children: [
-                for (int i = 0; i < rowCount; i++)
-                  _buildTile(
-                    context,
-                    category: category,
-                    item: isServiceRow ? null : category.items[i],
-                    displayTitle: isServiceRow ? '后台任务' : category.items[i].title,
-                    displaySubtitle: isServiceRow ? null : category.items[i].subtitle,
-                    icon: category.icon,
-                    iconColor: _iconColorForCategory(category),
-                    onTap: () => onRowTap(category, isServiceRow ? null : category.items[i]),
-                  ),
-              ],
             ),
-          );
-        },
-        childCount: categories.length,
-      ),
+          ),
+          children: [
+            for (int i = 0; i < rowCount; i++)
+              _buildTile(
+                context,
+                category: category,
+                item: isServiceRow ? null : category.items[i],
+                displayTitle: isServiceRow ? '后台任务' : category.items[i].title,
+                displaySubtitle: isServiceRow
+                    ? null
+                    : category.items[i].subtitle,
+                icon: isServiceRow
+                    ? category.icon
+                    : (category.items[i].icon ?? category.icon),
+                iconColor: _iconColorForCategory(category),
+                onTap: () =>
+                    onRowTap(category, isServiceRow ? null : category.items[i]),
+              ),
+          ],
+        );
+      }, childCount: categories.length),
     );
   }
 

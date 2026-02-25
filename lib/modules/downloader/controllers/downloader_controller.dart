@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/downloader/models/download_task.dart';
+import 'package:moviepilot_mobile/modules/downloader/models/downloader_stats.dart';
 import 'package:moviepilot_mobile/modules/setting/models/setting_models.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
@@ -13,6 +14,9 @@ class DownloaderController extends GetxController {
 
   /// 下载器列表（从 /api/v1/download/clients 获取）
   final downloaders = <DownloadClient>[].obs;
+
+  /// 各下载器简要信息（从 /api/v1/dashboard/downloader?name=xxx 获取）
+  final downloaderStats = <String, DownloaderStats>{}.obs;
 
   /// 当前选中的下载器索引
   final selectedIndex = 0.obs;
@@ -85,6 +89,7 @@ class DownloaderController extends GetxController {
         } else {
           selectedIndex.value = 0;
         }
+        await loadDownloaderStats();
         await loadTasksForSelectedDownloader();
       }
     } catch (e, st) {
@@ -122,6 +127,7 @@ class DownloaderController extends GetxController {
     if (isRefreshing.value) return;
     isRefreshing.value = true;
     try {
+      await loadDownloaderStats();
       await _fetchTasks(downloaders[selectedIndex.value].name);
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '刷新下载任务失败');
@@ -136,6 +142,27 @@ class DownloaderController extends GetxController {
       return;
     await _fetchTasks(downloaders[selectedIndex.value].name);
   }
+
+  /// 获取所有下载器的简要信息
+  Future<void> loadDownloaderStats() async {
+    for (final d in downloaders) {
+      if (d.name.isEmpty) continue;
+      try {
+        final resp = await _api.get<Map<String, dynamic>>(
+          '/api/v1/dashboard/downloader',
+          queryParameters: {'name': d.name},
+        );
+        if (resp.statusCode == 200 && resp.data != null) {
+          downloaderStats[d.name] = DownloaderStats.fromJson(resp.data!);
+        }
+      } catch (e, st) {
+        _log.handle(e, stackTrace: st, message: '获取下载器 ${d.name} 信息失败');
+      }
+    }
+  }
+
+  DownloaderStats? statsFor(String downloaderName) =>
+      downloaderStats[downloaderName];
 
   Future<void> _fetchTasks(String downloaderName) async {
     final response = await _api.get<List<dynamic>>(

@@ -27,6 +27,7 @@ class SettingsSubItem {
     required this.title,
     this.subtitle,
     this.route,
+    this.icon,
   });
 
   final String id;
@@ -34,6 +35,8 @@ class SettingsSubItem {
   final String? subtitle;
   /// 详情页路由，暂无则占位
   final String? route;
+  /// 子项图标，未设置时使用分类图标
+  final IconData? icon;
 }
 
 /// 主分类 ID 常量
@@ -54,12 +57,13 @@ List<SettingsCategory> get settingsCategories => [
       SettingsCategory(
         id: SettingsCategoryId.system,
         title: '系统',
-        subtitle: '基础、下载器、媒体服务器',
+        subtitle: '基础、高级设置、下载器、媒体服务器',
         icon: Icons.settings_suggest_outlined,
         items: const [
-          SettingsSubItem(id: 'basic', title: '基础', subtitle: '应用、认证、数据库、缓存', route: '/settings/detail'),
-          SettingsSubItem(id: 'downloader', title: '下载器', subtitle: '代理、DoH、传输', route: '/settings/detail'),
-          SettingsSubItem(id: 'mediaserver', title: '媒体服务器', subtitle: '同步、扩展名、重命名', route: '/settings/detail'),
+          SettingsSubItem(id: 'basic', title: '基础', subtitle: '应用、认证、数据库、缓存', route: '/settings/system/basic', icon: Icons.settings_outlined),
+          SettingsSubItem(id: 'advanced', title: '高级设置', subtitle: '系统、媒体、网络、日志、实验室', route: '/settings/system/advanced', icon: Icons.tune),
+          SettingsSubItem(id: 'downloader', title: '下载器', subtitle: '代理、DoH、传输', route: '/settings/detail', icon: Icons.download_for_offline_outlined),
+          SettingsSubItem(id: 'mediaserver', title: '媒体服务器', subtitle: '同步、扩展名、重命名', route: '/settings/detail', icon: Icons.live_tv_outlined),
         ],
       ),
       SettingsCategory(
@@ -68,9 +72,9 @@ List<SettingsCategory> get settingsCategories => [
         subtitle: '存储、目录、整理&刮削',
         icon: Icons.folder_outlined,
         items: const [
-          SettingsSubItem(id: 'storage', title: '存储', route: null),
-          SettingsSubItem(id: 'directory', title: '目录', route: null),
-          SettingsSubItem(id: 'organize', title: '整理&刮削', route: null),
+          SettingsSubItem(id: 'storage', title: '存储', route: null, icon: Icons.storage_outlined),
+          SettingsSubItem(id: 'directory', title: '目录', route: null, icon: Icons.folder_outlined),
+          SettingsSubItem(id: 'organize', title: '整理&刮削', route: null, icon: Icons.auto_awesome_outlined),
         ],
       ),
       SettingsCategory(
@@ -79,9 +83,9 @@ List<SettingsCategory> get settingsCategories => [
         subtitle: '站点同步、站点选项、站点重置',
         icon: Icons.public_outlined,
         items: const [
-          SettingsSubItem(id: 'sync', title: '站点同步', route: null),
-          SettingsSubItem(id: 'options', title: '站点选项', route: null),
-          SettingsSubItem(id: 'reset', title: '站点重置', route: null),
+          SettingsSubItem(id: 'sync', title: '站点同步', route: null, icon: Icons.sync),
+          SettingsSubItem(id: 'options', title: '站点选项', route: null, icon: Icons.tune_outlined),
+          SettingsSubItem(id: 'reset', title: '站点重置', route: null, icon: Icons.restart_alt_outlined),
         ],
       ),
       SettingsCategory(
@@ -90,9 +94,9 @@ List<SettingsCategory> get settingsCategories => [
         subtitle: '自定义规则、优先级规则、下载规则',
         icon: Icons.rule_outlined,
         items: const [
-          SettingsSubItem(id: 'custom', title: '自定义规则', route: null),
-          SettingsSubItem(id: 'priority', title: '优先级规则', route: null),
-          SettingsSubItem(id: 'download', title: '下载规则', route: null),
+          SettingsSubItem(id: 'custom', title: '自定义规则', route: null, icon: Icons.rule_outlined),
+          SettingsSubItem(id: 'priority', title: '优先级规则', route: null, icon: Icons.low_priority_outlined),
+          SettingsSubItem(id: 'download', title: '下载规则', route: null, icon: Icons.download_outlined),
         ],
       ),
       SettingsCategory(
@@ -101,8 +105,8 @@ List<SettingsCategory> get settingsCategories => [
         subtitle: '基础设置、搜索站点',
         icon: Icons.search,
         items: const [
-          SettingsSubItem(id: 'basic', title: '基础设置', route: null),
-          SettingsSubItem(id: 'sites', title: '搜索站点', route: null),
+          SettingsSubItem(id: 'basic', title: '基础设置', route: null, icon: Icons.settings_outlined),
+          SettingsSubItem(id: 'sites', title: '搜索站点', route: null, icon: Icons.search),
         ],
       ),
       SettingsCategory(
@@ -111,8 +115,8 @@ List<SettingsCategory> get settingsCategories => [
         subtitle: '基础设置、订阅站点',
         icon: Icons.subscriptions_outlined,
         items: const [
-          SettingsSubItem(id: 'basic', title: '基础设置', route: null),
-          SettingsSubItem(id: 'sites', title: '订阅站点', route: null),
+          SettingsSubItem(id: 'basic', title: '基础设置', route: null, icon: Icons.settings_outlined),
+          SettingsSubItem(id: 'sites', title: '订阅站点', route: null, icon: Icons.rss_feed_outlined),
         ],
       ),
       SettingsCategory(
@@ -129,8 +133,17 @@ List<SettingsCategory> get settingsCategories => [
         subtitle: '通知渠道、通知模块',
         icon: Icons.notifications_outlined,
         items: const [
-          SettingsSubItem(id: 'channels', title: '通知渠道', route: null),
-          SettingsSubItem(id: 'modules', title: '通知模块', route: null),
+          SettingsSubItem(id: 'channels', title: '通知渠道', route: null, icon: Icons.campaign_outlined),
+          SettingsSubItem(id: 'modules', title: '通知模块', route: null, icon: Icons.extension_outlined),
         ],
       ),
+    ];
+
+/// 高级设置子项（三级列表）：系统、媒体、网络、日志、实验室
+List<SettingsSubItem> get advancedSettingsSubItems => const [
+      SettingsSubItem(id: 'system', title: '系统', route: '/settings/detail', icon: Icons.settings_suggest_outlined),
+      SettingsSubItem(id: 'media', title: '媒体', route: '/settings/detail', icon: Icons.movie_outlined),
+      SettingsSubItem(id: 'network', title: '网络', route: '/settings/detail', icon: Icons.wifi_outlined),
+      SettingsSubItem(id: 'log', title: '日志', route: '/settings/detail', icon: Icons.description_outlined),
+      SettingsSubItem(id: 'lab', title: '实验室', route: '/settings/detail', icon: Icons.science_outlined),
     ];
