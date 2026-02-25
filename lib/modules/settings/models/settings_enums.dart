@@ -25,6 +25,13 @@ const Map<String, List<SettingsEnumOption>> settingsEnums = {
     SettingsEnumOption(value: 'google', label: 'Google'),
   ],
   'LLM_MODEL': [], // 待用户提供后填充
+  'LOG_LEVEL': [
+    SettingsEnumOption(value: 'DEBUG', label: 'DEBUG - 调试'),
+    SettingsEnumOption(value: 'INFO', label: 'INFO - 信息'),
+    SettingsEnumOption(value: 'WARNING', label: 'WARNING - 警告'),
+    SettingsEnumOption(value: 'ERROR', label: 'ERROR - 错误'),
+    SettingsEnumOption(value: 'CRITICAL', label: 'CRITICAL - 严重'),
+  ],
 };
 
 String enumValueToLabel(String enumKey, dynamic value) {

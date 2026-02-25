@@ -53,6 +53,8 @@ import 'modules/downloader/controllers/downloader_config_controller.dart';
 import 'modules/downloader/pages/downloader_config_list_page.dart';
 import 'modules/downloader/pages/downloader_config_page.dart';
 import 'modules/downloader/pages/downloader_page.dart';
+import 'modules/mediaserver/controllers/mediaserver_controller.dart';
+import 'modules/mediaserver/pages/mediaserver_config_list_page.dart';
 import 'modules/plugin/controllers/plugin_controller.dart';
 import 'modules/plugin/controllers/plugin_list_controller.dart';
 import 'modules/plugin/pages/plugin_page.dart';
@@ -73,9 +75,9 @@ import 'modules/settings/controllers/settings_sub_list_controller.dart';
 import 'modules/settings/pages/settings_page.dart';
 import 'modules/settings/pages/settings_sub_list_page.dart';
 import 'modules/settings/pages/settings_detail_placeholder_page.dart';
-import 'modules/settings/controllers/settings_advanced_list_controller.dart';
+import 'modules/settings/controllers/settings_advanced_detail_controller.dart';
 import 'modules/settings/controllers/settings_basic_controller.dart';
-import 'modules/settings/pages/settings_advanced_list_page.dart';
+import 'modules/settings/pages/settings_advanced_detail_page.dart';
 import 'modules/settings/pages/settings_basic_page.dart';
 
 void main() {
@@ -318,6 +320,15 @@ class MyApp extends StatelessWidget {
           }),
         ),
         GetPage(
+          name: '/mediaserver-config',
+          page: () => const MediaServerConfigListPage(),
+          binding: BindingsBuilder(() {
+            if (!Get.isRegistered<MediaServerController>()) {
+              Get.put(MediaServerController(), permanent: true);
+            }
+          }),
+        ),
+        GetPage(
           name: '/plugin',
           page: () => const PluginPage(),
           binding: BindingsBuilder(() {
@@ -423,10 +434,10 @@ class MyApp extends StatelessWidget {
           }),
         ),
         GetPage(
-          name: '/settings/system/advanced',
-          page: () => const SettingsAdvancedListPage(),
+          name: '/settings/advanced/detail',
+          page: () => const SettingsAdvancedDetailPage(),
           binding: BindingsBuilder(() {
-            Get.lazyPut(() => SettingsAdvancedListController());
+            Get.lazyPut(() => SettingsAdvancedDetailController());
           }),
         ),
         GetPage(

@@ -1,11 +1,13 @@
 import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
-import 'package:moviepilot_mobile/services/api_client.dart';
-import 'package:moviepilot_mobile/modules/mediaserver/models/mediaserver_model.dart';
-import 'package:moviepilot_mobile/modules/mediaserver/models/library_model.dart';
+import 'package:moviepilot_mobile/modules/dashboard/models/statistic_model.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/models/latest_media_model.dart';
-import 'package:talker/talker.dart';
+import 'package:moviepilot_mobile/modules/mediaserver/models/library_model.dart';
+import 'package:moviepilot_mobile/modules/mediaserver/models/mediaserver_model.dart';
+import 'package:moviepilot_mobile/services/api_client.dart';
 
 /// 媒体服务器控制器
 class MediaServerController extends GetxController {
@@ -27,22 +29,72 @@ class MediaServerController extends GetxController {
   /// 正在播放的媒体
   final playingMedia = Rx<List<LatestMedia>?>(null);
 
+  /// 各媒体服务器统计（GET /api/v1/dashboard/statistic?server=xxx）
+  final mediaServerStats = <String, StatisticModel>{}.obs;
+
+  Timer? _statsTimer;
+  static const Duration _statsInterval = Duration(seconds: 10);
+
   /// 加载状态
   final isLoading = false.obs;
 
   @override
   void onInit() {
     super.onInit();
+    ever(mediaServers, (_) => loadMediaServerStats());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isClosed) {
+        _statsTimer?.cancel();
+        _statsTimer = Timer.periodic(_statsInterval, (_) => loadMediaServerStats());
+      }
+    });
     // 加载媒体服务器数据
     loadMediaServers().then((_) {
+      loadMediaServerStats();
       // 加载媒体库数据
       loadMediaLibraries().then((_) {
-        // 加载最近添加媒体列表
-        loadLatestMediaList(mediaServers.value.first.name);
-        // 加载正在播放的媒体
-        loadPlayingMedia(mediaServers.value.first.name);
+        final servers = mediaServers.value;
+        if (servers.isNotEmpty) {
+          loadLatestMediaList(servers.first.name);
+          loadPlayingMedia(servers.first.name);
+        }
       });
     });
+  }
+
+  @override
+  void onClose() {
+    _statsTimer?.cancel();
+    _statsTimer = null;
+    super.onClose();
+  }
+
+  /// 获取指定媒体服务器的统计数据
+  StatisticModel? statsFor(String serverName) => mediaServerStats[serverName];
+
+  /// 加载各媒体服务器统计数据（GET /api/v1/dashboard/statistic?server=xxx）
+  Future<void> loadMediaServerStats() async {
+    final servers = mediaServers.value;
+    if (servers.isEmpty || isClosed) return;
+    final Map<String, StatisticModel> newStats = {};
+    for (final s in servers) {
+      if (s.name.isEmpty) continue;
+      try {
+        final resp = await apiClient.get<Map<String, dynamic>>(
+          '/api/v1/dashboard/statistic',
+          queryParameters: {'server': s.name},
+        );
+        if (resp.statusCode == 200 && resp.data != null) {
+          newStats[s.name] = StatisticModel.fromJson(resp.data!);
+        }
+      } catch (e, st) {
+        talker.handle(e, stackTrace: st, message: '获取媒体服务器 ${s.name} 统计失败');
+      }
+    }
+    if (!isClosed) {
+      mediaServerStats.assignAll(newStats);
+      mediaServerStats.refresh();
+    }
   }
 
   /// 加载媒体服务器数据
@@ -195,9 +247,10 @@ class MediaServerController extends GetxController {
     }
   }
 
-  /// 刷新媒体服务器数据
+  /// 刷新媒体服务器数据（含统计）
   Future<void> refreshMediaServers() async {
     await loadMediaServers();
+    await loadMediaServerStats();
   }
 
   /// 加载媒体服务器最新入库数据

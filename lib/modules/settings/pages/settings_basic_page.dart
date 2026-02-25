@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/settings/controllers/settings_basic_controller.dart';
@@ -184,7 +183,7 @@ class SettingsBasicPage extends GetView<SettingsBasicController> {
 
     return SliverToBoxAdapter(
       child: CupertinoListSection.insetGrouped(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(context),
         header: Padding(
           padding: const EdgeInsets.only(left: 16, bottom: 4, top: 2),
           child: Text(

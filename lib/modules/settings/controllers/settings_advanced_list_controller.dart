@@ -7,7 +7,14 @@ class SettingsAdvancedListController extends GetxController {
 
   void onItemTap(SettingsSubItem item) {
     if (item.route != null && item.route!.isNotEmpty) {
-      Get.toNamed(item.route!, arguments: {'title': item.title, 'categoryId': 'advanced', 'subId': item.id});
+      Get.toNamed(
+        item.route!,
+        arguments: {
+          'title': item.title,
+          'categoryId': 'advanced',
+          'subId': item.id,
+        },
+      );
       return;
     }
     ToastUtil.info('${item.title} 详情页待接入');

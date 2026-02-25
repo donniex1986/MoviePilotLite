@@ -61,9 +61,9 @@ List<SettingsCategory> get settingsCategories => [
         icon: Icons.settings_suggest_outlined,
         items: const [
           SettingsSubItem(id: 'basic', title: '基础', subtitle: '应用、认证、数据库、缓存', route: '/settings/system/basic', icon: Icons.settings_outlined),
-          SettingsSubItem(id: 'advanced', title: '高级设置', subtitle: '系统、媒体、网络、日志、实验室', route: '/settings/system/advanced', icon: Icons.tune),
+          SettingsSubItem(id: 'advanced', title: '高级设置', subtitle: '系统、媒体、网络、日志、实验室', route: '/settings/advanced/detail', icon: Icons.tune),
           SettingsSubItem(id: 'downloader', title: '下载器', subtitle: '代理、DoH、传输', route: '/downloader-config', icon: Icons.download_for_offline_outlined),
-          SettingsSubItem(id: 'mediaserver', title: '媒体服务器', subtitle: '同步、扩展名、重命名', route: '/settings/detail', icon: Icons.live_tv_outlined),
+          SettingsSubItem(id: 'mediaserver', title: '媒体服务器', subtitle: '同步、扩展名、重命名', route: '/mediaserver-config', icon: Icons.live_tv_outlined),
         ],
       ),
       SettingsCategory(
@@ -141,9 +141,9 @@ List<SettingsCategory> get settingsCategories => [
 
 /// 高级设置子项（三级列表）：系统、媒体、网络、日志、实验室
 List<SettingsSubItem> get advancedSettingsSubItems => const [
-      SettingsSubItem(id: 'system', title: '系统', route: '/settings/detail', icon: Icons.settings_suggest_outlined),
-      SettingsSubItem(id: 'media', title: '媒体', route: '/settings/detail', icon: Icons.movie_outlined),
-      SettingsSubItem(id: 'network', title: '网络', route: '/settings/detail', icon: Icons.wifi_outlined),
-      SettingsSubItem(id: 'log', title: '日志', route: '/settings/detail', icon: Icons.description_outlined),
-      SettingsSubItem(id: 'lab', title: '实验室', route: '/settings/detail', icon: Icons.science_outlined),
+      SettingsSubItem(id: 'system', title: '系统', route: '/settings/advanced/detail', icon: Icons.settings_suggest_outlined),
+      SettingsSubItem(id: 'media', title: '媒体', route: '/settings/advanced/detail', icon: Icons.movie_outlined),
+      SettingsSubItem(id: 'network', title: '网络', route: '/settings/advanced/detail', icon: Icons.wifi_outlined),
+      SettingsSubItem(id: 'log', title: '日志', route: '/settings/advanced/detail', icon: Icons.description_outlined),
+      SettingsSubItem(id: 'lab', title: '实验室', route: '/settings/advanced/detail', icon: Icons.science_outlined),
     ];

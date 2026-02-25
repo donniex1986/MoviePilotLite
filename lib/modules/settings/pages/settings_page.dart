@@ -135,7 +135,7 @@ class SliverCupertinoListSection extends StatelessWidget {
         child: Icon(icon, size: 18, color: iconColor),
       ),
       title: Text(displayTitle),
-      subtitle: displaySubtitle != null ? Text(displaySubtitle) : null,
+      // subtitle: displaySubtitle != null ? Text(displaySubtitle) : null,
       trailing: const CupertinoListTileChevron(),
       onTap: onTap,
     );
