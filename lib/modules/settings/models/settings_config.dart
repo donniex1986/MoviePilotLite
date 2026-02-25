@@ -72,9 +72,9 @@ List<SettingsCategory> get settingsCategories => [
         subtitle: '存储、目录、整理&刮削',
         icon: Icons.folder_outlined,
         items: const [
-          SettingsSubItem(id: 'storage', title: '存储', route: null, icon: Icons.storage_outlined),
-          SettingsSubItem(id: 'directory', title: '目录', route: null, icon: Icons.folder_outlined),
-          SettingsSubItem(id: 'organize', title: '整理&刮削', route: null, icon: Icons.auto_awesome_outlined),
+          SettingsSubItem(id: 'storage', title: '存储', route: '/storage-list', icon: Icons.storage_outlined),
+          SettingsSubItem(id: 'directory', title: '目录', route: '/directory-list', icon: Icons.folder_outlined),
+          SettingsSubItem(id: 'organize', title: '整理&刮削', route: '/organize-scrape', icon: Icons.auto_awesome_outlined),
         ],
       ),
       SettingsCategory(

@@ -52,7 +52,10 @@ class DownloadController extends GetxController {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!isClosed) {
         _statsTimer?.cancel();
-        _statsTimer = Timer.periodic(_statsInterval, (_) => loadDownloaderStats());
+        _statsTimer = Timer.periodic(
+          _statsInterval,
+          (_) => loadDownloaderStats(),
+        );
       }
     });
   }
@@ -142,8 +145,7 @@ class DownloadController extends GetxController {
       downloaderStats[downloaderName];
 
   /// 获取目录加载状态
-  bool get isLoadingDirectories =>
-      _settingController.isLoadingDirectories.value;
+  bool get isLoadingDirectories => _settingController.isLoadingDirectories;
 
   /// 开始下载
   Future<void> startDownload({

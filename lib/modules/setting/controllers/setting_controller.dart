@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/modules/directory/controllers/directory_list_controller.dart';
 import 'package:moviepilot_mobile/modules/setting/models/setting_models.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
@@ -10,60 +11,30 @@ class SettingController extends GetxController {
   final _appService = Get.find<AppService>();
   final _log = Get.find<AppLog>();
 
-  // 目录设置列表
-  final directories = <DirectorySetting>[].obs;
-  
   // 下载客户端列表
   final downloadClients = <DownloadClient>[].obs;
-  
+
   // 加载状态
-  final isLoadingDirectories = false.obs;
   final isLoadingDownloadClients = false.obs;
+
+  DirectoryListController get _directoryController {
+    if (!Get.isRegistered<DirectoryListController>()) {
+      Get.put(DirectoryListController(), permanent: true);
+    }
+    return Get.find<DirectoryListController>();
+  }
+
+  /// 目录设置列表（委托 DirectoryListController）
+  List<DirectorySetting> get directories => _directoryController.directories;
+
+  /// 目录加载状态
+  bool get isLoadingDirectories => _directoryController.isLoading.value;
 
   @override
   void onInit() {
     super.onInit();
-    loadDirectories();
+    _directoryController; // 确保 DirectoryListController 已注册
     loadDownloadClients();
-  }
-
-  /// 加载目录设置列表
-  Future<void> loadDirectories() async {
-    isLoadingDirectories.value = true;
-    try {
-      final token =
-          _appService.loginResponse?.accessToken ??
-          _appService.latestLoginProfileAccessToken ??
-          _apiClient.token;
-      if (token == null || token.isEmpty) {
-        ToastUtil.error('请先登录');
-        return;
-      }
-
-      final response = await _apiClient.get<dynamic>(
-        '/api/v1/system/setting/Directories',
-        token: token,
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data is Map<String, dynamic>) {
-          final directoryResponse = DirectorySettingResponse.fromJson(data);
-          if (directoryResponse.success && directoryResponse.data != null) {
-            directories.value = directoryResponse.data!.value;
-          } else {
-            ToastUtil.error(directoryResponse.message ?? '加载目录设置失败');
-          }
-        }
-      } else {
-        ToastUtil.error('加载目录设置失败');
-      }
-    } catch (e, st) {
-      _log.handle(e, stackTrace: st, message: '加载目录设置失败');
-      ToastUtil.error('加载目录设置失败');
-    } finally {
-      isLoadingDirectories.value = false;
-    }
   }
 
   /// 加载下载客户端列表
@@ -103,11 +74,7 @@ class SettingController extends GetxController {
     }
   }
 
-  /// 获取目录建议列表（从目录设置中提取 download_path）
-  List<String> get directorySuggestions {
-    return directories
-        .map((dir) => dir.downloadPath)
-        .where((path) => path.isNotEmpty)
-        .toList();
-  }
+  /// 获取目录建议列表（委托 DirectoryListController）
+  List<String> get directorySuggestions =>
+      _directoryController.directorySuggestions;
 }

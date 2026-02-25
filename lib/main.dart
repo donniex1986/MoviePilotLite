@@ -76,9 +76,15 @@ import 'modules/settings/pages/settings_page.dart';
 import 'modules/settings/pages/settings_sub_list_page.dart';
 import 'modules/settings/pages/settings_detail_placeholder_page.dart';
 import 'modules/settings/controllers/settings_advanced_detail_controller.dart';
+import 'modules/settings/controllers/settings_organize_scrape_controller.dart';
 import 'modules/settings/controllers/settings_basic_controller.dart';
 import 'modules/settings/pages/settings_advanced_detail_page.dart';
 import 'modules/settings/pages/settings_basic_page.dart';
+import 'modules/settings/pages/organize_scrape_page.dart';
+import 'modules/storage/controllers/storage_list_controller.dart';
+import 'modules/storage/pages/storage_list_page.dart';
+import 'modules/directory/controllers/directory_list_controller.dart';
+import 'modules/directory/pages/directory_list_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -287,6 +293,9 @@ class MyApp extends StatelessWidget {
           name: '/media-organize',
           page: () => const MediaOrganizePage(),
           binding: BindingsBuilder(() {
+            if (!Get.isRegistered<StorageListController>()) {
+              Get.put(StorageListController(), permanent: true);
+            }
             final keyword = Get.parameters['keyword'];
             Get.put(
               MediaOrganizeController()..searchController.text = keyword ?? '',
@@ -403,6 +412,24 @@ class MyApp extends StatelessWidget {
           }),
         ),
         GetPage(
+          name: '/storage-list',
+          page: () => const StorageListPage(),
+          binding: BindingsBuilder(() {
+            if (!Get.isRegistered<StorageListController>()) {
+              Get.put(StorageListController(), permanent: true);
+            }
+          }),
+        ),
+        GetPage(
+          name: '/directory-list',
+          page: () => const DirectoryListPage(),
+          binding: BindingsBuilder(() {
+            if (!Get.isRegistered<DirectoryListController>()) {
+              Get.put(DirectoryListController(), permanent: true);
+            }
+          }),
+        ),
+        GetPage(
           name: '/settings',
           page: () => const SettingsPage(),
           binding: BindingsBuilder(() {
@@ -438,6 +465,13 @@ class MyApp extends StatelessWidget {
           page: () => const SettingsAdvancedDetailPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => SettingsAdvancedDetailController());
+          }),
+        ),
+        GetPage(
+          name: '/organize-scrape',
+          page: () => const OrganizeScrapePage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SettingsOrganizeScrapeController());
           }),
         ),
         GetPage(

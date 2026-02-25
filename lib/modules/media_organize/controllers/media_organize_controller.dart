@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/media_organize/models/media_organize_models.dart';
+import 'package:moviepilot_mobile/modules/storage/controllers/storage_list_controller.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 
 class MediaOrganizeController extends GetxController {
@@ -15,8 +16,6 @@ class MediaOrganizeController extends GetxController {
   final hasMore = true.obs;
 
   final items = <MediaOrganizeTransferItem>[].obs;
-  final storages = <StorageSetting>[].obs;
-  final storageNameMap = <String, String>{}.obs;
   final isLoading = false.obs;
   final errorText = RxnString();
   final allKeys = <String>[].obs;
@@ -32,6 +31,12 @@ class MediaOrganizeController extends GetxController {
             false,
       )
       .toList();
+  StorageListController get _storageController =>
+      Get.find<StorageListController>();
+
+  List<StorageSetting> get storages => _storageController.storages;
+  Map<String, String> get storageNameMap => Map.from(_storageController.storageNameMap);
+
   @override
   void onReady() {
     super.onReady();
@@ -59,42 +64,14 @@ class MediaOrganizeController extends GetxController {
     super.onClose();
   }
 
-  /// 获取存储列表并构建 type -> name 映射
+  /// 委托 StorageListController 加载存储列表
   Future<void> loadStorages() async {
-    try {
-      final response = await _apiClient.get<dynamic>(
-        '/api/v1/system/setting/Storages',
-      );
-      final status = response.statusCode ?? 0;
-      if (status >= 400) return;
-
-      final data = response.data;
-      if (data is! Map<String, dynamic>) return;
-      final value = data['data']['value'];
-      final list = <StorageSetting>[];
-      final map = <String, String>{};
-      for (final raw in value) {
-        if (raw is Map<String, dynamic>) {
-          try {
-            final item = StorageSetting.fromJson(raw);
-            list.add(item);
-            map[item.type] = item.name;
-          } catch (e, st) {
-            _log.handle(e, stackTrace: st, message: '解析存储设置失败');
-          }
-        }
-      }
-      storages.assignAll(list);
-      storageNameMap.assignAll(map);
-    } catch (e, st) {
-      _log.handle(e, stackTrace: st, message: '获取存储列表失败');
-    }
+    await _storageController.loadStorages();
   }
 
   /// 根据 storage type 获取显示名称
   String getStorageName(String? type) {
-    if (type == null || type.isEmpty) return type ?? '';
-    return storageNameMap[type] ?? type;
+    return _storageController.getStorageName(type);
   }
 
   final searchController = TextEditingController();
