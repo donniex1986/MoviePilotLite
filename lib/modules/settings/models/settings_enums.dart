@@ -29,6 +29,28 @@ const Map<String, List<SettingsEnumOption>> settingsEnums = {
     SettingsEnumOption(value: 'google', label: 'Google'),
   ],
   'LLM_MODEL': [], // 待用户提供后填充
+  'SITEDATA_REFRESH_INTERVAL': [
+    SettingsEnumOption(value: '60', label: '每小时'),
+    SettingsEnumOption(value: '360', label: '每6小时'),
+    SettingsEnumOption(value: '720', label: '每12小时'),
+    SettingsEnumOption(value: '1440', label: '每天'),
+    SettingsEnumOption(value: '10080', label: '每周'),
+    SettingsEnumOption(value: '43200', label: '每月'),
+    SettingsEnumOption(value: '0', label: '永不'),
+  ],
+  'BROWSER_EMULATION': [
+    SettingsEnumOption(value: 'playwright', label: 'playwright'),
+    SettingsEnumOption(value: 'flaresolverr', label: 'flaresolverr'),
+  ],
+  'COOKIECLOUD_INTERVAL': [
+    SettingsEnumOption(value: '60', label: '每小时'),
+    SettingsEnumOption(value: '360', label: '每6小时'),
+    SettingsEnumOption(value: '720', label: '每12小时'),
+    SettingsEnumOption(value: '1440', label: '每天'),
+    SettingsEnumOption(value: '10080', label: '每周'),
+    SettingsEnumOption(value: '43200', label: '每月'),
+    SettingsEnumOption(value: '0', label: '永不'),
+  ],
   'LOG_LEVEL': [
     SettingsEnumOption(value: 'DEBUG', label: 'DEBUG - 调试'),
     SettingsEnumOption(value: 'INFO', label: 'INFO - 信息'),

@@ -48,6 +48,7 @@ class SettingsFieldRow extends StatelessWidget {
     this.onSelectChanged,
     this.compact = false,
     this.editMode = false,
+    this.obscureText = false,
   });
 
   final String title;
@@ -94,6 +95,9 @@ class SettingsFieldRow extends StatelessWidget {
 
   /// 编辑模式：可编辑控件样式
   final bool editMode;
+
+  /// 密码输入框，文本是否遮挡
+  final bool obscureText;
 
   @override
   Widget build(BuildContext context) {
@@ -160,6 +164,7 @@ class SettingsFieldRow extends StatelessWidget {
             const SizedBox(height: 8),
             CupertinoTextField(
               controller: textController!,
+              obscureText: false, // 多行输入框不支持 obscureText
               onChanged: onTextChanged,
               onSubmitted: onTextSubmitted,
               minLines: 3,
@@ -224,6 +229,7 @@ class SettingsFieldRow extends StatelessWidget {
             width: 130,
             child: CupertinoTextField(
               controller: textController,
+              obscureText: obscureText,
               onChanged: onTextChanged,
               onSubmitted: onTextSubmitted,
               textAlign: TextAlign.end,

@@ -22,6 +22,7 @@ class SettingsFieldConfig {
     this.step,
     this.conditionKey,
     this.conditionValue,
+    this.obscureText = false,
   });
 
   final String label;
@@ -29,6 +30,8 @@ class SettingsFieldConfig {
   final SettingsFieldType type;
   final String? hint;
   final IconData? icon;
+  /// 密码输入框，文本是否遮挡
+  final bool obscureText;
   /// 枚举配置 key，对应 settingsEnums 的 key
   final String? enumKey;
   /// 数值单位，如 "小时"

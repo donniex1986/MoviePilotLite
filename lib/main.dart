@@ -77,14 +77,22 @@ import 'modules/settings/pages/settings_sub_list_page.dart';
 import 'modules/settings/pages/settings_detail_placeholder_page.dart';
 import 'modules/settings/controllers/settings_advanced_detail_controller.dart';
 import 'modules/settings/controllers/settings_organize_scrape_controller.dart';
+import 'modules/settings/controllers/settings_site_sync_controller.dart';
+import 'modules/settings/controllers/settings_site_options_controller.dart';
 import 'modules/settings/controllers/settings_basic_controller.dart';
 import 'modules/settings/pages/settings_advanced_detail_page.dart';
 import 'modules/settings/pages/settings_basic_page.dart';
 import 'modules/settings/pages/organize_scrape_page.dart';
+import 'modules/settings/pages/site_sync_page.dart';
+import 'modules/settings/pages/site_options_page.dart';
 import 'modules/storage/controllers/storage_list_controller.dart';
 import 'modules/storage/pages/storage_list_page.dart';
 import 'modules/directory/controllers/directory_list_controller.dart';
 import 'modules/directory/pages/directory_list_page.dart';
+import 'modules/rule/controllers/rule_controller.dart';
+import 'modules/rule/pages/custom_rule_page.dart';
+import 'modules/rule/pages/priority_rule_page.dart';
+import 'modules/rule/pages/download_rule_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -472,6 +480,41 @@ class MyApp extends StatelessWidget {
           page: () => const OrganizeScrapePage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => SettingsOrganizeScrapeController());
+          }),
+        ),
+        GetPage(
+          name: '/site-sync',
+          page: () => const SiteSyncPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SettingsSiteSyncController());
+          }),
+        ),
+        GetPage(
+          name: '/site-options',
+          page: () => const SiteOptionsPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SettingsSiteOptionsController());
+          }),
+        ),
+        GetPage(
+          name: '/custom-rule',
+          page: () => const CustomRulePage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => RuleController(ruleType: RuleType.custom));
+          }),
+        ),
+        GetPage(
+          name: '/priority-rule',
+          page: () => const PriorityRulePage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => RuleController(ruleType: RuleType.priority));
+          }),
+        ),
+        GetPage(
+          name: '/download-rule',
+          page: () => const DownloadRulePage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => RuleController(ruleType: RuleType.download));
           }),
         ),
         GetPage(

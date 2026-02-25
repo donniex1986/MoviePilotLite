@@ -83,8 +83,8 @@ List<SettingsCategory> get settingsCategories => [
         subtitle: '站点同步、站点选项、站点重置',
         icon: Icons.public_outlined,
         items: const [
-          SettingsSubItem(id: 'sync', title: '站点同步', route: null, icon: Icons.sync),
-          SettingsSubItem(id: 'options', title: '站点选项', route: null, icon: Icons.tune_outlined),
+          SettingsSubItem(id: 'sync', title: '站点同步', route: '/site-sync', icon: Icons.sync),
+          SettingsSubItem(id: 'options', title: '站点选项', route: '/site-options', icon: Icons.tune_outlined),
           SettingsSubItem(id: 'reset', title: '站点重置', route: null, icon: Icons.restart_alt_outlined),
         ],
       ),
@@ -94,9 +94,9 @@ List<SettingsCategory> get settingsCategories => [
         subtitle: '自定义规则、优先级规则、下载规则',
         icon: Icons.rule_outlined,
         items: const [
-          SettingsSubItem(id: 'custom', title: '自定义规则', route: null, icon: Icons.rule_outlined),
-          SettingsSubItem(id: 'priority', title: '优先级规则', route: null, icon: Icons.low_priority_outlined),
-          SettingsSubItem(id: 'download', title: '下载规则', route: null, icon: Icons.download_outlined),
+          SettingsSubItem(id: 'custom', title: '自定义规则', route: '/custom-rule', icon: Icons.rule_outlined),
+          SettingsSubItem(id: 'priority', title: '优先级规则', route: '/priority-rule', icon: Icons.low_priority_outlined),
+          SettingsSubItem(id: 'download', title: '下载规则', route: '/download-rule', icon: Icons.download_outlined),
         ],
       ),
       SettingsCategory(

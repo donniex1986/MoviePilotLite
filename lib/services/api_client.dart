@@ -296,6 +296,31 @@ class ApiClient extends g.GetxController {
     );
   }
 
+  /// POST 请求，data 可为 List 等可 JSON 序列化的对象（如 TorrentsPriority 的字符串数组）
+  Future<Response<T>> postJson<T>(
+    String path,
+    Object? data, {
+    Map<String, dynamic>? queryParameters,
+    String? token,
+    int? timeout,
+  }) async {
+    await _ensureReady();
+    final authToken = token ?? this.token;
+    _log.info(
+      'API POST请求: $path, token: ${authToken != null ? '***' : 'null'}',
+    );
+    final options = Options(
+      headers: {
+        if (authToken != null) 'authorization': 'Bearer $authToken',
+        'content-type': 'application/json',
+      },
+      sendTimeout: Duration(seconds: timeout ?? 30),
+      receiveTimeout: Duration(seconds: timeout ?? 30),
+      validateStatus: (status) => true,
+    );
+    return _dio.post<T>(path, data: data, options: options);
+  }
+
   Future<Response<T>> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
