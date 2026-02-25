@@ -62,7 +62,7 @@ List<SettingsCategory> get settingsCategories => [
         items: const [
           SettingsSubItem(id: 'basic', title: '基础', subtitle: '应用、认证、数据库、缓存', route: '/settings/system/basic', icon: Icons.settings_outlined),
           SettingsSubItem(id: 'advanced', title: '高级设置', subtitle: '系统、媒体、网络、日志、实验室', route: '/settings/system/advanced', icon: Icons.tune),
-          SettingsSubItem(id: 'downloader', title: '下载器', subtitle: '代理、DoH、传输', route: '/settings/detail', icon: Icons.download_for_offline_outlined),
+          SettingsSubItem(id: 'downloader', title: '下载器', subtitle: '代理、DoH、传输', route: '/downloader-config', icon: Icons.download_for_offline_outlined),
           SettingsSubItem(id: 'mediaserver', title: '媒体服务器', subtitle: '同步、扩展名、重命名', route: '/settings/detail', icon: Icons.live_tv_outlined),
         ],
       ),

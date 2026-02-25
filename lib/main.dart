@@ -47,7 +47,11 @@ import 'modules/subscribe/pages/subscribe_share_page.dart';
 import 'modules/subscribe/pages/subscribe_share_statistics_page.dart';
 import 'modules/media_organize/controllers/media_organize_controller.dart';
 import 'modules/media_organize/pages/media_organize_page.dart';
+import 'modules/download/controllers/download_controller.dart';
 import 'modules/downloader/controllers/downloader_controller.dart';
+import 'modules/downloader/controllers/downloader_config_controller.dart';
+import 'modules/downloader/pages/downloader_config_list_page.dart';
+import 'modules/downloader/pages/downloader_config_page.dart';
 import 'modules/downloader/pages/downloader_page.dart';
 import 'modules/plugin/controllers/plugin_controller.dart';
 import 'modules/plugin/controllers/plugin_list_controller.dart';
@@ -293,6 +297,24 @@ class MyApp extends StatelessWidget {
           page: () => const DownloaderPage(),
           binding: BindingsBuilder(() {
             Get.put(DownloaderController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/downloader-config',
+          page: () => const DownloaderConfigListPage(),
+          binding: BindingsBuilder(() {
+            if (!Get.isRegistered<DownloadController>()) {
+              Get.put(DownloadController(), permanent: true);
+            }
+          }),
+        ),
+        GetPage(
+          name: '/downloader-config/form',
+          page: () => const DownloaderConfigPage(),
+          binding: BindingsBuilder(() {
+            if (!Get.isRegistered<DownloaderConfigController>()) {
+              Get.put(DownloaderConfigController(), permanent: false);
+            }
           }),
         ),
         GetPage(

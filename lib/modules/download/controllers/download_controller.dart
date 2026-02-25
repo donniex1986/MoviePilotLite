@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/modules/downloader/models/downloader_stats.dart';
 import 'package:moviepilot_mobile/modules/search_result/models/search_result_models.dart';
 import 'package:moviepilot_mobile/modules/setting/controllers/setting_controller.dart';
 import 'package:moviepilot_mobile/modules/setting/models/setting_models.dart';
@@ -13,6 +17,11 @@ class DownloadController extends GetxController {
   // 下载器列表（使用 DownloadClient）
   final downloaders = <DownloadClient>[].obs;
   final selectedDownloader = Rxn<DownloadClient>();
+
+  /// 各下载器状态（GET /api/v1/dashboard/downloader?name=xxx）
+  final downloaderStats = <String, DownloaderStats>{}.obs;
+  Timer? _statsTimer;
+  static const Duration _statsInterval = Duration(seconds: 8);
 
   // 下载目录列表和建议
   final selectedDirectory = ''.obs;
@@ -38,6 +47,21 @@ class DownloadController extends GetxController {
     super.onInit();
     _loadDownloaders();
     _loadDirectories();
+    ever(downloaders, (_) => loadDownloaderStats());
+    // 在下一帧启动定时器，避免 init 阶段被 dispose 或调度未就绪
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isClosed) {
+        _statsTimer?.cancel();
+        _statsTimer = Timer.periodic(_statsInterval, (_) => loadDownloaderStats());
+      }
+    });
+  }
+
+  @override
+  void onClose() {
+    _statsTimer?.cancel();
+    _statsTimer = null;
+    super.onClose();
   }
 
   /// 加载下载器列表（从 SettingController）
@@ -83,6 +107,39 @@ class DownloadController extends GetxController {
   /// 获取下载器加载状态
   bool get isLoadingDownloaders =>
       _settingController.isLoadingDownloadClients.value;
+
+  /// 刷新下载器列表（供配置列表页下拉刷新等使用）
+  Future<void> refreshDownloaders() async {
+    await _settingController.loadDownloadClients();
+    await loadDownloaderStats();
+  }
+
+  /// 获取各下载器状态
+  Future<void> loadDownloaderStats() async {
+    if (downloaders.isEmpty || isClosed) return;
+    final Map<String, DownloaderStats> newStats = {};
+    for (final d in downloaders) {
+      if (d.name.isEmpty) continue;
+      try {
+        final resp = await _apiClient.get<Map<String, dynamic>>(
+          '/api/v1/dashboard/downloader',
+          queryParameters: {'name': d.name},
+        );
+        if (resp.statusCode == 200 && resp.data != null) {
+          newStats[d.name] = DownloaderStats.fromJson(resp.data!);
+        }
+      } catch (e, st) {
+        _log.handle(e, stackTrace: st, message: '获取下载器 ${d.name} 状态失败');
+      }
+    }
+    if (!isClosed) {
+      downloaderStats.assignAll(newStats);
+      downloaderStats.refresh();
+    }
+  }
+
+  DownloaderStats? statsFor(String downloaderName) =>
+      downloaderStats[downloaderName];
 
   /// 获取目录加载状态
   bool get isLoadingDirectories =>
