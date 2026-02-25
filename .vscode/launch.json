@@ -10,12 +10,14 @@
             "type": "dart"
         },
         {
-            "name": "moviepilot_mobile (debug 0093)",
+            "name": "iPhone Debug",
             "request": "launch",
             "type": "dart",
+            "deviceId": "00008120-000E5CAA2184C01E",
             "flutterMode": "debug",
+            "program": "lib/main.dart",
             "args": [
-                "--device-id=00008120-000E5CAA2184C01E"
+                "--dart-define=ENV=dev"
             ]
         },
         {

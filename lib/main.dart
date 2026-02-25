@@ -64,6 +64,11 @@ import 'modules/site/pages/site_detail_page.dart';
 import 'modules/site/pages/site_resource_page.dart';
 import 'modules/user_management/controllers/user_management_controller.dart';
 import 'modules/user_management/pages/user_management_page.dart';
+import 'modules/settings/controllers/settings_controller.dart';
+import 'modules/settings/controllers/settings_sub_list_controller.dart';
+import 'modules/settings/pages/settings_page.dart';
+import 'modules/settings/pages/settings_sub_list_page.dart';
+import 'modules/settings/pages/settings_detail_placeholder_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -359,6 +364,30 @@ class MyApp extends StatelessWidget {
           binding: BindingsBuilder(() {
             Get.lazyPut(() => UserManagementController());
           }),
+        ),
+        GetPage(
+          name: '/settings',
+          page: () => const SettingsPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SettingsController());
+          }),
+        ),
+        GetPage(
+          name: '/settings/:category',
+          page: () => const SettingsSubListPage(),
+          binding: BindingsBuilder(() {
+            final category = Get.parameters['category'] ?? '';
+            final args = Get.arguments as Map<String, dynamic>?;
+            final title = args?['title'] as String? ?? category;
+            Get.lazyPut(() => SettingsSubListController(
+                  categoryId: category,
+                  pageTitle: title,
+                ));
+          }),
+        ),
+        GetPage(
+          name: '/settings/detail',
+          page: () => const SettingsDetailPlaceholderPage(),
         ),
         GetPage(
           name: '/plugin/dynamic-form/page',

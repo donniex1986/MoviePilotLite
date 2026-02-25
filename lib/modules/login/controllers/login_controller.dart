@@ -14,6 +14,20 @@ class LoginController extends GetxController {
   final _repository = Get.find<AuthRepository>();
   final _talker = Get.find<AppLog>();
 
+  /// 默认壁纸（无本地缓存时使用，如首次安装）
+  static const List<String> defaultWallpapers = [
+    'https://image.tmdb.org/t/p/original/7HKpc11uQfxnw0Y8tRUYn1fsKqE.jpg',
+    'https://image.tmdb.org/t/p/original/hHDNOlATHhre4eZ7aYz5cdyJLik.jpg',
+    'https://image.tmdb.org/t/p/original/7mkUu1F2hVUNgz24xO8HPx0D6mK.jpg',
+    'https://image.tmdb.org/t/p/original/6YjnTRBz704LF1uJ3ZC4wsS9T8r.jpg',
+    'https://image.tmdb.org/t/p/original/77TCOiGEmHYLndIw4jsf6uUra4X.jpg',
+    'https://image.tmdb.org/t/p/original/gklrevVndG98GHGDwfm8y8kxESo.jpg',
+    'https://image.tmdb.org/t/p/original/yWCZc2TcsCYbMMjvUIsczmQi2TX.jpg',
+    'https://image.tmdb.org/t/p/original/tNONILTe9OJz574KZWaLze4v6RC.jpg',
+    'https://image.tmdb.org/t/p/original/thgemkoLauZxcqe6KX8wxqEc70z.jpg',
+    'https://image.tmdb.org/t/p/original/5QsLvWh8J1mXl1W05wNJknMmhzR.jpg',
+  ];
+
   final serverController = TextEditingController();
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
@@ -43,24 +57,27 @@ class LoginController extends GetxController {
     super.onInit();
   }
 
-  /// 加载上次登录保存的壁纸
+  /// 加载上次登录保存的壁纸；无缓存时使用默认壁纸（如首次安装）
   Future<void> _loadSavedWallpapers() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final json = prefs.getString(kLoginWallpapersKey);
-      if (json == null || json.isEmpty) return;
+      List<String> list = <String>[];
 
-      final decoded = jsonDecode(json);
-      final list = decoded is List
-          ? decoded.whereType<String>().where((s) => s.startsWith('http')).toList()
-          : <String>[];
-      if (list.isNotEmpty) {
-        wallpapers.assignAll(list);
-        currentWallpaperIndex.value = 0;
-        _startWallpaperTimer();
+      if (json != null && json.isNotEmpty) {
+        final decoded = jsonDecode(json);
+        list = decoded is List
+            ? decoded.whereType<String>().where((s) => s.startsWith('http')).toList()
+            : <String>[];
       }
+
+      wallpapers.assignAll(list.isNotEmpty ? list : defaultWallpapers);
+      currentWallpaperIndex.value = 0;
+      _startWallpaperTimer();
     } catch (e) {
       _talker.warning('加载壁纸缓存失败: $e');
+      wallpapers.assignAll(defaultWallpapers);
+      _startWallpaperTimer();
     }
   }
 
@@ -99,14 +116,15 @@ class LoginController extends GetxController {
     isLoading.value = true;
     try {
       final list = await _repository.fetchWallpapers(server);
-      wallpapers.assignAll(list);
+      wallpapers.assignAll(list.isNotEmpty ? list : defaultWallpapers);
       currentWallpaperIndex.value = 0;
       step.value = 2;
       _startWallpaperTimer();
     } catch (e) {
       _talker.warning('获取壁纸失败: $e');
+      wallpapers.assignAll(defaultWallpapers);
+      _startWallpaperTimer();
       step.value = 2;
-      wallpapers.clear();
     } finally {
       isLoading.value = false;
     }
