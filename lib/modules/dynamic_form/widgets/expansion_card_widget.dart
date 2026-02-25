@@ -1,21 +1,97 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/utils/vuetify_mappings.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/widgets/medal_card_widget.dart';
 
-/// 折叠卡片：渐变顶条 + 标题 + 可展开项（现代化卡片样式）
+/// 折叠卡片：参考勋章墙 UI，支持皇冠图标、数量摘要芯片、可展开详情
 class ExpansionCardWidget extends StatelessWidget {
   const ExpansionCardWidget({super.key, required this.block});
 
   final ExpansionCardBlock block;
 
-  static const _gradientSignin = [Color(0xFF80CBC4), Color(0xFFA5D6A7)];
-  static const _gradientLogin = [Color(0xFF81D4FA), Color(0xFF9FA8DA)];
+  static const _crownColor = Color(0xFFA259E6);
 
-  List<Color> get _gradient =>
-      block.cardTitle.contains('登录') ? _gradientLogin : _gradientSignin;
+  Widget _buildChip(BuildContext context, ChipItemData item) {
+    final bgColor = item.backgroundColor != null
+        ? VuetifyMappings.colorFromHex(item.backgroundColor)
+        : null;
+    final iconColor = item.iconColor != null
+        ? VuetifyMappings.colorFromHex(item.iconColor)
+        : null;
+    final iconData = item.iconName != null
+        ? VuetifyMappings.iconFromMdi(item.iconName)
+        : null;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: bgColor ??
+            CupertinoDynamicColor.resolve(
+              CupertinoColors.tertiarySystemFill,
+              context,
+            ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (iconData != null) ...[
+            Icon(
+              iconData,
+              size: 18,
+              color: iconColor ??
+                  CupertinoDynamicColor.resolve(
+                    CupertinoColors.secondaryLabel,
+                    context,
+                  ),
+            ),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            item.text,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: CupertinoDynamicColor.resolve(
+                CupertinoColors.secondaryLabel,
+                context,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChipFromText(BuildContext context, String line) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: CupertinoDynamicColor.resolve(
+          CupertinoColors.tertiarySystemFill,
+          context,
+        ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        line,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: CupertinoDynamicColor.resolve(
+            CupertinoColors.secondaryLabel,
+            context,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final hasCrown = block.iconName != null && block.iconName!.isNotEmpty;
+    final hasChips = block.chipItems.isNotEmpty || block.chipLines.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -44,22 +120,37 @@ class ExpansionCardWidget extends StatelessWidget {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _gradient[0].withValues(alpha: 0.18),
-                  _gradient[1].withValues(alpha: 0.18),
-                ],
+              color: CupertinoDynamicColor.resolve(
+                CupertinoColors.tertiarySystemFill,
+                context,
+              ).withValues(alpha: 0.5),
+              border: Border(
+                bottom: BorderSide(
+                  color: CupertinoDynamicColor.resolve(
+                    CupertinoColors.separator,
+                    context,
+                  ).withValues(alpha: 0.3),
+                ),
               ),
             ),
             child: Row(
               children: [
+                if (hasCrown) ...[
+                  Icon(
+                    VuetifyMappings.iconFromMdi(block.iconName) ??
+                        Icons.diamond,
+                    size: 22,
+                    color: _crownColor,
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: Text(
                     block.cardTitle,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.w600,
                       color: CupertinoDynamicColor.resolve(
                         CupertinoColors.label,
@@ -95,14 +186,31 @@ class ExpansionCardWidget extends StatelessWidget {
               ],
             ),
           ),
+          if (hasChips)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ...block.chipItems.map(
+                    (item) => _buildChip(context, item),
+                  ),
+                  ...block.chipLines.map(
+                    (line) => _buildChipFromText(context, line),
+                  ),
+                ],
+              ),
+            ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            padding: EdgeInsets.fromLTRB(12, hasChips ? 0 : 8, 12, 12),
             child: Column(
               children: block.items
                   .map((item) => _ExpansionTile(
                         title: item.title,
                         subtitle: item.subtitle,
                         bodyLines: item.bodyLines,
+                        medalCards: item.medalCards,
                         iconText: item.title.runes.isNotEmpty
                             ? String.fromCharCode(item.title.runes.first)
                             : '',
@@ -121,12 +229,14 @@ class _ExpansionTile extends StatefulWidget {
     required this.title,
     this.subtitle,
     required this.bodyLines,
+    this.medalCards = const [],
     this.iconText = '',
   });
 
   final String title;
   final String? subtitle;
   final List<String> bodyLines;
+  final List<MedalCardData> medalCards;
   final String iconText;
 
   @override
@@ -239,30 +349,56 @@ class _ExpansionTileState extends State<_ExpansionTile> {
               ),
             ),
           ),
-          if (_expanded && widget.bodyLines.isNotEmpty)
+          if (_expanded &&
+              (widget.bodyLines.isNotEmpty || widget.medalCards.isNotEmpty))
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: widget.bodyLines
-                    .map(
-                      (line) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          line,
-                          style: TextStyle(
-                            fontSize: 14,
-                            height: 1.4,
-                            color: CupertinoDynamicColor.resolve(
-                              CupertinoColors.label,
-                              context,
+                children: [
+                  if (widget.bodyLines.isNotEmpty)
+                    ...widget.bodyLines
+                        .map(
+                          (line) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              line,
+                              style: TextStyle(
+                                fontSize: 14,
+                                height: 1.4,
+                                color: CupertinoDynamicColor.resolve(
+                                  CupertinoColors.label,
+                                  context,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    )
-                    .toList(),
+                        )
+                        .toList(),
+                  if (widget.medalCards.isNotEmpty) ...[
+                    if (widget.bodyLines.isNotEmpty) const SizedBox(height: 12),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        const spacing = 12.0;
+                        const crossCount = 2;
+                        final childWidth = (constraints.maxWidth - spacing) / 2;
+                        return Wrap(
+                          spacing: spacing,
+                          runSpacing: spacing,
+                          children: widget.medalCards
+                              .map(
+                                (data) => SizedBox(
+                                  width: childWidth,
+                                  child: MedalCardWidget(data: data),
+                                ),
+                              )
+                              .toList(),
+                        );
+                      },
+                    ),
+                  ],
+                ],
               ),
             ),
         ],

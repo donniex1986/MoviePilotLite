@@ -214,7 +214,7 @@ class DynamicFormPage extends GetView<DynamicFormController> {
   Widget _buildStatCardGrid(BuildContext context, List<StatCardBlock> cards) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossCount = 2;
+        final crossCount = cards.length >= 6 ? 3 : 2;
         final childWidth =
             (constraints.maxWidth - _statCardGridSpacing * (crossCount - 1)) /
             crossCount;
@@ -225,7 +225,7 @@ class DynamicFormPage extends GetView<DynamicFormController> {
               .map(
                 (b) => SizedBox(
                   width: childWidth,
-                  child: StatCardWidget(block: b),
+                  child: StatCardWidget(block: b, compact: true),
                 ),
               )
               .toList(),

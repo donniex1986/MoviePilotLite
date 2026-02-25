@@ -37,6 +37,12 @@ class FormBlockConverter {
           blocks.add(tableCard.$2);
           continue;
         }
+        // VCard > VRow > VCol[] 每列 VIcon + div(数值) + div(标签) 的统计卡片网格
+        final statCards = _extractStatCardsFromRow(pageNode);
+        if (statCards.isNotEmpty) {
+          for (final b in statCards) blocks.add(b);
+          continue;
+        }
         final statCard = _extractStatCard(pageNode);
         if (statCard != null) blocks.add(statCard);
         continue;
@@ -76,6 +82,22 @@ class FormBlockConverter {
     return blocks;
   }
 
+  static String _extractCardTitleFromRow(FormNode row) {
+    for (final col in row.content) {
+      if (col.component != 'VCol') continue;
+      for (final node in col.content) {
+        if (node.component == 'span') {
+          final cls = node.props?['class']?.toString() ?? '';
+          if (cls.contains('font-weight-bold')) {
+            final t = _textOf(node) ?? _collectText(node).trim();
+            if (t.isNotEmpty) return t;
+          }
+        }
+      }
+    }
+    return '';
+  }
+
   static PageHeaderBlock? _extractPageHeader(FormNode row) {
     if (row.content.length != 1) return null;
     final col = row.content.first;
@@ -98,6 +120,22 @@ class FormBlockConverter {
     }
     if (title != null && title.isNotEmpty) {
       return PageHeaderBlock(title: title, subtitle: subtitle);
+    }
+    return null;
+  }
+
+  /// 从 VIcon 节点提取图标名：支持 text、props.icon、content 内文本
+  static String? _extractIconNameFromVIcon(FormNode? iconNode) {
+    if (iconNode == null) return null;
+    var name = iconNode.text?.toString().trim();
+    if (name != null && name.isNotEmpty) return name;
+    name = iconNode.props?['icon']?.toString().trim();
+    if (name != null && name.isNotEmpty) return name;
+    if (iconNode.content.isNotEmpty) {
+      name = iconNode.content.first.text?.toString().trim();
+      if (name != null && name.isNotEmpty) return name;
+      name = _collectText(iconNode.content.first).trim();
+      if (name.isNotEmpty) return name;
     }
     return null;
   }
@@ -127,8 +165,11 @@ class FormBlockConverter {
       if (node.component == 'VCardTitle') cardTitleNode = node;
       if (node.component == 'VCardText') cardTextNode = node;
     }
-    if (cardTextNode == null) return null;
-    final panelsNode = _findComponent(cardTextNode, 'VExpansionPanels');
+    // 优先从 VCardText 查找；也支持 VCard > VRow > VCol > VExpansionPanels 结构
+    var panelsNode = cardTextNode != null
+        ? _findComponent(cardTextNode, 'VExpansionPanels')
+        : null;
+    panelsNode ??= _findComponent(card, 'VExpansionPanels');
     if (panelsNode == null) return null;
     final items = <ExpansionItem>[];
     final panelList = <FormNode>[];
@@ -142,6 +183,15 @@ class FormBlockConverter {
     if (cardTitleNode != null) {
       cardTitle = _collectText(cardTitleNode).trim();
     }
+    // 无 VCardTitle 时从首行 VRow > VCol > span.font-weight-bold 提取（如勋章站点名）
+    if (cardTitle.isEmpty) {
+      for (final node in card.content) {
+        if (node.component == 'VRow') {
+          cardTitle = _extractCardTitleFromRow(node);
+          if (cardTitle.isNotEmpty) break;
+        }
+      }
+    }
     String? cardSubtitle;
     if (cardTitleNode != null) {
       for (final node in cardTitleNode.content) {
@@ -151,11 +201,75 @@ class FormBlockConverter {
         }
       }
     }
+    String? iconName;
+    final chipItems = <ChipItemData>[];
+    for (final node in card.content) {
+      if (node.component == 'VRow') {
+        _collectChipItems(node, chipItems);
+        if (iconName == null) {
+          final iconNode = _findComponent(node, 'VIcon');
+          iconName = _extractIconNameFromVIcon(iconNode);
+        }
+      }
+    }
     return ExpansionCardBlock(
       cardTitle: cardTitle.isNotEmpty ? cardTitle : '详情',
       cardSubtitle: cardSubtitle,
       items: items,
+      iconName: iconName,
+      chipItems: chipItems,
     );
+  }
+
+  static void _collectChipItems(FormNode node, List<ChipItemData> out) {
+    if (node.component == 'VChip') {
+      final item = _extractChipItem(node);
+      if (item != null) out.add(item);
+      return;
+    }
+    for (final c in node.content) {
+      _collectChipItems(c, out);
+    }
+  }
+
+  static ChipItemData? _extractChipItem(FormNode chip) {
+    String? iconName;
+    String? iconColor;
+    final textParts = <String>[];
+    final iconNode = _findComponent(chip, 'VIcon');
+    if (iconNode != null) {
+      iconName = _extractIconNameFromVIcon(iconNode);
+      iconColor = iconNode.props?['color']?.toString();
+    }
+    for (final c in chip.content) {
+      if (c.component == 'span' || c.component == 'div') {
+        final t = _collectText(c).trim();
+        if (t.isNotEmpty) textParts.add(t);
+      }
+    }
+    final text = textParts.join(' ').trim();
+    if (text.isEmpty && iconName == null) return null;
+    final backgroundColor = chip.props?['color']?.toString();
+    return ChipItemData(
+      iconName: iconName,
+      iconColor: iconColor,
+      text: text.isNotEmpty ? text : (iconName ?? ''),
+      backgroundColor: backgroundColor,
+    );
+  }
+
+  static void _collectCaptionLines(FormNode node, List<String> out) {
+    if (node.component == 'div') {
+      final cls = node.props?['class']?.toString() ?? '';
+      if (cls.contains('text-caption')) {
+        final t = _collectText(node).trim();
+        if (t.isNotEmpty) out.add(t);
+      }
+      return;
+    }
+    for (final c in node.content) {
+      _collectCaptionLines(c, out);
+    }
   }
 
   static ExpansionItem? _extractExpansionPanelItem(FormNode panel) {
@@ -187,6 +301,7 @@ class FormBlockConverter {
       title = _collectText(titleNode.content.first).trim();
     }
     final bodyLines = <String>[];
+    final medalCards = <MedalCardData>[];
     if (textNode != null) {
       for (final node in textNode.content) {
         if (node.component == 'VList') {
@@ -196,13 +311,111 @@ class FormBlockConverter {
               if (line.isNotEmpty) bodyLines.add(line);
             }
           }
+        } else if (node.component == 'VCardTitle') {
+          final line = _collectText(node).trim();
+          if (line.isNotEmpty) bodyLines.add(line);
+        } else if (node.component == 'VRow') {
+          for (final col in node.content) {
+            if (col.component != 'VCol') continue;
+            for (final child in col.content) {
+              if (child.component == 'VCard') {
+                final medal = _extractMedalCard(child);
+                if (medal != null) {
+                  medalCards.add(medal);
+                } else {
+                  final line = _collectMedalCardSummary(child);
+                  if (line.isNotEmpty) bodyLines.add(line);
+                }
+              }
+            }
+          }
         } else {
           final line = _collectText(node).trim();
           if (line.isNotEmpty) bodyLines.add(line);
         }
       }
     }
-    return ExpansionItem(title: title, subtitle: subtitle, bodyLines: bodyLines);
+    return ExpansionItem(
+      title: title,
+      subtitle: subtitle,
+      bodyLines: bodyLines,
+      medalCards: medalCards,
+    );
+  }
+
+  static MedalCardData? _extractMedalCard(FormNode card) {
+    String? title;
+    String description = '';
+    String? imageUrl;
+    final detailLines = <String>[];
+    String? price;
+    String? actionLabel;
+    String? actionColor;
+    for (final node in card.content) {
+      if (node.component == 'VCardTitle') {
+        title = _collectText(node).trim();
+      } else if (node.component == 'VImg') {
+        imageUrl = node.props?['src']?.toString();
+      } else if (node.component == 'div') {
+        final text = _collectText(node).trim();
+        if (text.isEmpty) continue;
+        final cls = node.props?['class']?.toString() ?? '';
+        final style = node.props?['style']?.toString() ?? '';
+        final isCaption = cls.contains('text-caption');
+        final isDesc = style.contains('color:#888') || style.contains('color: #888');
+        if (isCaption) {
+          detailLines.add(text);
+        } else if (isDesc && description.isEmpty) {
+          description = text;
+        }
+      } else if (node.component == 'VRow') {
+        _collectCaptionLines(node, detailLines);
+        final priceInRow = _findPriceInNode(node);
+        if (priceInRow != null) price = priceInRow;
+        final chip = _findComponent(node, 'VChip');
+        if (chip != null) {
+          actionLabel = _collectText(chip).trim();
+          actionColor = chip.props?['color']?.toString();
+        }
+      }
+    }
+    if (title == null || title.isEmpty) return null;
+    return MedalCardData(
+      title: title,
+      description: description,
+      imageUrl: imageUrl?.isNotEmpty == true ? imageUrl : null,
+      detailLines: detailLines,
+      price: price,
+      actionLabel: actionLabel,
+      actionColor: actionColor,
+    );
+  }
+
+  static String _collectMedalCardSummary(FormNode card) {
+    String? name;
+    String? price;
+    for (final node in card.content) {
+      if (node.component == 'VCardTitle') {
+        name = _collectText(node).trim();
+      } else {
+        final t = _findPriceInNode(node);
+        if (t != null) price = t;
+      }
+    }
+    if (name != null && name.isNotEmpty) {
+      return price != null && price.isNotEmpty ? '$name · $price' : name;
+    }
+    return _collectText(card).trim();
+  }
+
+  static String? _findPriceInNode(FormNode node) {
+    final text = _collectText(node).trim();
+    if (!text.contains('价格：')) return null;
+    for (final c in node.content) {
+      final t = _findPriceInNode(c);
+      if (t != null) return t;
+    }
+    return text;
   }
 
   static String _collectText(FormNode node) {
@@ -411,6 +624,61 @@ class FormBlockConverter {
     return null;
   }
 
+  /// VCard > VRow > VCol[] 每列: VIcon + div(数值) + div(标签)
+  static List<StatCardBlock> _extractStatCardsFromRow(FormNode card) {
+    final result = <StatCardBlock>[];
+    FormNode? rowNode;
+    for (final node in card.content) {
+      if (node.component == 'VRow') {
+        rowNode = node;
+        break;
+      }
+    }
+    if (rowNode == null) return result;
+    for (final col in rowNode.content) {
+      if (col.component != 'VCol') continue;
+      String? value;
+      String? caption;
+      String? iconName;
+      String? iconColor;
+      for (final node in col.content) {
+        if (node.component == 'VIcon') {
+          iconName = _extractIconNameFromVIcon(node);
+          iconColor = node.props?['color']?.toString();
+        } else if (node.component == 'div') {
+          final text = _collectText(node).trim();
+          if (text.isEmpty) continue;
+          final cls = node.props?['class']?.toString() ?? '';
+          final style = node.props?['style']?.toString() ?? '';
+          final isValue = cls.contains('font-weight-bold') ||
+              style.contains('font-size: 2rem') ||
+              style.contains('font-size:2rem');
+          final isCaption =
+              cls.contains('text-body-2') || cls.contains('text-caption');
+          if (isValue) {
+            value ??= text;
+          } else if (isCaption) {
+            caption ??= text;
+          } else if (value == null) {
+            value = text;
+          } else if (caption == null) {
+            caption = text;
+          }
+        }
+      }
+      if (value != null && caption != null) {
+        result.add(StatCardBlock(
+          caption: caption,
+          value: value,
+          iconSrc: null,
+          iconName: iconName,
+          iconColor: iconColor,
+        ));
+      }
+    }
+    return result;
+  }
+
   static void _visitForStatCard(
     FormNode node,
     void Function(String? caption, String? value, String? iconSrc) out,
@@ -496,7 +764,7 @@ class FormBlockConverter {
   static dynamic _extractTableCell(FormNode td) {
     final iconNode = _findComponent(td, 'VIcon');
     if (iconNode != null) {
-      final iconName = iconNode.text?.toString().trim();
+      final iconName = _extractIconNameFromVIcon(iconNode);
       final color = iconNode.props?['color']?.toString().trim();
       final label = _collectText(td).replaceAll(iconName ?? '', '').trim();
       return <String, dynamic>{

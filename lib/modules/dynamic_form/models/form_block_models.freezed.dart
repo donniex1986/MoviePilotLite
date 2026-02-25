@@ -19,7 +19,13 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$FormBlock {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -68,12 +74,22 @@ mixin _$FormBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -109,12 +125,22 @@ mixin _$FormBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -150,6 +176,9 @@ mixin _$FormBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -226,7 +255,13 @@ abstract class _$$StatCardBlockImplCopyWith<$Res> {
     $Res Function(_$StatCardBlockImpl) then,
   ) = __$$StatCardBlockImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String caption, String value, String? iconSrc});
+  $Res call({
+    String caption,
+    String value,
+    String? iconSrc,
+    String? iconName,
+    String? iconColor,
+  });
 }
 
 /// @nodoc
@@ -246,6 +281,8 @@ class __$$StatCardBlockImplCopyWithImpl<$Res>
     Object? caption = null,
     Object? value = null,
     Object? iconSrc = freezed,
+    Object? iconName = freezed,
+    Object? iconColor = freezed,
   }) {
     return _then(
       _$StatCardBlockImpl(
@@ -261,6 +298,14 @@ class __$$StatCardBlockImplCopyWithImpl<$Res>
             ? _value.iconSrc
             : iconSrc // ignore: cast_nullable_to_non_nullable
                   as String?,
+        iconName: freezed == iconName
+            ? _value.iconName
+            : iconName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        iconColor: freezed == iconColor
+            ? _value.iconColor
+            : iconColor // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -273,6 +318,8 @@ class _$StatCardBlockImpl extends StatCardBlock {
     required this.caption,
     required this.value,
     this.iconSrc,
+    this.iconName,
+    this.iconColor,
   }) : super._();
 
   @override
@@ -281,10 +328,14 @@ class _$StatCardBlockImpl extends StatCardBlock {
   final String value;
   @override
   final String? iconSrc;
+  @override
+  final String? iconName;
+  @override
+  final String? iconColor;
 
   @override
   String toString() {
-    return 'FormBlock.statCard(caption: $caption, value: $value, iconSrc: $iconSrc)';
+    return 'FormBlock.statCard(caption: $caption, value: $value, iconSrc: $iconSrc, iconName: $iconName, iconColor: $iconColor)';
   }
 
   @override
@@ -294,11 +345,16 @@ class _$StatCardBlockImpl extends StatCardBlock {
             other is _$StatCardBlockImpl &&
             (identical(other.caption, caption) || other.caption == caption) &&
             (identical(other.value, value) || other.value == value) &&
-            (identical(other.iconSrc, iconSrc) || other.iconSrc == iconSrc));
+            (identical(other.iconSrc, iconSrc) || other.iconSrc == iconSrc) &&
+            (identical(other.iconName, iconName) ||
+                other.iconName == iconName) &&
+            (identical(other.iconColor, iconColor) ||
+                other.iconColor == iconColor));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, caption, value, iconSrc);
+  int get hashCode =>
+      Object.hash(runtimeType, caption, value, iconSrc, iconName, iconColor);
 
   /// Create a copy of FormBlock
   /// with the given fields replaced by the non-null parameter values.
@@ -311,7 +367,13 @@ class _$StatCardBlockImpl extends StatCardBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -360,16 +422,26 @@ class _$StatCardBlockImpl extends StatCardBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
-    return statCard(caption, value, iconSrc);
+    return statCard(caption, value, iconSrc, iconName, iconColor);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -405,16 +477,26 @@ class _$StatCardBlockImpl extends StatCardBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
-    return statCard?.call(caption, value, iconSrc);
+    return statCard?.call(caption, value, iconSrc, iconName, iconColor);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -450,12 +532,15 @@ class _$StatCardBlockImpl extends StatCardBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
   }) {
     if (statCard != null) {
-      return statCard(caption, value, iconSrc);
+      return statCard(caption, value, iconSrc, iconName, iconColor);
     }
     return orElse();
   }
@@ -524,12 +609,16 @@ abstract class StatCardBlock extends FormBlock {
     required final String caption,
     required final String value,
     final String? iconSrc,
+    final String? iconName,
+    final String? iconColor,
   }) = _$StatCardBlockImpl;
   const StatCardBlock._() : super._();
 
   String get caption;
   String get value;
   String? get iconSrc;
+  String? get iconName;
+  String? get iconColor;
 
   /// Create a copy of FormBlock
   /// with the given fields replaced by the non-null parameter values.
@@ -668,7 +757,13 @@ class _$ChartBlockImpl extends ChartBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -717,6 +812,9 @@ class _$ChartBlockImpl extends ChartBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
@@ -726,7 +824,14 @@ class _$ChartBlockImpl extends ChartBlock {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -762,6 +867,9 @@ class _$ChartBlockImpl extends ChartBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
@@ -771,7 +879,14 @@ class _$ChartBlockImpl extends ChartBlock {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -807,6 +922,9 @@ class _$ChartBlockImpl extends ChartBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -996,7 +1114,13 @@ class _$TableBlockImpl extends TableBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -1045,6 +1169,9 @@ class _$TableBlockImpl extends TableBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
@@ -1054,7 +1181,14 @@ class _$TableBlockImpl extends TableBlock {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -1090,6 +1224,9 @@ class _$TableBlockImpl extends TableBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
@@ -1099,7 +1236,14 @@ class _$TableBlockImpl extends TableBlock {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -1135,6 +1279,9 @@ class _$TableBlockImpl extends TableBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -1317,7 +1464,13 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -1366,6 +1519,9 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
@@ -1375,7 +1531,14 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -1411,6 +1574,9 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
@@ -1420,7 +1586,14 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -1456,6 +1629,9 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -1649,7 +1825,13 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -1698,6 +1880,9 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
@@ -1707,7 +1892,14 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -1743,6 +1935,9 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
@@ -1752,7 +1947,14 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -1788,6 +1990,9 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -1983,7 +2188,13 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -2032,6 +2243,9 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
@@ -2041,7 +2255,14 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -2077,6 +2298,9 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
@@ -2086,7 +2310,14 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -2122,6 +2353,9 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -2324,7 +2558,13 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -2373,6 +2613,9 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
@@ -2382,7 +2625,14 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -2418,6 +2668,9 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
@@ -2427,7 +2680,14 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -2463,6 +2723,9 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -2633,7 +2896,13 @@ class _$AlertBlockImpl extends AlertBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -2682,6 +2951,9 @@ class _$AlertBlockImpl extends AlertBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
@@ -2691,7 +2963,14 @@ class _$AlertBlockImpl extends AlertBlock {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -2727,6 +3006,9 @@ class _$AlertBlockImpl extends AlertBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
@@ -2736,7 +3018,14 @@ class _$AlertBlockImpl extends AlertBlock {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -2772,6 +3061,9 @@ class _$AlertBlockImpl extends AlertBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -2992,7 +3284,13 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -3041,6 +3339,9 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
@@ -3050,7 +3351,14 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -3086,6 +3394,9 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
@@ -3095,7 +3406,14 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -3131,6 +3449,9 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -3304,7 +3625,13 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -3353,6 +3680,9 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
@@ -3362,7 +3692,14 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -3398,6 +3735,9 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
@@ -3407,7 +3747,14 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -3443,6 +3790,9 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
@@ -3540,6 +3890,9 @@ abstract class _$$ExpansionCardBlockImplCopyWith<$Res> {
     String cardTitle,
     String? cardSubtitle,
     List<ExpansionItem> items,
+    String? iconName,
+    List<String> chipLines,
+    List<ChipItemData> chipItems,
   });
 }
 
@@ -3560,6 +3913,9 @@ class __$$ExpansionCardBlockImplCopyWithImpl<$Res>
     Object? cardTitle = null,
     Object? cardSubtitle = freezed,
     Object? items = null,
+    Object? iconName = freezed,
+    Object? chipLines = null,
+    Object? chipItems = null,
   }) {
     return _then(
       _$ExpansionCardBlockImpl(
@@ -3575,6 +3931,18 @@ class __$$ExpansionCardBlockImplCopyWithImpl<$Res>
             ? _value._items
             : items // ignore: cast_nullable_to_non_nullable
                   as List<ExpansionItem>,
+        iconName: freezed == iconName
+            ? _value.iconName
+            : iconName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        chipLines: null == chipLines
+            ? _value._chipLines
+            : chipLines // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+        chipItems: null == chipItems
+            ? _value._chipItems
+            : chipItems // ignore: cast_nullable_to_non_nullable
+                  as List<ChipItemData>,
       ),
     );
   }
@@ -3587,7 +3955,12 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
     required this.cardTitle,
     this.cardSubtitle,
     final List<ExpansionItem> items = const [],
+    this.iconName,
+    final List<String> chipLines = const [],
+    final List<ChipItemData> chipItems = const [],
   }) : _items = items,
+       _chipLines = chipLines,
+       _chipItems = chipItems,
        super._();
 
   @override
@@ -3604,8 +3977,28 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
   }
 
   @override
+  final String? iconName;
+  final List<String> _chipLines;
+  @override
+  @JsonKey()
+  List<String> get chipLines {
+    if (_chipLines is EqualUnmodifiableListView) return _chipLines;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_chipLines);
+  }
+
+  final List<ChipItemData> _chipItems;
+  @override
+  @JsonKey()
+  List<ChipItemData> get chipItems {
+    if (_chipItems is EqualUnmodifiableListView) return _chipItems;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_chipItems);
+  }
+
+  @override
   String toString() {
-    return 'FormBlock.expansionCard(cardTitle: $cardTitle, cardSubtitle: $cardSubtitle, items: $items)';
+    return 'FormBlock.expansionCard(cardTitle: $cardTitle, cardSubtitle: $cardSubtitle, items: $items, iconName: $iconName, chipLines: $chipLines, chipItems: $chipItems)';
   }
 
   @override
@@ -3617,7 +4010,17 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
                 other.cardTitle == cardTitle) &&
             (identical(other.cardSubtitle, cardSubtitle) ||
                 other.cardSubtitle == cardSubtitle) &&
-            const DeepCollectionEquality().equals(other._items, _items));
+            const DeepCollectionEquality().equals(other._items, _items) &&
+            (identical(other.iconName, iconName) ||
+                other.iconName == iconName) &&
+            const DeepCollectionEquality().equals(
+              other._chipLines,
+              _chipLines,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._chipItems,
+              _chipItems,
+            ));
   }
 
   @override
@@ -3626,6 +4029,9 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
     cardTitle,
     cardSubtitle,
     const DeepCollectionEquality().hash(_items),
+    iconName,
+    const DeepCollectionEquality().hash(_chipLines),
+    const DeepCollectionEquality().hash(_chipItems),
   );
 
   /// Create a copy of FormBlock
@@ -3642,7 +4048,13 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String caption, String value, String? iconSrc)
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
     statCard,
     required TResult Function(
       String? title,
@@ -3691,16 +4103,33 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )
     expansionCard,
   }) {
-    return expansionCard(cardTitle, cardSubtitle, items);
+    return expansionCard(
+      cardTitle,
+      cardSubtitle,
+      items,
+      iconName,
+      chipLines,
+      chipItems,
+    );
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String caption, String value, String? iconSrc)? statCard,
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult? Function(
       String? title,
       List<String> labels,
@@ -3736,16 +4165,33 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
   }) {
-    return expansionCard?.call(cardTitle, cardSubtitle, items);
+    return expansionCard?.call(
+      cardTitle,
+      cardSubtitle,
+      items,
+      iconName,
+      chipLines,
+      chipItems,
+    );
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String caption, String value, String? iconSrc)? statCard,
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
     TResult Function(
       String? title,
       List<String> labels,
@@ -3781,12 +4227,22 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
       String cardTitle,
       String? cardSubtitle,
       List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
     )?
     expansionCard,
     required TResult orElse(),
   }) {
     if (expansionCard != null) {
-      return expansionCard(cardTitle, cardSubtitle, items);
+      return expansionCard(
+        cardTitle,
+        cardSubtitle,
+        items,
+        iconName,
+        chipLines,
+        chipItems,
+      );
     }
     return orElse();
   }
@@ -3855,12 +4311,18 @@ abstract class ExpansionCardBlock extends FormBlock {
     required final String cardTitle,
     final String? cardSubtitle,
     final List<ExpansionItem> items,
+    final String? iconName,
+    final List<String> chipLines,
+    final List<ChipItemData> chipItems,
   }) = _$ExpansionCardBlockImpl;
   const ExpansionCardBlock._() : super._();
 
   String get cardTitle;
   String? get cardSubtitle;
   List<ExpansionItem> get items;
+  String? get iconName;
+  List<String> get chipLines;
+  List<ChipItemData> get chipItems;
 
   /// Create a copy of FormBlock
   /// with the given fields replaced by the non-null parameter values.
@@ -3870,10 +4332,219 @@ abstract class ExpansionCardBlock extends FormBlock {
 }
 
 /// @nodoc
+mixin _$ChipItemData {
+  String? get iconName => throw _privateConstructorUsedError;
+  String? get iconColor => throw _privateConstructorUsedError;
+  String get text => throw _privateConstructorUsedError;
+  String? get backgroundColor => throw _privateConstructorUsedError;
+
+  /// Create a copy of ChipItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ChipItemDataCopyWith<ChipItemData> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ChipItemDataCopyWith<$Res> {
+  factory $ChipItemDataCopyWith(
+    ChipItemData value,
+    $Res Function(ChipItemData) then,
+  ) = _$ChipItemDataCopyWithImpl<$Res, ChipItemData>;
+  @useResult
+  $Res call({
+    String? iconName,
+    String? iconColor,
+    String text,
+    String? backgroundColor,
+  });
+}
+
+/// @nodoc
+class _$ChipItemDataCopyWithImpl<$Res, $Val extends ChipItemData>
+    implements $ChipItemDataCopyWith<$Res> {
+  _$ChipItemDataCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ChipItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? iconName = freezed,
+    Object? iconColor = freezed,
+    Object? text = null,
+    Object? backgroundColor = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            iconName: freezed == iconName
+                ? _value.iconName
+                : iconName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            iconColor: freezed == iconColor
+                ? _value.iconColor
+                : iconColor // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            text: null == text
+                ? _value.text
+                : text // ignore: cast_nullable_to_non_nullable
+                      as String,
+            backgroundColor: freezed == backgroundColor
+                ? _value.backgroundColor
+                : backgroundColor // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$ChipItemDataImplCopyWith<$Res>
+    implements $ChipItemDataCopyWith<$Res> {
+  factory _$$ChipItemDataImplCopyWith(
+    _$ChipItemDataImpl value,
+    $Res Function(_$ChipItemDataImpl) then,
+  ) = __$$ChipItemDataImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String? iconName,
+    String? iconColor,
+    String text,
+    String? backgroundColor,
+  });
+}
+
+/// @nodoc
+class __$$ChipItemDataImplCopyWithImpl<$Res>
+    extends _$ChipItemDataCopyWithImpl<$Res, _$ChipItemDataImpl>
+    implements _$$ChipItemDataImplCopyWith<$Res> {
+  __$$ChipItemDataImplCopyWithImpl(
+    _$ChipItemDataImpl _value,
+    $Res Function(_$ChipItemDataImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ChipItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? iconName = freezed,
+    Object? iconColor = freezed,
+    Object? text = null,
+    Object? backgroundColor = freezed,
+  }) {
+    return _then(
+      _$ChipItemDataImpl(
+        iconName: freezed == iconName
+            ? _value.iconName
+            : iconName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        iconColor: freezed == iconColor
+            ? _value.iconColor
+            : iconColor // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        text: null == text
+            ? _value.text
+            : text // ignore: cast_nullable_to_non_nullable
+                  as String,
+        backgroundColor: freezed == backgroundColor
+            ? _value.backgroundColor
+            : backgroundColor // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$ChipItemDataImpl implements _ChipItemData {
+  const _$ChipItemDataImpl({
+    this.iconName,
+    this.iconColor,
+    required this.text,
+    this.backgroundColor,
+  });
+
+  @override
+  final String? iconName;
+  @override
+  final String? iconColor;
+  @override
+  final String text;
+  @override
+  final String? backgroundColor;
+
+  @override
+  String toString() {
+    return 'ChipItemData(iconName: $iconName, iconColor: $iconColor, text: $text, backgroundColor: $backgroundColor)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ChipItemDataImpl &&
+            (identical(other.iconName, iconName) ||
+                other.iconName == iconName) &&
+            (identical(other.iconColor, iconColor) ||
+                other.iconColor == iconColor) &&
+            (identical(other.text, text) || other.text == text) &&
+            (identical(other.backgroundColor, backgroundColor) ||
+                other.backgroundColor == backgroundColor));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, iconName, iconColor, text, backgroundColor);
+
+  /// Create a copy of ChipItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ChipItemDataImplCopyWith<_$ChipItemDataImpl> get copyWith =>
+      __$$ChipItemDataImplCopyWithImpl<_$ChipItemDataImpl>(this, _$identity);
+}
+
+abstract class _ChipItemData implements ChipItemData {
+  const factory _ChipItemData({
+    final String? iconName,
+    final String? iconColor,
+    required final String text,
+    final String? backgroundColor,
+  }) = _$ChipItemDataImpl;
+
+  @override
+  String? get iconName;
+  @override
+  String? get iconColor;
+  @override
+  String get text;
+  @override
+  String? get backgroundColor;
+
+  /// Create a copy of ChipItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ChipItemDataImplCopyWith<_$ChipItemDataImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
 mixin _$ExpansionItem {
   String get title => throw _privateConstructorUsedError;
   String? get subtitle => throw _privateConstructorUsedError;
   List<String> get bodyLines => throw _privateConstructorUsedError;
+  List<MedalCardData> get medalCards => throw _privateConstructorUsedError;
 
   /// Create a copy of ExpansionItem
   /// with the given fields replaced by the non-null parameter values.
@@ -3889,7 +4560,12 @@ abstract class $ExpansionItemCopyWith<$Res> {
     $Res Function(ExpansionItem) then,
   ) = _$ExpansionItemCopyWithImpl<$Res, ExpansionItem>;
   @useResult
-  $Res call({String title, String? subtitle, List<String> bodyLines});
+  $Res call({
+    String title,
+    String? subtitle,
+    List<String> bodyLines,
+    List<MedalCardData> medalCards,
+  });
 }
 
 /// @nodoc
@@ -3910,6 +4586,7 @@ class _$ExpansionItemCopyWithImpl<$Res, $Val extends ExpansionItem>
     Object? title = null,
     Object? subtitle = freezed,
     Object? bodyLines = null,
+    Object? medalCards = null,
   }) {
     return _then(
       _value.copyWith(
@@ -3925,6 +4602,10 @@ class _$ExpansionItemCopyWithImpl<$Res, $Val extends ExpansionItem>
                 ? _value.bodyLines
                 : bodyLines // ignore: cast_nullable_to_non_nullable
                       as List<String>,
+            medalCards: null == medalCards
+                ? _value.medalCards
+                : medalCards // ignore: cast_nullable_to_non_nullable
+                      as List<MedalCardData>,
           )
           as $Val,
     );
@@ -3940,7 +4621,12 @@ abstract class _$$ExpansionItemImplCopyWith<$Res>
   ) = __$$ExpansionItemImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String title, String? subtitle, List<String> bodyLines});
+  $Res call({
+    String title,
+    String? subtitle,
+    List<String> bodyLines,
+    List<MedalCardData> medalCards,
+  });
 }
 
 /// @nodoc
@@ -3960,6 +4646,7 @@ class __$$ExpansionItemImplCopyWithImpl<$Res>
     Object? title = null,
     Object? subtitle = freezed,
     Object? bodyLines = null,
+    Object? medalCards = null,
   }) {
     return _then(
       _$ExpansionItemImpl(
@@ -3975,6 +4662,10 @@ class __$$ExpansionItemImplCopyWithImpl<$Res>
             ? _value._bodyLines
             : bodyLines // ignore: cast_nullable_to_non_nullable
                   as List<String>,
+        medalCards: null == medalCards
+            ? _value._medalCards
+            : medalCards // ignore: cast_nullable_to_non_nullable
+                  as List<MedalCardData>,
       ),
     );
   }
@@ -3987,7 +4678,9 @@ class _$ExpansionItemImpl implements _ExpansionItem {
     required this.title,
     this.subtitle,
     final List<String> bodyLines = const [],
-  }) : _bodyLines = bodyLines;
+    final List<MedalCardData> medalCards = const [],
+  }) : _bodyLines = bodyLines,
+       _medalCards = medalCards;
 
   @override
   final String title;
@@ -4002,9 +4695,18 @@ class _$ExpansionItemImpl implements _ExpansionItem {
     return EqualUnmodifiableListView(_bodyLines);
   }
 
+  final List<MedalCardData> _medalCards;
+  @override
+  @JsonKey()
+  List<MedalCardData> get medalCards {
+    if (_medalCards is EqualUnmodifiableListView) return _medalCards;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_medalCards);
+  }
+
   @override
   String toString() {
-    return 'ExpansionItem(title: $title, subtitle: $subtitle, bodyLines: $bodyLines)';
+    return 'ExpansionItem(title: $title, subtitle: $subtitle, bodyLines: $bodyLines, medalCards: $medalCards)';
   }
 
   @override
@@ -4018,6 +4720,10 @@ class _$ExpansionItemImpl implements _ExpansionItem {
             const DeepCollectionEquality().equals(
               other._bodyLines,
               _bodyLines,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._medalCards,
+              _medalCards,
             ));
   }
 
@@ -4027,6 +4733,7 @@ class _$ExpansionItemImpl implements _ExpansionItem {
     title,
     subtitle,
     const DeepCollectionEquality().hash(_bodyLines),
+    const DeepCollectionEquality().hash(_medalCards),
   );
 
   /// Create a copy of ExpansionItem
@@ -4043,6 +4750,7 @@ abstract class _ExpansionItem implements ExpansionItem {
     required final String title,
     final String? subtitle,
     final List<String> bodyLines,
+    final List<MedalCardData> medalCards,
   }) = _$ExpansionItemImpl;
 
   @override
@@ -4051,12 +4759,302 @@ abstract class _ExpansionItem implements ExpansionItem {
   String? get subtitle;
   @override
   List<String> get bodyLines;
+  @override
+  List<MedalCardData> get medalCards;
 
   /// Create a copy of ExpansionItem
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ExpansionItemImplCopyWith<_$ExpansionItemImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$MedalCardData {
+  String get title => throw _privateConstructorUsedError;
+  String get description => throw _privateConstructorUsedError;
+  String? get imageUrl => throw _privateConstructorUsedError;
+  List<String> get detailLines => throw _privateConstructorUsedError;
+  String? get price => throw _privateConstructorUsedError;
+  String? get actionLabel => throw _privateConstructorUsedError;
+  String? get actionColor => throw _privateConstructorUsedError;
+
+  /// Create a copy of MedalCardData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $MedalCardDataCopyWith<MedalCardData> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $MedalCardDataCopyWith<$Res> {
+  factory $MedalCardDataCopyWith(
+    MedalCardData value,
+    $Res Function(MedalCardData) then,
+  ) = _$MedalCardDataCopyWithImpl<$Res, MedalCardData>;
+  @useResult
+  $Res call({
+    String title,
+    String description,
+    String? imageUrl,
+    List<String> detailLines,
+    String? price,
+    String? actionLabel,
+    String? actionColor,
+  });
+}
+
+/// @nodoc
+class _$MedalCardDataCopyWithImpl<$Res, $Val extends MedalCardData>
+    implements $MedalCardDataCopyWith<$Res> {
+  _$MedalCardDataCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of MedalCardData
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? title = null,
+    Object? description = null,
+    Object? imageUrl = freezed,
+    Object? detailLines = null,
+    Object? price = freezed,
+    Object? actionLabel = freezed,
+    Object? actionColor = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            title: null == title
+                ? _value.title
+                : title // ignore: cast_nullable_to_non_nullable
+                      as String,
+            description: null == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String,
+            imageUrl: freezed == imageUrl
+                ? _value.imageUrl
+                : imageUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            detailLines: null == detailLines
+                ? _value.detailLines
+                : detailLines // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
+            price: freezed == price
+                ? _value.price
+                : price // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            actionLabel: freezed == actionLabel
+                ? _value.actionLabel
+                : actionLabel // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            actionColor: freezed == actionColor
+                ? _value.actionColor
+                : actionColor // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$MedalCardDataImplCopyWith<$Res>
+    implements $MedalCardDataCopyWith<$Res> {
+  factory _$$MedalCardDataImplCopyWith(
+    _$MedalCardDataImpl value,
+    $Res Function(_$MedalCardDataImpl) then,
+  ) = __$$MedalCardDataImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String title,
+    String description,
+    String? imageUrl,
+    List<String> detailLines,
+    String? price,
+    String? actionLabel,
+    String? actionColor,
+  });
+}
+
+/// @nodoc
+class __$$MedalCardDataImplCopyWithImpl<$Res>
+    extends _$MedalCardDataCopyWithImpl<$Res, _$MedalCardDataImpl>
+    implements _$$MedalCardDataImplCopyWith<$Res> {
+  __$$MedalCardDataImplCopyWithImpl(
+    _$MedalCardDataImpl _value,
+    $Res Function(_$MedalCardDataImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of MedalCardData
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? title = null,
+    Object? description = null,
+    Object? imageUrl = freezed,
+    Object? detailLines = null,
+    Object? price = freezed,
+    Object? actionLabel = freezed,
+    Object? actionColor = freezed,
+  }) {
+    return _then(
+      _$MedalCardDataImpl(
+        title: null == title
+            ? _value.title
+            : title // ignore: cast_nullable_to_non_nullable
+                  as String,
+        description: null == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String,
+        imageUrl: freezed == imageUrl
+            ? _value.imageUrl
+            : imageUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        detailLines: null == detailLines
+            ? _value._detailLines
+            : detailLines // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+        price: freezed == price
+            ? _value.price
+            : price // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        actionLabel: freezed == actionLabel
+            ? _value.actionLabel
+            : actionLabel // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        actionColor: freezed == actionColor
+            ? _value.actionColor
+            : actionColor // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$MedalCardDataImpl implements _MedalCardData {
+  const _$MedalCardDataImpl({
+    required this.title,
+    this.description = '',
+    this.imageUrl,
+    final List<String> detailLines = const [],
+    this.price,
+    this.actionLabel,
+    this.actionColor,
+  }) : _detailLines = detailLines;
+
+  @override
+  final String title;
+  @override
+  @JsonKey()
+  final String description;
+  @override
+  final String? imageUrl;
+  final List<String> _detailLines;
+  @override
+  @JsonKey()
+  List<String> get detailLines {
+    if (_detailLines is EqualUnmodifiableListView) return _detailLines;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_detailLines);
+  }
+
+  @override
+  final String? price;
+  @override
+  final String? actionLabel;
+  @override
+  final String? actionColor;
+
+  @override
+  String toString() {
+    return 'MedalCardData(title: $title, description: $description, imageUrl: $imageUrl, detailLines: $detailLines, price: $price, actionLabel: $actionLabel, actionColor: $actionColor)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MedalCardDataImpl &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.description, description) ||
+                other.description == description) &&
+            (identical(other.imageUrl, imageUrl) ||
+                other.imageUrl == imageUrl) &&
+            const DeepCollectionEquality().equals(
+              other._detailLines,
+              _detailLines,
+            ) &&
+            (identical(other.price, price) || other.price == price) &&
+            (identical(other.actionLabel, actionLabel) ||
+                other.actionLabel == actionLabel) &&
+            (identical(other.actionColor, actionColor) ||
+                other.actionColor == actionColor));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    title,
+    description,
+    imageUrl,
+    const DeepCollectionEquality().hash(_detailLines),
+    price,
+    actionLabel,
+    actionColor,
+  );
+
+  /// Create a copy of MedalCardData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MedalCardDataImplCopyWith<_$MedalCardDataImpl> get copyWith =>
+      __$$MedalCardDataImplCopyWithImpl<_$MedalCardDataImpl>(this, _$identity);
+}
+
+abstract class _MedalCardData implements MedalCardData {
+  const factory _MedalCardData({
+    required final String title,
+    final String description,
+    final String? imageUrl,
+    final List<String> detailLines,
+    final String? price,
+    final String? actionLabel,
+    final String? actionColor,
+  }) = _$MedalCardDataImpl;
+
+  @override
+  String get title;
+  @override
+  String get description;
+  @override
+  String? get imageUrl;
+  @override
+  List<String> get detailLines;
+  @override
+  String? get price;
+  @override
+  String? get actionLabel;
+  @override
+  String? get actionColor;
+
+  /// Create a copy of MedalCardData
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$MedalCardDataImplCopyWith<_$MedalCardDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

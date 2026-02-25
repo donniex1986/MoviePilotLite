@@ -7,11 +7,13 @@ part 'form_block_models.freezed.dart';
 sealed class FormBlock with _$FormBlock {
   const FormBlock._();
 
-  /// 统计卡片：图标 + 标题 + 数值
+  /// 统计卡片：图标 + 标题 + 数值（支持 MDI 图标名与颜色）
   const factory FormBlock.statCard({
     required String caption,
     required String value,
     String? iconSrc,
+    String? iconName,
+    String? iconColor,
   }) = StatCardBlock;
 
   /// 图表：标题 + 标签 + 数据 + 类型
@@ -81,22 +83,51 @@ sealed class FormBlock with _$FormBlock {
     String? subtitle,
   }) = PageHeaderBlock;
 
-  /// 折叠卡片：卡片标题 + 副标题 + 可折叠项列表
+  /// 折叠卡片：卡片标题 + 副标题 + 可折叠项列表（支持图标与数量摘要芯片）
   const factory FormBlock.expansionCard({
     required String cardTitle,
     String? cardSubtitle,
     @Default([]) List<ExpansionItem> items,
+    String? iconName,
+    @Default([]) List<String> chipLines,
+    @Default([]) List<ChipItemData> chipItems,
   }) = ExpansionCardBlock;
 }
 
-/// 折叠项：标题 + 副标题 + 正文行
+/// 芯片项：图标 + 文本 + 背景色（VChip 内 VIcon + span 结构）
+@freezed
+class ChipItemData with _$ChipItemData {
+  const factory ChipItemData({
+    String? iconName,
+    String? iconColor,
+    required String text,
+    String? backgroundColor,
+  }) = _ChipItemData;
+}
+
+/// 折叠项：标题 + 副标题 + 正文行 + 勋章卡片列表
 @freezed
 class ExpansionItem with _$ExpansionItem {
   const factory ExpansionItem({
     required String title,
     String? subtitle,
     @Default([]) List<String> bodyLines,
+    @Default([]) List<MedalCardData> medalCards,
   }) = _ExpansionItem;
+}
+
+/// 勋章卡片：标题、描述、图片、详情行、价格、操作按钮
+@freezed
+class MedalCardData with _$MedalCardData {
+  const factory MedalCardData({
+    required String title,
+    @Default('') String description,
+    String? imageUrl,
+    @Default([]) List<String> detailLines,
+    String? price,
+    String? actionLabel,
+    String? actionColor,
+  }) = _MedalCardData;
 }
 
 /// 选择项：标题 + 值

@@ -4,9 +4,27 @@ import 'package:flutter/material.dart';
 class VuetifyMappings {
   VuetifyMappings._();
 
-  /// Vuetify 颜色名 -> Flutter Color（用于 VIcon、VChip 等 props.color）
+  /// 解析十六进制颜色（#RRGGBB 或 #AARRGGBB）
+  static Color? colorFromHex(String? hex) {
+    if (hex == null || hex.isEmpty) return null;
+    var s = hex.trim();
+    if (s.startsWith('#')) s = s.substring(1);
+    if (s.length == 6) {
+      final r = int.tryParse(s.substring(0, 2), radix: 16);
+      final g = int.tryParse(s.substring(2, 4), radix: 16);
+      final b = int.tryParse(s.substring(4, 6), radix: 16);
+      if (r != null && g != null && b != null) {
+        return Color.fromRGBO(r, g, b, 1);
+      }
+    }
+    return null;
+  }
+
+  /// Vuetify 颜色名或十六进制 -> Flutter Color
   static Color? colorFromVuetify(String? name) {
     if (name == null || name.isEmpty) return null;
+    final hex = colorFromHex(name);
+    if (hex != null) return hex;
     return _colorMap[name.toLowerCase()];
   }
 
@@ -20,7 +38,8 @@ class VuetifyMappings {
     'accent': Color(0xFFFF5722),
   };
 
-  /// MDI 图标名（如 mdi-sync）-> IconData，用于 VIcon 的 text 字段
+  /// MDI 图标名（如 mdi-sync、mdi-crown）-> IconData
+  /// VIcon 的图标名通常在 text 字段
   static IconData? iconFromMdi(String? name) {
     if (name == null || name.isEmpty) return null;
     final key = name.toLowerCase().trim();
@@ -68,5 +87,15 @@ class VuetifyMappings {
     'mdi-open-in-new': Icons.open_in_new,
     'mdi-content-copy': Icons.copy,
     'mdi-content-save': Icons.save,
+    // 勋章墙等统计卡片
+    'mdi-office-building': Icons.business,
+    'mdi-medal': Icons.emoji_events,
+    'mdi-cart-check': Icons.shopping_cart_checkout,
+    'mdi-badge-account': Icons.badge,
+    'mdi-cancel': Icons.cancel,
+    'mdi-help-circle-outline': Icons.help_outline,
+    'mdi-crown': Icons.diamond,
+    'mdi-star': Icons.star,
+    'mdi-star-half': Icons.star_half,
   };
 }
