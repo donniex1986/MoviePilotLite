@@ -337,7 +337,6 @@ class SubscribeEditController extends GetxController {
         _item.id.toString(),
       );
       if (ok) {
-        ToastUtil.success('已取消订阅');
         _subscribeController.loadUserSubscribes();
         return true;
       }

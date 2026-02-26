@@ -260,7 +260,7 @@ class SubscribePage extends GetView<SubscribeController> {
               child: SubscribeItemCard(
                 item: item,
                 isTv: controller.isTv,
-                onTap: () {},
+                onTap: () => _openEditSheet(context, item),
                 onMoreTap: (type) {
                   switch (type) {
                     case SubscribeItemCardType.edit:

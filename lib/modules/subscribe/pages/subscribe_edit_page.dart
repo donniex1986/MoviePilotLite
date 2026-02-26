@@ -86,7 +86,13 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
                   '确定取消订阅吗？',
                   onConfirm: () async {
                     final ok = await controller.deleteSubscribe();
-                    if (ok && context.mounted) Get.back(result: true);
+                    if (ok && context.mounted) {
+                      final message = '订阅 ${controller.item.name} 取消订阅成功';
+                      Future.delayed(const Duration(seconds: 1), () {
+                        ToastUtil.success(message);
+                      });
+                      Get.back(result: true);
+                    }
                   },
                 );
               },
