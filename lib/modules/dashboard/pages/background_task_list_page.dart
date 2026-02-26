@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:moviepilot_mobile/modules/dashboard/models/schedule_model.dart';
 
 /// 后台任务列表页面
 class BackgroundTaskListPage extends StatefulWidget {
@@ -15,17 +18,47 @@ class _BackgroundTaskListPageState extends State<BackgroundTaskListPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
+  Timer? _scheduleRefreshTimer;
+  static const _timerInterval = Duration(seconds: 10);
+
+  /// 启动/重启 10 秒定时器，刷新后台任务列表
+  void _startScheduleTimer() {
+    _scheduleRefreshTimer?.cancel();
+    final controller = Get.find<DashboardController>();
+    _scheduleRefreshTimer = Timer.periodic(_timerInterval, (_) {
+      controller.loadScheduleData();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = Get.find<DashboardController>();
+      controller.loadScheduleData();
+      _startScheduleTimer();
+    });
+  }
+
+  /// 按 provider 分组
+  Map<String, List<ScheduleModel>> _groupByProvider(List<ScheduleModel> list) {
+    final map = <String, List<ScheduleModel>>{};
+    for (final s in list) {
+      final key = s.provider.isEmpty ? '未分类' : s.provider;
+      map.putIfAbsent(key, () => []).add(s);
+    }
+    return map;
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DashboardController>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('后台任务列表'), centerTitle: false),
+      appBar: AppBar(title: const Text('服务'), centerTitle: false),
       body: SafeArea(
         child: Obx(() {
           final scheduleList = controller.scheduleData.value;
-
-          // 过滤任务列表
           final filteredList = scheduleList.where((schedule) {
             return schedule.name.toLowerCase().contains(
                   _searchQuery.toLowerCase(),
@@ -38,139 +71,132 @@ class _BackgroundTaskListPageState extends State<BackgroundTaskListPage> {
                 );
           }).toList();
 
-          return ListView.builder(
-            itemCount: filteredList.isEmpty
-                ? 2
-                : filteredList.length + 1, // +1 为搜索栏，+1 为空数据提示
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                // 搜索栏
-                return Padding(
-                  padding: const EdgeInsets.all(16),
+          final grouped = _groupByProvider(filteredList);
+          final sections = grouped.entries.toList()
+            ..sort((a, b) => a.key.compareTo(b.key));
+
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              CupertinoSliverRefreshControl(
+                onRefresh: () async {
+                  final c = Get.find<DashboardController>();
+                  await c.loadScheduleData();
+                  _startScheduleTimer();
+                },
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
                   child: CupertinoSearchTextField(
                     controller: _searchController,
                     placeholder: '搜索任务...',
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                    onSubmitted: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                    onSubmitted: (value) =>
+                        setState(() => _searchQuery = value),
                   ),
-                );
-              }
-
-              if (filteredList.isEmpty) {
-                // 空数据提示
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: Text(
-                      _searchQuery.isEmpty ? '暂无后台任务数据' : '未找到匹配的任务',
-                      style: TextStyle(color: CupertinoColors.systemGrey),
+                ),
+              ),
+              if (filteredList.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Text(
+                        _searchQuery.isEmpty ? '暂无后台任务数据' : '未找到匹配的任务',
+                        style: TextStyle(color: CupertinoColors.systemGrey),
+                      ),
                     ),
                   ),
-                );
-              }
-
-              // 任务列表项
-              final schedule = filteredList[index - 1];
-              return _buildScheduleItem(
-                schedule,
-                index - 1,
-                filteredList.length,
-                controller,
-              );
-            },
+                )
+              else
+                ...sections.map(
+                  (e) => SliverToBoxAdapter(
+                    child: CupertinoListSection.insetGrouped(
+                      header: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 4,
+                          bottom: 6,
+                          top: 2,
+                        ),
+                        child: Text(
+                          '${e.key} · ${e.value.length}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: CupertinoColors.secondaryLabel.resolveFrom(
+                              context,
+                            ),
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                      children: e.value
+                          .map(
+                            (schedule) => _buildScheduleItem(
+                              context,
+                              schedule,
+                              controller,
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                ),
+            ],
           );
         }),
       ),
     );
   }
 
-  /// 构建任务项
+  /// 构建任务项：单行显示 name - date - status - button，name 最多 2 行
   Widget _buildScheduleItem(
-    dynamic schedule,
-    int index,
-    int totalCount,
+    BuildContext context,
+    ScheduleModel schedule,
     DashboardController controller,
   ) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: index < totalCount - 1
-            ? Border(bottom: BorderSide(color: CupertinoColors.systemGrey5))
-            : null,
-      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  schedule.name,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${schedule.provider}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: CupertinoColors.systemGrey,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+            child: Text(
+              schedule.name,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  schedule.status,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: _getStatusColor(schedule.status),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+          const SizedBox(width: 8),
+          Text(
+            schedule.next_run,
+            style: TextStyle(
+              fontSize: 12,
+              color: CupertinoColors.secondaryLabel.resolveFrom(context),
             ),
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(schedule.next_run, style: const TextStyle(fontSize: 14)),
-                const SizedBox(height: 4),
-                // 执行按钮
-                CupertinoButton.filled(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  minSize: 24,
-                  onPressed: () async {
-                    // 执行任务
-                    await controller.runScheduler(schedule.id);
-                  },
-                  child: const Text('执行', style: TextStyle(fontSize: 12)),
-                ),
-              ],
+          const SizedBox(width: 8),
+          Text(
+            schedule.status,
+            style: TextStyle(
+              fontSize: 13,
+              color: _getStatusColor(schedule.status),
+              fontWeight: FontWeight.w500,
             ),
+          ),
+          const SizedBox(width: 8),
+          CupertinoButton.filled(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            minSize: 28,
+            borderRadius: BorderRadius.circular(4),
+            onPressed: () async {
+              await controller.runScheduler(schedule.id);
+              _startScheduleTimer();
+            },
+            child: const Text('执行', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),
@@ -195,6 +221,7 @@ class _BackgroundTaskListPageState extends State<BackgroundTaskListPage> {
 
   @override
   void dispose() {
+    _scheduleRefreshTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }

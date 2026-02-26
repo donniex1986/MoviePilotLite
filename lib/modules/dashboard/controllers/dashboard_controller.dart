@@ -412,43 +412,16 @@ class DashboardController extends GetxController {
     talker.info('所有数据刷新完成');
   }
 
-  /// 执行后台任务
+  /// 执行后台任务；不关注返回值，提交后即提示任务已提交
   Future<void> runScheduler(String jobId) async {
     try {
-      talker.info('开始执行后台任务: $jobId');
-      final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/v1/system/runscheduler?jobid=$jobId',
-      );
-      if (response.statusCode == 200) {
-        final data = response.data!;
-        if (data['success'] == true) {
-          talker.info('后台任务执行成功: $jobId');
-          // 显示执行成功提示
-          ToastUtil.success('后台任务已成功启动', title: '执行成功');
-
-          // 执行成功后刷新任务列表
-          await loadScheduleData();
-        } else {
-          final errorMessage = data['message'] ?? '未知错误';
-          talker.warning('后台任务执行失败: $errorMessage');
-          // 显示执行失败提示
-          ToastUtil.error(errorMessage, title: '执行失败');
-        }
-      } else if (response.statusCode == 401) {
-        talker.error('后台任务执行失败: 未授权，请重新登录');
-        // 显示未授权提示
-        ToastUtil.error('未授权，请重新登录', title: '执行失败');
-
-        // 这里可以添加重定向到登录页面的逻辑
-      } else {
-        talker.warning('后台任务执行失败，状态码: ${response.statusCode}');
-        // 显示执行失败提示
-        ToastUtil.error('请求失败，请稍后重试', title: '执行失败');
-      }
+      talker.info('提交后台任务: $jobId');
+      await apiClient.get<dynamic>('/api/v1/system/runscheduler?jobid=$jobId');
+      ToastUtil.success('任务已提交');
+      await loadScheduleData();
     } catch (e, st) {
-      talker.handle(e, st, '执行后台任务失败');
-      // 显示执行失败提示
-      ToastUtil.error('网络错误，请检查网络连接', title: '执行失败');
+      talker.handle(e, st, '提交后台任务失败');
+      ToastUtil.error('提交失败，请检查网络');
     }
   }
 
