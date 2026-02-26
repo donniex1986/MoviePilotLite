@@ -2,6 +2,12 @@
 
 基于 [MoviePilot](https://github.com/jxxghp/MoviePilot) 项目的 Flutter 移动端客户端。
 
+## 社区与贡献
+
+- 📱 **Telegram 群聊**：[小白裙](https://t.me/+MLbOpDDD1mdlOTM1)，欢迎加入交流
+- 🔀 欢迎提交 **Pull Request** 参与贡献
+- 🐛 遇到问题请在 [Issues](https://github.com/AltmanTech/MoviePilotLite/issues) 提交反馈
+
 ## 技术栈
 
 - **框架**: Flutter
@@ -79,13 +85,27 @@ openssl base64 -A -in moviepilot-release.keystore | tr -d '\n' | pbcopy
 
 ## 未来路线
 
-- ✅ Dashboard 已完成  
-  - ⏳ Dashboard 编辑待完成
-- ✅ 系统消息已完成  
-  - ⏳ 系统消息 Stream 待完成
-- ✅ Log 已完成
-- ✅ Profile 已完成  
-  - ⏳ Profile 编辑待完成
+### 已完成
+- ✅ 登录、多用户管理、动态壁纸
+- ✅ Dashboard 仪表盘、后台任务列表
+- ✅ Profile、系统消息、Server Log
+- ✅ 搜索、媒体详情、推荐分类
+- ✅ 订阅（TV/Movie、热门、分享、分享统计、订阅日历、编辑）
+- ✅ 下载器、下载器配置
+- ✅ 媒体服务器配置
+- ✅ 存储、目录、整理刮削
+- ✅ 设置（基础/搜索/高级）
+- ✅ 规则（自定义/优先级/下载）
+- ✅ 用户管理
+- ✅ 站点、站点同步、站点选项
+- ✅ 插件、动态表单
+- ✅ GitHub Actions 打包（Android）
+- ✅ Xcode Cloud 打包并上传 GitHub Release（iOS）
+
+### 待完成
+- ⏳ Dashboard 编辑
+- ⏳ Profile 编辑
+- ⏳ 系统消息 Stream
 
 ## 许可证
 
