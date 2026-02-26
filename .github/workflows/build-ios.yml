@@ -55,6 +55,16 @@ jobs:
           echo "CODE_SIGN_STYLE=Manual" >> $GITHUB_ENV
           echo "PROVISIONING_PROFILE_SPECIFIER=$uuid" >> $GITHUB_ENV
 
+          # 仅修改 Runner Release 配置，使用 Manual signing 避免 Xcode 查找 Apple 账户
+          awk '
+            /97C147071CF9000F007C117D.*Release.*=.*\{/ { in_runner_release=1 }
+            in_runner_release && /CODE_SIGN_IDENTITY = "Apple Development";/ { sub(/CODE_SIGN_IDENTITY = "Apple Development";/, "CODE_SIGN_IDENTITY = \"iPhone Distribution\";") }
+            in_runner_release && /CODE_SIGN_STYLE = Automatic;/ { sub(/CODE_SIGN_STYLE = Automatic;/, "CODE_SIGN_STYLE = Manual;") }
+            in_runner_release && /name = Release;/ { in_runner_release=0 }
+            { print }
+          ' ios/Runner.xcodeproj/project.pbxproj > ios/Runner.xcodeproj/project.pbxproj.tmp && mv ios/Runner.xcodeproj/project.pbxproj.tmp ios/Runner.xcodeproj/project.pbxproj
+          echo "PROVISIONING_PROFILE_SPECIFIER = $uuid" >> ios/Flutter/Release.xcconfig
+
       - name: Install Fastlane
         run: brew install fastlane
 
