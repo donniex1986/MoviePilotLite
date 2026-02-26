@@ -175,7 +175,7 @@ class RecommendPage extends GetView<RecommendController> {
               key: ValueKey(subCategory),
               child: Column(
                 children: [
-                  _buildSectionHeader(context, title: subCategory),
+                  _buildSectionHeader(context, subCategory: subCategory),
                   SizedBox(height: 8),
                   _buildPosterRail(context, subCategory),
                   SizedBox(height: 8),
@@ -188,8 +188,13 @@ class RecommendPage extends GetView<RecommendController> {
     });
   }
 
-  Widget _buildSectionHeader(BuildContext context, {required String title}) {
+  Widget _buildSectionHeader(
+    BuildContext context, {
+    required String subCategory,
+  }) {
     final theme = Theme.of(context);
+    final key = controller.keyForSubCategory(subCategory);
+    final canOpenMore = key != null && key.isNotEmpty;
     return Row(
       children: [
         Container(
@@ -203,22 +208,57 @@ class RecommendPage extends GetView<RecommendController> {
         const SizedBox(width: 10),
         Expanded(
           child: Text(
-            title,
+            subCategory,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        Text(
-          '更多',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: _accentColor(context),
-            fontWeight: FontWeight.w600,
+        if (canOpenMore)
+          InkWell(
+            onTap: () => _openCategoryList(key: key, title: subCategory),
+            borderRadius: BorderRadius.circular(4),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '更多',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: _accentColor(context),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, size: 18, color: _accentColor(context)),
+                ],
+              ),
+            ),
+          )
+        else
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '更多',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.textSecondaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right, size: 18, color: AppTheme.textSecondaryColor),
+            ],
           ),
-        ),
-        const SizedBox(width: 4),
-        Icon(Icons.chevron_right, size: 18, color: _accentColor(context)),
       ],
+    );
+  }
+
+  void _openCategoryList({required String key, required String title}) {
+    Get.toNamed(
+      '/recommend-category-list',
+      parameters: {'key': key, 'title': title},
     );
   }
 

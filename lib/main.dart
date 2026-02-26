@@ -33,6 +33,8 @@ import 'modules/system_message/controllers/system_message_controller.dart';
 import 'modules/system_message/pages/system_message_page.dart';
 import 'modules/media_detail/controllers/media_detail_controller.dart';
 import 'modules/media_detail/pages/media_detail_page.dart';
+import 'modules/recommend/controllers/recommend_category_list_controller.dart';
+import 'modules/recommend/pages/recommend_category_list_page.dart';
 import 'modules/search_result/controllers/search_result_controller.dart';
 import 'modules/search_result/pages/search_result_page.dart';
 import 'modules/subscribe/controllers/subscribe_controller.dart';
@@ -390,6 +392,18 @@ class MyApp extends StatelessWidget {
           page: () => const MediaDetailPage(),
           binding: BindingsBuilder(() {
             Get.create(() => MediaDetailController());
+          }),
+        ),
+        GetPage(
+          name: '/recommend-category-list',
+          page: () => const RecommendCategoryListPage(),
+          binding: BindingsBuilder(() {
+            final key = Get.parameters['key'] ?? '';
+            final title = Get.parameters['title'] ?? '';
+            Get.put(
+              RecommendCategoryListController(key: key, title: title),
+              permanent: false,
+            );
           }),
         ),
 
