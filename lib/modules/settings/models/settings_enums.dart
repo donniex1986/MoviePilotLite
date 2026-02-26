@@ -19,6 +19,11 @@ const Map<String, List<SettingsEnumOption>> settingsEnums = {
     SettingsEnumOption(value: 'themoviedb', label: 'TheMovieDb'),
     SettingsEnumOption(value: 'douban', label: '豆瓣'),
   ],
+  'SEARCH_SOURCE': [
+    SettingsEnumOption(value: 'themoviedb', label: 'TheMovieDb'),
+    SettingsEnumOption(value: 'douban', label: '豆瓣'),
+    SettingsEnumOption(value: 'bangumi', label: 'Bangumi'),
+  ],
   'SCRAP_SOURCE': [
     SettingsEnumOption(value: 'themoviedb', label: 'TheMovieDb'),
     SettingsEnumOption(value: 'douban', label: '豆瓣'),

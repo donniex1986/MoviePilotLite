@@ -80,8 +80,10 @@ import 'modules/settings/controllers/settings_organize_scrape_controller.dart';
 import 'modules/settings/controllers/settings_site_sync_controller.dart';
 import 'modules/settings/controllers/settings_site_options_controller.dart';
 import 'modules/settings/controllers/settings_basic_controller.dart';
+import 'modules/settings/controllers/settings_search_download_controller.dart';
 import 'modules/settings/pages/settings_advanced_detail_page.dart';
 import 'modules/settings/pages/settings_basic_page.dart';
+import 'modules/settings/pages/settings_search_download_page.dart';
 import 'modules/settings/pages/organize_scrape_page.dart';
 import 'modules/settings/pages/site_sync_page.dart';
 import 'modules/settings/pages/site_options_page.dart';
@@ -466,6 +468,13 @@ class MyApp extends StatelessWidget {
           page: () => const SettingsBasicPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => SettingsBasicController());
+          }),
+        ),
+        GetPage(
+          name: '/settings/search/basic',
+          page: () => const SettingsSearchDownloadPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => SettingsSearchDownloadController());
           }),
         ),
         GetPage(
