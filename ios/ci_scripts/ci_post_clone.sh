@@ -22,7 +22,7 @@ brew install cocoapods
 
 flutter build ios --config-only --release
 
-# Install CocoaPods dependencies.
-cd ios && pod install # run `pod install` in the `ios` directory.
+# Install CocoaPods dependencies. --no-repo-update 避免更新 specs 导致 CI 卡住或超时。
+cd ios && pod install --no-repo-update
 
 exit 0
