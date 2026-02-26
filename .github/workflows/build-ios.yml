@@ -38,20 +38,31 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo "${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
           uuid=$(grep -aA1 UUID profile.mobileprovision | grep -o "[-A-Za-z0-9]\{36\}" | head -1)
+          if [ -z "$uuid" ]; then
+            echo "::error::无法从 Provisioning Profile 中解析 UUID，请确认 APPLE_PROVISIONING_PROFILE_BASE64 为有效的 .mobileprovision 文件"
+            exit 1
+          fi
           cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$uuid.mobileprovision
           echo "PROVISIONING_PROFILE_UUID=$uuid" >> $GITHUB_ENV
 
+          # 使用 manual signing 并显式指定 profile UUID，避免 xcodebuild export 时找不到 profile
+          /usr/libexec/PlistBuddy -c "Set :signingStyle manual" ios/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Delete :provisioningProfiles" ios/ExportOptions.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" ios/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:com.altman.moviepilot string $uuid" ios/ExportOptions.plist
+
           echo "CODE_SIGN_IDENTITY=iPhone Distribution" >> $GITHUB_ENV
-          echo "CODE_SIGN_STYLE=Automatic" >> $GITHUB_ENV
+          echo "CODE_SIGN_STYLE=Manual" >> $GITHUB_ENV
+          echo "PROVISIONING_PROFILE_SPECIFIER=$uuid" >> $GITHUB_ENV
 
       - name: Install Fastlane
         run: brew install fastlane
 
       - name: Build iOS IPA
         env:
-          PROVISIONING_PROFILE_UUID: ${{ env.PROVISIONING_PROFILE_UUID }}
+          PROVISIONING_PROFILE_SPECIFIER: ${{ env.PROVISIONING_PROFILE_UUID }}
           CODE_SIGN_IDENTITY: "iPhone Distribution"
-          CODE_SIGN_STYLE: "Automatic"
+          CODE_SIGN_STYLE: "Manual"
         run: |
           security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain || true
           fastlane ios
