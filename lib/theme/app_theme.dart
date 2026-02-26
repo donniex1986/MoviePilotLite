@@ -89,7 +89,7 @@ class AppTheme {
         ),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: lightCardBackgroundColor,
+        backgroundColor: lightBackgroundColor,
         foregroundColor: lightTextPrimaryColor,
         elevation: 0,
         titleTextStyle: TextStyle(
@@ -161,7 +161,7 @@ class AppTheme {
         ),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: darkCardBackgroundColor,
+        backgroundColor: darkBackgroundColor,
         foregroundColor: darkTextPrimaryColor,
         elevation: 0,
         titleTextStyle: TextStyle(
