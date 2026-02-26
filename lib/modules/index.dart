@@ -174,7 +174,7 @@ class _IndexState extends State<Index> {
       ),
       bottomNavigationBar: LiquidBottomNavigationBar(
         selectedItemColor: context.primaryColor,
-        unselectedItemColor: context.textSecondaryColor,
+        unselectedItemColor: context.textPrimaryColor,
         enableMinimize: true,
         // action 按钮不在 items 中，currentIndex 需限定在 0..3，否则 collapsed 时会越界
         currentIndex: _selectedIndex.clamp(0, 3),
