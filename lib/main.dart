@@ -47,6 +47,8 @@ import 'modules/subscribe/pages/subscribe_page.dart';
 import 'modules/subscribe/pages/subscribe_popular_page.dart';
 import 'modules/subscribe/pages/subscribe_share_page.dart';
 import 'modules/subscribe/pages/subscribe_share_statistics_page.dart';
+import 'modules/subscribe/controllers/subscribe_edit_controller.dart';
+import 'modules/subscribe/pages/subscribe_edit_page.dart';
 import 'modules/media_organize/controllers/media_organize_controller.dart';
 import 'modules/media_organize/pages/media_organize_page.dart';
 import 'modules/download/controllers/download_controller.dart';
@@ -299,6 +301,22 @@ class MyApp extends StatelessWidget {
           page: () => const SubscribeCalendarPage(),
           binding: BindingsBuilder(() {
             Get.put(SubscribeCalendarController(), permanent: false);
+          }),
+        ),
+        GetPage(
+          name: '/subscribe-edit',
+          page: () => const SubscribeEditPage(),
+          binding: BindingsBuilder(() {
+            if (!Get.isRegistered<DownloaderController>()) {
+              Get.put(DownloaderController(), permanent: true);
+            }
+            if (!Get.isRegistered<DirectoryListController>()) {
+              Get.put(DirectoryListController(), permanent: true);
+            }
+            if (!Get.isRegistered<SiteController>()) {
+              Get.put(SiteController(), permanent: true);
+            }
+            Get.put(SubscribeEditController(), permanent: false);
           }),
         ),
         GetPage(

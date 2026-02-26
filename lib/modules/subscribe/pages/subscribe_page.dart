@@ -297,16 +297,8 @@ class SubscribePage extends GetView<SubscribeController> {
     });
   }
 
-  Future<void> _openEditSheet(BuildContext context, SubscribeItem item) {
-    return showCupertinoModalBottomSheet<void>(
-      context: context,
-      builder: (sheetContext) {
-        return SizedBox(
-          height: MediaQuery.of(sheetContext).size.height * 0.4,
-          child: Text('编辑'),
-        );
-      },
-    );
+  void _openEditSheet(BuildContext context, SubscribeItem item) {
+    Get.toNamed('/subscribe-edit', arguments: item);
   }
 
   _pauseSubscribe(BuildContext context, SubscribeItem item) {
