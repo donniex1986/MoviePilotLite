@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/rule/controllers/rule_controller.dart';
+import 'package:moviepilot_mobile/modules/rule/widgets/priority_rule_detail_sheet.dart';
 import 'package:moviepilot_mobile/modules/rule/widgets/rule_card.dart';
 
 /// 优先级规则页
@@ -48,51 +49,55 @@ class PriorityRulePage extends GetView<RuleController> {
         ),
         child: Obx(() {
           if (controller.errorText.value != null) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
+            return Material(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        controller.errorText.value ?? '',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: CupertinoColors.secondaryLabel.resolveFrom(
+                            context,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      CupertinoButton.filled(
+                        onPressed: controller.load,
+                        child: const Text('重试'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+          if (controller.priorityRules.isEmpty) {
+            return Material(
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Icon(
+                      CupertinoIcons.list_bullet,
+                      size: 64,
+                      color: CupertinoColors.tertiaryLabel.resolveFrom(context),
+                    ),
+                    const SizedBox(height: 16),
                     Text(
-                      controller.errorText.value ?? '',
-                      textAlign: TextAlign.center,
+                      '暂无优先级规则',
                       style: TextStyle(
                         color: CupertinoColors.secondaryLabel.resolveFrom(
                           context,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    CupertinoButton.filled(
-                      onPressed: controller.load,
-                      child: const Text('重试'),
-                    ),
                   ],
                 ),
-              ),
-            );
-          }
-          if (controller.priorityRules.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    CupertinoIcons.list_bullet,
-                    size: 64,
-                    color: CupertinoColors.tertiaryLabel.resolveFrom(context),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '暂无优先级规则',
-                    style: TextStyle(
-                      color: CupertinoColors.secondaryLabel.resolveFrom(
-                        context,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             );
           }
@@ -116,17 +121,22 @@ class PriorityRulePage extends GetView<RuleController> {
                     ),
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final item = controller.priorityRules[index];
-                      return RuleCard(
-                        icon: CupertinoIcons.list_number,
-                        title: item.name,
-                        subtitle: item.ruleString.isNotEmpty
-                            ? item.ruleString
-                            : null,
-                        trailing:
-                            (item.mediaType.isNotEmpty ||
-                                item.category.isNotEmpty)
-                            ? '${item.mediaType} ${item.category}'.trim()
-                            : null,
+                      return GestureDetector(
+                        onTap: () =>
+                            PriorityRuleDetailSheet.show(context, item),
+                        behavior: HitTestBehavior.opaque,
+                        child: RuleCard(
+                          icon: CupertinoIcons.list_number,
+                          title: item.name,
+                          subtitle: item.ruleString.isNotEmpty
+                              ? item.ruleString
+                              : null,
+                          trailing:
+                              (item.mediaType.isNotEmpty ||
+                                  item.category.isNotEmpty)
+                              ? '${item.mediaType} ${item.category}'.trim()
+                              : null,
+                        ),
                       );
                     }, childCount: controller.priorityRules.length),
                   ),

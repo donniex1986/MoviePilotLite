@@ -29,6 +29,12 @@ mixin _$CustomFilterRule {
   String get include => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _stringFromJson)
   String get exclude => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _stringFromJson, name: 'size_range')
+  String get sizeRange => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _stringFromJson, name: 'seeders')
+  String get seeders => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _stringFromJson, name: 'publish_time')
+  String get publishTime => throw _privateConstructorUsedError;
 
   /// Serializes this CustomFilterRule to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -52,6 +58,10 @@ abstract class $CustomFilterRuleCopyWith<$Res> {
     @JsonKey(fromJson: _stringFromJson) String name,
     @JsonKey(fromJson: _stringFromJson) String include,
     @JsonKey(fromJson: _stringFromJson) String exclude,
+    @JsonKey(fromJson: _stringFromJson, name: 'size_range') String sizeRange,
+    @JsonKey(fromJson: _stringFromJson, name: 'seeders') String seeders,
+    @JsonKey(fromJson: _stringFromJson, name: 'publish_time')
+    String publishTime,
   });
 }
 
@@ -74,6 +84,9 @@ class _$CustomFilterRuleCopyWithImpl<$Res, $Val extends CustomFilterRule>
     Object? name = null,
     Object? include = null,
     Object? exclude = null,
+    Object? sizeRange = null,
+    Object? seeders = null,
+    Object? publishTime = null,
   }) {
     return _then(
       _value.copyWith(
@@ -92,6 +105,18 @@ class _$CustomFilterRuleCopyWithImpl<$Res, $Val extends CustomFilterRule>
             exclude: null == exclude
                 ? _value.exclude
                 : exclude // ignore: cast_nullable_to_non_nullable
+                      as String,
+            sizeRange: null == sizeRange
+                ? _value.sizeRange
+                : sizeRange // ignore: cast_nullable_to_non_nullable
+                      as String,
+            seeders: null == seeders
+                ? _value.seeders
+                : seeders // ignore: cast_nullable_to_non_nullable
+                      as String,
+            publishTime: null == publishTime
+                ? _value.publishTime
+                : publishTime // ignore: cast_nullable_to_non_nullable
                       as String,
           )
           as $Val,
@@ -113,6 +138,10 @@ abstract class _$$CustomFilterRuleImplCopyWith<$Res>
     @JsonKey(fromJson: _stringFromJson) String name,
     @JsonKey(fromJson: _stringFromJson) String include,
     @JsonKey(fromJson: _stringFromJson) String exclude,
+    @JsonKey(fromJson: _stringFromJson, name: 'size_range') String sizeRange,
+    @JsonKey(fromJson: _stringFromJson, name: 'seeders') String seeders,
+    @JsonKey(fromJson: _stringFromJson, name: 'publish_time')
+    String publishTime,
   });
 }
 
@@ -134,6 +163,9 @@ class __$$CustomFilterRuleImplCopyWithImpl<$Res>
     Object? name = null,
     Object? include = null,
     Object? exclude = null,
+    Object? sizeRange = null,
+    Object? seeders = null,
+    Object? publishTime = null,
   }) {
     return _then(
       _$CustomFilterRuleImpl(
@@ -153,6 +185,18 @@ class __$$CustomFilterRuleImplCopyWithImpl<$Res>
             ? _value.exclude
             : exclude // ignore: cast_nullable_to_non_nullable
                   as String,
+        sizeRange: null == sizeRange
+            ? _value.sizeRange
+            : sizeRange // ignore: cast_nullable_to_non_nullable
+                  as String,
+        seeders: null == seeders
+            ? _value.seeders
+            : seeders // ignore: cast_nullable_to_non_nullable
+                  as String,
+        publishTime: null == publishTime
+            ? _value.publishTime
+            : publishTime // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -166,6 +210,10 @@ class _$CustomFilterRuleImpl implements _CustomFilterRule {
     @JsonKey(fromJson: _stringFromJson) this.name = '',
     @JsonKey(fromJson: _stringFromJson) this.include = '',
     @JsonKey(fromJson: _stringFromJson) this.exclude = '',
+    @JsonKey(fromJson: _stringFromJson, name: 'size_range') this.sizeRange = '',
+    @JsonKey(fromJson: _stringFromJson, name: 'seeders') this.seeders = '',
+    @JsonKey(fromJson: _stringFromJson, name: 'publish_time')
+    this.publishTime = '',
   });
 
   factory _$CustomFilterRuleImpl.fromJson(Map<String, dynamic> json) =>
@@ -183,10 +231,19 @@ class _$CustomFilterRuleImpl implements _CustomFilterRule {
   @override
   @JsonKey(fromJson: _stringFromJson)
   final String exclude;
+  @override
+  @JsonKey(fromJson: _stringFromJson, name: 'size_range')
+  final String sizeRange;
+  @override
+  @JsonKey(fromJson: _stringFromJson, name: 'seeders')
+  final String seeders;
+  @override
+  @JsonKey(fromJson: _stringFromJson, name: 'publish_time')
+  final String publishTime;
 
   @override
   String toString() {
-    return 'CustomFilterRule(id: $id, name: $name, include: $include, exclude: $exclude)';
+    return 'CustomFilterRule(id: $id, name: $name, include: $include, exclude: $exclude, sizeRange: $sizeRange, seeders: $seeders, publishTime: $publishTime)';
   }
 
   @override
@@ -197,12 +254,26 @@ class _$CustomFilterRuleImpl implements _CustomFilterRule {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.include, include) || other.include == include) &&
-            (identical(other.exclude, exclude) || other.exclude == exclude));
+            (identical(other.exclude, exclude) || other.exclude == exclude) &&
+            (identical(other.sizeRange, sizeRange) ||
+                other.sizeRange == sizeRange) &&
+            (identical(other.seeders, seeders) || other.seeders == seeders) &&
+            (identical(other.publishTime, publishTime) ||
+                other.publishTime == publishTime));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, include, exclude);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    name,
+    include,
+    exclude,
+    sizeRange,
+    seeders,
+    publishTime,
+  );
 
   /// Create a copy of CustomFilterRule
   /// with the given fields replaced by the non-null parameter values.
@@ -227,6 +298,11 @@ abstract class _CustomFilterRule implements CustomFilterRule {
     @JsonKey(fromJson: _stringFromJson) final String name,
     @JsonKey(fromJson: _stringFromJson) final String include,
     @JsonKey(fromJson: _stringFromJson) final String exclude,
+    @JsonKey(fromJson: _stringFromJson, name: 'size_range')
+    final String sizeRange,
+    @JsonKey(fromJson: _stringFromJson, name: 'seeders') final String seeders,
+    @JsonKey(fromJson: _stringFromJson, name: 'publish_time')
+    final String publishTime,
   }) = _$CustomFilterRuleImpl;
 
   factory _CustomFilterRule.fromJson(Map<String, dynamic> json) =
@@ -244,6 +320,15 @@ abstract class _CustomFilterRule implements CustomFilterRule {
   @override
   @JsonKey(fromJson: _stringFromJson)
   String get exclude;
+  @override
+  @JsonKey(fromJson: _stringFromJson, name: 'size_range')
+  String get sizeRange;
+  @override
+  @JsonKey(fromJson: _stringFromJson, name: 'seeders')
+  String get seeders;
+  @override
+  @JsonKey(fromJson: _stringFromJson, name: 'publish_time')
+  String get publishTime;
 
   /// Create a copy of CustomFilterRule
   /// with the given fields replaced by the non-null parameter values.

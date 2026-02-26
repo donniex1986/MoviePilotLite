@@ -21,6 +21,15 @@ class CustomFilterRule with _$CustomFilterRule {
     @JsonKey(fromJson: _stringFromJson) @Default('') String name,
     @JsonKey(fromJson: _stringFromJson) @Default('') String include,
     @JsonKey(fromJson: _stringFromJson) @Default('') String exclude,
+    @JsonKey(fromJson: _stringFromJson, name: 'size_range')
+    @Default('')
+    String sizeRange,
+    @JsonKey(fromJson: _stringFromJson, name: 'seeders')
+    @Default('')
+    String seeders,
+    @JsonKey(fromJson: _stringFromJson, name: 'publish_time')
+    @Default('')
+    String publishTime,
   }) = _CustomFilterRule;
 
   factory CustomFilterRule.fromJson(Map<String, dynamic> json) =>

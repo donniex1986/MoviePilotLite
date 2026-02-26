@@ -13,6 +13,13 @@ _$CustomFilterRuleImpl _$$CustomFilterRuleImplFromJson(
   name: json['name'] == null ? '' : _stringFromJson(json['name']),
   include: json['include'] == null ? '' : _stringFromJson(json['include']),
   exclude: json['exclude'] == null ? '' : _stringFromJson(json['exclude']),
+  sizeRange: json['size_range'] == null
+      ? ''
+      : _stringFromJson(json['size_range']),
+  seeders: json['seeders'] == null ? '' : _stringFromJson(json['seeders']),
+  publishTime: json['publish_time'] == null
+      ? ''
+      : _stringFromJson(json['publish_time']),
 );
 
 Map<String, dynamic> _$$CustomFilterRuleImplToJson(
@@ -22,6 +29,9 @@ Map<String, dynamic> _$$CustomFilterRuleImplToJson(
   'name': instance.name,
   'include': instance.include,
   'exclude': instance.exclude,
+  'size_range': instance.sizeRange,
+  'seeders': instance.seeders,
+  'publish_time': instance.publishTime,
 };
 
 _$CustomFilterRulesDataImpl _$$CustomFilterRulesDataImplFromJson(

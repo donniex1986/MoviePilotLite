@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/rule/controllers/rule_controller.dart';
+import 'package:moviepilot_mobile/modules/rule/widgets/custom_rule_detail_sheet.dart';
 import 'package:moviepilot_mobile/modules/rule/widgets/rule_card.dart';
 
 /// 自定义规则页
@@ -42,49 +43,55 @@ class CustomRulePage extends GetView<RuleController> {
       ),
       child: Obx(() {
         if (controller.errorText.value != null) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
+          return Material(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      controller.errorText.value ?? '',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: CupertinoColors.secondaryLabel.resolveFrom(
+                          context,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    CupertinoButton.filled(
+                      onPressed: controller.load,
+                      child: const Text('重试'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        if (controller.customRules.isEmpty) {
+          return Material(
+            child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Icon(
+                    CupertinoIcons.doc_text,
+                    size: 64,
+                    color: CupertinoColors.tertiaryLabel.resolveFrom(context),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
-                    controller.errorText.value ?? '',
-                    textAlign: TextAlign.center,
+                    '暂无自定义规则',
                     style: TextStyle(
                       color: CupertinoColors.secondaryLabel.resolveFrom(
                         context,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  CupertinoButton.filled(
-                    onPressed: controller.load,
-                    child: const Text('重试'),
-                  ),
                 ],
               ),
-            ),
-          );
-        }
-        if (controller.customRules.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  CupertinoIcons.doc_text,
-                  size: 64,
-                  color: CupertinoColors.tertiaryLabel.resolveFrom(context),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '暂无自定义规则',
-                  style: TextStyle(
-                    color: CupertinoColors.secondaryLabel.resolveFrom(context),
-                  ),
-                ),
-              ],
             ),
           );
         }
@@ -107,15 +114,19 @@ class CustomRulePage extends GetView<RuleController> {
                 ),
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = controller.customRules[index];
-                  return RuleCard(
-                    icon: CupertinoIcons.checkmark_circle,
-                    title: item.name.isNotEmpty ? item.name : item.id,
-                    subtitle: item.include.isNotEmpty
-                        ? 'include: ${item.include}'
-                        : null,
-                    trailing: item.exclude.isNotEmpty
-                        ? 'exclude: ${item.exclude}'
-                        : null,
+                  return GestureDetector(
+                    onTap: () => CustomRuleDetailSheet.show(context, item),
+                    behavior: HitTestBehavior.opaque,
+                    child: RuleCard(
+                      icon: CupertinoIcons.checkmark_circle,
+                      title: item.name.isNotEmpty ? item.name : item.id,
+                      subtitle: item.include.isNotEmpty
+                          ? 'include: ${item.include}'
+                          : null,
+                      trailing: item.exclude.isNotEmpty
+                          ? 'exclude: ${item.exclude}'
+                          : null,
+                    ),
                   );
                 }, childCount: controller.customRules.length),
               ),
