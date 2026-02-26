@@ -6,8 +6,11 @@ import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/settings/models/settings_enums.dart';
 import 'package:moviepilot_mobile/modules/settings/widgets/settings_field_row.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_edit_controller.dart';
-import 'package:moviepilot_mobile/modules/subscribe/pages/priority_rule_order_picker_page.dart';
-import 'package:moviepilot_mobile/modules/subscribe/pages/site_multi_select_picker_page.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_media_enums.dart';
+import 'package:moviepilot_mobile/modules/subscribe/pages/priority_rule_order_picker_page.dart'
+    show PriorityRulePickerSheet;
+import 'package:moviepilot_mobile/modules/subscribe/pages/site_multi_select_picker_page.dart'
+    show SubscribeSitePickerSheet;
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
@@ -32,28 +35,47 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Icon(CupertinoIcons.chevron_left, size: 28),
         ),
-        middle: Row(
-          children: [
-            CachedImage(
-              width: 32,
-              height: 32,
-              fit: BoxFit.cover,
-              borderRadius: BorderRadius.circular(32),
-              imageUrl: ImageUtil.convertCacheImageUrl(
-                controller.item.poster ?? '',
+        middle: Obx(() {
+          controller.isDetailLoading.value;
+          final item = controller.item;
+          final loading = controller.isDetailLoading.value;
+          return Row(
+            children: [
+              CachedImage(
+                width: 32,
+                height: 32,
+                fit: BoxFit.cover,
+                borderRadius: BorderRadius.circular(32),
+                imageUrl: ImageUtil.convertCacheImageUrl(item.poster ?? ''),
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '${controller.item.name}',
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 15,
-                color: CupertinoColors.label.resolveFrom(context),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '${item.name}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 15,
+                          color: CupertinoColors.label.resolveFrom(context),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (loading) ...[
+                      const SizedBox(width: 8),
+                      CupertinoActivityIndicator(
+                        radius: 8,
+                        color: CupertinoColors.systemGrey.resolveFrom(context),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        }),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -83,7 +105,13 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
                     ? null
                     : () async {
                         final ok = await controller.save();
-                        if (ok && context.mounted) Get.back(result: true);
+                        if (ok && context.mounted) {
+                          final message = '订阅 ${controller.item.name} 编辑成功';
+                          Future.delayed(const Duration(seconds: 1), () {
+                            ToastUtil.success(message);
+                          });
+                          Get.back(result: true);
+                        }
                       },
                 child: controller.isSaving.value
                     ? CupertinoActivityIndicator(
@@ -111,15 +139,10 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
           ),
           slivers: [
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  children: [
-                    ..._buildAllSectionsAsBox(context),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
+              child: Obx(() {
+                controller.isDetailLoading.value;
+                return Column(children: _buildAllSectionsAsBox(context));
+              }),
             ),
           ],
         ),
@@ -198,29 +221,38 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
         context,
         header: '订阅资源属性',
         children: [
-          _buildSelectRow(
-            context,
-            title: '质量',
-            description: '订阅资源质量',
-            value: controller.quality.value,
-            options: SubscribeEditController.qualityOptions,
-            onChanged: controller.setQuality,
+          Obx(
+            () => _buildSelectRow(
+              context,
+              title: '质量',
+              description: '订阅资源质量',
+              value: controller.quality.value.value,
+              enumLabel: controller.quality.value.label,
+              selectOptions: MediaQuality.selectOptions,
+              onChanged: controller.setQuality,
+            ),
           ),
-          _buildSelectRow(
-            context,
-            title: '分辨率',
-            description: '订阅资源分辨率',
-            value: controller.resolution.value,
-            options: SubscribeEditController.resolutionOptions,
-            onChanged: controller.setResolution,
+          Obx(
+            () => _buildSelectRow(
+              context,
+              title: '分辨率',
+              description: '订阅资源分辨率',
+              value: controller.resolution.value.value,
+              enumLabel: controller.resolution.value.label,
+              selectOptions: MediaResolution.selectOptions,
+              onChanged: controller.setResolution,
+            ),
           ),
-          _buildSelectRow(
-            context,
-            title: '特效',
-            description: '订阅资源特效',
-            value: controller.effect.value,
-            options: SubscribeEditController.effectOptions,
-            onChanged: controller.setEffect,
+          Obx(
+            () => _buildSelectRow(
+              context,
+              title: '特效',
+              description: '订阅资源特效',
+              value: controller.effect.value.value,
+              enumLabel: controller.effect.value.label,
+              selectOptions: MediaEffect.selectOptions,
+              onChanged: controller.setEffect,
+            ),
           ),
         ],
       ),
@@ -241,23 +273,27 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
         context,
         header: '开关设置',
         children: [
-          SettingsFieldRow(
-            title: '洗版',
-            description: '根据洗版优先级进行洗版订阅',
-            compact: true,
-            controlType: SettingsControlType.toggle,
-            editable: true,
-            switchValue: controller.bestVersion.value,
-            onSwitchChanged: controller.setBestVersion,
+          Obx(
+            () => SettingsFieldRow(
+              title: '洗版',
+              description: '根据洗版优先级进行洗版订阅',
+              compact: true,
+              controlType: SettingsControlType.toggle,
+              editable: true,
+              switchValue: controller.bestVersion.value,
+              onSwitchChanged: controller.setBestVersion,
+            ),
           ),
-          SettingsFieldRow(
-            title: '使用 ImdbID 搜索',
-            description: '开启使用 ImdbID 精确搜索资源',
-            compact: true,
-            controlType: SettingsControlType.toggle,
-            editable: true,
-            switchValue: controller.searchImdbid.value,
-            onSwitchChanged: controller.setSearchImdbid,
+          Obx(
+            () => SettingsFieldRow(
+              title: '使用 ImdbID 搜索',
+              description: '开启使用 ImdbID 精确搜索资源',
+              compact: true,
+              controlType: SettingsControlType.toggle,
+              editable: true,
+              switchValue: controller.searchImdbid.value,
+              onSwitchChanged: controller.setSearchImdbid,
+            ),
           ),
         ],
       ),
@@ -336,27 +372,24 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
     required List<Widget> children,
   }) {
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: CupertinoListSection.insetGrouped(
-          backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(
-            context,
-          ),
-          header: Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 6, top: 4),
-            child: Text(
-              header,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: CupertinoColors.secondaryLabel.resolveFrom(context),
-              ),
+      child: CupertinoListSection.insetGrouped(
+        backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(
+          context,
+        ),
+        header: Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 6, top: 4),
+          child: Text(
+            header,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: CupertinoColors.secondaryLabel.resolveFrom(context),
             ),
           ),
-
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          children: children,
         ),
+
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        children: children,
       ),
     );
   }
@@ -400,17 +433,22 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
     required String title,
     required String? description,
     required String value,
-    required List<String> options,
+    String? enumLabel,
+    List<String>? options,
+    List<SettingsEnumOption>? selectOptions,
     required ValueChanged<String> onChanged,
   }) {
-    final opts = options
-        .map((o) => SettingsEnumOption(value: o, label: o))
-        .toList();
+    final opts =
+        selectOptions ??
+        (options ?? const [])
+            .map((o) => SettingsEnumOption(value: o, label: o))
+            .toList();
     return SettingsFieldRow(
       title: title,
       description: description,
       controlType: SettingsControlType.select,
       controlValue: value,
+      enumLabel: enumLabel,
       editable: true,
       selectOptions: opts,
       onSelectChanged: onChanged,
@@ -419,12 +457,12 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
 
   Widget _buildSitePicker(BuildContext context) {
     return Obx(() {
-      final sites = controller.availableSites;
+      final allSites = controller.allSites;
       final selectedIds = controller.selectedSiteIds.toList();
       final names = selectedIds
           .map(
             (id) =>
-                sites.where((s) => s.id == id).firstOrNull?.name ??
+                allSites.where((s) => s.id == id).firstOrNull?.name ??
                 id.toString(),
           )
           .where((s) => s.isNotEmpty)
@@ -440,11 +478,11 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
               ? '${display.substring(0, 14)}…'
               : display,
           onTap: () async {
-            final result = await Get.to<List<int>>(
-              () => SiteMultiSelectPickerPage(
-                availableSites: sites,
-                selectedIds: selectedIds,
-              ),
+            final result = await SubscribeSitePickerSheet.show(
+              context,
+              sites: allSites,
+              initialSelectedIds: selectedIds,
+              selectableIds: controller.selectableSiteIds,
             );
             if (result != null) controller.setSelectedSites(result);
           },
@@ -511,11 +549,10 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
           context,
           display: display,
           onTap: () async {
-            final result = await Get.to<List<String>>(
-              () => PriorityRuleOrderPickerPage(
-                rules: controller.priorityRules,
-                selectedNames: selected,
-              ),
+            final result = await PriorityRulePickerSheet.show(
+              context,
+              rules: controller.priorityRules,
+              initialSelectedNames: selected,
             );
             if (result != null) controller.setPriorityRuleNames(result);
           },

@@ -316,20 +316,24 @@ class SubscribeController extends GetxController {
     return response.statusCode == 200 && response.data['success'] == true;
   }
 
-  Future updateSubscribeData(
-    String id, {
-    SubscribeItem? item,
-    Map<String, dynamic>? extraPayload,
+  /// 更新订阅；fullPayload 需包含完整字段（与 PUT 接口一致），id 为 int
+  Future<bool> updateSubscribeData(
+    int id, {
+    required Map<String, dynamic> fullPayload,
   }) async {
-    Map<String, dynamic> data = {};
-    if (item != null) {
-      data = item.toJson();
+    fullPayload['id'] = id;
+    if (fullPayload['doubanid'] is int) {
+      fullPayload['doubanid'] = fullPayload['doubanid'].toString();
     }
-    if (extraPayload != null) {
-      data.addAll(extraPayload);
+    final response = await _apiClient.put('/api/v1/subscribe/', fullPayload);
+    if (response.statusCode == null || response.statusCode! >= 400) {
+      return false;
     }
-    final payload = {'id': id, 'payload': data};
-    return await _apiClient.put('/api/v1/subscribe/', payload);
+    final data = response.data;
+    if (data is Map<String, dynamic> && data['success'] == true) {
+      return true;
+    }
+    return false;
   }
 
   Future<bool> pauseSubscribe(String id) async {

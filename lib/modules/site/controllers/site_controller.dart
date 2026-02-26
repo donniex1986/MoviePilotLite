@@ -18,10 +18,40 @@ class SiteController extends GetxController {
   final isLoading = false.obs;
   final errorText = RxnString();
 
+  /// 可用于 RSS 订阅的站点 ID 集合；null 表示未加载，空集合表示 API 无配置
+  final rssSiteIds = Rxn<Set<int>>();
+
   @override
   void onReady() {
     super.onReady();
     load();
+    loadRssSiteIds();
+  }
+
+  /// 获取可用于 RSS 的站点 ID 列表
+  /// API: GET /api/v1/system/setting/RssSites
+  /// 返回: {"success":true,"message":null,"data":{"value":[1,3,2]}}
+  Future<void> loadRssSiteIds() async {
+    try {
+      final resp = await _apiClient.get<dynamic>(
+        '/api/v1/system/setting/RssSites',
+      );
+      if (resp.statusCode == null || resp.statusCode! >= 400) return;
+      final body = resp.data;
+      if (body is! Map<String, dynamic>) return;
+      final data = body['data'];
+      if (data is! Map<String, dynamic>) return;
+      final value = data['value'];
+      if (value is List) {
+        final ids = value
+            .map((e) => e is int ? e : (e is num ? e.toInt() : null))
+            .whereType<int>()
+            .toSet();
+        rssSiteIds.value = ids;
+      }
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '获取 RSS 站点列表失败');
+    }
   }
 
   void search(String? keyword) {
