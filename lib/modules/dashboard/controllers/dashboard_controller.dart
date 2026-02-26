@@ -102,17 +102,14 @@ class DashboardController extends GetxController {
   late Timer _networkTimer;
   late Timer _downloaderTimer;
   late Timer _memoryTimer;
-  late RealmService _realmService;
 
   bool _hasLocalDashboardConfig = false;
-  bool _hasLocalDashboardOrder = false;
 
   @override
   Future<void> onInit() async {
     super.onInit();
     // 初始化依赖
     apiClient = Get.find<ApiClient>();
-    _realmService = Get.find<RealmService>();
     talker = Talker();
 
     // 1. 根据传入数据创建 mediaServerController
@@ -159,7 +156,7 @@ class DashboardController extends GetxController {
 
   /// 启动周期性刷新
   void _startPeriodicRefresh() {
-    final duration = const Duration(seconds: 5);
+    final duration = const Duration(seconds: 1000);
     // 初始化定时任务队列，每5秒获取一次数据，根据开关配置获取对应的数据
     _cpuTimer = Timer.periodic(duration, (_) {
       _loadDataBasedOnConfig();
@@ -764,7 +761,6 @@ class DashboardController extends GetxController {
             data: DashboardOrderData(value: items),
           );
           _updateWidgetsOrder(items);
-          _hasLocalDashboardOrder = true;
         }
       }
     } catch (e, st) {
@@ -797,7 +793,6 @@ class DashboardController extends GetxController {
       }
       if (orderItems != null) {
         profile['order'] = orderItems.map((item) => item.toJson()).toList();
-        _hasLocalDashboardOrder = true;
       }
       profiles[_profileKey()] = profile;
       data['version'] = _localConfigVersion;

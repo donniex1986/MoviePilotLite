@@ -34,13 +34,13 @@ Map<String, dynamic> _$$DynamicFormResponseImplToJson(
 
 _$FormNodeImpl _$$FormNodeImplFromJson(Map<String, dynamic> json) =>
     _$FormNodeImpl(
-      component: json['component'] as String,
+      component: json['component'] == null
+          ? ''
+          : _stringFromJson(json['component']),
       props: json['props'] as Map<String, dynamic>?,
-      content:
-          (json['content'] as List<dynamic>?)
-              ?.map((e) => FormNode.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
+      content: json['content'] == null
+          ? const []
+          : _contentFromJson(json['content']),
       text: json['text'],
     );
 

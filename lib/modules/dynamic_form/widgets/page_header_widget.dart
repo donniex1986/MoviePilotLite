@@ -21,14 +21,14 @@ class PageHeaderWidget extends StatelessWidget {
               blendMode: BlendMode.srcIn,
               shaderCallback: (bounds) => LinearGradient(
                 colors: [
-                  const Color(0xFF80CBC4),
-                  const Color(0xFF81D4FA),
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.secondary,
                 ],
               ).createShader(bounds),
               child: Text(
                 block.title,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),

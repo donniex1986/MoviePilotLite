@@ -277,8 +277,10 @@ FormNode _$FormNodeFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$FormNode {
+  @JsonKey(fromJson: _stringFromJson)
   String get component => throw _privateConstructorUsedError;
   Map<String, dynamic>? get props => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _contentFromJson)
   List<FormNode> get content => throw _privateConstructorUsedError;
   dynamic get text => throw _privateConstructorUsedError;
 
@@ -298,9 +300,9 @@ abstract class $FormNodeCopyWith<$Res> {
       _$FormNodeCopyWithImpl<$Res, FormNode>;
   @useResult
   $Res call({
-    String component,
+    @JsonKey(fromJson: _stringFromJson) String component,
     Map<String, dynamic>? props,
-    List<FormNode> content,
+    @JsonKey(fromJson: _contentFromJson) List<FormNode> content,
     dynamic text,
   });
 }
@@ -359,9 +361,9 @@ abstract class _$$FormNodeImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    String component,
+    @JsonKey(fromJson: _stringFromJson) String component,
     Map<String, dynamic>? props,
-    List<FormNode> content,
+    @JsonKey(fromJson: _contentFromJson) List<FormNode> content,
     dynamic text,
   });
 }
@@ -412,8 +414,9 @@ class __$$FormNodeImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$FormNodeImpl implements _FormNode {
   const _$FormNodeImpl({
-    required this.component,
+    @JsonKey(fromJson: _stringFromJson) this.component = '',
     final Map<String, dynamic>? props,
+    @JsonKey(fromJson: _contentFromJson)
     final List<FormNode> content = const [],
     this.text,
   }) : _props = props,
@@ -423,6 +426,7 @@ class _$FormNodeImpl implements _FormNode {
       _$$FormNodeImplFromJson(json);
 
   @override
+  @JsonKey(fromJson: _stringFromJson)
   final String component;
   final Map<String, dynamic>? _props;
   @override
@@ -436,7 +440,7 @@ class _$FormNodeImpl implements _FormNode {
 
   final List<FormNode> _content;
   @override
-  @JsonKey()
+  @JsonKey(fromJson: _contentFromJson)
   List<FormNode> get content {
     if (_content is EqualUnmodifiableListView) return _content;
     // ignore: implicit_dynamic_type
@@ -489,9 +493,9 @@ class _$FormNodeImpl implements _FormNode {
 
 abstract class _FormNode implements FormNode {
   const factory _FormNode({
-    required final String component,
+    @JsonKey(fromJson: _stringFromJson) final String component,
     final Map<String, dynamic>? props,
-    final List<FormNode> content,
+    @JsonKey(fromJson: _contentFromJson) final List<FormNode> content,
     final dynamic text,
   }) = _$FormNodeImpl;
 
@@ -499,10 +503,12 @@ abstract class _FormNode implements FormNode {
       _$FormNodeImpl.fromJson;
 
   @override
+  @JsonKey(fromJson: _stringFromJson)
   String get component;
   @override
   Map<String, dynamic>? get props;
   @override
+  @JsonKey(fromJson: _contentFromJson)
   List<FormNode> get content;
   @override
   dynamic get text;

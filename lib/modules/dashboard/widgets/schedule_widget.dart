@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
-import 'package:moviepilot_mobile/widgets/custom_button.dart';
 
 /// 后台任务列表组件
 class ScheduleWidget extends StatelessWidget {
@@ -23,6 +22,29 @@ class ScheduleWidget extends StatelessWidget {
             const Text(
               '后台任务',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            const Spacer(),
+            InkWell(
+              onTap: () {
+                Get.toNamed('/background-task-list');
+              },
+              child: Row(
+                children: [
+                  Text(
+                    '查看',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -49,15 +71,12 @@ class ScheduleWidget extends StatelessWidget {
               : scheduleList;
 
           return Section(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Column(
               children: [
                 ...displayList.map((schedule) {
                   return _buildScheduleItem(schedule);
                 }),
-
-                // 如果任务数量超过5个，添加查看全部按钮
-                const SizedBox(height: 16),
-                _buildViewAllButton(),
               ],
             ),
           );
@@ -129,20 +148,5 @@ class ScheduleWidget extends StatelessWidget {
       default:
         return CupertinoColors.systemGrey;
     }
-  }
-
-  /// 构建查看全部按钮
-  Widget _buildViewAllButton() {
-    // 查看详情按钮
-    return SizedBox(
-      width: double.infinity,
-      child: CupertinoButton.filled(
-        onPressed: () {
-          // 使用modal样式导航到后台任务列表页面
-          Get.toNamed('/background-task-list', arguments: {'modal': true});
-        },
-        child: const Text('查看全部'),
-      ),
-    );
   }
 }

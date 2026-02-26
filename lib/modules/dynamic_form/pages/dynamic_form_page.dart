@@ -9,6 +9,7 @@ import 'package:moviepilot_mobile/modules/dynamic_form/widgets/cron_field_widget
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/expansion_card_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/page_header_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/select_field_widget.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/widgets/site_info_card_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/stat_card_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/switch_field_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/table_widget.dart';
@@ -116,9 +117,14 @@ class DynamicFormPage extends GetView<DynamicFormController> {
                 children: [
                   Text(error, textAlign: TextAlign.center),
                   const SizedBox(height: 12),
-                  CupertinoButton.filled(
-                    onPressed: controller.load,
-                    child: const Text('重试'),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 40,
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: controller.load,
+                      child: const Text('重试'),
+                    ),
                   ),
                 ],
               ),
@@ -212,23 +218,44 @@ class DynamicFormPage extends GetView<DynamicFormController> {
   }
 
   Widget _buildStatCardGrid(BuildContext context, List<StatCardBlock> cards) {
+    const double minItemWidth = 100;
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossCount = cards.length >= 6 ? 3 : 2;
-        final childWidth =
-            (constraints.maxWidth - _statCardGridSpacing * (crossCount - 1)) /
-            crossCount;
+        final maxWidth = constraints.maxWidth;
+        final itemCount = cards.length;
+
+        if (itemCount == 0) return const SizedBox();
+
+        // 1️⃣ 计算一行最多能放多少个（满足最小宽度）
+        int maxPerRow =
+            (maxWidth + _statCardGridSpacing) ~/
+            (minItemWidth + _statCardGridSpacing);
+
+        maxPerRow = maxPerRow.clamp(1, itemCount);
+
+        // 2️⃣ 如果一行能放下所有 item → 单行
+        int crossCount;
+        if (maxPerRow >= itemCount) {
+          crossCount = itemCount;
+        } else {
+          // 3️⃣ 否则最多分两行，均分
+          crossCount = (itemCount / 2).ceil();
+        }
+
+        // 4️⃣ 重新计算实际宽度
+        final totalSpacing = _statCardGridSpacing * (crossCount - 1);
+        final childWidth = (maxWidth - totalSpacing) / crossCount;
+
         return Wrap(
           spacing: _statCardGridSpacing,
           runSpacing: _statCardGridSpacing,
-          children: cards
-              .map(
-                (b) => SizedBox(
-                  width: childWidth,
-                  child: StatCardWidget(block: b, compact: true),
-                ),
-              )
-              .toList(),
+          children: cards.map((b) {
+            return SizedBox(
+              width: childWidth,
+              child: StatCardWidget(block: b, compact: true),
+            );
+          }).toList(),
         );
       },
     );
@@ -289,6 +316,7 @@ class DynamicFormPage extends GetView<DynamicFormController> {
       pageHeader: (b) => PageHeaderWidget(block: b),
       expansionCard: (b) => ExpansionCardWidget(block: b),
       alert: (b) => AlertWidget(block: b),
+      siteInfoCard: (b) => SiteInfoCardWidget(block: b),
     );
   }
 }

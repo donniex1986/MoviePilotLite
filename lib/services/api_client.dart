@@ -3,7 +3,6 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/foundation.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:talker/talker.dart';

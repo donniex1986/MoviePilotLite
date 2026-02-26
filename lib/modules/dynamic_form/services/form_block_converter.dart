@@ -1,5 +1,6 @@
 import 'package:moviepilot_mobile/modules/dynamic_form/models/dynamic_form_models.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/utils/vuetify_mappings.dart';
 
 /// 将 FormNode 树转换为移动端 FormBlock 列表，去除 Web/Vuetify 无用参数
 class FormBlockConverter {
@@ -22,8 +23,27 @@ class FormBlockConverter {
     // 展示页：page（统计卡片、图表、表格、标题行、折叠卡片等）
     for (final pageNode in response.page) {
       if (pageNode.component == 'style') continue; // 忽略 style 节点
-      // 兼容顶层 VCard（如飞牛论坛签到历史：VCard > VCardTitle + VCardText > VTable）
+      if (pageNode.component == 'VAlert') {
+        final alert = _extractAlert(pageNode);
+        if (alert != null) blocks.add(alert);
+        continue;
+      }
+      if (pageNode.component == 'div') {
+        final cls = pageNode.props?['class']?.toString() ?? '';
+        if (cls.contains('dashboard-stats')) {
+          final statCards = _extractStatCardsFromDashboardStats(pageNode);
+          for (final b in statCards) blocks.add(b);
+          continue;
+        }
+      }
+      // 兼容顶层 VCard
       if (pageNode.component == 'VCard') {
+        // 站点信息卡片：VCardItem+VCardTitle + VRow(4 列邀请统计) + VAlert
+        final siteCard = _extractSiteInfoCard(pageNode);
+        if (siteCard != null) {
+          blocks.add(siteCard);
+          continue;
+        }
         final expansion = _extractExpansionCard(pageNode);
         if (expansion != null) {
           blocks.add(expansion);
@@ -219,6 +239,164 @@ class FormBlockConverter {
       iconName: iconName,
       chipItems: chipItems,
     );
+  }
+
+  static SiteInfoCardBlock? _extractSiteInfoCard(FormNode card) {
+    FormNode? cardItemNode;
+    final cardTextNodes = <FormNode>[];
+    for (final node in card.content) {
+      if (node.component == 'VCardItem') cardItemNode = node;
+      if (node.component == 'VCardText') cardTextNodes.add(node);
+    }
+    if (cardItemNode == null || cardTextNodes.isEmpty) return null;
+    FormNode? titleNode;
+    for (final c in cardItemNode.content) {
+      if (c.component == 'VCardTitle') {
+        titleNode = c;
+        break;
+      }
+    }
+    if (titleNode == null) return null;
+    String title = '';
+    String? iconName;
+    String? iconColor;
+    for (final div in titleNode.content) {
+      if (div.component != 'div') continue;
+      for (final node in div.content) {
+        if (node.component == 'VIcon') {
+          iconName ??= _extractIconNameFromVIcon(node);
+          iconColor ??= node.props?['color']?.toString();
+        } else if (node.component == 'span') {
+          final t = _textOf(node) ?? _collectText(node).trim();
+          if (t.isNotEmpty) title = t;
+        }
+      }
+      if (title.isNotEmpty) break;
+    }
+    if (title.isEmpty) return null;
+    final statItems = <StatItemData>[];
+    final extraStatItems = <StatItemData>[];
+    String? alertText;
+    String? alertType;
+    String? alertIconName;
+    String? infoAlertText;
+    String? alertButtonLabel;
+    String? alertButtonHref;
+    var rowIndex = 0;
+    for (final textNode in cardTextNodes) {
+      for (final c in textNode.content) {
+        if (c.component == 'VRow') {
+          final rowItems = _extractStatItemsFromRow(c);
+          if (rowItems.isNotEmpty) {
+            if (rowIndex == 0) {
+              statItems.addAll(rowItems);
+            } else {
+              extraStatItems.addAll(rowItems);
+            }
+            rowIndex++;
+          }
+        } else if (c.component == 'VAlert') {
+          final type = c.props?['type']?.toString().toLowerCase() ?? 'info';
+          if (type == 'error') {
+            alertType = c.props?['type']?.toString();
+            final iconNode = _findComponent(c, 'VIcon');
+            if (iconNode != null) {
+              alertIconName = _extractIconNameFromVIcon(iconNode);
+            }
+            final textParts = <String>[];
+            for (final child in c.content) {
+              if (child.component == 'span' || child.component == 'div') {
+                final t = _collectText(child).trim();
+                if (t.isNotEmpty) textParts.add(t);
+              }
+            }
+            alertText = textParts.join(' ').trim();
+          } else if (type == 'info') {
+            final textParts = <String>[];
+            for (final child in c.content) {
+              if (child.component == 'span' || child.component == 'div') {
+                final t = _collectText(child).trim();
+                if (t.isNotEmpty) textParts.add(t);
+              }
+              if (child.component == 'VBtn') {
+                final href = child.props?['href']?.toString();
+                if (href != null && href.isNotEmpty) {
+                  alertButtonHref ??= href;
+                  for (final btnChild in child.content) {
+                    if (btnChild.component == 'span') {
+                      final lbl = _collectText(btnChild).trim();
+                      if (lbl.isNotEmpty) alertButtonLabel ??= lbl;
+                    }
+                  }
+                }
+              }
+            }
+            infoAlertText = textParts.join(' ').trim();
+          }
+        }
+      }
+    }
+    if (statItems.isEmpty) return null;
+    return SiteInfoCardBlock(
+      title: title,
+      iconName: iconName,
+      iconColor: iconColor,
+      statItems: statItems,
+      extraStatItems: extraStatItems,
+      alertText: alertText?.isNotEmpty == true ? alertText : null,
+      alertType: alertType,
+      alertIconName: alertIconName,
+      infoAlertText: infoAlertText?.isNotEmpty == true ? infoAlertText : null,
+      alertButtonLabel: alertButtonLabel?.isNotEmpty == true ? alertButtonLabel : null,
+      alertButtonHref: alertButtonHref?.isNotEmpty == true ? alertButtonHref : null,
+    );
+  }
+
+  static List<StatItemData> _extractStatItemsFromRow(FormNode rowNode) {
+    final result = <StatItemData>[];
+    for (final col in rowNode.content) {
+      if (col.component != 'VCol') continue;
+      String? value;
+      String? label;
+      String? itemIconName;
+      String? itemIconColor;
+      void visit(FormNode node) {
+        if (node.component == 'VIcon') {
+          itemIconName ??= _extractIconNameFromVIcon(node);
+          itemIconColor ??= node.props?['color']?.toString();
+        } else if (node.component == 'div') {
+          for (final inner in node.content) {
+            if (inner.component == 'VIcon') {
+              itemIconName ??= _extractIconNameFromVIcon(inner);
+              itemIconColor ??= inner.props?['color']?.toString();
+            } else if (inner.component == 'div') {
+              for (final d in inner.content) {
+                if (d.component != 'div') continue;
+                final cls = d.props?['class']?.toString() ?? '';
+                final t = _collectText(d).trim();
+                if (t.isEmpty) continue;
+                if (cls.contains('text-caption')) {
+                  label ??= t;
+                } else {
+                  value ??= t;
+                }
+              }
+            }
+          }
+        }
+        for (final c in node.content) visit(c);
+      }
+      for (final node in col.content) visit(node);
+      if (value != null || label != null) {
+        result.add(StatItemData(
+          iconName: itemIconName,
+          iconColor: itemIconColor,
+          value: value ?? '',
+          label: label ?? '',
+        ));
+      }
+    }
+    return result;
   }
 
   static void _collectChipItems(FormNode node, List<ChipItemData> out) {
@@ -624,7 +802,48 @@ class FormBlockConverter {
     return null;
   }
 
-  /// VCard > VRow > VCol[] 每列: VIcon + div(数值) + div(标签)
+  /// div.dashboard-stats > div.dashboard-stats__item[] 每项: title + value
+  static List<StatCardBlock> _extractStatCardsFromDashboardStats(
+      FormNode dashboardNode) {
+    final result = <StatCardBlock>[];
+    for (final child in dashboardNode.content) {
+      if (child.component != 'div') continue;
+      final cls = child.props?['class']?.toString() ?? '';
+      if (!cls.contains('dashboard-stats__item')) continue;
+      String? caption;
+      String? value;
+      String? iconColor;
+      for (final item in child.content) {
+        if (item.component != 'div') continue;
+        final itemCls = item.props?['class']?.toString() ?? '';
+        if (itemCls.contains('dashboard-stats__title')) {
+          caption = _collectText(item).trim();
+          if (itemCls.contains('text-warning')) {
+            iconColor = '#FF9800';
+          } else if (itemCls.contains('text-error')) {
+            iconColor = '#F44336';
+          } else if (itemCls.contains('text-grey')) {
+            iconColor = '#9E9E9E';
+          }
+        } else if (itemCls.contains('dashboard-stats__value')) {
+          value ??= _collectText(item).trim();
+        }
+      }
+      if (caption != null && caption.isNotEmpty && value != null) {
+        final iconName = VuetifyMappings.iconFromDashboardStatsCaption(caption);
+        result.add(StatCardBlock(
+          caption: caption,
+          value: value,
+          iconSrc: null,
+          iconName: iconName,
+          iconColor: iconColor,
+        ));
+      }
+    }
+    return result;
+  }
+
+  /// VCard > VRow > VCol[] 每列: VIcon + div(数值) + div(标签)，支持嵌套 div.text-center
   static List<StatCardBlock> _extractStatCardsFromRow(FormNode card) {
     final result = <StatCardBlock>[];
     FormNode? rowNode;
@@ -641,35 +860,36 @@ class FormBlockConverter {
       String? caption;
       String? iconName;
       String? iconColor;
-      for (final node in col.content) {
+      void visit(FormNode node) {
         if (node.component == 'VIcon') {
-          iconName = _extractIconNameFromVIcon(node);
-          iconColor = node.props?['color']?.toString();
+          iconName ??= _extractIconNameFromVIcon(node);
+          iconColor ??= node.props?['color']?.toString();
         } else if (node.component == 'div') {
-          final text = _collectText(node).trim();
-          if (text.isEmpty) continue;
           final cls = node.props?['class']?.toString() ?? '';
           final style = node.props?['style']?.toString() ?? '';
           final isValue = cls.contains('font-weight-bold') ||
+              cls.contains('text-h5') ||
               style.contains('font-size: 2rem') ||
               style.contains('font-size:2rem');
           final isCaption =
               cls.contains('text-body-2') || cls.contains('text-caption');
-          if (isValue) {
-            value ??= text;
-          } else if (isCaption) {
-            caption ??= text;
-          } else if (value == null) {
-            value = text;
-          } else if (caption == null) {
-            caption = text;
+          if (isValue || isCaption) {
+            final text = _collectText(node).trim();
+            if (text.isNotEmpty) {
+              if (isValue) value ??= text;
+              if (isCaption) caption ??= text;
+            }
           }
+          for (final c in node.content) visit(c);
         }
       }
-      if (value != null && caption != null) {
+      for (final node in col.content) visit(node);
+      final c = caption;
+      final v = value;
+      if (c != null && v != null) {
         result.add(StatCardBlock(
-          caption: caption,
-          value: value,
+          caption: c,
+          value: v,
           iconSrc: null,
           iconName: iconName,
           iconColor: iconColor,

@@ -25,6 +25,29 @@ class RecentAddedWidget extends StatelessWidget {
               '最近入库',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
             ),
+            const Spacer(),
+            InkWell(
+              onTap: () {
+                Get.toNamed('/media-organize');
+              },
+              child: Row(
+                children: [
+                  Text(
+                    '查看',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -109,16 +132,6 @@ class RecentAddedWidget extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                // 查看详情按钮
-                SizedBox(
-                  width: double.infinity,
-                  child: CupertinoButton.filled(
-                    onPressed: () {
-                      // 查看详情按钮点击事件
-                    },
-                    child: const Text('查看详情'),
-                  ),
-                ),
               ],
             ),
           );
@@ -139,67 +152,5 @@ class RecentAddedWidget extends StatelessWidget {
     return data.asMap().entries.map((entry) {
       return {'day': entry.key, 'count': entry.value};
     }).toList();
-  }
-
-  // 构建背景网格线
-  Widget _buildGridLines() {
-    return Stack(
-      children: [
-        for (int i = 0; i <= 3; i++)
-          Positioned(
-            top: i * 50.0,
-            left: 0,
-            right: 0,
-            child: Container(height: 1, color: CupertinoColors.systemGrey5),
-          ),
-      ],
-    );
-  }
-
-  // 构建柱状图
-  Widget _buildBars(
-    List<Map<String, dynamic>> chartData,
-    BuildContext context,
-  ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: chartData.map((item) {
-        final count = item['count'] as int;
-        final maxCount = chartData.fold(
-          0,
-          (max, data) => data['count'] > max ? data['count'] : max,
-        );
-        final barHeight = maxCount > 0 ? (count / maxCount) * 150.0 : 0.0;
-
-        return Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              // 在柱子上方显示数量
-              if (count > 0)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text(
-                    count.toString(),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-              Container(
-                height: barHeight,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
   }
 }

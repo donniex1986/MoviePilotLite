@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
@@ -22,6 +23,29 @@ class RealTimeSpeedWidget extends StatelessWidget {
             const Text(
               '实时速率',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            const Spacer(),
+            InkWell(
+              onTap: () {
+                Get.toNamed('/downloader-config');
+              },
+              child: Row(
+                children: [
+                  Text(
+                    '查看',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ],
+              ),
             ),
           ],
         ),

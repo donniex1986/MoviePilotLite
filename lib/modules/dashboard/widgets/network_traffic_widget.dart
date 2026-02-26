@@ -37,11 +37,13 @@ class NetworkTrafficWidget extends StatelessWidget {
                   '上行',
                   '${SizeFormatter.formatSize(traffic.first)}ps',
                   CupertinoIcons.arrow_up,
+                  Theme.of(context).colorScheme.secondary,
                 ),
                 _buildTrafficItem(
                   '下行',
                   '${SizeFormatter.formatSize(traffic.last)}ps',
                   CupertinoIcons.arrow_down,
+                  Theme.of(context).colorScheme.primary,
                 ),
               ],
             );
@@ -51,10 +53,15 @@ class NetworkTrafficWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTrafficItem(String label, String value, IconData icon) {
+  Widget _buildTrafficItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
-        Icon(icon, size: 32, color: CupertinoColors.activeGreen),
+        Icon(icon, size: 32, color: color),
         const SizedBox(height: 8),
         Text(
           value,

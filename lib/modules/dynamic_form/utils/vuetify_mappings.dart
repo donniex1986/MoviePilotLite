@@ -97,5 +97,34 @@ class VuetifyMappings {
     'mdi-crown': Icons.diamond,
     'mdi-star': Icons.star,
     'mdi-star-half': Icons.star_half,
+    'mdi-ticket-confirmation': Icons.confirmation_number,
+    'mdi-ticket': Icons.confirmation_number,
+    'mdi-account-group': Icons.group,
+    // 后宫总览 dashboard-stats
+    'mdi-domain': Icons.business,
+    'mdi-human-queue': Icons.groups,
+    'mdi-account-cancel': Icons.person_off,
+    'mdi-database-off': Icons.storage_outlined,
+    'mdi-store': Icons.store,
+    'mdi-diamond': Icons.diamond,
   };
+
+  /// dashboard-stats 标签 -> MDI 图标名（后端 JSON 无 icon，Web 端按 label 映射）
+  static const Map<String, String> _dashboardStatsCaptionToIcon = {
+    '站点数量': 'mdi-domain',
+    '后宫成员': 'mdi-human-queue',
+    '永久邀请数': 'mdi-ticket-confirmation',
+    '永久邀请': 'mdi-ticket-confirmation',
+    '临时邀请数': 'mdi-ticket',
+    '临时邀请': 'mdi-ticket',
+    '低分享率': 'mdi-alert-circle',
+    '已禁用': 'mdi-account-cancel',
+    '无数据': 'mdi-database-off',
+  };
+
+  /// 根据 dashboard-stats 标签解析 MDI 图标名
+  static String? iconFromDashboardStatsCaption(String? caption) {
+    if (caption == null || caption.isEmpty) return null;
+    return _dashboardStatsCaptionToIcon[caption.trim()];
+  }
 }

@@ -108,7 +108,8 @@ class StatCardWidget extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: _resolveIconColor(context) ??
+                    color:
+                        _resolveIconColor(context) ??
                         Theme.of(context).colorScheme.primary,
                   ),
                 ),
@@ -128,7 +129,11 @@ class StatCardWidget extends StatelessWidget {
     return Theme.of(context).colorScheme.primary;
   }
 
-  Widget _buildIcon(BuildContext context, {double size = 40, Color? iconColor}) {
+  Widget _buildIcon(
+    BuildContext context, {
+    double size = 40,
+    Color? iconColor,
+  }) {
     final color = iconColor ?? _resolveIconColor(context);
     final mdiIcon = block.iconName;
     if (mdiIcon != null && mdiIcon.isNotEmpty) {
@@ -138,8 +143,9 @@ class StatCardWidget extends StatelessWidget {
           width: size + 8,
           height: size + 8,
           decoration: BoxDecoration(
-            color: (color ?? Theme.of(context).colorScheme.primary)
-                .withValues(alpha: 0.12),
+            color: (color ?? Theme.of(context).colorScheme.primary).withValues(
+              alpha: 0.12,
+            ),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
@@ -159,10 +165,7 @@ class StatCardWidget extends StatelessWidget {
           child: SizedBox(
             width: size + 8,
             height: size + 8,
-            child: CachedImage(
-              imageUrl: url,
-              fit: BoxFit.contain,
-            ),
+            child: CachedImage(imageUrl: url, fit: BoxFit.contain),
           ),
         );
       }
@@ -171,8 +174,9 @@ class StatCardWidget extends StatelessWidget {
       width: size + 8,
       height: size + 8,
       decoration: BoxDecoration(
-        color: (color ?? Theme.of(context).colorScheme.primary)
-            .withValues(alpha: 0.12),
+        color: (color ?? Theme.of(context).colorScheme.primary).withValues(
+          alpha: 0.12,
+        ),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(

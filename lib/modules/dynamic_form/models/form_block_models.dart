@@ -92,6 +92,32 @@ sealed class FormBlock with _$FormBlock {
     @Default([]) List<String> chipLines,
     @Default([]) List<ChipItemData> chipItems,
   }) = ExpansionCardBlock;
+
+  /// 站点信息卡片：标题 + 图标 + 统计项 + 错误提示 + 魔力值行 + 购买说明 + 购买按钮（后宫管理系统等）
+  const factory FormBlock.siteInfoCard({
+    required String title,
+    String? iconName,
+    String? iconColor,
+    @Default([]) List<StatItemData> statItems,
+    @Default([]) List<StatItemData> extraStatItems,
+    String? alertText,
+    String? alertType,
+    String? alertIconName,
+    String? infoAlertText,
+    String? alertButtonLabel,
+    String? alertButtonHref,
+  }) = SiteInfoCardBlock;
+}
+
+/// 站点信息卡片的单行统计项：图标 + 数值 + 标签
+@freezed
+class StatItemData with _$StatItemData {
+  const factory StatItemData({
+    String? iconName,
+    String? iconColor,
+    required String value,
+    required String label,
+  }) = _StatItemData;
 }
 
 /// 芯片项：图标 + 文本 + 背景色（VChip 内 VIcon + span 结构）

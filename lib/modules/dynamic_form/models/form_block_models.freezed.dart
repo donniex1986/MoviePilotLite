@@ -79,6 +79,20 @@ mixin _$FormBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -130,6 +144,20 @@ mixin _$FormBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -181,6 +209,20 @@ mixin _$FormBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -196,6 +238,7 @@ mixin _$FormBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -210,6 +253,7 @@ mixin _$FormBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -224,6 +268,7 @@ mixin _$FormBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 }
@@ -427,6 +472,20 @@ class _$StatCardBlockImpl extends StatCardBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return statCard(caption, value, iconSrc, iconName, iconColor);
   }
@@ -482,6 +541,20 @@ class _$StatCardBlockImpl extends StatCardBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return statCard?.call(caption, value, iconSrc, iconName, iconColor);
   }
@@ -537,6 +610,20 @@ class _$StatCardBlockImpl extends StatCardBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (statCard != null) {
@@ -559,6 +646,7 @@ class _$StatCardBlockImpl extends StatCardBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return statCard(this);
   }
@@ -577,6 +665,7 @@ class _$StatCardBlockImpl extends StatCardBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return statCard?.call(this);
   }
@@ -595,6 +684,7 @@ class _$StatCardBlockImpl extends StatCardBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (statCard != null) {
@@ -817,6 +907,20 @@ class _$ChartBlockImpl extends ChartBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return chart(title, labels, series, chartType);
   }
@@ -872,6 +976,20 @@ class _$ChartBlockImpl extends ChartBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return chart?.call(title, labels, series, chartType);
   }
@@ -927,6 +1045,20 @@ class _$ChartBlockImpl extends ChartBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (chart != null) {
@@ -949,6 +1081,7 @@ class _$ChartBlockImpl extends ChartBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return chart(this);
   }
@@ -967,6 +1100,7 @@ class _$ChartBlockImpl extends ChartBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return chart?.call(this);
   }
@@ -985,6 +1119,7 @@ class _$ChartBlockImpl extends ChartBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (chart != null) {
@@ -1174,6 +1309,20 @@ class _$TableBlockImpl extends TableBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return table(headers, rows);
   }
@@ -1229,6 +1378,20 @@ class _$TableBlockImpl extends TableBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return table?.call(headers, rows);
   }
@@ -1284,6 +1447,20 @@ class _$TableBlockImpl extends TableBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (table != null) {
@@ -1306,6 +1483,7 @@ class _$TableBlockImpl extends TableBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return table(this);
   }
@@ -1324,6 +1502,7 @@ class _$TableBlockImpl extends TableBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return table?.call(this);
   }
@@ -1342,6 +1521,7 @@ class _$TableBlockImpl extends TableBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (table != null) {
@@ -1524,6 +1704,20 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return switchField(label, value, name);
   }
@@ -1579,6 +1773,20 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return switchField?.call(label, value, name);
   }
@@ -1634,6 +1842,20 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (switchField != null) {
@@ -1656,6 +1878,7 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return switchField(this);
   }
@@ -1674,6 +1897,7 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return switchField?.call(this);
   }
@@ -1692,6 +1916,7 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (switchField != null) {
@@ -1885,6 +2110,20 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return cronField(label, value, name, hint);
   }
@@ -1940,6 +2179,20 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return cronField?.call(label, value, name, hint);
   }
@@ -1995,6 +2248,20 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (cronField != null) {
@@ -2017,6 +2284,7 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return cronField(this);
   }
@@ -2035,6 +2303,7 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return cronField?.call(this);
   }
@@ -2053,6 +2322,7 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (cronField != null) {
@@ -2248,6 +2518,20 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return textField(label, value, name, hint);
   }
@@ -2303,6 +2587,20 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return textField?.call(label, value, name, hint);
   }
@@ -2358,6 +2656,20 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (textField != null) {
@@ -2380,6 +2692,7 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return textField(this);
   }
@@ -2398,6 +2711,7 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return textField?.call(this);
   }
@@ -2416,6 +2730,7 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (textField != null) {
@@ -2618,6 +2933,20 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return textArea(label, value, name, hint, rows);
   }
@@ -2673,6 +3002,20 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return textArea?.call(label, value, name, hint, rows);
   }
@@ -2728,6 +3071,20 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (textArea != null) {
@@ -2750,6 +3107,7 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return textArea(this);
   }
@@ -2768,6 +3126,7 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return textArea?.call(this);
   }
@@ -2786,6 +3145,7 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (textArea != null) {
@@ -2956,6 +3316,20 @@ class _$AlertBlockImpl extends AlertBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return alert(type, text);
   }
@@ -3011,6 +3385,20 @@ class _$AlertBlockImpl extends AlertBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return alert?.call(type, text);
   }
@@ -3066,6 +3454,20 @@ class _$AlertBlockImpl extends AlertBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (alert != null) {
@@ -3088,6 +3490,7 @@ class _$AlertBlockImpl extends AlertBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return alert(this);
   }
@@ -3106,6 +3509,7 @@ class _$AlertBlockImpl extends AlertBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return alert?.call(this);
   }
@@ -3124,6 +3528,7 @@ class _$AlertBlockImpl extends AlertBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (alert != null) {
@@ -3344,6 +3749,20 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return selectField(label, items, value, name, multiple);
   }
@@ -3399,6 +3818,20 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return selectField?.call(label, items, value, name, multiple);
   }
@@ -3454,6 +3887,20 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (selectField != null) {
@@ -3476,6 +3923,7 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return selectField(this);
   }
@@ -3494,6 +3942,7 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return selectField?.call(this);
   }
@@ -3512,6 +3961,7 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (selectField != null) {
@@ -3685,6 +4135,20 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return pageHeader(title, subtitle);
   }
@@ -3740,6 +4204,20 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return pageHeader?.call(title, subtitle);
   }
@@ -3795,6 +4273,20 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (pageHeader != null) {
@@ -3817,6 +4309,7 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return pageHeader(this);
   }
@@ -3835,6 +4328,7 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return pageHeader?.call(this);
   }
@@ -3853,6 +4347,7 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (pageHeader != null) {
@@ -4108,6 +4603,20 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
       List<ChipItemData> chipItems,
     )
     expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
   }) {
     return expansionCard(
       cardTitle,
@@ -4170,6 +4679,20 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
   }) {
     return expansionCard?.call(
       cardTitle,
@@ -4232,6 +4755,20 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
       List<ChipItemData> chipItems,
     )?
     expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
     required TResult orElse(),
   }) {
     if (expansionCard != null) {
@@ -4261,6 +4798,7 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
     required TResult Function(SelectFieldBlock value) selectField,
     required TResult Function(PageHeaderBlock value) pageHeader,
     required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
   }) {
     return expansionCard(this);
   }
@@ -4279,6 +4817,7 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
     TResult? Function(SelectFieldBlock value)? selectField,
     TResult? Function(PageHeaderBlock value)? pageHeader,
     TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
   }) {
     return expansionCard?.call(this);
   }
@@ -4297,6 +4836,7 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
     TResult Function(SelectFieldBlock value)? selectField,
     TResult Function(PageHeaderBlock value)? pageHeader,
     TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
     required TResult orElse(),
   }) {
     if (expansionCard != null) {
@@ -4328,6 +4868,778 @@ abstract class ExpansionCardBlock extends FormBlock {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ExpansionCardBlockImplCopyWith<_$ExpansionCardBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$SiteInfoCardBlockImplCopyWith<$Res> {
+  factory _$$SiteInfoCardBlockImplCopyWith(
+    _$SiteInfoCardBlockImpl value,
+    $Res Function(_$SiteInfoCardBlockImpl) then,
+  ) = __$$SiteInfoCardBlockImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({
+    String title,
+    String? iconName,
+    String? iconColor,
+    List<StatItemData> statItems,
+    List<StatItemData> extraStatItems,
+    String? alertText,
+    String? alertType,
+    String? alertIconName,
+    String? infoAlertText,
+    String? alertButtonLabel,
+    String? alertButtonHref,
+  });
+}
+
+/// @nodoc
+class __$$SiteInfoCardBlockImplCopyWithImpl<$Res>
+    extends _$FormBlockCopyWithImpl<$Res, _$SiteInfoCardBlockImpl>
+    implements _$$SiteInfoCardBlockImplCopyWith<$Res> {
+  __$$SiteInfoCardBlockImplCopyWithImpl(
+    _$SiteInfoCardBlockImpl _value,
+    $Res Function(_$SiteInfoCardBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? title = null,
+    Object? iconName = freezed,
+    Object? iconColor = freezed,
+    Object? statItems = null,
+    Object? extraStatItems = null,
+    Object? alertText = freezed,
+    Object? alertType = freezed,
+    Object? alertIconName = freezed,
+    Object? infoAlertText = freezed,
+    Object? alertButtonLabel = freezed,
+    Object? alertButtonHref = freezed,
+  }) {
+    return _then(
+      _$SiteInfoCardBlockImpl(
+        title: null == title
+            ? _value.title
+            : title // ignore: cast_nullable_to_non_nullable
+                  as String,
+        iconName: freezed == iconName
+            ? _value.iconName
+            : iconName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        iconColor: freezed == iconColor
+            ? _value.iconColor
+            : iconColor // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        statItems: null == statItems
+            ? _value._statItems
+            : statItems // ignore: cast_nullable_to_non_nullable
+                  as List<StatItemData>,
+        extraStatItems: null == extraStatItems
+            ? _value._extraStatItems
+            : extraStatItems // ignore: cast_nullable_to_non_nullable
+                  as List<StatItemData>,
+        alertText: freezed == alertText
+            ? _value.alertText
+            : alertText // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        alertType: freezed == alertType
+            ? _value.alertType
+            : alertType // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        alertIconName: freezed == alertIconName
+            ? _value.alertIconName
+            : alertIconName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        infoAlertText: freezed == infoAlertText
+            ? _value.infoAlertText
+            : infoAlertText // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        alertButtonLabel: freezed == alertButtonLabel
+            ? _value.alertButtonLabel
+            : alertButtonLabel // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        alertButtonHref: freezed == alertButtonHref
+            ? _value.alertButtonHref
+            : alertButtonHref // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$SiteInfoCardBlockImpl extends SiteInfoCardBlock {
+  const _$SiteInfoCardBlockImpl({
+    required this.title,
+    this.iconName,
+    this.iconColor,
+    final List<StatItemData> statItems = const [],
+    final List<StatItemData> extraStatItems = const [],
+    this.alertText,
+    this.alertType,
+    this.alertIconName,
+    this.infoAlertText,
+    this.alertButtonLabel,
+    this.alertButtonHref,
+  }) : _statItems = statItems,
+       _extraStatItems = extraStatItems,
+       super._();
+
+  @override
+  final String title;
+  @override
+  final String? iconName;
+  @override
+  final String? iconColor;
+  final List<StatItemData> _statItems;
+  @override
+  @JsonKey()
+  List<StatItemData> get statItems {
+    if (_statItems is EqualUnmodifiableListView) return _statItems;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_statItems);
+  }
+
+  final List<StatItemData> _extraStatItems;
+  @override
+  @JsonKey()
+  List<StatItemData> get extraStatItems {
+    if (_extraStatItems is EqualUnmodifiableListView) return _extraStatItems;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_extraStatItems);
+  }
+
+  @override
+  final String? alertText;
+  @override
+  final String? alertType;
+  @override
+  final String? alertIconName;
+  @override
+  final String? infoAlertText;
+  @override
+  final String? alertButtonLabel;
+  @override
+  final String? alertButtonHref;
+
+  @override
+  String toString() {
+    return 'FormBlock.siteInfoCard(title: $title, iconName: $iconName, iconColor: $iconColor, statItems: $statItems, extraStatItems: $extraStatItems, alertText: $alertText, alertType: $alertType, alertIconName: $alertIconName, infoAlertText: $infoAlertText, alertButtonLabel: $alertButtonLabel, alertButtonHref: $alertButtonHref)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SiteInfoCardBlockImpl &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.iconName, iconName) ||
+                other.iconName == iconName) &&
+            (identical(other.iconColor, iconColor) ||
+                other.iconColor == iconColor) &&
+            const DeepCollectionEquality().equals(
+              other._statItems,
+              _statItems,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._extraStatItems,
+              _extraStatItems,
+            ) &&
+            (identical(other.alertText, alertText) ||
+                other.alertText == alertText) &&
+            (identical(other.alertType, alertType) ||
+                other.alertType == alertType) &&
+            (identical(other.alertIconName, alertIconName) ||
+                other.alertIconName == alertIconName) &&
+            (identical(other.infoAlertText, infoAlertText) ||
+                other.infoAlertText == infoAlertText) &&
+            (identical(other.alertButtonLabel, alertButtonLabel) ||
+                other.alertButtonLabel == alertButtonLabel) &&
+            (identical(other.alertButtonHref, alertButtonHref) ||
+                other.alertButtonHref == alertButtonHref));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    title,
+    iconName,
+    iconColor,
+    const DeepCollectionEquality().hash(_statItems),
+    const DeepCollectionEquality().hash(_extraStatItems),
+    alertText,
+    alertType,
+    alertIconName,
+    infoAlertText,
+    alertButtonLabel,
+    alertButtonHref,
+  );
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SiteInfoCardBlockImplCopyWith<_$SiteInfoCardBlockImpl> get copyWith =>
+      __$$SiteInfoCardBlockImplCopyWithImpl<_$SiteInfoCardBlockImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )
+    statCard,
+    required TResult Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )
+    chart,
+    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    table,
+    required TResult Function(String label, bool value, String? name)
+    switchField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+    )
+    cronField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+    )
+    textField,
+    required TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )
+    textArea,
+    required TResult Function(String type, String text) alert,
+    required TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )
+    selectField,
+    required TResult Function(String title, String? subtitle) pageHeader,
+    required TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
+    )
+    expansionCard,
+    required TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )
+    siteInfoCard,
+  }) {
+    return siteInfoCard(
+      title,
+      iconName,
+      iconColor,
+      statItems,
+      extraStatItems,
+      alertText,
+      alertType,
+      alertIconName,
+      infoAlertText,
+      alertButtonLabel,
+      alertButtonHref,
+    );
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
+    TResult? Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )?
+    chart,
+    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(String label, bool value, String? name)? switchField,
+    TResult? Function(String label, String value, String? name, String? hint)?
+    cronField,
+    TResult? Function(String label, String value, String? name, String? hint)?
+    textField,
+    TResult? Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )?
+    textArea,
+    TResult? Function(String type, String text)? alert,
+    TResult? Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult? Function(String title, String? subtitle)? pageHeader,
+    TResult? Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
+    )?
+    expansionCard,
+    TResult? Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
+  }) {
+    return siteInfoCard?.call(
+      title,
+      iconName,
+      iconColor,
+      statItems,
+      extraStatItems,
+      alertText,
+      alertType,
+      alertIconName,
+      infoAlertText,
+      alertButtonLabel,
+      alertButtonHref,
+    );
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+      String caption,
+      String value,
+      String? iconSrc,
+      String? iconName,
+      String? iconColor,
+    )?
+    statCard,
+    TResult Function(
+      String? title,
+      List<String> labels,
+      List<num> series,
+      String chartType,
+    )?
+    chart,
+    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(String label, bool value, String? name)? switchField,
+    TResult Function(String label, String value, String? name, String? hint)?
+    cronField,
+    TResult Function(String label, String value, String? name, String? hint)?
+    textField,
+    TResult Function(
+      String label,
+      String value,
+      String? name,
+      String? hint,
+      int rows,
+    )?
+    textArea,
+    TResult Function(String type, String text)? alert,
+    TResult Function(
+      String label,
+      List<SelectOption> items,
+      dynamic value,
+      String? name,
+      bool multiple,
+    )?
+    selectField,
+    TResult Function(String title, String? subtitle)? pageHeader,
+    TResult Function(
+      String cardTitle,
+      String? cardSubtitle,
+      List<ExpansionItem> items,
+      String? iconName,
+      List<String> chipLines,
+      List<ChipItemData> chipItems,
+    )?
+    expansionCard,
+    TResult Function(
+      String title,
+      String? iconName,
+      String? iconColor,
+      List<StatItemData> statItems,
+      List<StatItemData> extraStatItems,
+      String? alertText,
+      String? alertType,
+      String? alertIconName,
+      String? infoAlertText,
+      String? alertButtonLabel,
+      String? alertButtonHref,
+    )?
+    siteInfoCard,
+    required TResult orElse(),
+  }) {
+    if (siteInfoCard != null) {
+      return siteInfoCard(
+        title,
+        iconName,
+        iconColor,
+        statItems,
+        extraStatItems,
+        alertText,
+        alertType,
+        alertIconName,
+        infoAlertText,
+        alertButtonLabel,
+        alertButtonHref,
+      );
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(StatCardBlock value) statCard,
+    required TResult Function(ChartBlock value) chart,
+    required TResult Function(TableBlock value) table,
+    required TResult Function(SwitchFieldBlock value) switchField,
+    required TResult Function(CronFieldBlock value) cronField,
+    required TResult Function(TextFieldBlock value) textField,
+    required TResult Function(TextAreaBlock value) textArea,
+    required TResult Function(AlertBlock value) alert,
+    required TResult Function(SelectFieldBlock value) selectField,
+    required TResult Function(PageHeaderBlock value) pageHeader,
+    required TResult Function(ExpansionCardBlock value) expansionCard,
+    required TResult Function(SiteInfoCardBlock value) siteInfoCard,
+  }) {
+    return siteInfoCard(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(StatCardBlock value)? statCard,
+    TResult? Function(ChartBlock value)? chart,
+    TResult? Function(TableBlock value)? table,
+    TResult? Function(SwitchFieldBlock value)? switchField,
+    TResult? Function(CronFieldBlock value)? cronField,
+    TResult? Function(TextFieldBlock value)? textField,
+    TResult? Function(TextAreaBlock value)? textArea,
+    TResult? Function(AlertBlock value)? alert,
+    TResult? Function(SelectFieldBlock value)? selectField,
+    TResult? Function(PageHeaderBlock value)? pageHeader,
+    TResult? Function(ExpansionCardBlock value)? expansionCard,
+    TResult? Function(SiteInfoCardBlock value)? siteInfoCard,
+  }) {
+    return siteInfoCard?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(StatCardBlock value)? statCard,
+    TResult Function(ChartBlock value)? chart,
+    TResult Function(TableBlock value)? table,
+    TResult Function(SwitchFieldBlock value)? switchField,
+    TResult Function(CronFieldBlock value)? cronField,
+    TResult Function(TextFieldBlock value)? textField,
+    TResult Function(TextAreaBlock value)? textArea,
+    TResult Function(AlertBlock value)? alert,
+    TResult Function(SelectFieldBlock value)? selectField,
+    TResult Function(PageHeaderBlock value)? pageHeader,
+    TResult Function(ExpansionCardBlock value)? expansionCard,
+    TResult Function(SiteInfoCardBlock value)? siteInfoCard,
+    required TResult orElse(),
+  }) {
+    if (siteInfoCard != null) {
+      return siteInfoCard(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class SiteInfoCardBlock extends FormBlock {
+  const factory SiteInfoCardBlock({
+    required final String title,
+    final String? iconName,
+    final String? iconColor,
+    final List<StatItemData> statItems,
+    final List<StatItemData> extraStatItems,
+    final String? alertText,
+    final String? alertType,
+    final String? alertIconName,
+    final String? infoAlertText,
+    final String? alertButtonLabel,
+    final String? alertButtonHref,
+  }) = _$SiteInfoCardBlockImpl;
+  const SiteInfoCardBlock._() : super._();
+
+  String get title;
+  String? get iconName;
+  String? get iconColor;
+  List<StatItemData> get statItems;
+  List<StatItemData> get extraStatItems;
+  String? get alertText;
+  String? get alertType;
+  String? get alertIconName;
+  String? get infoAlertText;
+  String? get alertButtonLabel;
+  String? get alertButtonHref;
+
+  /// Create a copy of FormBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SiteInfoCardBlockImplCopyWith<_$SiteInfoCardBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$StatItemData {
+  String? get iconName => throw _privateConstructorUsedError;
+  String? get iconColor => throw _privateConstructorUsedError;
+  String get value => throw _privateConstructorUsedError;
+  String get label => throw _privateConstructorUsedError;
+
+  /// Create a copy of StatItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $StatItemDataCopyWith<StatItemData> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $StatItemDataCopyWith<$Res> {
+  factory $StatItemDataCopyWith(
+    StatItemData value,
+    $Res Function(StatItemData) then,
+  ) = _$StatItemDataCopyWithImpl<$Res, StatItemData>;
+  @useResult
+  $Res call({String? iconName, String? iconColor, String value, String label});
+}
+
+/// @nodoc
+class _$StatItemDataCopyWithImpl<$Res, $Val extends StatItemData>
+    implements $StatItemDataCopyWith<$Res> {
+  _$StatItemDataCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of StatItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? iconName = freezed,
+    Object? iconColor = freezed,
+    Object? value = null,
+    Object? label = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            iconName: freezed == iconName
+                ? _value.iconName
+                : iconName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            iconColor: freezed == iconColor
+                ? _value.iconColor
+                : iconColor // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            value: null == value
+                ? _value.value
+                : value // ignore: cast_nullable_to_non_nullable
+                      as String,
+            label: null == label
+                ? _value.label
+                : label // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$StatItemDataImplCopyWith<$Res>
+    implements $StatItemDataCopyWith<$Res> {
+  factory _$$StatItemDataImplCopyWith(
+    _$StatItemDataImpl value,
+    $Res Function(_$StatItemDataImpl) then,
+  ) = __$$StatItemDataImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String? iconName, String? iconColor, String value, String label});
+}
+
+/// @nodoc
+class __$$StatItemDataImplCopyWithImpl<$Res>
+    extends _$StatItemDataCopyWithImpl<$Res, _$StatItemDataImpl>
+    implements _$$StatItemDataImplCopyWith<$Res> {
+  __$$StatItemDataImplCopyWithImpl(
+    _$StatItemDataImpl _value,
+    $Res Function(_$StatItemDataImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of StatItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? iconName = freezed,
+    Object? iconColor = freezed,
+    Object? value = null,
+    Object? label = null,
+  }) {
+    return _then(
+      _$StatItemDataImpl(
+        iconName: freezed == iconName
+            ? _value.iconName
+            : iconName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        iconColor: freezed == iconColor
+            ? _value.iconColor
+            : iconColor // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        value: null == value
+            ? _value.value
+            : value // ignore: cast_nullable_to_non_nullable
+                  as String,
+        label: null == label
+            ? _value.label
+            : label // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$StatItemDataImpl implements _StatItemData {
+  const _$StatItemDataImpl({
+    this.iconName,
+    this.iconColor,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  final String? iconName;
+  @override
+  final String? iconColor;
+  @override
+  final String value;
+  @override
+  final String label;
+
+  @override
+  String toString() {
+    return 'StatItemData(iconName: $iconName, iconColor: $iconColor, value: $value, label: $label)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$StatItemDataImpl &&
+            (identical(other.iconName, iconName) ||
+                other.iconName == iconName) &&
+            (identical(other.iconColor, iconColor) ||
+                other.iconColor == iconColor) &&
+            (identical(other.value, value) || other.value == value) &&
+            (identical(other.label, label) || other.label == label));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, iconName, iconColor, value, label);
+
+  /// Create a copy of StatItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$StatItemDataImplCopyWith<_$StatItemDataImpl> get copyWith =>
+      __$$StatItemDataImplCopyWithImpl<_$StatItemDataImpl>(this, _$identity);
+}
+
+abstract class _StatItemData implements StatItemData {
+  const factory _StatItemData({
+    final String? iconName,
+    final String? iconColor,
+    required final String value,
+    required final String label,
+  }) = _$StatItemDataImpl;
+
+  @override
+  String? get iconName;
+  @override
+  String? get iconColor;
+  @override
+  String get value;
+  @override
+  String get label;
+
+  /// Create a copy of StatItemData
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$StatItemDataImplCopyWith<_$StatItemDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
