@@ -21,7 +21,6 @@ class DownloaderPage extends GetView<DownloaderController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Obx(() => _buildDownloaderTabs(context)),
-          Obx(() => _buildDownloaderStats(context)),
           Expanded(child: _buildTaskList(context)),
         ],
       ),
@@ -38,12 +37,14 @@ class DownloaderPage extends GetView<DownloaderController> {
           for (int i = 0; i < controller.downloaders.length; i++)
             Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: Obx(() => _DownloaderStatsCard(
-                downloader: controller.downloaders[i],
-                stats: controller.statsFor(controller.downloaders[i].name),
-                isSelected: controller.selectedIndex.value == i,
-                onTap: () => controller.switchDownloader(i),
-              )),
+              child: Obx(
+                () => _DownloaderStatsCard(
+                  downloader: controller.downloaders[i],
+                  stats: controller.statsFor(controller.downloaders[i].name),
+                  isSelected: controller.selectedIndex.value == i,
+                  onTap: () => controller.switchDownloader(i),
+                ),
+              ),
             ),
         ],
       ),
@@ -51,7 +52,7 @@ class DownloaderPage extends GetView<DownloaderController> {
   }
 
   Widget _buildDownloaderTabs(BuildContext context) {
-    if (controller.downloaders.length <= 1) {
+    if (controller.downloaders.isEmpty) {
       return const SizedBox.shrink();
     }
     final theme = Theme.of(context);
@@ -500,11 +501,7 @@ class _DownloaderStatsCard extends StatelessWidget {
 }
 
 class _StatRow extends StatelessWidget {
-  const _StatRow({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
+  const _StatRow({required this.label, required this.value, this.valueColor});
 
   final String label;
   final String value;
@@ -520,7 +517,8 @@ class _StatRow extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: theme.textTheme.bodySmall?.color?.withOpacity(0.8) ??
+            color:
+                theme.textTheme.bodySmall?.color?.withOpacity(0.8) ??
                 CupertinoColors.tertiaryLabel,
           ),
         ),

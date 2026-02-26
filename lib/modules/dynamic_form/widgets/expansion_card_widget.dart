@@ -25,7 +25,8 @@ class ExpansionCardWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: bgColor ??
+        color:
+            bgColor ??
             CupertinoDynamicColor.resolve(
               CupertinoColors.tertiarySystemFill,
               context,
@@ -39,7 +40,8 @@ class ExpansionCardWidget extends StatelessWidget {
             Icon(
               iconData,
               size: 18,
-              color: iconColor ??
+              color:
+                  iconColor ??
                   CupertinoDynamicColor.resolve(
                     CupertinoColors.secondaryLabel,
                     context,
@@ -49,14 +51,7 @@ class ExpansionCardWidget extends StatelessWidget {
           ],
           Text(
             item.text,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: CupertinoDynamicColor.resolve(
-                CupertinoColors.secondaryLabel,
-                context,
-              ),
-            ),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -163,7 +158,9 @@ class ExpansionCardWidget extends StatelessWidget {
                     block.cardSubtitle!.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: CupertinoDynamicColor.resolve(
                         CupertinoColors.tertiarySystemFill,
@@ -193,9 +190,7 @@ class ExpansionCardWidget extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  ...block.chipItems.map(
-                    (item) => _buildChip(context, item),
-                  ),
+                  ...block.chipItems.map((item) => _buildChip(context, item)),
                   ...block.chipLines.map(
                     (line) => _buildChipFromText(context, line),
                   ),
@@ -206,15 +201,17 @@ class ExpansionCardWidget extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(12, hasChips ? 0 : 8, 12, 12),
             child: Column(
               children: block.items
-                  .map((item) => _ExpansionTile(
-                        title: item.title,
-                        subtitle: item.subtitle,
-                        bodyLines: item.bodyLines,
-                        medalCards: item.medalCards,
-                        iconText: item.title.runes.isNotEmpty
-                            ? String.fromCharCode(item.title.runes.first)
-                            : '',
-                      ))
+                  .map(
+                    (item) => _ExpansionTile(
+                      title: item.title,
+                      subtitle: item.subtitle,
+                      bodyLines: item.bodyLines,
+                      medalCards: item.medalCards,
+                      iconText: item.title.runes.isNotEmpty
+                          ? String.fromCharCode(item.title.runes.first)
+                          : '',
+                    ),
+                  )
                   .toList(),
             ),
           ),
