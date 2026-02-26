@@ -82,8 +82,93 @@ class ExpansionCardWidget extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildUI(BuildContext context) {
+    final hasCrown = block.iconName != null && block.iconName!.isNotEmpty;
+    final hasChips = block.chipItems.isNotEmpty || block.chipLines.isNotEmpty;
+    return CupertinoListSection.insetGrouped(
+      margin: EdgeInsets.zero,
+      header: Row(
+        children: [
+          if (hasCrown) ...[
+            Icon(
+              VuetifyMappings.iconFromMdi(block.iconName) ?? Icons.diamond,
+              size: 22,
+              color: _crownColor,
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: Text(
+              block.cardTitle,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ),
+          if (block.cardSubtitle != null && block.cardSubtitle!.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: CupertinoDynamicColor.resolve(
+                  CupertinoColors.tertiarySystemFill,
+                  context,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                block.cardSubtitle!,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: CupertinoDynamicColor.resolve(
+                    CupertinoColors.secondaryLabel,
+                    context,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      children: [
+        if (hasChips)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ...block.chipItems.map((item) => _buildChip(context, item)),
+                ...block.chipLines.map(
+                  (line) => _buildChipFromText(context, line),
+                ),
+              ],
+            ),
+          ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(12, hasChips ? 0 : 8, 12, 12),
+          child: Column(
+            children: block.items
+                .map(
+                  (item) => _ExpansionTile(
+                    title: item.title,
+                    subtitle: item.subtitle,
+                    bodyLines: item.bodyLines,
+                    medalCards: item.medalCards,
+                    iconText: item.title.runes.isNotEmpty
+                        ? String.fromCharCode(item.title.runes.first)
+                        : '',
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUIv1(BuildContext context) {
     final hasCrown = block.iconName != null && block.iconName!.isNotEmpty;
     final hasChips = block.chipItems.isNotEmpty || block.chipLines.isNotEmpty;
 
@@ -145,12 +230,9 @@ class ExpansionCardWidget extends StatelessWidget {
                   child: Text(
                     block.cardTitle,
                     style: TextStyle(
-                      fontSize: 17,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: CupertinoDynamicColor.resolve(
-                        CupertinoColors.label,
-                        context,
-                      ),
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -219,6 +301,11 @@ class ExpansionCardWidget extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildUI(context);
+  }
 }
 
 class _ExpansionTile extends StatefulWidget {
@@ -245,161 +332,156 @@ class _ExpansionTileState extends State<_ExpansionTile> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: CupertinoDynamicColor.resolve(
-          CupertinoColors.tertiarySystemFill,
-          context,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: CupertinoDynamicColor.resolve(
-            CupertinoColors.separator,
-            context,
-          ).withValues(alpha: 0.5),
-          width: 0.5,
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            onTap: () => setState(() => _expanded = !_expanded),
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              child: Row(
-                children: [
-                  if (widget.iconText.isNotEmpty)
-                    Container(
-                      width: 36,
-                      height: 36,
-                      margin: const EdgeInsets.only(right: 12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF80CBC4), Color(0xFF81D4FA)],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () => setState(() => _expanded = !_expanded),
+          behavior: HitTestBehavior.opaque,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(
+              children: [
+                if (widget.iconText.isNotEmpty)
+                  Container(
+                    width: 30,
+                    height: 30,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.5),
                         ],
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        widget.iconText,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      widget.iconText,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
                       ),
                     ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+                  ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: CupertinoDynamicColor.resolve(
+                            CupertinoColors.label,
+                            context,
+                          ),
+                        ),
+                      ),
+                      if (widget.subtitle != null &&
+                          widget.subtitle!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
                         Text(
-                          widget.title,
+                          widget.subtitle!,
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
                             color: CupertinoDynamicColor.resolve(
-                              CupertinoColors.label,
+                              CupertinoColors.secondaryLabel,
                               context,
                             ),
                           ),
                         ),
-                        if (widget.subtitle != null &&
-                            widget.subtitle!.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.subtitle!,
+                      ],
+                    ],
+                  ),
+                ),
+                Icon(
+                  _expanded
+                      ? CupertinoIcons.chevron_up
+                      : CupertinoIcons.chevron_down,
+                  size: 18,
+                  color: CupertinoDynamicColor.resolve(
+                    CupertinoColors.secondaryLabel,
+                    context,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded &&
+            (widget.bodyLines.isNotEmpty || widget.medalCards.isNotEmpty))
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.bodyLines.isNotEmpty)
+                  ...widget.bodyLines
+                      .map(
+                        (line) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            line,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 14,
+                              height: 1.4,
                               color: CupertinoDynamicColor.resolve(
-                                CupertinoColors.secondaryLabel,
+                                CupertinoColors.label,
                                 context,
                               ),
                             ),
                           ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    _expanded
-                        ? CupertinoIcons.chevron_up
-                        : CupertinoIcons.chevron_down,
-                    size: 18,
-                    color: CupertinoDynamicColor.resolve(
-                      CupertinoColors.secondaryLabel,
-                      context,
-                    ),
+                        ),
+                      )
+                      .toList(),
+                if (widget.medalCards.isNotEmpty) ...[
+                  if (widget.bodyLines.isNotEmpty) const SizedBox(height: 12),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      const spacing = 12.0;
+                      const crossCount = 2;
+                      final childWidth = (constraints.maxWidth - spacing) / 2;
+                      return Wrap(
+                        spacing: spacing,
+                        runSpacing: spacing,
+                        children: widget.medalCards
+                            .map(
+                              (data) => SizedBox(
+                                width: childWidth,
+                                child: MedalCardWidget(data: data),
+                              ),
+                            )
+                            .toList(),
+                      );
+                    },
                   ),
                 ],
-              ),
+              ],
             ),
           ),
-          if (_expanded &&
-              (widget.bodyLines.isNotEmpty || widget.medalCards.isNotEmpty))
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.bodyLines.isNotEmpty)
-                    ...widget.bodyLines
-                        .map(
-                          (line) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(
-                              line,
-                              style: TextStyle(
-                                fontSize: 14,
-                                height: 1.4,
-                                color: CupertinoDynamicColor.resolve(
-                                  CupertinoColors.label,
-                                  context,
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  if (widget.medalCards.isNotEmpty) ...[
-                    if (widget.bodyLines.isNotEmpty) const SizedBox(height: 12),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        const spacing = 12.0;
-                        const crossCount = 2;
-                        final childWidth = (constraints.maxWidth - spacing) / 2;
-                        return Wrap(
-                          spacing: spacing,
-                          runSpacing: spacing,
-                          children: widget.medalCards
-                              .map(
-                                (data) => SizedBox(
-                                  width: childWidth,
-                                  child: MedalCardWidget(data: data),
-                                ),
-                              )
-                              .toList(),
-                        );
-                      },
-                    ),
-                  ],
-                ],
-              ),
-            ),
-        ],
-      ),
+        Divider(
+          height: 1,
+          color: CupertinoDynamicColor.resolve(
+            CupertinoColors.separator,
+            context,
+          ),
+        ),
+      ],
     );
   }
 }

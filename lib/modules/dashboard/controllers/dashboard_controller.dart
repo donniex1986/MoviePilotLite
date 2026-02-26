@@ -156,7 +156,7 @@ class DashboardController extends GetxController {
 
   /// 启动周期性刷新
   void _startPeriodicRefresh() {
-    final duration = const Duration(seconds: 1000);
+    final duration = const Duration(seconds: 5);
     // 初始化定时任务队列，每5秒获取一次数据，根据开关配置获取对应的数据
     _cpuTimer = Timer.periodic(duration, (_) {
       _loadDataBasedOnConfig();
