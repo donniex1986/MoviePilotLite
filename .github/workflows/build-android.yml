@@ -1,0 +1,104 @@
+# MoviePilot - Android 打包 Workflow
+# 触发器: 每周五 UTC 00:00 自动执行 | 支持手动触发
+# 输出: 创建 GitHub Release，上传 APK
+
+name: Build Android
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 5'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Flutter precache
+        run: flutter precache --android
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Validate and setup Android Keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -e
+          missing=""
+          [ -z "$ANDROID_KEYSTORE_BASE64" ] && missing="$missing ANDROID_KEYSTORE_BASE64"
+          [ -z "$KEYSTORE_PASSWORD" ] && missing="$missing KEYSTORE_PASSWORD"
+          [ -z "$KEY_ALIAS" ] && missing="$missing KEY_ALIAS"
+          [ -z "$KEY_PASSWORD" ] && missing="$missing KEY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::缺少必要的 GitHub Secrets:$missing"
+            exit 1
+          fi
+
+          echo "Decoding keystore..."
+          if ! echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/moviepilot.keystore 2>/dev/null; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 不是有效的 Base64 编码"
+            exit 1
+          fi
+
+          echo "Validating keystore and credentials with keytool..."
+          if ! keytool -list -keystore $RUNNER_TEMP/moviepilot.keystore \
+            -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" -keypass "$KEY_PASSWORD" \
+            -v 1>/dev/null 2>&1; then
+            echo "::error::Keystore 校验失败：请检查 KEYSTORE_PASSWORD、KEY_ALIAS、KEY_PASSWORD 是否正确"
+            exit 1
+          fi
+
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/moviepilot.keystore" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
+          echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
+          echo "Keystore validated successfully."
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Get version from pubspec
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | sed 's/+.*//' | tr -d ' ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate release name
+        id: release_name
+        run: |
+          RELEASE_NAME="android-$(date +%Y-%m-%d-%H-%M)-${{ steps.version.outputs.version }}"
+          echo "name=$RELEASE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release-${{ steps.release_name.outputs.name }}
+          name: ${{ steps.release_name.outputs.name }}
+          body: |
+            MoviePilot Android Release
+            - Build: ${{ steps.release_name.outputs.name }}
+            - Version: ${{ steps.version.outputs.version }}
+          files: build/app/outputs/flutter-apk/app-release.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
