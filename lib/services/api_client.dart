@@ -338,11 +338,12 @@ class ApiClient extends g.GetxController {
         return true;
       },
     );
-    return _dio.get<T>(
+    final response = await _dio.get<T>(
       path,
       queryParameters: queryParameters,
       options: options,
     );
+    return response;
   }
 
   Future<Response<T>> delete<T>(

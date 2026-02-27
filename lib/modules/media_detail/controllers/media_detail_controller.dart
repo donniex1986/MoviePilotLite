@@ -73,7 +73,7 @@ class MediaDetailController extends GetxController {
   }
 
   void ensureUserCookieRefreshed() {
-    if (_cookieRefreshTriggered) return;
+    // if (_cookieRefreshTriggered) return;
     _cookieRefreshTriggered = true;
     _refreshUserCookie();
   }
@@ -177,14 +177,8 @@ class MediaDetailController extends GetxController {
 
       statusCode.value = response.statusCode ?? 0;
       final detail = _parseResponse(response.data);
-      if (detail != null) {
-        mediaDetail.value = detail;
-        _cacheDetail(detail);
-        _fetchRelated(detail);
-        _fetchMediaNotExists(detail);
-        _fetchSubscribeStatus(detail);
-      }
 
+      // 检查请求状态和解析结果
       if (response.statusCode == null ||
           response.statusCode! < 200 ||
           response.statusCode! >= 300) {
@@ -194,6 +188,16 @@ class MediaDetailController extends GetxController {
         );
       } else if (detail == null) {
         errorText.value = '响应解析失败';
+      } else if (detail.title == null || detail.title!.isEmpty) {
+        errorText.value = '媒体信息不完整';
+      } else {
+        // 只有在成功的情况下才更新数据
+        mediaDetail.value = detail;
+        _cacheDetail(detail);
+        _fetchRelated(detail);
+        _fetchMediaNotExists(detail);
+        _fetchSubscribeStatus(detail);
+        errorText.value = null; // 清除错误信息
       }
     } catch (e) {
       errorText.value = '请求异常: $e';
