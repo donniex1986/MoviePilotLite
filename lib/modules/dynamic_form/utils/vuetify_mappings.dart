@@ -107,6 +107,21 @@ class VuetifyMappings {
     'mdi-database-off': Icons.storage_outlined,
     'mdi-store': Icons.store,
     'mdi-diamond': Icons.diamond,
+    // TrashClean 插件
+    'mdi-power': Icons.power_settings_new,
+    'mdi-code-braces': Icons.data_object,
+    'mdi-clock-outline': Icons.schedule,
+    'mdi-folder-search': Icons.folder_open,
+    'mdi-folder-remove': Icons.folder_delete,
+    'mdi-folder-off': Icons.folder_off,
+    'mdi-package-variant': Icons.inventory_2,
+    'mdi-chart-line-variant': Icons.show_chart,
+    'mdi-broom': Icons.cleaning_services,
+    'mdi-filter': Icons.filter_alt,
+    'mdi-history': Icons.history,
+    'mdi-progress-clock': Icons.pending,
+    'mdi-download-off': Icons.download_done,
+    'mdi-flag': Icons.flag,
   };
 
   /// dashboard-stats 标签 -> MDI 图标名（后端 JSON 无 icon，Web 端按 label 映射）

@@ -5,6 +5,7 @@ import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/dynamic_form_models.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/services/form_block_converter.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/services/trash_clean_converter.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 
@@ -84,6 +85,8 @@ class DynamicFormController extends GetxController {
   /// 是否显示保存按钮（有 formModel 且有 key 时）
   bool get hasFormModel => formModel.value.isNotEmpty;
 
+  bool get _isTrashClean => pluginId == 'TrashClean';
+
   Future<void> load() async {
     isLoading.value = true;
     errorText.value = null;
@@ -96,6 +99,12 @@ class DynamicFormController extends GetxController {
         formModel.value = {};
         return;
       }
+
+      if (_isTrashClean) {
+        await _loadTrashClean(token);
+        return;
+      }
+
       final response = await _apiClient.get<dynamic>(apiPath, token: token);
       final status = response.statusCode ?? 0;
       if (status >= 400) {
@@ -120,7 +129,8 @@ class DynamicFormController extends GetxController {
       } else {
         formModel.value = {};
       }
-      blocks.assignAll(FormBlockConverter.convert(parsed));
+      final blocksList = FormBlockConverter.convert(parsed);
+      blocks.assignAll(blocksList);
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '获取动态表单失败');
       errorText.value = '请求失败，请稍后重试';
@@ -131,16 +141,84 @@ class DynamicFormController extends GetxController {
     }
   }
 
-  /// 保存配置（PUT 当前 formModel）
+  Future<void> _loadTrashClean(String token) async {
+    try {
+      const basePath = '/api/v1/plugin/TrashClean';
+
+      if (formMode.value) {
+        // 配置页：只需 status 接口
+        final resp = await _apiClient.get<dynamic>(
+          '$basePath/status',
+          token: token,
+        );
+        final statusMap = _extractMap(resp.data);
+        if (statusMap == null) {
+          errorText.value = '数据格式错误';
+          blocks.clear();
+          formModel.value = {};
+          return;
+        }
+        final (blocksList, model) = TrashCleanConverter.convertForm(
+          status: statusMap,
+        );
+        formModel.value = model;
+        blocks.assignAll(blocksList);
+      } else {
+        // 展示页：并行请求 5 个接口
+        final results = await Future.wait([
+          _apiClient.get<dynamic>('$basePath/status', token: token),
+          _apiClient.get<dynamic>(
+            '$basePath/latest_clean_result',
+            token: token,
+          ),
+          _apiClient.get<dynamic>('$basePath/clean_progress', token: token),
+          _apiClient.get<dynamic>('$basePath/stats', token: token),
+          _apiClient.get<dynamic>('$basePath/downloaders', token: token),
+        ]);
+
+        final statusMap = _extractMap(results[0].data) ?? {};
+        final cleanResultMap = _extractMap(results[1].data) ?? {};
+        final progressMap = _extractMap(results[2].data) ?? {};
+        final statsData = results[3].data;
+        final statsList = statsData is List
+            ? statsData.cast<Map<String, dynamic>>()
+            : <Map<String, dynamic>>[];
+        final downloadersData = results[4].data;
+        final downloadersList = downloadersData is List
+            ? downloadersData.cast<Map<String, dynamic>>()
+            : <Map<String, dynamic>>[];
+
+        final blocksList = TrashCleanConverter.convertPage(
+          status: statusMap,
+          latestCleanResult: cleanResultMap,
+          cleanProgress: progressMap,
+          stats: statsList,
+          downloaders: downloadersList,
+        );
+        formModel.value = {};
+        blocks.assignAll(blocksList);
+      }
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '获取 TrashClean 数据失败');
+      errorText.value = '请求失败，请稍后重试';
+      blocks.clear();
+      formModel.value = {};
+    }
+  }
+
+  /// 保存配置（标准插件 PUT，TrashClean 走 POST /config）
   Future<bool> save() async {
     if (formModel.value.isEmpty) return false;
-    final savePath = apiSavePath;
-    if (savePath == null || savePath.isEmpty) return false;
     final token = _getToken();
     if (token == null || token.isEmpty) {
       errorText.value = '请先登录';
       return false;
     }
+
+    if (_isTrashClean) return _saveTrashClean(token);
+
+    final savePath = apiSavePath;
+    if (savePath == null || savePath.isEmpty) return false;
     isLoading.value = true;
     errorText.value = null;
     saveSuccess.value = false;
@@ -165,6 +243,70 @@ class DynamicFormController extends GetxController {
       return false;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<bool> _saveTrashClean(String token) async {
+    isLoading.value = true;
+    errorText.value = null;
+    saveSuccess.value = false;
+    try {
+      final body = TrashCleanConverter.toConfigBody(formModel.value);
+      _log.info('保存 TrashClean 配置: $body');
+      final response = await _apiClient.post<dynamic>(
+        '/api/v1/plugin/TrashClean/config',
+        data: body,
+        token: token,
+      );
+      final status = response.statusCode ?? 0;
+      if (status >= 400) {
+        errorText.value = '保存失败 (HTTP $status)';
+        return false;
+      }
+      saveSuccess.value = true;
+      return true;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '保存 TrashClean 配置失败');
+      errorText.value = '保存失败，请稍后重试';
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// TrashClean 立即清理，返回清理结果 Map 或 null（失败时）
+  Future<Map<String, dynamic>?> triggerClean() async {
+    final token = _getToken();
+    if (token == null || token.isEmpty) return null;
+    try {
+      final response = await _apiClient.post<dynamic>(
+        '/api/v1/plugin/TrashClean/clean',
+        token: token,
+      );
+      final status = response.statusCode ?? 0;
+      if (status >= 400) return null;
+      return _extractMap(response.data);
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: 'TrashClean 清理失败');
+      return null;
+    }
+  }
+
+  /// 获取 TrashClean 清理进度
+  Future<Map<String, dynamic>?> fetchCleanProgress() async {
+    final token = _getToken();
+    if (token == null || token.isEmpty) return null;
+    try {
+      final response = await _apiClient.get<dynamic>(
+        '/api/v1/plugin/TrashClean/clean_progress',
+        token: token,
+      );
+      final status = response.statusCode ?? 0;
+      if (status >= 400) return null;
+      return _extractMap(response.data);
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '获取 TrashClean 清理进度失败');
+      return null;
     }
   }
 

@@ -107,6 +107,21 @@ sealed class FormBlock with _$FormBlock {
     String? alertButtonLabel,
     String? alertButtonHref,
   }) = SiteInfoCardBlock;
+
+  /// 信息卡片：CupertinoListSection.insetGrouped 风格，
+  /// 用于展示带图标行列表、空状态、内嵌提示的卡片区块
+  const factory FormBlock.infoCard({
+    required String title,
+    String? iconName,
+    String? iconColor,
+    @Default([]) List<InfoCardRow> rows,
+    String? headerChipText,
+    String? headerChipColor,
+    String? emptyText,
+    String? emptyIconName,
+    String? alertText,
+    String? alertType,
+  }) = InfoCardBlock;
 }
 
 /// 站点信息卡片的单行统计项：图标 + 数值 + 标签
@@ -163,4 +178,18 @@ class SelectOption with _$SelectOption {
     required String title,
     required dynamic value,
   }) = _SelectOption;
+}
+
+/// 信息卡片行：图标 + 标签 + 可选副标题 + 右侧值/Chip
+@freezed
+class InfoCardRow with _$InfoCardRow {
+  const factory InfoCardRow({
+    String? iconName,
+    String? iconColor,
+    required String label,
+    String? subtitle,
+    String? value,
+    String? chipText,
+    String? chipColor,
+  }) = _InfoCardRow;
 }

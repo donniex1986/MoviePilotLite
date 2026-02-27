@@ -83,6 +83,16 @@ openssl base64 -A -in moviepilot-release.keystore | tr -d '\n' | pbcopy
 
 未设置变量 `BUILD_IOS=true` 时，将仅打包 Android APK。
 
+## 插件适配进度
+
+| 插件 | ID | 图标 | Auth | 作者 | 状态 |
+|------|-----|------|------|------|------|
+| 站点自动签到 | `AutoSignIn` | `signin.png` | 2 | [thsrite](https://github.com/thsrite) | ✅ 已完成 |
+| 站点数据统计 | `SiteStatistic` | `statistic.png` | 2 | [lightolly](https://github.com/lightolly) | ✅ 已完成 |
+| 勋章墙 | `MedalWall` | [Medal.png](https://raw.githubusercontent.com/KoWming/MoviePilot-Plugins/main/icons/Medal.png) | 2 | [KoWming](https://github.com/KoWming) | ✅ 已完成 |
+| 后宫管理系统 | `nexusinvitee` | [nexusinvitee.png](https://raw.githubusercontent.com/madrays/MoviePilot-Plugins/main/icons/nexusinvitee.png) | 2 | [madrays](https://github.com/madrays) | ✅ 已完成 |
+| 垃圾文件清理 | `TrashClean` | [clean1.png](https://raw.githubusercontent.com/madrays/MoviePilot-Plugins/main/icons/clean1.png) | 1 | [madrays](https://github.com/madrays) | ✅ 已完成 |
+
 ## 未来路线
 
 ### 已完成

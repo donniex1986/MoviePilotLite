@@ -169,7 +169,11 @@ class FormBlockConverter {
     return null;
   }
 
-  static void _collectComponents(FormNode node, String component, List<FormNode> out) {
+  static void _collectComponents(
+    FormNode node,
+    String component,
+    List<FormNode> out,
+  ) {
     if (node.component == component) {
       out.add(node);
     }
@@ -347,8 +351,12 @@ class FormBlockConverter {
       alertType: alertType,
       alertIconName: alertIconName,
       infoAlertText: infoAlertText?.isNotEmpty == true ? infoAlertText : null,
-      alertButtonLabel: alertButtonLabel?.isNotEmpty == true ? alertButtonLabel : null,
-      alertButtonHref: alertButtonHref?.isNotEmpty == true ? alertButtonHref : null,
+      alertButtonLabel: alertButtonLabel?.isNotEmpty == true
+          ? alertButtonLabel
+          : null,
+      alertButtonHref: alertButtonHref?.isNotEmpty == true
+          ? alertButtonHref
+          : null,
     );
   }
 
@@ -386,14 +394,17 @@ class FormBlockConverter {
         }
         for (final c in node.content) visit(c);
       }
+
       for (final node in col.content) visit(node);
       if (value != null || label != null) {
-        result.add(StatItemData(
-          iconName: itemIconName,
-          iconColor: itemIconColor,
-          value: value ?? '',
-          label: label ?? '',
-        ));
+        result.add(
+          StatItemData(
+            iconName: itemIconName,
+            iconColor: itemIconColor,
+            value: value ?? '',
+            label: label ?? '',
+          ),
+        );
       }
     }
     return result;
@@ -464,10 +475,12 @@ class FormBlockConverter {
       final div = inner.component == 'div' ? inner : null;
       if (div != null) {
         for (final c in div.content) {
-          if (c.component == 'span' && (c.props?['class']?.toString() ?? '').contains('font-weight')) {
+          if (c.component == 'span' &&
+              (c.props?['class']?.toString() ?? '').contains('font-weight')) {
             title = _textOf(c) ?? title;
           }
-          if (c.component == 'span' && (c.props?['class']?.toString() ?? '').contains('text-caption')) {
+          if (c.component == 'span' &&
+              (c.props?['class']?.toString() ?? '').contains('text-caption')) {
             subtitle = _textOf(c);
           }
         }
@@ -540,7 +553,8 @@ class FormBlockConverter {
         final cls = node.props?['class']?.toString() ?? '';
         final style = node.props?['style']?.toString() ?? '';
         final isCaption = cls.contains('text-caption');
-        final isDesc = style.contains('color:#888') || style.contains('color: #888');
+        final isDesc =
+            style.contains('color:#888') || style.contains('color: #888');
         if (isCaption) {
           detailLines.add(text);
         } else if (isDesc && description.isEmpty) {
@@ -740,12 +754,7 @@ class FormBlockConverter {
       props['modelValue'] ?? props['value'] ?? '',
     )).toString();
     final hint = props['placeholder']?.toString() ?? props['hint']?.toString();
-    return TextFieldBlock(
-      label: label,
-      value: value,
-      name: name,
-      hint: hint,
-    );
+    return TextFieldBlock(label: label, value: value, name: name, hint: hint);
   }
 
   static TextAreaBlock? _extractTextArea(
@@ -792,19 +801,22 @@ class FormBlockConverter {
       // 去除 /plugin_icon/ 前缀，便于 ImageUtil.convertPluginIconUrl 使用
       String? normalized = iconSrc;
       final src = iconSrc;
-      if (src != null &&
-          src.isNotEmpty &&
-          src.startsWith('/plugin_icon/')) {
+      if (src != null && src.isNotEmpty && src.startsWith('/plugin_icon/')) {
         normalized = src.substring('/plugin_icon/'.length);
       }
-      return StatCardBlock(caption: caption!, value: value!, iconSrc: normalized);
+      return StatCardBlock(
+        caption: caption!,
+        value: value!,
+        iconSrc: normalized,
+      );
     }
     return null;
   }
 
   /// div.dashboard-stats > div.dashboard-stats__item[] 每项: title + value
   static List<StatCardBlock> _extractStatCardsFromDashboardStats(
-      FormNode dashboardNode) {
+    FormNode dashboardNode,
+  ) {
     final result = <StatCardBlock>[];
     for (final child in dashboardNode.content) {
       if (child.component != 'div') continue;
@@ -831,13 +843,15 @@ class FormBlockConverter {
       }
       if (caption != null && caption.isNotEmpty && value != null) {
         final iconName = VuetifyMappings.iconFromDashboardStatsCaption(caption);
-        result.add(StatCardBlock(
-          caption: caption,
-          value: value,
-          iconSrc: null,
-          iconName: iconName,
-          iconColor: iconColor,
-        ));
+        result.add(
+          StatCardBlock(
+            caption: caption,
+            value: value,
+            iconSrc: null,
+            iconName: iconName,
+            iconColor: iconColor,
+          ),
+        );
       }
     }
     return result;
@@ -867,7 +881,8 @@ class FormBlockConverter {
         } else if (node.component == 'div') {
           final cls = node.props?['class']?.toString() ?? '';
           final style = node.props?['style']?.toString() ?? '';
-          final isValue = cls.contains('font-weight-bold') ||
+          final isValue =
+              cls.contains('font-weight-bold') ||
               cls.contains('text-h5') ||
               style.contains('font-size: 2rem') ||
               style.contains('font-size:2rem');
@@ -883,17 +898,20 @@ class FormBlockConverter {
           for (final c in node.content) visit(c);
         }
       }
+
       for (final node in col.content) visit(node);
       final c = caption;
       final v = value;
       if (c != null && v != null) {
-        result.add(StatCardBlock(
-          caption: c,
-          value: v,
-          iconSrc: null,
-          iconName: iconName,
-          iconColor: iconColor,
-        ));
+        result.add(
+          StatCardBlock(
+            caption: c,
+            value: v,
+            iconSrc: null,
+            iconName: iconName,
+            iconColor: iconColor,
+          ),
+        );
       }
     }
     return result;
@@ -952,7 +970,12 @@ class FormBlockConverter {
         : <String>[];
     final seriesRaw = props['series'];
     final series = seriesRaw is List
-        ? seriesRaw.map((e) => (e is num) ? e : (num.tryParse(e?.toString() ?? '') ?? 0)).toList()
+        ? seriesRaw
+              .map(
+                (e) =>
+                    (e is num) ? e : (num.tryParse(e?.toString() ?? '') ?? 0),
+              )
+              .toList()
         : <num>[];
     return ChartBlock(
       title: title,
@@ -963,7 +986,9 @@ class FormBlockConverter {
   }
 
   /// 从 VCard（VCardTitle + VCardText > VTable）中提取标题与表格
-  static (String title, TableBlock table)? _extractTableFromCard(FormNode card) {
+  static (String title, TableBlock table)? _extractTableFromCard(
+    FormNode card,
+  ) {
     FormNode? cardTitleNode;
     FormNode? cardTextNode;
     for (final node in card.content) {
