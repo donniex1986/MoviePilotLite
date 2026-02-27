@@ -99,6 +99,8 @@ import 'modules/rule/controllers/rule_controller.dart';
 import 'modules/rule/pages/custom_rule_page.dart';
 import 'modules/rule/pages/priority_rule_page.dart';
 import 'modules/rule/pages/download_rule_page.dart';
+import 'modules/workflow/controllers/workflow_controller.dart';
+import 'modules/workflow/pages/workflow_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -556,6 +558,13 @@ class MyApp extends StatelessWidget {
           page: () => const DownloadRulePage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => RuleController(ruleType: RuleType.download));
+          }),
+        ),
+        GetPage(
+          name: '/workflow',
+          page: () => const WorkflowPage(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => WorkflowController());
           }),
         ),
         GetPage(

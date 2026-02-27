@@ -31,6 +31,9 @@ class DynamicFormController extends GetxController {
   final formMode = false.obs;
   String? pluginId;
 
+  /// page 模式下的原始 FormNode 列表，供 VuetifyRenderer 直接渲染
+  final pageNodes = <FormNode>[].obs;
+
   /// 配置表单当前数据（key 为 props.model），保存时 PUT 此 Map
   final formModel = Rx<Map<String, dynamic>>({});
 
@@ -96,11 +99,13 @@ class DynamicFormController extends GetxController {
       if (token == null || token.isEmpty) {
         errorText.value = '请先登录';
         blocks.clear();
+        pageNodes.clear();
         formModel.value = {};
         return;
       }
 
       if (_isTrashClean) {
+        pageNodes.clear();
         await _loadTrashClean(token);
         return;
       }
@@ -110,6 +115,7 @@ class DynamicFormController extends GetxController {
       if (status >= 400) {
         errorText.value = '请求失败 (HTTP $status)';
         blocks.clear();
+        pageNodes.clear();
         formModel.value = {};
         return;
       }
@@ -118,6 +124,7 @@ class DynamicFormController extends GetxController {
       if (map == null) {
         errorText.value = '数据格式错误';
         blocks.clear();
+        pageNodes.clear();
         formModel.value = {};
         return;
       }
@@ -129,12 +136,21 @@ class DynamicFormController extends GetxController {
       } else {
         formModel.value = {};
       }
+
+      // page 模式且有 page 数据时，保存原始节点供 VuetifyRenderer 使用
+      if (!formMode.value && parsed.page.isNotEmpty) {
+        pageNodes.assignAll(parsed.page);
+        blocks.clear();
+      } else {
+        pageNodes.clear();
+      }
       final blocksList = FormBlockConverter.convert(parsed);
       blocks.assignAll(blocksList);
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '获取动态表单失败');
       errorText.value = '请求失败，请稍后重试';
       blocks.clear();
+      pageNodes.clear();
       formModel.value = {};
     } finally {
       isLoading.value = false;
@@ -323,4 +339,14 @@ class DynamicFormController extends GetxController {
     }
     return null;
   }
+
+  final formModePlugins = [
+    'AutoSignIn',
+    'TrashClean',
+    'MonitorPaths',
+    'SiteStatistic',
+    'MedalWall',
+    'nexusinvitee',
+  ];
+  bool get isFormMode => formModePlugins.contains(pluginId);
 }

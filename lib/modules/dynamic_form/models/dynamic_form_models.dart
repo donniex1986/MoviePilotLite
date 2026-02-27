@@ -52,7 +52,7 @@ Map<String, dynamic> _normalizeFormNodeJson(Map<String, dynamic> json) {
   return map;
 }
 
-/// 递归表单节点（component / props / content / text）
+/// 递归表单节点（component / props / content / text / events）
 @freezed
 class FormNode with _$FormNode {
   const factory FormNode({
@@ -60,6 +60,7 @@ class FormNode with _$FormNode {
     Map<String, dynamic>? props,
     @JsonKey(fromJson: _contentFromJson) @Default([]) List<FormNode> content,
     dynamic text,
+    Map<String, dynamic>? events,
   }) = _FormNode;
 
   factory FormNode.fromJson(Map<String, dynamic> json) =>

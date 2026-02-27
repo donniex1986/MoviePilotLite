@@ -16,6 +16,7 @@ import 'package:moviepilot_mobile/modules/dynamic_form/widgets/switch_field_widg
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/table_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/text_area_widget.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/widgets/text_field_widget.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/widgets/vuetify_renderer.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 /// 展示项：单个区块 或 统计卡片网格（2x2）
@@ -76,15 +77,18 @@ class DynamicFormPage extends GetView<DynamicFormController> {
         actions: [
           if (controller.pluginId == 'TrashClean' && !controller.formMode.value)
             IconButton(
-              icon: const Icon(Icons.cleaning_services),
+              icon: Icon(
+                Icons.cleaning_services,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               tooltip: '立即清理',
               onPressed: () => _onTriggerClean(context),
             ),
-          IconButton(
-            icon: const Icon(CupertinoIcons.refresh),
-            tooltip: '刷新',
-            onPressed: controller.load,
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.replay_outlined),
+          //   tooltip: '刷新',
+          //   onPressed: controller.load,
+          // ),
           Obx(() {
             if (controller.hasFormModel) {
               if (controller.isLoading.value) {
@@ -107,15 +111,13 @@ class DynamicFormPage extends GetView<DynamicFormController> {
         final loading = controller.isLoading.value;
         final error = controller.errorText.value;
         final blocks = controller.blocks;
+        final pNodes = controller.pageNodes;
+        final hasContent = blocks.isNotEmpty || pNodes.isNotEmpty;
 
-        if (loading && blocks.isEmpty) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          );
+        if (loading && !hasContent) {
+          return const Center(child: CupertinoActivityIndicator());
         }
-        if (error != null && blocks.isEmpty) {
+        if (error != null && !hasContent) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -138,7 +140,7 @@ class DynamicFormPage extends GetView<DynamicFormController> {
             ),
           );
         }
-        if (blocks.isEmpty) {
+        if (!hasContent) {
           return Center(
             child: Text(
               '暂无数据',
@@ -152,6 +154,12 @@ class DynamicFormPage extends GetView<DynamicFormController> {
           );
         }
 
+        // page 模式且有原始节点：使用通用 VuetifyRenderer
+        if (pNodes.isNotEmpty && !controller.isFormMode) {
+          return VuetifyPageRenderer(nodes: pNodes, controller: controller);
+        }
+
+        // form 模式 / TrashClean 等：使用 FormBlock 渲染
         final items = _toDisplayItems(blocks);
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(
@@ -397,9 +405,7 @@ class _CleanProgressSheetState extends State<_CleanProgressSheet> {
             if (_loading) _buildLoading(context),
             if (_error != null) _buildError(context),
             if (_result != null) Flexible(child: _buildResult(context)),
-            SizedBox(
-              height: MediaQuery.of(context).padding.bottom + 12,
-            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 12),
           ],
         ),
       ),
@@ -609,12 +615,37 @@ class _CleanProgressSheetState extends State<_CleanProgressSheet> {
               runSpacing: 8,
               children: [
                 if (startTime.isNotEmpty)
-                  _buildDetailItem(context, CupertinoIcons.clock, '开始时间', startTime),
-                _buildDetailItem(context, CupertinoIcons.folder, '总目录数', '$totalDirs'),
-                _buildDetailItem(context, CupertinoIcons.folder_fill, '已处理', '$processedDirs'),
-                _buildDetailItem(context, Icons.delete_outline, '已清理', '$totalCount'),
+                  _buildDetailItem(
+                    context,
+                    CupertinoIcons.clock,
+                    '开始时间',
+                    startTime,
+                  ),
+                _buildDetailItem(
+                  context,
+                  CupertinoIcons.folder,
+                  '总目录数',
+                  '$totalDirs',
+                ),
+                _buildDetailItem(
+                  context,
+                  CupertinoIcons.folder_fill,
+                  '已处理',
+                  '$processedDirs',
+                ),
+                _buildDetailItem(
+                  context,
+                  Icons.delete_outline,
+                  '已清理',
+                  '$totalCount',
+                ),
                 if (currentDir.isNotEmpty)
-                  _buildDetailItem(context, CupertinoIcons.folder_open, '当前处理', currentDir),
+                  _buildDetailItem(
+                    context,
+                    CupertinoIcons.folder_open,
+                    '当前处理',
+                    currentDir,
+                  ),
               ],
             ),
           ),
@@ -624,11 +655,26 @@ class _CleanProgressSheetState extends State<_CleanProgressSheet> {
           const SizedBox(height: 12),
           Row(
             children: [
-              _buildStatChip(context, '空目录', emptyCount, const Color(0xFF007AFF)),
+              _buildStatChip(
+                context,
+                '空目录',
+                emptyCount,
+                const Color(0xFF007AFF),
+              ),
               const SizedBox(width: 8),
-              _buildStatChip(context, '小目录', smallCount, const Color(0xFFFF9500)),
+              _buildStatChip(
+                context,
+                '小目录',
+                smallCount,
+                const Color(0xFFFF9500),
+              ),
               const SizedBox(width: 8),
-              _buildStatChip(context, '缩减目录', reductionCount, const Color(0xFFAF52DE)),
+              _buildStatChip(
+                context,
+                '缩减目录',
+                reductionCount,
+                const Color(0xFFAF52DE),
+              ),
             ],
           ),
         ],
@@ -649,13 +695,19 @@ class _CleanProgressSheetState extends State<_CleanProgressSheet> {
               ),
             ),
             children: removedDirs.map((dir) {
-              final item = dir is Map<String, dynamic> ? dir : <String, dynamic>{};
+              final item = dir is Map<String, dynamic>
+                  ? dir
+                  : <String, dynamic>{};
               final path = item['path']?.toString() ?? '';
               final type = item['type']?.toString() ?? '';
-              final dirName = path.split('/').where((s) => s.isNotEmpty).lastOrNull ?? path;
+              final dirName =
+                  path.split('/').where((s) => s.isNotEmpty).lastOrNull ?? path;
 
               return CupertinoListTile(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 leading: Container(
                   width: 28,
                   height: 28,
@@ -676,7 +728,10 @@ class _CleanProgressSheetState extends State<_CleanProgressSheet> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF8E8E93),
                     borderRadius: BorderRadius.circular(8),

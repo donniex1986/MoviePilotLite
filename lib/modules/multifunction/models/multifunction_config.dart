@@ -35,6 +35,7 @@ const List<MultifunctionSection> multifunctionSections = [
       ),
       MultifunctionItem(
         title: '工作流',
+        route: '/workflow',
         icon: Icons.account_tree_outlined,
         accent: Color(0xFF0AA8A8),
         style: MultifunctionCardStyle.compact,

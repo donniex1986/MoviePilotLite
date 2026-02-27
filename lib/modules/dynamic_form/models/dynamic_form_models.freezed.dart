@@ -283,6 +283,7 @@ mixin _$FormNode {
   @JsonKey(fromJson: _contentFromJson)
   List<FormNode> get content => throw _privateConstructorUsedError;
   dynamic get text => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get events => throw _privateConstructorUsedError;
 
   /// Serializes this FormNode to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -304,6 +305,7 @@ abstract class $FormNodeCopyWith<$Res> {
     Map<String, dynamic>? props,
     @JsonKey(fromJson: _contentFromJson) List<FormNode> content,
     dynamic text,
+    Map<String, dynamic>? events,
   });
 }
 
@@ -326,6 +328,7 @@ class _$FormNodeCopyWithImpl<$Res, $Val extends FormNode>
     Object? props = freezed,
     Object? content = null,
     Object? text = freezed,
+    Object? events = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -345,6 +348,10 @@ class _$FormNodeCopyWithImpl<$Res, $Val extends FormNode>
                 ? _value.text
                 : text // ignore: cast_nullable_to_non_nullable
                       as dynamic,
+            events: freezed == events
+                ? _value.events
+                : events // ignore: cast_nullable_to_non_nullable
+                      as Map<String, dynamic>?,
           )
           as $Val,
     );
@@ -365,6 +372,7 @@ abstract class _$$FormNodeImplCopyWith<$Res>
     Map<String, dynamic>? props,
     @JsonKey(fromJson: _contentFromJson) List<FormNode> content,
     dynamic text,
+    Map<String, dynamic>? events,
   });
 }
 
@@ -386,6 +394,7 @@ class __$$FormNodeImplCopyWithImpl<$Res>
     Object? props = freezed,
     Object? content = null,
     Object? text = freezed,
+    Object? events = freezed,
   }) {
     return _then(
       _$FormNodeImpl(
@@ -405,6 +414,10 @@ class __$$FormNodeImplCopyWithImpl<$Res>
             ? _value.text
             : text // ignore: cast_nullable_to_non_nullable
                   as dynamic,
+        events: freezed == events
+            ? _value._events
+            : events // ignore: cast_nullable_to_non_nullable
+                  as Map<String, dynamic>?,
       ),
     );
   }
@@ -419,8 +432,10 @@ class _$FormNodeImpl implements _FormNode {
     @JsonKey(fromJson: _contentFromJson)
     final List<FormNode> content = const [],
     this.text,
+    final Map<String, dynamic>? events,
   }) : _props = props,
-       _content = content;
+       _content = content,
+       _events = events;
 
   factory _$FormNodeImpl.fromJson(Map<String, dynamic> json) =>
       _$$FormNodeImplFromJson(json);
@@ -449,10 +464,19 @@ class _$FormNodeImpl implements _FormNode {
 
   @override
   final dynamic text;
+  final Map<String, dynamic>? _events;
+  @override
+  Map<String, dynamic>? get events {
+    final value = _events;
+    if (value == null) return null;
+    if (_events is EqualUnmodifiableMapView) return _events;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
 
   @override
   String toString() {
-    return 'FormNode(component: $component, props: $props, content: $content, text: $text)';
+    return 'FormNode(component: $component, props: $props, content: $content, text: $text, events: $events)';
   }
 
   @override
@@ -464,7 +488,8 @@ class _$FormNodeImpl implements _FormNode {
                 other.component == component) &&
             const DeepCollectionEquality().equals(other._props, _props) &&
             const DeepCollectionEquality().equals(other._content, _content) &&
-            const DeepCollectionEquality().equals(other.text, text));
+            const DeepCollectionEquality().equals(other.text, text) &&
+            const DeepCollectionEquality().equals(other._events, _events));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -475,6 +500,7 @@ class _$FormNodeImpl implements _FormNode {
     const DeepCollectionEquality().hash(_props),
     const DeepCollectionEquality().hash(_content),
     const DeepCollectionEquality().hash(text),
+    const DeepCollectionEquality().hash(_events),
   );
 
   /// Create a copy of FormNode
@@ -497,6 +523,7 @@ abstract class _FormNode implements FormNode {
     final Map<String, dynamic>? props,
     @JsonKey(fromJson: _contentFromJson) final List<FormNode> content,
     final dynamic text,
+    final Map<String, dynamic>? events,
   }) = _$FormNodeImpl;
 
   factory _FormNode.fromJson(Map<String, dynamic> json) =
@@ -512,6 +539,8 @@ abstract class _FormNode implements FormNode {
   List<FormNode> get content;
   @override
   dynamic get text;
+  @override
+  Map<String, dynamic>? get events;
 
   /// Create a copy of FormNode
   /// with the given fields replaced by the non-null parameter values.

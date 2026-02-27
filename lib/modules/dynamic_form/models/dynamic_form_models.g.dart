@@ -42,6 +42,7 @@ _$FormNodeImpl _$$FormNodeImplFromJson(Map<String, dynamic> json) =>
           ? const []
           : _contentFromJson(json['content']),
       text: json['text'],
+      events: json['events'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$$FormNodeImplToJson(_$FormNodeImpl instance) =>
@@ -50,4 +51,5 @@ Map<String, dynamic> _$$FormNodeImplToJson(_$FormNodeImpl instance) =>
       'props': instance.props,
       'content': instance.content,
       'text': instance.text,
+      'events': instance.events,
     };
