@@ -7,7 +7,7 @@ name: Build Android
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 5'
+    - cron: "0 0 * * 5"
 
 permissions:
   contents: write
@@ -23,8 +23,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.2'
-          channel: 'stable'
+          flutter-version: "3.38.2"
+          channel: "stable"
           cache: true
 
       - name: Flutter precache
@@ -36,8 +36,8 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
 
       - name: Validate and setup Android Keystore
         env:
@@ -78,7 +78,7 @@ jobs:
           echo "Keystore validated successfully."
 
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --dart-define=FLUTTER_APP_ENV=release
 
       - name: Get version from pubspec
         id: version
@@ -89,7 +89,7 @@ jobs:
       - name: Generate release name
         id: release_name
         run: |
-          RELEASE_NAME="android-$(date +%Y-%m-%d-%H-%M)-${{ steps.version.outputs.version }}"
+          RELEASE_NAME="v${{ steps.version.outputs.version }}-android-$(date +%Y-%m-%d)"
           echo "name=$RELEASE_NAME" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release

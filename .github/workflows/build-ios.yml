@@ -1,13 +1,9 @@
-# MoviePilot - iOS 打包 Workflow
-# 触发器: 每周五 UTC 00:00 自动执行 | 支持手动触发
-# 输出: 创建 GitHub Release，上传未签名应用
-
 name: Build iOS
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * 5"
+    - cron: "0 0 * * 5"   # 每周五 UTC 00:00
 
 permissions:
   contents: write
@@ -18,64 +14,110 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - name: Checkout
+      # 1️⃣ Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: stable
+          cache: true
+
+      # 3️⃣ Cache pub dependencies
+      - name: Cache Flutter pub
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # 4️⃣ Install Dart/Flutter dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 5️⃣ Cache CocoaPods
       - name: Cache CocoaPods
         uses: actions/cache@v4
         with:
           path: |
-            ${{ runner.home }}/Library/Caches/CocoaPods
             ios/Pods
+            ~/Library/Caches/CocoaPods
           key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
 
-      - name: Run iOS CI script
-        env:
-          CI_PRIMARY_REPOSITORY_PATH: ${{ github.workspace }}
-        run: bash ios/ci_scripts/ci_post_clone.sh
-
-      - name: Add Flutter to PATH
-        run: echo "$HOME/flutter/bin" >> $GITHUB_PATH
-
-      - name: Install Fastlane
-        run: brew install fastlane
-
-      - name: Build iOS App (Unsigned)
+      # 6️⃣ Install Pods
+      - name: Install CocoaPods
         run: |
-          flutter build ios --no-codesign
-          # 创建一个简单的 zip 文件用于上传
-          mkdir -p build/ios/unsigned
-          cp -r build/ios/iphoneos/Runner.app build/ios/unsigned/
-          cd build/ios/unsigned
-          zip -r Runner.app.zip Runner.app
-          cd ../../../
-          echo "UNSIGNED_BUILD=true" >> $GITHUB_ENV
+          cd ios
+          pod install
+          cd ..
 
-      - name: Get version from pubspec
+      # 7️⃣ Build unsigned iOS app
+      - name: Build iOS (Unsigned)
+        run: |
+          flutter build ios --release --no-codesign --dart-define=FLUTTER_APP_ENV=release
+
+          cd build/ios/iphoneos
+
+          mkdir -p Payload
+          cp -R Runner.app Payload/
+
+          # 生成标准 IPA
+          zip -r -y app-unsigned.ipa Payload
+
+          # 生成 SHA256 校验
+          shasum -a 256 app-unsigned.ipa > app-unsigned.ipa.sha256
+
+          cd ../../..
+
+      # 8️⃣ 获取版本号
+      - name: Get version
         id: version
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | sed 's/+.*//' | tr -d ' ')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      # 9️⃣ 生成 Release 名称
       - name: Generate release name
-        id: release_name
+        id: release
         run: |
-          RELEASE_NAME="ios-$(date +%Y-%m-%d-%H-%M)-${{ steps.version.outputs.version }}"
+          RELEASE_NAME="v${{ steps.version.outputs.version }}-ios-$(date +%Y-%m-%d)"
           echo "name=$RELEASE_NAME" >> $GITHUB_OUTPUT
 
+      # 🔟 创建 GitHub Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: release-${{ steps.release_name.outputs.name }}
-          name: ${{ steps.release_name.outputs.name }}
+          tag_name: ${{ steps.release.outputs.name }}
+          name: ${{ steps.release.outputs.name }}
           body: |
-            MoviePilot iOS Release
-            - Build: ${{ steps.release_name.outputs.name }}
+            ## MoviePilot iOS Release
+
             - Version: ${{ steps.version.outputs.version }}
-            - Type: Unsigned
-          files: build/ios/unsigned/Runner.app.zip
+            - Build Date: $(date +%Y-%m-%d)
+            - Type: Unsigned IPA
+
+            ### ⚠️ Installation
+
+            This IPA is **unsigned**.
+
+            Please sign it using your own Apple Developer account via:
+
+            - AltStore
+            - Sideloadly
+            - Xcode
+
+            Free Apple ID accounts expire after 7 days.
+
+          files: |
+            build/ios/iphoneos/app-unsigned.ipa
+            build/ios/iphoneos/app-unsigned.ipa.sha256
+
           generate_release_notes: true
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
