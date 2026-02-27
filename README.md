@@ -61,7 +61,7 @@ openssl base64 -A -in moviepilot-release.keystore | tr -d '\n' | pbcopy
 ### GitHub Actions 自动打包
 
 - **触发器**：每周五 UTC 00:00 自动执行，或通过 Actions 页面手动触发
-- **产物**：在 GitHub Release 中上传 APK 和 IPA
+- **产物**：在 GitHub Release 中上传 APK 和未签名的 iOS 应用
 - **Release 命名**：`yyyy-MM-dd-HH-mm-{version}`（如 `2025-02-14-09-30-1.0.0`）
 
 需在仓库 Settings → Secrets and variables → Actions 中配置：
@@ -76,12 +76,13 @@ openssl base64 -A -in moviepilot-release.keystore | tr -d '\n' | pbcopy
 | `KEYSTORE_PASSWORD` | keystore 密码 |
 | `KEY_ALIAS` | 密钥别名（如 `moviepilot`） |
 | `KEY_PASSWORD` | 密钥密码 |
-| `APPLE_CERTIFICATE_BASE64` | iOS 证书（.p12）Base64 编码 |
-| `APPLE_CERTIFICATE_PASSWORD` | iOS 证书密码 |
-| `APPLE_PROVISIONING_PROFILE_BASE64` | iOS Provisioning Profile Base64 编码 |
-| `KEYCHAIN_PASSWORD` | 临时 keychain 密码（任意字符串） |
 
 未设置变量 `BUILD_IOS=true` 时，将仅打包 Android APK。
+
+**iOS 打包说明**：
+- 采用未签名模式打包，无需 iOS 开发者证书和 Provisioning Profile
+- 生成的是 `.app.zip` 文件，需要通过 Xcode 或其他工具安装到设备
+- 由于是未签名应用，需要在设备上信任开发者才能运行
 
 ## 插件适配进度
 

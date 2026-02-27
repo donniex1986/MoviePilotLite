@@ -1,13 +1,13 @@
 # MoviePilot - iOS 打包 Workflow
 # 触发器: 每周五 UTC 00:00 自动执行 | 支持手动触发
-# 输出: 创建 GitHub Release，上传 IPA
+# 输出: 创建 GitHub Release，上传未签名应用
 
 name: Build iOS
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 5'
+    - cron: "0 0 * * 5"
 
 permissions:
   contents: write
@@ -39,57 +39,19 @@ jobs:
       - name: Add Flutter to PATH
         run: echo "$HOME/flutter/bin" >> $GITHUB_PATH
 
-      - name: Setup iOS Code Signing
-        run: |
-          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain || true
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
-          security set-keychain-settings -t 3600 -u build.keychain
-
-          echo "${{ secrets.APPLE_CERTIFICATE_BASE64 }}" | base64 --decode > certificate.p12
-          security import certificate.p12 -k build.keychain -P "${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign -T /usr/bin/security || true
-
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
-          uuid=$(grep -aA1 UUID profile.mobileprovision | grep -o "[-A-Za-z0-9]\{36\}" | head -1)
-          if [ -z "$uuid" ]; then
-            echo "::error::无法从 Provisioning Profile 中解析 UUID，请确认 APPLE_PROVISIONING_PROFILE_BASE64 为有效的 .mobileprovision 文件"
-            exit 1
-          fi
-          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$uuid.mobileprovision
-          echo "PROVISIONING_PROFILE_UUID=$uuid" >> $GITHUB_ENV
-
-          # 使用 manual signing 并显式指定 profile UUID，避免 xcodebuild export 时找不到 profile
-          /usr/libexec/PlistBuddy -c "Set :signingStyle manual" ios/ExportOptions.plist
-          /usr/libexec/PlistBuddy -c "Delete :provisioningProfiles" ios/ExportOptions.plist 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" ios/ExportOptions.plist
-          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:com.altman.moviepilot string $uuid" ios/ExportOptions.plist
-
-          echo "CODE_SIGN_IDENTITY=iPhone Distribution" >> $GITHUB_ENV
-          echo "CODE_SIGN_STYLE=Manual" >> $GITHUB_ENV
-          echo "PROVISIONING_PROFILE_SPECIFIER=$uuid" >> $GITHUB_ENV
-
-          # 仅修改 Runner Release 配置，使用 Manual signing 避免 Xcode 查找 Apple 账户
-          awk '
-            /97C147071CF9000F007C117D.*Release.*=.*\{/ { in_runner_release=1 }
-            in_runner_release && /CODE_SIGN_IDENTITY = "Apple Development";/ { sub(/CODE_SIGN_IDENTITY = "Apple Development";/, "CODE_SIGN_IDENTITY = \"iPhone Distribution\";") }
-            in_runner_release && /CODE_SIGN_STYLE = Automatic;/ { sub(/CODE_SIGN_STYLE = Automatic;/, "CODE_SIGN_STYLE = Manual;") }
-            in_runner_release && /name = Release;/ { in_runner_release=0 }
-            { print }
-          ' ios/Runner.xcodeproj/project.pbxproj > ios/Runner.xcodeproj/project.pbxproj.tmp && mv ios/Runner.xcodeproj/project.pbxproj.tmp ios/Runner.xcodeproj/project.pbxproj
-          echo "PROVISIONING_PROFILE_SPECIFIER = $uuid" >> ios/Flutter/Release.xcconfig
-
       - name: Install Fastlane
         run: brew install fastlane
 
-      - name: Build iOS IPA
-        env:
-          PROVISIONING_PROFILE_SPECIFIER: ${{ env.PROVISIONING_PROFILE_UUID }}
-          CODE_SIGN_IDENTITY: "iPhone Distribution"
-          CODE_SIGN_STYLE: "Manual"
+      - name: Build iOS App (Unsigned)
         run: |
-          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain || true
-          fastlane ios
+          flutter build ios --no-codesign
+          # 创建一个简单的 zip 文件用于上传
+          mkdir -p build/ios/unsigned
+          cp -r build/ios/iphoneos/Runner.app build/ios/unsigned/
+          cd build/ios/unsigned
+          zip -r Runner.app.zip Runner.app
+          cd ../../../
+          echo "UNSIGNED_BUILD=true" >> $GITHUB_ENV
 
       - name: Get version from pubspec
         id: version
@@ -112,7 +74,8 @@ jobs:
             MoviePilot iOS Release
             - Build: ${{ steps.release_name.outputs.name }}
             - Version: ${{ steps.version.outputs.version }}
-          files: build/ios/ipa/*.ipa
+            - Type: Unsigned
+          files: build/ios/unsigned/Runner.app.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
