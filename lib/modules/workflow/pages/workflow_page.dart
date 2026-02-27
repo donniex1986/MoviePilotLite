@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/workflow/controllers/workflow_controller.dart';
 import 'package:moviepilot_mobile/modules/workflow/models/workflow_models.dart';
+import 'package:moviepilot_mobile/modules/workflow/pages/shared_workflow_page.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class WorkflowPage extends GetView<WorkflowController> {
   const WorkflowPage({super.key});
@@ -11,56 +13,69 @@ class WorkflowPage extends GetView<WorkflowController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('工作流'), centerTitle: false),
-      body: Obx(() {
-        if (controller.isLoading.value && controller.items.isEmpty) {
-          return const Center(child: CupertinoActivityIndicator());
-        }
-        if (controller.errorText.value != null && controller.items.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  controller.errorText.value ?? '',
-                  style: const TextStyle(
-                    color: CupertinoColors.systemGrey,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
+      appBar: AppBar(
+        title: const Text('工作流'),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            onPressed: () => Get.to(() => const SharedWorkflowPage()),
+            icon: const Icon(Icons.share_outlined),
+          ),
+        ],
+      ),
+      body: _buildMyWorkflowsTab(),
+    );
+  }
+
+  Widget _buildMyWorkflowsTab() {
+    return Obx(() {
+      if (controller.errorText.value != null && controller.items.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                controller.errorText.value ?? '',
+                style: const TextStyle(
+                  color: CupertinoColors.systemGrey,
+                  fontSize: 14,
                 ),
-                const SizedBox(height: 16),
-                CupertinoButton(
-                  onPressed: controller.load,
-                  child: const Text('重试'),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              CupertinoButton(
+                onPressed: controller.load,
+                child: const Text('重试'),
+              ),
+            ],
+          ),
+        );
+      }
+      if (controller.items.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                CupertinoIcons.flowchart,
+                size: 48,
+                color: CupertinoColors.systemGrey3,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '暂无工作流',
+                style: TextStyle(
+                  color: CupertinoColors.systemGrey,
+                  fontSize: 15,
                 ),
-              ],
-            ),
-          );
-        }
-        if (controller.items.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  CupertinoIcons.flowchart,
-                  size: 48,
-                  color: CupertinoColors.systemGrey3,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '暂无工作流',
-                  style: TextStyle(
-                    color: CupertinoColors.systemGrey,
-                    fontSize: 15,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        return CustomScrollView(
+              ),
+            ],
+          ),
+        );
+      }
+      return Skeletonizer(
+        enabled: controller.isLoading.value && controller.items.isEmpty,
+        child: CustomScrollView(
           slivers: [
             CupertinoSliverRefreshControl(onRefresh: controller.load),
             SliverPadding(
@@ -94,9 +109,9 @@ class WorkflowPage extends GetView<WorkflowController> {
               ),
             ),
           ],
-        );
-      }),
-    );
+        ),
+      );
+    });
   }
 
   void _confirmAction(
@@ -203,10 +218,7 @@ class _WorkflowCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildHeader(context),
-          _buildBody(context),
-        ],
+        children: [_buildHeader(context), _buildBody(context)],
       ),
     );
   }
@@ -395,10 +407,7 @@ class _WorkflowCard extends StatelessWidget {
               Expanded(
                 child: _InfoItem(
                   label: '已执行次数',
-                  child: Text(
-                    '${workflow.runCount}',
-                    style: valueStyle,
-                  ),
+                  child: Text('${workflow.runCount}', style: valueStyle),
                 ),
               ),
             ],
@@ -461,10 +470,7 @@ class _InfoItem extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: AppTheme.textSecondaryColor,
-          ),
+          style: TextStyle(fontSize: 12, color: AppTheme.textSecondaryColor),
         ),
         const SizedBox(height: 4),
         child,

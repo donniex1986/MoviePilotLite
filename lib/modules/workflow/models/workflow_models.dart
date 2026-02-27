@@ -1,3 +1,8 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'workflow_models.freezed.dart';
+part 'workflow_models.g.dart';
+
 class WorkflowAction {
   final String id;
   final String type;
@@ -121,4 +126,29 @@ class WorkflowModel {
       lastTime: json['last_time']?.toString(),
     );
   }
+}
+
+@freezed
+class SharedWorkflow with _$SharedWorkflow {
+  const factory SharedWorkflow({
+    required int id,
+    @JsonKey(name: 'share_title') required String shareTitle,
+    @JsonKey(name: 'share_comment') String? shareComment,
+    @JsonKey(name: 'share_user') required String shareUser,
+    @JsonKey(name: 'share_uid') required String shareUid,
+    required String name,
+    required String description,
+    String? timer,
+    @JsonKey(name: 'trigger_type') String? triggerType,
+    @JsonKey(name: 'event_type') String? eventType,
+    @JsonKey(name: 'event_conditions') dynamic eventConditions,
+    required String actions,
+    required String flows,
+    dynamic context,
+    required String date,
+    required int count,
+  }) = _SharedWorkflow;
+
+  factory SharedWorkflow.fromJson(Map<String, dynamic> json) =>
+      _$SharedWorkflowFromJson(json);
 }
