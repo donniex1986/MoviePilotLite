@@ -40,7 +40,7 @@ class SystemMessageController extends GetxController {
   void onInit() {
     super.onInit();
     _loadLastReadMessageId();
-    loadInitial();
+    // 只在有数据时启动轮询，数据加载交给页面首次构建时执行
     _startPolling();
   }
 
@@ -238,6 +238,8 @@ class SystemMessageController extends GetxController {
       if (items.length < _size) {
         hasMore.value = false;
       }
+
+      return;
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '获取系统消息失败');
     }
@@ -259,12 +261,20 @@ class SystemMessageController extends GetxController {
   }
 
   void _scrollToBottom() {
+    scrollToBottom();
+  }
+
+  /// 公共方法：滚动到底部
+  void scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!scrollController.hasClients) return;
-      final position = scrollController.position;
-      if (position.maxScrollExtent > 0) {
-        scrollController.jumpTo(position.maxScrollExtent);
+      if (!scrollController.hasClients) {
+        // 如果 scrollController 还没有 attach，延迟再试一次
+        Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
+        return;
       }
+      final position = scrollController.position;
+      // 直接滚动到底部，不管 maxScrollExtent 是多少
+      scrollController.jumpTo(position.maxScrollExtent);
     });
   }
 
@@ -279,6 +289,12 @@ class SystemMessageController extends GetxController {
       );
       inputController.clear();
       await _fetchPage(1, appendOlder: false);
+      final maxId = messages.map((m) => m.id).reduce((a, b) => a > b ? a : b);
+      if (maxId >= _currentMaxMessageId) {
+        _currentMaxMessageId = maxId;
+        _saveLastReadMessageId(maxId);
+      }
+      _saveLastReadMessageId(maxId);
       _scrollToBottom();
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '发送消息失败');

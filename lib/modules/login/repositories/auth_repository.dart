@@ -5,6 +5,7 @@ import 'package:get/get.dart' hide Response;
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_global_config.dart';
+import 'package:moviepilot_mobile/modules/system_message/controllers/system_message_controller.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import '../../../services/api_client.dart';
 import '../../../services/realm_service.dart';
@@ -45,6 +46,12 @@ class AuthRepository extends GetxService {
       server: normalizedServer,
       accessToken: login.accessToken,
     );
+
+    // 登录成功后启动消息轮询
+    if (!Get.isRegistered<SystemMessageController>()) {
+      Get.put(SystemMessageController(), permanent: true);
+    }
+
     return login;
   }
 

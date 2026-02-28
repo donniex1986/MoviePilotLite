@@ -14,8 +14,15 @@ class SystemMessagePage extends GetView<SystemMessageController> {
 
   @override
   Widget build(BuildContext context) {
-    // 页面构建完成后标记为已读
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // 页面构建完成后加载数据并标记为已读
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 如果消息列表为空，重新加载数据
+      if (controller.messages.isEmpty) {
+        await controller.loadInitial();
+      } else {
+        // 已有数据，直接滚动到底部
+        controller.scrollToBottom();
+      }
       controller.markAsRead();
     });
 

@@ -3,6 +3,7 @@ import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
+import 'package:moviepilot_mobile/modules/system_message/controllers/system_message_controller.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
 
@@ -79,6 +80,11 @@ class ProfileController extends GetxController {
 
   /// 退出登录：清空本地会话并回到登录页
   Future<void> logout() async {
+    // 停止消息轮询并清理 controller
+    if (Get.isRegistered<SystemMessageController>()) {
+      Get.delete<SystemMessageController>(force: true);
+    }
+
     // 清空内存中的登录信息
     _appService.clearBaseUrl();
     _appService.clearCookie();

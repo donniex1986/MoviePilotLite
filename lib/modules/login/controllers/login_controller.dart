@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../../../utils/toast_util.dart';
+import '../../system_message/controllers/system_message_controller.dart';
 import '../models/login_profile.dart';
 import '../repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
@@ -171,6 +172,12 @@ class LoginController extends GetxController {
         // 获取用户信息成功，直接跳转到dashboard页面
         _talker.info('自动登录成功');
         ToastUtil.success('自动登录成功');
+
+        // 自动登录成功后启动消息轮询
+        if (!Get.isRegistered<SystemMessageController>()) {
+          Get.put(SystemMessageController(), permanent: true);
+        }
+
         final lastIndex = await _loadLastTabIndex();
         if (lastIndex != null) {
           Get.offAllNamed('/main', arguments: {'initialIndex': lastIndex});
