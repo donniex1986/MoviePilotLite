@@ -23,19 +23,19 @@ class AppTheme {
   static const Color infoColor = Color(0xFF007AFF);
 
   /// 背景色（浅色主题）
-  static const Color lightBackgroundColor = Color(0xFFF2F2F7);
+  static const Color lightBackgroundColor = Color.fromRGBO(245, 245, 245, 1);
 
   /// 卡片背景色（浅色主题）
   static const Color lightCardBackgroundColor = Colors.white;
 
   /// 背景色（深色主题）
-  static const Color darkBackgroundColor = Color(0xFF1C1C1E);
+  static const Color darkBackgroundColor = Color.fromRGBO(44, 44, 46, 1);
 
   /// 卡片背景色（深色主题）
-  static const Color darkCardBackgroundColor = Color(0xFF2C2C2E);
+  static const Color darkCardBackgroundColor = Color.fromRGBO(20, 20, 20, 1);
 
   /// 文本主色（浅色主题）
-  static const Color lightTextPrimaryColor = Color(0xFF000000);
+  static const Color lightTextPrimaryColor = Color.fromRGBO(28, 28, 28, 1);
 
   /// 文本主色（深色主题）
   static const Color darkTextPrimaryColor = Colors.white;
