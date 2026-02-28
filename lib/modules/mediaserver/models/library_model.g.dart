@@ -11,12 +11,10 @@ _$MediaLibraryImpl _$$MediaLibraryImplFromJson(Map<String, dynamic> json) =>
       server: json['server'] as String? ?? '',
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
-      path: json['path'] as String?,
+      path: _stringFromJson(json['path']),
       type: json['type'] as String? ?? '',
       image: json['image'] as String?,
-      image_list: (json['image_list'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      image_list: _stringListFromJson(json['image_list']),
       link: json['link'] as String?,
       server_type: json['server_type'] as String? ?? '',
       use_cookies: json['use_cookies'] as bool?,

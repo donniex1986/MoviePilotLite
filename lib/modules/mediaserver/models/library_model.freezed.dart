@@ -31,6 +31,7 @@ mixin _$MediaLibrary {
   String get name => throw _privateConstructorUsedError;
 
   /// 库路径
+  @JsonKey(fromJson: _stringFromJson)
   String? get path => throw _privateConstructorUsedError;
 
   /// 库类型
@@ -40,6 +41,7 @@ mixin _$MediaLibrary {
   String? get image => throw _privateConstructorUsedError;
 
   /// 库图片列表
+  @JsonKey(fromJson: _stringListFromJson)
   List<String>? get image_list => throw _privateConstructorUsedError;
 
   /// 库链接
@@ -72,10 +74,10 @@ abstract class $MediaLibraryCopyWith<$Res> {
     String server,
     String id,
     String name,
-    String? path,
+    @JsonKey(fromJson: _stringFromJson) String? path,
     String type,
     String? image,
-    List<String>? image_list,
+    @JsonKey(fromJson: _stringListFromJson) List<String>? image_list,
     String? link,
     String server_type,
     bool? use_cookies,
@@ -169,10 +171,10 @@ abstract class _$$MediaLibraryImplCopyWith<$Res>
     String server,
     String id,
     String name,
-    String? path,
+    @JsonKey(fromJson: _stringFromJson) String? path,
     String type,
     String? image,
-    List<String>? image_list,
+    @JsonKey(fromJson: _stringListFromJson) List<String>? image_list,
     String? link,
     String server_type,
     bool? use_cookies,
@@ -258,10 +260,10 @@ class _$MediaLibraryImpl implements _MediaLibrary {
     this.server = '',
     this.id = '',
     this.name = '',
-    this.path,
+    @JsonKey(fromJson: _stringFromJson) this.path,
     this.type = '',
     this.image,
-    final List<String>? image_list,
+    @JsonKey(fromJson: _stringListFromJson) final List<String>? image_list,
     this.link,
     this.server_type = '',
     this.use_cookies,
@@ -287,6 +289,7 @@ class _$MediaLibraryImpl implements _MediaLibrary {
 
   /// 库路径
   @override
+  @JsonKey(fromJson: _stringFromJson)
   final String? path;
 
   /// 库类型
@@ -303,6 +306,7 @@ class _$MediaLibraryImpl implements _MediaLibrary {
 
   /// 库图片列表
   @override
+  @JsonKey(fromJson: _stringListFromJson)
   List<String>? get image_list {
     final value = _image_list;
     if (value == null) return null;
@@ -386,10 +390,10 @@ abstract class _MediaLibrary implements MediaLibrary {
     final String server,
     final String id,
     final String name,
-    final String? path,
+    @JsonKey(fromJson: _stringFromJson) final String? path,
     final String type,
     final String? image,
-    final List<String>? image_list,
+    @JsonKey(fromJson: _stringListFromJson) final List<String>? image_list,
     final String? link,
     final String server_type,
     final bool? use_cookies,
@@ -412,6 +416,7 @@ abstract class _MediaLibrary implements MediaLibrary {
 
   /// 库路径
   @override
+  @JsonKey(fromJson: _stringFromJson)
   String? get path;
 
   /// 库类型
@@ -424,6 +429,7 @@ abstract class _MediaLibrary implements MediaLibrary {
 
   /// 库图片列表
   @override
+  @JsonKey(fromJson: _stringListFromJson)
   List<String>? get image_list;
 
   /// 库链接

@@ -9,7 +9,10 @@
 // ignore_for_file: type=lint
 // ignore_for_file: deprecated_member_use,directives_ordering,implicit_dynamic_list_literal,unnecessary_import
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart' as _svg;
+import 'package:vector_graphics/vector_graphics.dart' as _vg;
 
 class $AssetsImagesGen {
   const $AssetsImagesGen();
@@ -257,7 +260,8 @@ class $AssetsImagesLogosGen {
   AssetGenImage get tmdb => const AssetGenImage('assets/images/logos/tmdb.png');
 
   /// File path: assets/images/logos/tmdb_title.svg
-  String get tmdbTitle => 'assets/images/logos/tmdb_title.svg';
+  SvgGenImage get tmdbTitle =>
+      const SvgGenImage('assets/images/logos/tmdb_title.svg');
 
   /// File path: assets/images/logos/transmission.png
   AssetGenImage get transmission =>
@@ -334,7 +338,7 @@ class $AssetsImagesMiscGen {
       const AssetGenImage('assets/images/misc/alipan.webp');
 
   /// File path: assets/images/misc/alist.svg
-  String get alist => 'assets/images/misc/alist.svg';
+  SvgGenImage get alist => const SvgGenImage('assets/images/misc/alist.svg');
 
   /// File path: assets/images/misc/database.png
   AssetGenImage get database =>
@@ -348,7 +352,8 @@ class $AssetsImagesMiscGen {
       const AssetGenImage('assets/images/misc/jellyfin.png');
 
   /// File path: assets/images/misc/openlist.svg
-  String get openlist => 'assets/images/misc/openlist.svg';
+  SvgGenImage get openlist =>
+      const SvgGenImage('assets/images/misc/openlist.svg');
 
   /// File path: assets/images/misc/person-icon.png
   AssetGenImage get personIcon =>
@@ -436,7 +441,7 @@ class $AssetsImagesPagesGen {
       const AssetGenImage('assets/images/pages/404.png');
 
   /// File path: assets/images/pages/404.svg
-  String get a404Svg => 'assets/images/pages/404.svg';
+  SvgGenImage get a404Svg => const SvgGenImage('assets/images/pages/404.svg');
 
   /// File path: assets/images/pages/auth-v1-mask-dark.png
   AssetGenImage get authV1MaskDark =>
@@ -520,34 +525,37 @@ class $AssetsImagesSvgGen {
   const $AssetsImagesSvgGen();
 
   /// File path: assets/images/svg/discord.svg
-  String get discord => 'assets/images/svg/discord.svg';
+  SvgGenImage get discord => const SvgGenImage('assets/images/svg/discord.svg');
 
   /// File path: assets/images/svg/filter-group.svg
-  String get filterGroup => 'assets/images/svg/filter-group.svg';
+  SvgGenImage get filterGroup =>
+      const SvgGenImage('assets/images/svg/filter-group.svg');
 
   /// File path: assets/images/svg/filter.svg
-  String get filter => 'assets/images/svg/filter.svg';
+  SvgGenImage get filter => const SvgGenImage('assets/images/svg/filter.svg');
 
   /// File path: assets/images/svg/gift.svg
-  String get gift => 'assets/images/svg/gift.svg';
+  SvgGenImage get gift => const SvgGenImage('assets/images/svg/gift.svg');
 
   /// File path: assets/images/svg/keyboard.svg
-  String get keyboard => 'assets/images/svg/keyboard.svg';
+  SvgGenImage get keyboard =>
+      const SvgGenImage('assets/images/svg/keyboard.svg');
 
   /// File path: assets/images/svg/laptop.svg
-  String get laptop => 'assets/images/svg/laptop.svg';
+  SvgGenImage get laptop => const SvgGenImage('assets/images/svg/laptop.svg');
 
   /// File path: assets/images/svg/lightbulb.svg
-  String get lightbulb => 'assets/images/svg/lightbulb.svg';
+  SvgGenImage get lightbulb =>
+      const SvgGenImage('assets/images/svg/lightbulb.svg');
 
   /// File path: assets/images/svg/paypal.svg
-  String get paypal => 'assets/images/svg/paypal.svg';
+  SvgGenImage get paypal => const SvgGenImage('assets/images/svg/paypal.svg');
 
   /// File path: assets/images/svg/rocket.svg
-  String get rocket => 'assets/images/svg/rocket.svg';
+  SvgGenImage get rocket => const SvgGenImage('assets/images/svg/rocket.svg');
 
   /// List of all assets
-  List<String> get values => [
+  List<SvgGenImage> get values => [
     discord,
     filterGroup,
     filter,
@@ -564,10 +572,10 @@ class Assets {
   const Assets._();
 
   static const $AssetsImagesGen images = $AssetsImagesGen();
-  static const String logo = 'assets/logo.svg';
+  static const SvgGenImage logo = SvgGenImage('assets/logo.svg');
 
   /// List of all assets
-  static List<String> get values => [logo];
+  static List<SvgGenImage> get values => [logo];
 }
 
 class AssetGenImage {
@@ -656,4 +664,78 @@ class AssetGenImageAnimation {
   final bool isAnimation;
   final Duration duration;
   final int frames;
+}
+
+class SvgGenImage {
+  const SvgGenImage(this._assetName, {this.size, this.flavors = const {}})
+    : _isVecFormat = false;
+
+  const SvgGenImage.vec(this._assetName, {this.size, this.flavors = const {}})
+    : _isVecFormat = true;
+
+  final String _assetName;
+  final Size? size;
+  final Set<String> flavors;
+  final bool _isVecFormat;
+
+  _svg.SvgPicture svg({
+    Key? key,
+    bool matchTextDirection = false,
+    AssetBundle? bundle,
+    String? package,
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.contain,
+    AlignmentGeometry alignment = Alignment.center,
+    bool allowDrawingOutsideViewBox = false,
+    WidgetBuilder? placeholderBuilder,
+    String? semanticsLabel,
+    bool excludeFromSemantics = false,
+    _svg.SvgTheme? theme,
+    _svg.ColorMapper? colorMapper,
+    ColorFilter? colorFilter,
+    Clip clipBehavior = Clip.hardEdge,
+    @deprecated Color? color,
+    @deprecated BlendMode colorBlendMode = BlendMode.srcIn,
+    @deprecated bool cacheColorFilter = false,
+  }) {
+    final _svg.BytesLoader loader;
+    if (_isVecFormat) {
+      loader = _vg.AssetBytesLoader(
+        _assetName,
+        assetBundle: bundle,
+        packageName: package,
+      );
+    } else {
+      loader = _svg.SvgAssetLoader(
+        _assetName,
+        assetBundle: bundle,
+        packageName: package,
+        theme: theme,
+        colorMapper: colorMapper,
+      );
+    }
+    return _svg.SvgPicture(
+      loader,
+      key: key,
+      matchTextDirection: matchTextDirection,
+      width: width,
+      height: height,
+      fit: fit,
+      alignment: alignment,
+      allowDrawingOutsideViewBox: allowDrawingOutsideViewBox,
+      placeholderBuilder: placeholderBuilder,
+      semanticsLabel: semanticsLabel,
+      excludeFromSemantics: excludeFromSemantics,
+      colorFilter:
+          colorFilter ??
+          (color == null ? null : ColorFilter.mode(color, colorBlendMode)),
+      clipBehavior: clipBehavior,
+      cacheColorFilter: cacheColorFilter,
+    );
+  }
+
+  String get path => _assetName;
+
+  String get keyName => _assetName;
 }

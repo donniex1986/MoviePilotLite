@@ -45,7 +45,10 @@ class MediaServerController extends GetxController {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!isClosed) {
         _statsTimer?.cancel();
-        _statsTimer = Timer.periodic(_statsInterval, (_) => loadMediaServerStats());
+        _statsTimer = Timer.periodic(
+          _statsInterval,
+          (_) => loadMediaServerStats(),
+        );
       }
     });
     // 加载媒体服务器数据
