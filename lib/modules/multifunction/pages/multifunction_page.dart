@@ -184,7 +184,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
       bottom: isLast ? const Radius.circular(18) : Radius.zero,
     );
     final accent = item.accent;
-
+    final screenWidth = MediaQuery.of(context).size.width;
     return InkWell(
       onTap: () => controller.handleTap(item),
       borderRadius: radius,
@@ -193,7 +193,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
         child: Row(
           children: [
             _buildIconBubble(accent, item.icon, size: 38),
-            const SizedBox(width: 12),
+            SizedBox(width: screenWidth < 400 ? 5 : 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

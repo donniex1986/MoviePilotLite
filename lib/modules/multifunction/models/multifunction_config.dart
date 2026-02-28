@@ -42,7 +42,6 @@ const List<MultifunctionSection> multifunctionSections = [
       ),
       MultifunctionItem(
         title: '订阅日历',
-        subtitle: '剧集播出日历',
         icon: Icons.calendar_month_outlined,
         accent: Color(0xFFFFA000),
         style: MultifunctionCardStyle.compact,
