@@ -10,7 +10,6 @@ import 'package:moviepilot_mobile/modules/dashboard/models/dashboard_config_mode
 import 'package:moviepilot_mobile/modules/dashboard/models/dashboard_order_model.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
-import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
@@ -102,7 +101,7 @@ class DashboardController extends GetxController {
   late Timer _networkTimer;
   late Timer _downloaderTimer;
   late Timer _memoryTimer;
-
+  late Timer _cookieTimer;
   bool _hasLocalDashboardConfig = false;
 
   @override
@@ -137,6 +136,7 @@ class DashboardController extends GetxController {
     _networkTimer.cancel();
     _downloaderTimer.cancel();
     _memoryTimer.cancel();
+    _cookieTimer.cancel();
     super.onClose();
   }
 
@@ -173,6 +173,19 @@ class DashboardController extends GetxController {
     _memoryTimer = Timer.periodic(duration, (_) {
       _loadDataBasedOnConfig();
     });
+
+    _cookieTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      _ensureUserCookieRefreshed();
+    });
+  }
+
+  void _ensureUserCookieRefreshed() {
+    final server = appService.baseUrl ?? apiClient.baseUrl;
+    final token = appService.loginResponse?.accessToken ?? apiClient.token;
+    if (server == null || server.isEmpty || token == null || token.isEmpty) {
+      return;
+    }
+    apiClient.getCookieHeader(url: server);
   }
 
   /// 添加组件

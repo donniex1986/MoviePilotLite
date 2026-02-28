@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/widgets/dashboard_section.dart';
+import 'package:moviepilot_mobile/modules/dashboard/widgets/mixed_img_widget.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/models/library_model.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
@@ -67,27 +68,7 @@ class MyMediaLibraryWidget extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // 封面图作为背景
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: library.image != null && library.image!.isNotEmpty
-                  ? CachedImage(
-                      imageUrl: ImageUtil.convertInternalImageUrl(
-                        library.image!,
-                      ),
-                      fit: BoxFit.cover,
-                    )
-                  : Container(
-                      color: CupertinoColors.systemGrey6,
-                      child: Center(
-                        child: Icon(
-                          CupertinoIcons.collections,
-                          size: 48,
-                          color: CupertinoColors.systemGrey4,
-                        ),
-                      ),
-                    ),
-            ),
+            _buildLibraryImage(library),
             // 渐变遮罩，确保文字清晰可见
             Container(
               decoration: BoxDecoration(
@@ -167,6 +148,18 @@ class MyMediaLibraryWidget extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLibraryImage(MediaLibrary library) {
+    final imageUrls = library.image_list?.isNotEmpty == true
+        ? library.image_list!
+        : [library.image ?? ''];
+    // 封面图作为背景
+    return MixedImgWidget(
+      imageUrls: imageUrls
+          .map((e) => ImageUtil.convertInternalImageUrl(e))
+          .toList(),
     );
   }
 }

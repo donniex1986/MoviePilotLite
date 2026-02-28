@@ -87,6 +87,7 @@ class CachedImage extends StatelessWidget {
       fadeInDuration: fadeInDuration,
       fadeOutDuration: fadeOutDuration,
       errorWidget: (context, url, error) {
+        print('img error: $url, $error');
         return errorWidget ?? _buildDefaultErrorWidget();
       },
       progressIndicatorBuilder: (context, url, progress) =>
