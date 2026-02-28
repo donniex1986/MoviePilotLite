@@ -26,7 +26,7 @@ mixin _$LoginResponse {
   @JsonKey(name: 'token_type')
   String get tokenType => throw _privateConstructorUsedError;
   @JsonKey(name: 'super_user')
-  bool get superUser => throw _privateConstructorUsedError;
+  bool? get superUser => throw _privateConstructorUsedError;
   @JsonKey(name: 'user_id')
   int get userId => throw _privateConstructorUsedError;
   @JsonKey(name: 'user_name')
@@ -35,7 +35,7 @@ mixin _$LoginResponse {
   int get level => throw _privateConstructorUsedError;
   @JsonKey(defaultValue: <String, dynamic>{})
   Map<String, dynamic> get permissions => throw _privateConstructorUsedError;
-  bool get wizard => throw _privateConstructorUsedError;
+  bool? get wizard => throw _privateConstructorUsedError;
 
   /// Serializes this LoginResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -57,14 +57,14 @@ abstract class $LoginResponseCopyWith<$Res> {
   $Res call({
     @JsonKey(name: 'access_token') String accessToken,
     @JsonKey(name: 'token_type') String tokenType,
-    @JsonKey(name: 'super_user') bool superUser,
+    @JsonKey(name: 'super_user') bool? superUser,
     @JsonKey(name: 'user_id') int userId,
     @JsonKey(name: 'user_name') String userName,
     String? avatar,
     int level,
     @JsonKey(defaultValue: <String, dynamic>{})
     Map<String, dynamic> permissions,
-    bool wizard,
+    bool? wizard,
   });
 }
 
@@ -85,13 +85,13 @@ class _$LoginResponseCopyWithImpl<$Res, $Val extends LoginResponse>
   $Res call({
     Object? accessToken = null,
     Object? tokenType = null,
-    Object? superUser = null,
+    Object? superUser = freezed,
     Object? userId = null,
     Object? userName = null,
     Object? avatar = freezed,
     Object? level = null,
     Object? permissions = null,
-    Object? wizard = null,
+    Object? wizard = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -103,10 +103,10 @@ class _$LoginResponseCopyWithImpl<$Res, $Val extends LoginResponse>
                 ? _value.tokenType
                 : tokenType // ignore: cast_nullable_to_non_nullable
                       as String,
-            superUser: null == superUser
+            superUser: freezed == superUser
                 ? _value.superUser
                 : superUser // ignore: cast_nullable_to_non_nullable
-                      as bool,
+                      as bool?,
             userId: null == userId
                 ? _value.userId
                 : userId // ignore: cast_nullable_to_non_nullable
@@ -127,10 +127,10 @@ class _$LoginResponseCopyWithImpl<$Res, $Val extends LoginResponse>
                 ? _value.permissions
                 : permissions // ignore: cast_nullable_to_non_nullable
                       as Map<String, dynamic>,
-            wizard: null == wizard
+            wizard: freezed == wizard
                 ? _value.wizard
                 : wizard // ignore: cast_nullable_to_non_nullable
-                      as bool,
+                      as bool?,
           )
           as $Val,
     );
@@ -149,14 +149,14 @@ abstract class _$$LoginResponseImplCopyWith<$Res>
   $Res call({
     @JsonKey(name: 'access_token') String accessToken,
     @JsonKey(name: 'token_type') String tokenType,
-    @JsonKey(name: 'super_user') bool superUser,
+    @JsonKey(name: 'super_user') bool? superUser,
     @JsonKey(name: 'user_id') int userId,
     @JsonKey(name: 'user_name') String userName,
     String? avatar,
     int level,
     @JsonKey(defaultValue: <String, dynamic>{})
     Map<String, dynamic> permissions,
-    bool wizard,
+    bool? wizard,
   });
 }
 
@@ -176,13 +176,13 @@ class __$$LoginResponseImplCopyWithImpl<$Res>
   $Res call({
     Object? accessToken = null,
     Object? tokenType = null,
-    Object? superUser = null,
+    Object? superUser = freezed,
     Object? userId = null,
     Object? userName = null,
     Object? avatar = freezed,
     Object? level = null,
     Object? permissions = null,
-    Object? wizard = null,
+    Object? wizard = freezed,
   }) {
     return _then(
       _$LoginResponseImpl(
@@ -194,10 +194,10 @@ class __$$LoginResponseImplCopyWithImpl<$Res>
             ? _value.tokenType
             : tokenType // ignore: cast_nullable_to_non_nullable
                   as String,
-        superUser: null == superUser
+        superUser: freezed == superUser
             ? _value.superUser
             : superUser // ignore: cast_nullable_to_non_nullable
-                  as bool,
+                  as bool?,
         userId: null == userId
             ? _value.userId
             : userId // ignore: cast_nullable_to_non_nullable
@@ -218,10 +218,10 @@ class __$$LoginResponseImplCopyWithImpl<$Res>
             ? _value._permissions
             : permissions // ignore: cast_nullable_to_non_nullable
                   as Map<String, dynamic>,
-        wizard: null == wizard
+        wizard: freezed == wizard
             ? _value.wizard
             : wizard // ignore: cast_nullable_to_non_nullable
-                  as bool,
+                  as bool?,
       ),
     );
   }
@@ -233,14 +233,14 @@ class _$LoginResponseImpl implements _LoginResponse {
   const _$LoginResponseImpl({
     @JsonKey(name: 'access_token') required this.accessToken,
     @JsonKey(name: 'token_type') required this.tokenType,
-    @JsonKey(name: 'super_user') required this.superUser,
+    @JsonKey(name: 'super_user') this.superUser,
     @JsonKey(name: 'user_id') required this.userId,
     @JsonKey(name: 'user_name') required this.userName,
     this.avatar,
     required this.level,
     @JsonKey(defaultValue: <String, dynamic>{})
     required final Map<String, dynamic> permissions,
-    required this.wizard,
+    this.wizard,
   }) : _permissions = permissions;
 
   factory _$LoginResponseImpl.fromJson(Map<String, dynamic> json) =>
@@ -254,7 +254,7 @@ class _$LoginResponseImpl implements _LoginResponse {
   final String tokenType;
   @override
   @JsonKey(name: 'super_user')
-  final bool superUser;
+  final bool? superUser;
   @override
   @JsonKey(name: 'user_id')
   final int userId;
@@ -275,7 +275,7 @@ class _$LoginResponseImpl implements _LoginResponse {
   }
 
   @override
-  final bool wizard;
+  final bool? wizard;
 
   @override
   String toString() {
@@ -338,14 +338,14 @@ abstract class _LoginResponse implements LoginResponse {
   const factory _LoginResponse({
     @JsonKey(name: 'access_token') required final String accessToken,
     @JsonKey(name: 'token_type') required final String tokenType,
-    @JsonKey(name: 'super_user') required final bool superUser,
+    @JsonKey(name: 'super_user') final bool? superUser,
     @JsonKey(name: 'user_id') required final int userId,
     @JsonKey(name: 'user_name') required final String userName,
     final String? avatar,
     required final int level,
     @JsonKey(defaultValue: <String, dynamic>{})
     required final Map<String, dynamic> permissions,
-    required final bool wizard,
+    final bool? wizard,
   }) = _$LoginResponseImpl;
 
   factory _LoginResponse.fromJson(Map<String, dynamic> json) =
@@ -359,7 +359,7 @@ abstract class _LoginResponse implements LoginResponse {
   String get tokenType;
   @override
   @JsonKey(name: 'super_user')
-  bool get superUser;
+  bool? get superUser;
   @override
   @JsonKey(name: 'user_id')
   int get userId;
@@ -374,7 +374,7 @@ abstract class _LoginResponse implements LoginResponse {
   @JsonKey(defaultValue: <String, dynamic>{})
   Map<String, dynamic> get permissions;
   @override
-  bool get wizard;
+  bool? get wizard;
 
   /// Create a copy of LoginResponse
   /// with the given fields replaced by the non-null parameter values.

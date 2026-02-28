@@ -1,12 +1,18 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/system_message.dart';
 
 class SystemMessageController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
   final _log = Get.find<AppLog>();
+
+  static const String _lastReadMessageIdKey = 'last_read_message_id';
+  // MP的 message sse 似乎有问题，此处改为轮询
+  static const Duration _pollingInterval = Duration(seconds: 10);
 
   final isLoading = false.obs;
   final isLoadingMore = false.obs;
@@ -17,20 +23,154 @@ class SystemMessageController extends GetxController {
   final inputController = TextEditingController();
   final isSending = false.obs;
 
+  /// 是否有未读消息（用于 dashboard 红点显示）
+  final hasUnreadMessages = false.obs;
+
+  /// 已查阅的最大消息 ID
+  int _lastReadMessageId = 0;
+
+  /// 当前列表中的最大消息 ID
+  int _currentMaxMessageId = 0;
+
   int _page = 1;
   final int _size = 20;
+  Timer? _pollingTimer;
 
   @override
   void onInit() {
     super.onInit();
+    _loadLastReadMessageId();
     loadInitial();
+    _startPolling();
   }
 
   @override
   void onClose() {
+    _stopPolling();
     inputController.dispose();
     scrollController.dispose();
     super.onClose();
+  }
+
+  /// 加载已查阅的最大消息 ID
+  Future<void> _loadLastReadMessageId() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _lastReadMessageId = prefs.getInt(_lastReadMessageIdKey) ?? 0;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '加载已读消息 ID 失败');
+    }
+  }
+
+  /// 保存已查阅的最大消息 ID
+  Future<void> _saveLastReadMessageId(int id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_lastReadMessageIdKey, id);
+      _lastReadMessageId = id;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '保存已读消息 ID 失败');
+    }
+  }
+
+  /// 启动定时轮询
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(_pollingInterval, (_) {
+      _fetchLatestMessages();
+    });
+  }
+
+  /// 停止定时轮询
+  void _stopPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+  }
+
+  /// 定时获取最新消息列表并与当前列表 diff 对比插入数据
+  Future<void> _fetchLatestMessages() async {
+    if (isLoading.value) return;
+
+    try {
+      final response = await _apiClient.get<dynamic>(
+        '/api/v1/message/web?page=1&size=$_size',
+      );
+      final data = response.data;
+      if (data == null) return;
+
+      final list = _extractList(data);
+      final items = list
+          .whereType<Map<String, dynamic>>()
+          .map(SystemMessage.fromJson)
+          .toList();
+
+      // 按时间升序：旧在上，新在下
+      items.sort((a, b) => a.regTime.compareTo(b.regTime));
+
+      if (items.isEmpty) return;
+
+      // 计算当前列表中的最大消息 ID
+      final currentIds = messages.map((m) => m.id).toSet();
+      final newMaxId = items.map((m) => m.id).reduce((a, b) => a > b ? a : b);
+
+      // 找出新消息（不在当前列表中的消息）
+      final newMessages = items
+          .where((m) => !currentIds.contains(m.id))
+          .toList();
+
+      if (newMessages.isNotEmpty) {
+        // 按时间顺序插入新消息
+        for (final message in newMessages) {
+          // 找到应该插入的位置（保持时间升序）
+          int insertIndex = messages.length;
+          for (int i = 0; i < messages.length; i++) {
+            if (message.regTime.isBefore(messages[i].regTime)) {
+              insertIndex = i;
+              break;
+            }
+          }
+          messages.insert(insertIndex, message);
+        }
+
+        // 如果当前在底部，自动滚动到底部
+        if (scrollController.hasClients) {
+          final position = scrollController.position;
+          final isNearBottom = position.pixels >= position.maxScrollExtent - 50;
+          if (isNearBottom) {
+            _scrollToBottom();
+          }
+        }
+      }
+
+      // 更新当前最大消息 ID
+      _currentMaxMessageId = newMaxId;
+
+      // 检查是否有未读消息
+      _checkUnreadStatus();
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '获取最新消息失败');
+    }
+  }
+
+  /// 检查未读消息状态
+  void _checkUnreadStatus() {
+    hasUnreadMessages.value = _currentMaxMessageId > _lastReadMessageId;
+  }
+
+  /// 用户查看消息后，记录消息页面内最大的 message id，同时移除小红点
+  Future<void> markAsRead() async {
+    if (messages.isEmpty) return;
+
+    // 找到当前列表中的最大消息 ID
+    final maxId = messages.map((m) => m.id).reduce((a, b) => a > b ? a : b);
+
+    // 保存已读状态
+    await _saveLastReadMessageId(maxId);
+
+    // 更新当前最大消息 ID
+    _currentMaxMessageId = maxId;
+
+    // 移除红点
+    hasUnreadMessages.value = false;
   }
 
   Future<void> loadInitial() async {
@@ -40,6 +180,8 @@ class SystemMessageController extends GetxController {
     messages.clear();
     try {
       await _fetchPage(_page, appendOlder: false);
+      // 初始化后检查未读状态
+      _checkUnreadStatus();
     } finally {
       isLoading.value = false;
       _scrollToBottom();
@@ -82,6 +224,14 @@ class SystemMessageController extends GetxController {
         }
       } else {
         messages.assignAll(items);
+      }
+
+      // 更新当前最大消息 ID
+      if (items.isNotEmpty) {
+        final maxId = items.map((m) => m.id).reduce((a, b) => a > b ? a : b);
+        if (maxId > _currentMaxMessageId) {
+          _currentMaxMessageId = maxId;
+        }
       }
 
       // 兜底判断是否还有更多

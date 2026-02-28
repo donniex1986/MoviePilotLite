@@ -14,6 +14,11 @@ class SystemMessagePage extends GetView<SystemMessageController> {
 
   @override
   Widget build(BuildContext context) {
+    // 页面构建完成后标记为已读
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.markAsRead();
+    });
+
     return Scaffold(
       appBar: AppBar(title: const Text('系统消息')),
       body: SafeArea(

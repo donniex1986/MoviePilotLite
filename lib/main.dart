@@ -152,6 +152,10 @@ class MyApp extends StatelessWidget {
           page: () => const DashboardPage(),
           binding: BindingsBuilder(() {
             Get.lazyPut(() => DashboardController());
+            // 预加载 SystemMessageController 用于消息红点提示
+            if (!Get.isRegistered<SystemMessageController>()) {
+              Get.put(SystemMessageController(), permanent: true);
+            }
           }),
         ),
         GetPage(

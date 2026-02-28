@@ -11,6 +11,7 @@ import 'package:moviepilot_mobile/modules/system_health/controllers/system_healt
 import 'package:moviepilot_mobile/modules/system_health/pages/system_health_page.dart';
 import 'package:moviepilot_mobile/modules/recognize/controllers/recognize_controller.dart';
 import 'package:moviepilot_mobile/modules/recognize/pages/recognize_page.dart';
+import 'package:moviepilot_mobile/modules/system_message/controllers/system_message_controller.dart';
 
 import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
@@ -106,27 +107,42 @@ class DashboardPage extends GetView<DashboardController> {
         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       actions: [
-        CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => Get.toNamed('/system-message'),
-          // _showNotifications(context),
-          child: Stack(
-            children: [
-              const Icon(CupertinoIcons.mail),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: CupertinoColors.systemRed,
-                    shape: BoxShape.circle,
-                  ),
+        Builder(
+          builder: (context) {
+            if (!Get.isRegistered<SystemMessageController>()) {
+              return CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () => Get.toNamed('/system-message'),
+                child: const Stack(children: [Icon(CupertinoIcons.mail)]),
+              );
+            }
+            return Obx(() {
+              final hasUnread =
+                  Get.find<SystemMessageController>().hasUnreadMessages.value;
+              return CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () => Get.toNamed('/system-message'),
+                child: Stack(
+                  children: [
+                    const Icon(CupertinoIcons.mail),
+                    if (hasUnread)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: CupertinoColors.systemRed,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              ),
-            ],
-          ),
+              );
+            });
+          },
         ),
         CupertinoButton(
           padding: EdgeInsets.symmetric(horizontal: 12),
