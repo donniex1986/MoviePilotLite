@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:moviepilot_mobile/modules/dashboard/widgets/dashboard_section.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 
 /// 后台任务列表组件
@@ -10,79 +11,47 @@ class ScheduleWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<DashboardController>();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(CupertinoIcons.calendar, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              '后台任务',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-            ),
-            const Spacer(),
-            InkWell(
-              onTap: () {
-                Get.toNamed('/background-task-list');
-              },
-              child: Row(
-                children: [
-                  Text(
-                    '查看',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Obx(() {
-          final scheduleList = controller.scheduleData.value;
-
-          if (scheduleList.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: Text(
-                  '暂无后台任务数据',
-                  style: TextStyle(color: CupertinoColors.systemGrey),
-                ),
-              ),
-            );
-          }
-
-          // 限制显示数量为5个
-          const maxDisplayCount = 5;
-          final displayList = scheduleList.length > maxDisplayCount
-              ? scheduleList.sublist(0, maxDisplayCount)
-              : scheduleList;
-
-          return Section(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Column(
-              children: [
-                ...displayList.map((schedule) {
-                  return _buildScheduleItem(schedule);
-                }),
-              ],
-            ),
-          );
-        }),
-      ],
+    return DashboardSection(
+      title: '后台任务',
+      icon: CupertinoIcons.calendar,
+      onTapMore: () {
+        Get.toNamed('/background-task-list');
+      },
+      child: _buildInfo(context),
     );
+  }
+
+  Widget _buildInfo(BuildContext context) {
+    final controller = Get.find<DashboardController>();
+    return Obx(() {
+      final scheduleList = controller.scheduleData.value;
+
+      if (scheduleList.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32),
+            child: Text(
+              '暂无后台任务数据',
+              style: TextStyle(color: CupertinoColors.systemGrey),
+            ),
+          ),
+        );
+      }
+
+      // 限制显示数量为5个
+      const maxDisplayCount = 5;
+      final displayList = scheduleList.length > maxDisplayCount
+          ? scheduleList.sublist(0, maxDisplayCount)
+          : scheduleList;
+
+      return Column(
+        children: [
+          ...displayList.map((schedule) {
+            return _buildScheduleItem(schedule);
+          }),
+        ],
+      );
+    });
   }
 
   /// 构建任务项

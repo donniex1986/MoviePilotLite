@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/modules/dashboard/widgets/dashboard_section.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/models/library_model.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
@@ -10,52 +11,41 @@ import 'package:moviepilot_mobile/widgets/cached_image.dart';
 class MyMediaLibraryWidget extends StatelessWidget {
   const MyMediaLibraryWidget({super.key, this.onTap});
   final Function(MediaLibrary library)? onTap;
+
+  Widget _buildInfo(BuildContext context) {
+    final mediaServerController = Get.find<MediaServerController>();
+    return Obx(() {
+      final libraries = mediaServerController.mediaLibraries.value;
+
+      if (libraries.isEmpty) {
+        return const Center(child: Text('暂无媒体库数据'));
+      }
+
+      return SizedBox(
+        height: 160,
+        width: double.infinity,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          shrinkWrap: true,
+          itemCount: libraries.length,
+          itemBuilder: (context, index) {
+            final library = libraries[index];
+            return Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: SizedBox(width: 240, child: _buildLibraryCard(library)),
+            );
+          },
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 数据由 DashboardController._loadDataBasedOnConfig 统一加载，此处仅做展示
-    final mediaServerController = Get.find<MediaServerController>();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(CupertinoIcons.collections, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              '我的媒体库',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Obx(() {
-          final libraries = mediaServerController.mediaLibraries.value;
-
-          if (libraries.isEmpty) {
-            return const Center(child: Text('暂无媒体库数据'));
-          }
-
-          return SizedBox(
-            height: 160,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              shrinkWrap: true,
-              itemCount: libraries.length,
-              itemBuilder: (context, index) {
-                final library = libraries[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: SizedBox(
-                    width: 240,
-                    child: _buildLibraryCard(library),
-                  ),
-                );
-              },
-            ),
-          );
-        }),
-      ],
+    return DashboardSection(
+      title: '我的媒体库',
+      icon: CupertinoIcons.collections,
+      child: _buildInfo(context),
     );
   }
 

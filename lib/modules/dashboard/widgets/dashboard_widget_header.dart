@@ -1,0 +1,49 @@
+import 'package:flutter/material.dart';
+
+class DashboardWidgetHeader extends StatelessWidget {
+  const DashboardWidgetHeader({
+    super.key,
+    required this.title,
+    required this.icon,
+    this.onTapMore,
+  });
+  final String title;
+  final IconData icon;
+  final VoidCallback? onTapMore;
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 20),
+        SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
+        if (onTapMore != null) ...[
+          Spacer(),
+          InkWell(
+            onTap: onTapMore,
+            child: Row(
+              children: [
+                Text(
+                  '查看',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}

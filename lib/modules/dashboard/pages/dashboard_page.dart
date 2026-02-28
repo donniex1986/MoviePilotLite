@@ -217,10 +217,7 @@ class DashboardPage extends GetView<DashboardController> {
 
   /// 构建组件卡片
   Widget _buildWidgetCard(BuildContext context, String widgetType) {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: DashboardWidgets.buildWidget(widgetType),
-    );
+    return DashboardWidgets.buildWidget(widgetType);
   }
 
   /// 显示捷径
