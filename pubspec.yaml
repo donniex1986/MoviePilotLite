@@ -42,6 +42,7 @@ dev_dependencies:
   freezed: ^2.4.8
   json_serializable: ^6.8.0
   flutter_gen_runner: ^5.12.0
+  flutter_launcher_icons: ^0.14.2
 flutter:
   uses-material-design: true
   assets:
@@ -58,3 +59,10 @@ flutter_gen:
     flutter_svg: true
     rive: true
     lottie: true
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/icon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  
+  
