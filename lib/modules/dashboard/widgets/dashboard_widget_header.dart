@@ -12,6 +12,7 @@ class DashboardWidgetHeader extends StatelessWidget {
   final VoidCallback? onTapMore;
   @override
   Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
     return Row(
       children: [
         Icon(icon, size: 20),
@@ -31,14 +32,10 @@ class DashboardWidgetHeader extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: color,
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                Icon(Icons.arrow_forward_ios, size: 16, color: color),
               ],
             ),
           ),

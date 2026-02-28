@@ -165,7 +165,7 @@ class _BackgroundTaskListPageState extends State<BackgroundTaskListPage> {
           Expanded(
             child: Text(
               schedule.name,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 15),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

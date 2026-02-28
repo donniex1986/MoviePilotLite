@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/modules/dashboard/widgets/dashboard_widget_header.dart';
+import 'package:moviepilot_mobile/theme/section.dart';
 
 class DashboardSection extends StatelessWidget {
   const DashboardSection({
@@ -18,26 +19,19 @@ class DashboardSection extends StatelessWidget {
   final List<Widget>? children;
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).cardColor;
-    return CupertinoListSection.insetGrouped(
-      backgroundColor: color.withValues(alpha: 0.1),
-      margin: EdgeInsets.zero,
-      header: DashboardWidgetHeader(
-        title: title,
-        icon: icon,
-        onTapMore: onTapMore,
-      ),
-      children:
-          children ??
-          [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12.0,
-                vertical: 8.0,
-              ),
-              child: child,
-            ),
-          ],
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: DashboardWidgetHeader(
+            title: title,
+            icon: icon,
+            onTapMore: onTapMore,
+          ),
+        ),
+        Section(child: child),
+        SizedBox(height: 16),
+      ],
     );
   }
 }
