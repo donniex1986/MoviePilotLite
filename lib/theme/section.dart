@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:moviepilot_mobile/theme/app_theme.dart';
 
 class Section extends StatelessWidget {
   const Section({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(12),
-    this.borderRadius = const BorderRadius.all(Radius.circular(12)),
+    this.padding = const EdgeInsets.all(AppTheme.defaultBorderRadius),
+    this.borderRadius = const BorderRadius.all(
+      Radius.circular(AppTheme.defaultBorderRadius),
+    ),
   });
   final Widget child;
   final EdgeInsets? padding;

@@ -61,16 +61,13 @@ class ScheduleWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Row(
             children: [
               Expanded(
                 child: Text(
                   schedule.name,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: const TextStyle(fontSize: 15),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -98,7 +95,10 @@ class ScheduleWidget extends StatelessWidget {
             ],
           ),
         ),
-        Divider(color: CupertinoColors.systemGrey, height: 1),
+        Divider(
+          color: CupertinoColors.systemGrey.withValues(alpha: 0.5),
+          height: 1,
+        ),
       ],
     );
   }

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 class AppTheme {
   AppTheme._();
 
+  static const double defaultBorderRadius = 12;
+
   /// 主题色 - 主色调 (iOS 蓝色)
   static const Color primaryColor = Color(0xFF007AFF);
 

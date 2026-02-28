@@ -83,7 +83,7 @@ class MediaStatsWidget extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           textAlign: TextAlign.center,
         ),
         Text(

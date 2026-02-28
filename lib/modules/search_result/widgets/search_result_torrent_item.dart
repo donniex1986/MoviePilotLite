@@ -427,15 +427,11 @@ class SearchResultTorrentItem extends StatelessWidget {
     if (!Get.isRegistered<DownloadController>()) {
       Get.put(DownloadController());
     }
-
-    showCupertinoModalBottomSheet<void>(
+    showModalBottomSheet(
+      isScrollControlled: true,
       context: context,
-      builder: (sheetContext) {
-        return SizedBox(
-          height: MediaQuery.of(sheetContext).size.height * 0.85,
-          child: DownloadSheet(item: item),
-        );
-      },
+      backgroundColor: Colors.transparent,
+      builder: (context) => DownloadSheet(item: item),
     );
   }
 }

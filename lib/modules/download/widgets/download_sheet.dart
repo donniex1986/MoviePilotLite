@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/download/controllers/download_controller.dart';
 import 'package:moviepilot_mobile/modules/search_result/models/search_result_models.dart';
+import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 
 class DownloadSheet extends GetView<DownloadController> {
@@ -14,111 +15,84 @@ class DownloadSheet extends GetView<DownloadController> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
-
-    return Material(
-      color: theme.scaffoldBackgroundColor,
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // 标题栏
-            _buildHeader(context, primaryColor),
-            // 内容区域
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 16),
-                    // 媒体信息（完整种子信息）
-                    _buildMediaInfo(context),
-                    const SizedBox(height: 24),
-                    // 下载器选择（横向 chips）
-                    _buildDownloaderSelector(context, primaryColor),
-                    const SizedBox(height: 20),
-                    // 保存目录选择（横向 chips）
-                    _buildDirectorySelector(context, primaryColor),
-                    const SizedBox(height: 20),
-                    // 高级选项（可展开）
-                    _buildAdvancedOptions(context, primaryColor),
-                    const SizedBox(height: 24),
-                    // 开始下载按钮
-                    _buildDownloadButton(context, primaryColor),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+    final cardColor = theme.scaffoldBackgroundColor;
+    return DraggableScrollableSheet(
+      controller: controller.scrollController,
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.8,
+      snap: true,
+      expand: false,
+      builder: (context, scrollController) => Expanded(
+        child: Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            shrinkWrap: true,
+            controller: scrollController,
+            children: [
+              _buildHeader(context, primaryColor),
+              const SizedBox(height: 5),
+              Divider(
+                color: CupertinoColors.separator.resolveFrom(context),
+                height: 1,
               ),
-            ),
-          ],
+              const SizedBox(height: 16), // 媒体信息（完整种子信息）
+              _buildMediaInfo(context),
+              const SizedBox(height: 24),
+              // 下载器选择（横向 chips）_buildDownloaderSelector(context, primaryColor),
+              _buildDownloaderSelector(context, primaryColor),
+              const SizedBox(height: 20),
+              // 保存目录选择（横向 chips）
+              _buildDirectorySelector(context, primaryColor),
+              const SizedBox(height: 20),
+              // 高级选项（可展开）
+              _buildAdvancedOptions(context, primaryColor),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context, Color accentColor) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: CupertinoColors.separator.withOpacity(0.2),
-            width: 0.5,
+    return Row(
+      children: [
+        SizedBox(width: 16),
+        Container(
+          width: 5,
+          height: 20,
+          decoration: BoxDecoration(
+            color: accentColor,
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
-      ),
-      child: Row(
-        children: [
-          Icon(CupertinoIcons.cloud_download, color: accentColor, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '确认下载',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: CupertinoColors.label.resolveFrom(context),
-              ),
-            ),
-          ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            minSize: 0,
-            onPressed: () => Get.back(),
-            child: Icon(
-              CupertinoIcons.xmark,
-              size: 20,
-              color: CupertinoColors.secondaryLabel.resolveFrom(context),
-            ),
-          ),
-        ],
-      ),
+        const SizedBox(width: 12),
+        Text('下载', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        const Spacer(),
+        _buildDownloadButton(context, accentColor),
+        const SizedBox(width: 16),
+      ],
     );
   }
 
   Widget _buildMediaInfo(BuildContext context) {
-    final torrent = item.torrent_info;
-    final meta = item.meta_info;
-    final title = torrent?.title ?? meta?.title ?? '';
-    final description = meta?.subtitle ?? meta?.name ?? '';
-    final size = torrent?.size ?? 0.0;
-    final seeders = torrent?.seeders ?? 0;
-    final peers = torrent?.peers ?? 0;
-    final grabs = torrent?.grabs ?? 0;
-    final siteName = torrent?.site_name ?? '未知站点';
-    final pubdate = torrent?.pubdate ?? '';
-    final volumeFactor = torrent?.volume_factor ?? '';
-    final downloadFactor = torrent?.downloadvolumefactor ?? 1.0;
-    final uploadFactor = torrent?.uploadvolumefactor ?? 1.0;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey6.resolveFrom(context),
-        borderRadius: BorderRadius.circular(12),
-      ),
+    final title = item.torrent_info?.title ?? '';
+    final description = item.torrent_info?.description ?? '';
+    final size = item.torrent_info?.size ?? 0.0;
+    final siteName = item.torrent_info?.site_name ?? '未知站点';
+    final seeders = item.torrent_info?.seeders ?? 0;
+    final peers = item.torrent_info?.peers ?? 0;
+    final grabs = item.torrent_info?.grabs ?? 0;
+    final pubdate = item.torrent_info?.pubdate ?? '';
+    final volumeFactor = item.torrent_info?.volume_factor ?? '';
+    final downloadFactor = item.torrent_info?.downloadvolumefactor ?? 1.0;
+    final uploadFactor = item.torrent_info?.uploadvolumefactor ?? 1.0;
+    return Section(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -191,21 +165,21 @@ class DownloadSheet extends GetView<DownloadController> {
                 _buildInfoChip(
                   context,
                   icon: CupertinoIcons.arrow_up,
-                  label: '↑$seeders',
+                  label: '$seeders',
                   color: CupertinoColors.systemGreen,
                 ),
               if (peers > 0)
                 _buildInfoChip(
                   context,
                   icon: CupertinoIcons.arrow_down,
-                  label: '↓$peers',
+                  label: '$peers',
                   color: CupertinoColors.systemRed,
                 ),
               if (grabs > 0)
                 _buildInfoChip(
                   context,
-                  icon: CupertinoIcons.download_circle,
-                  label: '下载 $grabs',
+                  icon: CupertinoIcons.arrow_down,
+                  label: '$grabs',
                 ),
               if (pubdate.isNotEmpty)
                 _buildInfoChip(
@@ -555,7 +529,7 @@ class DownloadSheet extends GetView<DownloadController> {
 
       return SizedBox(
         height: 50,
-        child: CupertinoButton.filled(
+        child: TextButton(
           onPressed: (isDownloading || !hasDownloader)
               ? null
               : () => controller.startDownload(
@@ -564,10 +538,11 @@ class DownloadSheet extends GetView<DownloadController> {
                       ? null
                       : controller.tmdbId.value,
                 ),
-          color: accentColor,
-          borderRadius: BorderRadius.circular(12),
+
           child: isDownloading
-              ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+              ? const CupertinoActivityIndicator(
+                  color: Color.fromARGB(255, 77, 58, 58),
+                )
               : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

@@ -13,7 +13,7 @@ import 'package:moviepilot_mobile/utils/toast_util.dart';
 class DownloadController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
   final _log = Get.find<AppLog>();
-
+  final scrollController = DraggableScrollableController();
   // 下载器列表（使用 DownloadClient）
   final downloaders = <DownloadClient>[].obs;
   final selectedDownloader = Rxn<DownloadClient>();
