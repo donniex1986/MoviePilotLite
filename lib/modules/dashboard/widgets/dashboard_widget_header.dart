@@ -18,7 +18,7 @@ class DashboardWidgetHeader extends StatelessWidget {
         SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
         if (onTapMore != null) ...[
           Spacer(),
