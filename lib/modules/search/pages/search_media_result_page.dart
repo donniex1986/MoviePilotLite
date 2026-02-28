@@ -19,7 +19,6 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
   const SearchMediaResultPage({super.key});
 
   static const double _horizontalPadding = 16;
-  static const double _cardSpacing = 12;
 
   @override
   Widget build(BuildContext context) {
