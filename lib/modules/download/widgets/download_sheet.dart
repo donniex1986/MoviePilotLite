@@ -59,12 +59,6 @@ class DownloadSheet extends GetView<DownloadController> {
   }
 
   Widget _buildHeader(BuildContext context, Color accentColor) {
-    final mediaInfo = item.media_info;
-    final metaInfo = item.meta_info;
-    final title =
-        mediaInfo?.title ?? metaInfo?.title ?? metaInfo?.cn_name ?? '';
-    final year = mediaInfo?.year ?? metaInfo?.year ?? '';
-
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
       decoration: BoxDecoration(
@@ -80,30 +74,13 @@ class DownloadSheet extends GetView<DownloadController> {
           Icon(CupertinoIcons.cloud_download, color: accentColor, size: 20),
           const SizedBox(width: 8),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '确认下载',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.label.resolveFrom(context),
-                  ),
-                ),
-                if (title.isNotEmpty || year.isNotEmpty)
-                  Text(
-                    '${title.isNotEmpty ? title : ''}${year.isNotEmpty ? ' ($year)' : ''}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: CupertinoColors.secondaryLabel.resolveFrom(
-                        context,
-                      ),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-              ],
+            child: Text(
+              '确认下载',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: CupertinoColors.label.resolveFrom(context),
+              ),
             ),
           ),
           CupertinoButton(
@@ -185,7 +162,9 @@ class DownloadSheet extends GetView<DownloadController> {
                     description,
                     style: TextStyle(
                       fontSize: 13,
-                      color: CupertinoColors.secondaryLabel.resolveFrom(context),
+                      color: CupertinoColors.secondaryLabel.resolveFrom(
+                        context,
+                      ),
                     ),
                   ),
                 ),
@@ -261,8 +240,8 @@ class DownloadSheet extends GetView<DownloadController> {
     required String label,
     Color? color,
   }) {
-    final chipColor = color ??
-        CupertinoColors.secondaryLabel.resolveFrom(context);
+    final chipColor =
+        color ?? CupertinoColors.secondaryLabel.resolveFrom(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -457,9 +436,7 @@ class DownloadSheet extends GetView<DownloadController> {
               : CupertinoColors.systemGrey6.resolveFrom(context),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected
-                ? accentColor
-                : accentColor.withOpacity(0.3),
+            color: isSelected ? accentColor : accentColor.withOpacity(0.3),
             width: isSelected ? 0 : 1,
           ),
         ),
@@ -582,11 +559,11 @@ class DownloadSheet extends GetView<DownloadController> {
           onPressed: (isDownloading || !hasDownloader)
               ? null
               : () => controller.startDownload(
-                    item: item,
-                    customTmdbId: controller.tmdbId.value.isEmpty
-                        ? null
-                        : controller.tmdbId.value,
-                  ),
+                  item: item,
+                  customTmdbId: controller.tmdbId.value.isEmpty
+                      ? null
+                      : controller.tmdbId.value,
+                ),
           color: accentColor,
           borderRadius: BorderRadius.circular(12),
           child: isDownloading

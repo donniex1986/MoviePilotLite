@@ -173,7 +173,11 @@ class DownloadController extends GetxController {
 
       _log.info('下载请求 payload: $payload');
 
-      final response = await _apiClient.post('/api/v1/download', data: payload);
+      final response = await _apiClient.post(
+        item.media_info != null ? '/api/v1/download' : '/api/v1/download/add',
+        data: payload,
+        timeout: 120,
+      );
 
       _log.info(
         '下载响应状态码: ${response.statusCode}, 响应头: ${response.headers}, 数据: ${response.data}',
@@ -236,10 +240,20 @@ class DownloadController extends GetxController {
       }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.back();
-        Future.delayed(const Duration(seconds: 1), () {
-          ToastUtil.success('下载任务已创建');
-        });
+        if (response.data['success'] == true) {
+          Get.back();
+          Future.delayed(const Duration(seconds: 1), () {
+            ToastUtil.success('下载任务已创建');
+          });
+        } else {
+          final errorMsg = response.data is Map
+              ? (response.data as Map)['message'] ??
+                    (response.data as Map)['detail'] ??
+                    '下载失败 (HTTP ${response.statusCode})'
+              : '下载失败 (HTTP ${response.statusCode})';
+          ToastUtil.error(errorMsg);
+          _log.error('下载失败: $errorMsg, 响应数据: ${response.data}');
+        }
       } else {
         final errorMsg = response.data is Map
             ? (response.data as Map)['message'] ??
