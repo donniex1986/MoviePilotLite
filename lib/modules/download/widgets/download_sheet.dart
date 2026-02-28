@@ -23,37 +23,35 @@ class DownloadSheet extends GetView<DownloadController> {
       maxChildSize: 0.8,
       snap: true,
       expand: false,
-      builder: (context, scrollController) => Expanded(
-        child: Container(
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            shrinkWrap: true,
-            controller: scrollController,
-            children: [
-              _buildHeader(context, primaryColor),
-              const SizedBox(height: 5),
-              Divider(
-                color: CupertinoColors.separator.resolveFrom(context),
-                height: 1,
-              ),
-              const SizedBox(height: 16), // 媒体信息（完整种子信息）
-              _buildMediaInfo(context),
-              const SizedBox(height: 24),
-              // 下载器选择（横向 chips）_buildDownloaderSelector(context, primaryColor),
-              _buildDownloaderSelector(context, primaryColor),
-              const SizedBox(height: 20),
-              // 保存目录选择（横向 chips）
-              _buildDirectorySelector(context, primaryColor),
-              const SizedBox(height: 20),
-              // 高级选项（可展开）
-              _buildAdvancedOptions(context, primaryColor),
-              const SizedBox(height: 24),
-            ],
-          ),
+      builder: (context, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shrinkWrap: true,
+          controller: scrollController,
+          children: [
+            _buildHeader(context, primaryColor),
+            const SizedBox(height: 5),
+            Divider(
+              color: CupertinoColors.separator.resolveFrom(context),
+              height: 1,
+            ),
+            const SizedBox(height: 16), // 媒体信息（完整种子信息）
+            _buildMediaInfo(context),
+            const SizedBox(height: 24),
+            // 下载器选择（横向 chips）_buildDownloaderSelector(context, primaryColor),
+            _buildDownloaderSelector(context, primaryColor),
+            const SizedBox(height: 20),
+            // 保存目录选择（横向 chips）
+            _buildDirectorySelector(context, primaryColor),
+            const SizedBox(height: 20),
+            // 高级选项（可展开）
+            _buildAdvancedOptions(context, primaryColor),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
