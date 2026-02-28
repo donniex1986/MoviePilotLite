@@ -101,6 +101,13 @@ class SiteDetailPage extends GetView<SiteDetailController> {
               onSelectablePressed: () {
                 WebUtil.open(url: s.url);
               },
+              selectableIcon: CupertinoIcons.link,
+              onSelectableIconPressed: () {
+                Get.toNamed(
+                  '/web-view',
+                  parameters: {'url': s.url, 'cookie': s.cookie ?? ''},
+                );
+              },
             ),
             _buildInfoRow(context, '优先级', '${s.pri}'),
             _buildInfoRow(context, '状态', s.isActive ? '启用' : '禁用'),
@@ -156,11 +163,14 @@ class SiteDetailPage extends GetView<SiteDetailController> {
     String value, {
     bool withSelectable = false,
     VoidCallback? onSelectablePressed,
+    IconData? selectableIcon,
+    VoidCallback? onSelectableIconPressed,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           SizedBox(
             width: 72,
@@ -172,25 +182,37 @@ class SiteDetailPage extends GetView<SiteDetailController> {
               ),
             ),
           ),
-          Expanded(
-            child: GestureDetector(
-              onTap: withSelectable ? onSelectablePressed : null,
-              child: Text(
-                value,
-                style: TextStyle(
-                  decoration: withSelectable
-                      ? TextDecoration.underline
-                      : null, // ⭐ 底部横线
-                  decorationThickness: withSelectable ? 1.5 : 0,
-                  color: withSelectable
-                      ? Theme.of(context).colorScheme.primary
-                      : null,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+          GestureDetector(
+            onTap: withSelectable ? onSelectablePressed : null,
+            child: Text(
+              value,
+              style: TextStyle(
+                decoration: withSelectable
+                    ? TextDecoration.underline
+                    : null, // ⭐ 底部横线
+                decorationThickness: withSelectable ? 1.5 : 0,
+                color: withSelectable
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
+          if (selectableIcon != null) ...[
+            const SizedBox(width: 15),
+            GestureDetector(
+              onTap: onSelectableIconPressed,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Icon(
+                  selectableIcon,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

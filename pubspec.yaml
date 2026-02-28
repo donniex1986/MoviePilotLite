@@ -31,6 +31,9 @@ dependencies:
   liquid_tabbar_minimize: ^1.0.9
   path_provider: ^2.1.2
   palette_generator: ^0.3.3+7
+  webview_flutter: ^4.4.2
+  webview_flutter_android: ^3.12.0
+  webview_flutter_wkwebview: ^3.9.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

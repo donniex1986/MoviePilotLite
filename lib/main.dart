@@ -11,6 +11,7 @@ import 'package:moviepilot_mobile/modules/search/pages/search_media_result_page.
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
+import 'package:moviepilot_mobile/utils/web_view_screen.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 import 'bindings/app_binding.dart';
@@ -487,10 +488,12 @@ class MyApp extends StatelessWidget {
             final category = Get.parameters['category'] ?? '';
             final args = Get.arguments as Map<String, dynamic>?;
             final title = args?['title'] as String? ?? category;
-            Get.lazyPut(() => SettingsSubListController(
-                  categoryId: category,
-                  pageTitle: title,
-                ));
+            Get.lazyPut(
+              () => SettingsSubListController(
+                categoryId: category,
+                pageTitle: title,
+              ),
+            );
           }),
         ),
         GetPage(
@@ -605,6 +608,15 @@ class MyApp extends StatelessWidget {
               tag: 'form',
             );
           }),
+        ),
+        GetPage(
+          name: '/web-view',
+          page: () {
+            final args = Get.parameters;
+            final url = args['url'] ?? '';
+            final cookie = args['cookie'] ?? '';
+            return WebViewScreen(url: url, cookie: cookie);
+          },
         ),
       ],
       // 配置错误处理
