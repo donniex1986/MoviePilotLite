@@ -5,13 +5,13 @@ import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_api_it
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/search/pages/search_mid_sheet.dart';
-import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
+import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_service.dart';
 import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
-class RecommendItemCard extends GetView<RecommendController> {
+class RecommendItemCard extends GetView<SubscribeService> {
   const RecommendItemCard({
     super.key,
     required this.item,
@@ -42,8 +42,7 @@ class RecommendItemCard extends GetView<RecommendController> {
     }
     return Material(
       child: Obx(() {
-        final subscribeItem =
-            controller.subscribeService.subscribeItems[item!.subscribeKey];
+        final subscribeItem = controller.subscribeItems[item!.subscribeKey];
 
         final isSubscribed = subscribeItem != null && subscribeItem.id != null;
         return CupertinoContextMenu.builder(
@@ -88,7 +87,7 @@ class RecommendItemCard extends GetView<RecommendController> {
       child: InkWell(
         onTap: () async {
           Navigator.pop(context);
-          final ok = await controller.subscribeService.toggleMediaSubscribe(
+          final ok = await controller.toggleMediaSubscribe(
             mediaKey: item!.mediaKey,
             isTv: item?.type == 'tv',
             isSubscribed: isSubscribed,
@@ -100,10 +99,10 @@ class RecommendItemCard extends GetView<RecommendController> {
             subscribeId: subscribeItem?.id?.toString(),
           );
           if (ok && isSubscribed) {
-            controller.subscribeService.subscribeItems[subscribeKey] = null;
+            controller.subscribeItems[subscribeKey] = null;
           }
           if (ok && !isSubscribed) {
-            controller.subscribeService.fetchAndSaveSubscribeStatus(
+            controller.fetchAndSaveSubscribeStatus(
               item!.mediaKey,
               season: item?.season,
               title: item?.title,
