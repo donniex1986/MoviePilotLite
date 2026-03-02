@@ -1,58 +1,51 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 class MixedImgWidget extends StatelessWidget {
-  const MixedImgWidget({super.key, this.imageUrls});
-  final List<String>? imageUrls;
+  const MixedImgWidget({super.key, required this.imageUrls});
+
+  final List<String> imageUrls;
+
   @override
   Widget build(BuildContext context) {
-    if (imageUrls == null || imageUrls!.isEmpty) {
-      return Container();
-    }
-    if (imageUrls!.length == 1) {
-      final imageUrl = imageUrls![0];
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: imageUrl.isNotEmpty
-            ? CachedImage(imageUrl: imageUrl, fit: BoxFit.cover)
-            : Container(
-                color: CupertinoColors.systemGrey6,
-                child: Center(
-                  child: Icon(
-                    CupertinoIcons.collections,
-                    size: 48,
-                    color: CupertinoColors.systemGrey4,
-                  ),
-                ),
-              ),
-      );
-    }
-    // 计算图片数量的平方根作为行/列数，最小为1
-    final count = ((imageUrls?.length ?? 0) > 0)
-        ? (sqrt(imageUrls!.length)).ceil()
-        : 1;
-    // 取图片数量的开方，若为0则设为1
-    final crossAxisCount = count > 0 ? count : 1;
-    return GridView(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        mainAxisSpacing: 2,
-        crossAxisSpacing: 2,
-        childAspectRatio: 1,
+    if (imageUrls.isEmpty) return const SizedBox();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final crossAxisCount = _getCrossAxisCount(imageUrls.length);
+
+          final width = constraints.maxWidth;
+          final height = constraints.maxHeight;
+
+          final itemWidth = width / crossAxisCount;
+
+          final rowCount = (imageUrls.length / crossAxisCount).ceil();
+          final itemHeight = height / rowCount;
+
+          final aspectRatio = itemWidth / itemHeight;
+
+          return GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: imageUrls.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: aspectRatio, // ⭐ 关键
+            ),
+            itemBuilder: (_, index) {
+              return CachedImage(imageUrl: imageUrls[index], fit: BoxFit.cover);
+            },
+          );
+        },
       ),
-      children:
-          imageUrls
-              ?.map(
-                (e) => CachedImage(
-                  imageUrl: e,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              )
-              .toList() ??
-          [],
     );
+  }
+
+  int _getCrossAxisCount(int length) {
+    if (length <= 1) return 1;
+    if (length <= 4) return 2;
+    return 3;
   }
 }
