@@ -50,7 +50,7 @@ class SubscribeController extends GetxController {
   final _log = Get.find<AppLog>();
   final _authRepository = Get.put(AuthRepository());
   final subscribeService = Get.put(SubscribeService());
-  late final SubscribeType subscribeType;
+  var subscribeType = SubscribeType.tv;
 
   final userItems = <SubscribeItem>[].obs;
   final userLoading = false.obs;
