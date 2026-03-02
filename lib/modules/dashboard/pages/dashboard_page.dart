@@ -27,6 +27,7 @@ class DashboardPage extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildNavigationBar(context),
+      floatingActionButton: _buildFloatingActionButton(context),
       body: CustomScrollView(
         slivers: [
           CupertinoSliverRefreshControl(
@@ -43,6 +44,14 @@ class DashboardPage extends GetView<DashboardController> {
           SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
         ],
       ),
+    );
+  }
+
+  /// 构建FloatingActionButton
+  Widget _buildFloatingActionButton(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () => Get.toNamed('/edit-dashboard'),
+      child: const Icon(Icons.settings),
     );
   }
 

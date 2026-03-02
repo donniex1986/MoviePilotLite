@@ -1,10 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 import '../../../theme/app_theme.dart';
@@ -21,51 +19,57 @@ class LoginPage extends GetView<LoginController> {
     return Scaffold(
       body: Obx(() {
         final stepValue = controller.step.value;
+        final isAutoLogin = controller.isAutoLogin.value;
         return Stack(
           fit: StackFit.expand,
           children: [
             _buildBackground(context),
-            SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 24,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (stepValue == 2) _buildBackButton(context),
-                        const SizedBox(height: 24),
-                        _buildHeader(context),
-                        const SizedBox(height: 32),
-                        if (stepValue == 1) ...[
-                          _buildServerStep(context),
-                          const SizedBox(height: 16),
-                          _buildProfilePicker(context),
-                        ] else ...[
-                          _buildCredentialsStep(context),
-                          const SizedBox(height: 16),
-                          _buildProfilePicker(context),
+            if (isAutoLogin)
+              Center(
+                child: CupertinoActivityIndicator(color: CupertinoColors.white),
+              )
+            else
+              SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 24,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (stepValue == 2) _buildBackButton(context),
                           const SizedBox(height: 24),
-                          Obx(
-                            () => CustomButton(
-                              text: '登录并保存',
-                              icon: CupertinoIcons.check_mark,
-                              isLoading: controller.isLoading.value,
-                              onPressed: () => controller.submitLogin(),
-                              borderRadius: 12,
+                          _buildHeader(context),
+                          const SizedBox(height: 32),
+                          if (stepValue == 1) ...[
+                            _buildServerStep(context),
+                            const SizedBox(height: 16),
+                            _buildProfilePicker(context),
+                          ] else ...[
+                            _buildCredentialsStep(context),
+                            const SizedBox(height: 16),
+                            _buildProfilePicker(context),
+                            const SizedBox(height: 24),
+                            Obx(
+                              () => CustomButton(
+                                text: '登录并保存',
+                                icon: CupertinoIcons.check_mark,
+                                isLoading: controller.isLoading.value,
+                                onPressed: () => controller.submitLogin(),
+                                borderRadius: 12,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         );
       }),

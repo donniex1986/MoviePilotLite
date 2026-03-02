@@ -41,6 +41,7 @@ class LoginController extends GetxController {
 
   /// 当前步骤：1=仅服务器，2=账号密码
   final step = 1.obs;
+  final isAutoLogin = false.obs;
 
   /// 壁纸 URL 列表
   final wallpapers = <String>[].obs;
@@ -68,7 +69,10 @@ class LoginController extends GetxController {
       if (json != null && json.isNotEmpty) {
         final decoded = jsonDecode(json);
         list = decoded is List
-            ? decoded.whereType<String>().where((s) => s.startsWith('http')).toList()
+            ? decoded
+                  .whereType<String>()
+                  .where((s) => s.startsWith('http'))
+                  .toList()
             : <String>[];
       }
 
@@ -87,7 +91,10 @@ class LoginController extends GetxController {
     if (wallpapers.isEmpty) return;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(kLoginWallpapersKey, jsonEncode(wallpapers.toList()));
+      await prefs.setString(
+        kLoginWallpapersKey,
+        jsonEncode(wallpapers.toList()),
+      );
     } catch (e) {
       _talker.warning('保存壁纸缓存失败: $e');
     }
@@ -162,6 +169,8 @@ class LoginController extends GetxController {
 
     // 尝试使用保存的accessToken获取用户信息
     isLoading.value = true;
+
+    isAutoLogin.value = true;
     try {
       final userInfo = await _repository.getUserGlobalConfig(
         server: latestProfile.server,
@@ -193,6 +202,7 @@ class LoginController extends GetxController {
       _talker.warning('自动登录失败，需要用户手动登录: $e');
     } finally {
       isLoading.value = false;
+      isAutoLogin.value = false;
     }
   }
 
