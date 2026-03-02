@@ -6,7 +6,10 @@ import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
+import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_api_item_ext.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
+import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:path_provider/path_provider.dart';
@@ -91,6 +94,8 @@ class RecommendController extends GetxController {
   final itemsByKey = <String, List<RecommendApiItem>>{}.obs;
   final isLoadingByKey = <String, bool>{}.obs;
   final errorByKey = <String, String?>{}.obs;
+
+  final subscribeController = Get.put(SubscribeController());
 
   Future<void> _requestQueue = Future.value();
   final _pendingKeys = <String>{};
@@ -199,6 +204,7 @@ class RecommendController extends GetxController {
   }
 
   void prefetchCurrentCategory({bool forceRefresh = false}) {
+    _refreshUserCookie();
     for (final subCategory in currentSubCategories) {
       ensureSubCategoryLoaded(subCategory, forceRefresh: forceRefresh);
     }
@@ -454,11 +460,14 @@ class RecommendController extends GetxController {
       final category = _categoryForSubCategory(subCategory);
       final fallbackMediaType = category?.label ?? '电影';
       final items = _parseItems(list, fallbackMediaType: fallbackMediaType);
+      ensureUserCookieRefreshed();
 
       itemsByKey[key] = items;
       itemsByKey.refresh();
       _lastFetchAt[key] = DateTime.now();
-      ensureUserCookieRefreshed();
+      for (final item in items) {
+        _fetchItemsSubscribeStatus(item);
+      }
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '推荐数据请求异常');
       errorByKey[key] = '请求异常';
@@ -547,5 +556,13 @@ class RecommendController extends GetxController {
       if (category.subCategories.contains(subCategory)) return category;
     }
     return null;
+  }
+
+  _fetchItemsSubscribeStatus(RecommendApiItem item) {
+    subscribeController.fetchAndSaveSubscribeStatus(
+      item.mediaKey,
+      season: item.season,
+      title: item.title,
+    );
   }
 }

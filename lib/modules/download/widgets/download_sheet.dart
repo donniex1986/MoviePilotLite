@@ -5,6 +5,8 @@ import 'package:moviepilot_mobile/modules/download/controllers/download_controll
 import 'package:moviepilot_mobile/modules/search_result/models/search_result_models.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
+import 'package:moviepilot_mobile/widgets/bottom_sheet.dart';
+import 'package:moviepilot_mobile/widgets/section_header.dart';
 
 class DownloadSheet extends GetView<DownloadController> {
   const DownloadSheet({super.key, required this.item});
@@ -15,31 +17,13 @@ class DownloadSheet extends GetView<DownloadController> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
-    final cardColor = theme.scaffoldBackgroundColor;
-    return DraggableScrollableSheet(
-      controller: controller.scrollController,
-      initialChildSize: 0.6,
-      minChildSize: 0.3,
-      maxChildSize: 0.8,
-      snap: true,
-      expand: false,
-      builder: (context, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+    return BottomSheetWidget(
+      header: _buildHeader(context, primaryColor),
+      scrollController: controller.scrollController,
+      builder: (context, scrollController) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shrinkWrap: true,
-          controller: scrollController,
           children: [
-            _buildHeader(context, primaryColor),
-            const SizedBox(height: 5),
-            Divider(
-              color: CupertinoColors.separator.resolveFrom(context),
-              height: 1,
-            ),
-            const SizedBox(height: 16), // 媒体信息（完整种子信息）
             _buildMediaInfo(context),
             const SizedBox(height: 24),
             // 下载器选择（横向 chips）_buildDownloaderSelector(context, primaryColor),
@@ -58,23 +42,9 @@ class DownloadSheet extends GetView<DownloadController> {
   }
 
   Widget _buildHeader(BuildContext context, Color accentColor) {
-    return Row(
-      children: [
-        SizedBox(width: 16),
-        Container(
-          width: 5,
-          height: 20,
-          decoration: BoxDecoration(
-            color: accentColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text('下载', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        const Spacer(),
-        _buildDownloadButton(context, accentColor),
-        const SizedBox(width: 16),
-      ],
+    return SectionHeader(
+      title: '下载',
+      trailing: _buildDownloadButton(context, accentColor),
     );
   }
 

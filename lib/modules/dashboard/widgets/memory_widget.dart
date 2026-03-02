@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/widgets/dashboard_section.dart';
-import 'package:moviepilot_mobile/modules/dashboard/widgets/dashboard_widget_header.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
@@ -12,12 +11,12 @@ import '../controllers/dashboard_controller.dart';
 class MemoryWidget extends StatelessWidget {
   const MemoryWidget({super.key});
   Widget _buildInfo(BuildContext context) {
-    final controller = Get.find<DashboardController>();
+    final controller = Get.put(DashboardController());
 
     return Obx(() {
       final memoryData = controller.memoryData;
-      final memoryUsed = memoryData[0];
-      final memoryUsage = memoryData[1];
+      final memoryUsed = memoryData.first;
+      final memoryUsage = memoryData.last;
       final chartData = controller.memoryChartData;
 
       // 假设总内存为16GB（实际应该从API获取）

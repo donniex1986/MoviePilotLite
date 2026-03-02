@@ -118,6 +118,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsFlutterBinding.ensureInitialized();
     // 获取Talker实例
     final talker = Get.find<AppLog>();
 

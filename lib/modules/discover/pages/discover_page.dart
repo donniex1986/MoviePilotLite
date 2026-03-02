@@ -33,6 +33,9 @@ class DiscoverPage extends GetView<DiscoverController> {
       body: CustomScrollView(
         controller: scrollController,
         slivers: [
+          CupertinoSliverRefreshControl(
+            onRefresh: () async => controller.loadCurrent(forceRefresh: true),
+          ),
           SliverToBoxAdapter(child: Obx(() => _buildFilterSummary(context))),
           SliverToBoxAdapter(child: Obx(() => _buildSection(context))),
           SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
@@ -57,6 +60,13 @@ class DiscoverPage extends GetView<DiscoverController> {
         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       centerTitle: false,
+      actions: [
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => _openFilterSheet(context),
+          child: const Icon(Icons.filter_list),
+        ),
+      ],
     );
   }
 
@@ -74,57 +84,42 @@ class DiscoverPage extends GetView<DiscoverController> {
       child: InkWell(
         onTap: () => _openFilterSheet(context),
         borderRadius: BorderRadius.circular(18),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppTheme.borderColor.withOpacity(0.4)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: accent.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
               ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: accent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.tune, size: 18, color: accent),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    children: [
-                      if (visibleParts.isEmpty)
-                        _buildSummaryChip(context, summary)
-                      else ...[
-                        for (final part in visibleParts)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _buildSummaryChip(context, part),
-                          ),
-                        if (remaining > 0)
-                          _buildSummaryChip(context, '+$remaining'),
-                      ],
+              child: Icon(Icons.tune, size: 18, color: accent),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
+                    if (visibleParts.isEmpty)
+                      _buildSummaryChip(context, summary)
+                    else ...[
+                      for (final part in visibleParts)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _buildSummaryChip(context, part),
+                        ),
+                      if (remaining > 0)
+                        _buildSummaryChip(context, '+$remaining'),
                     ],
-                  ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 4),
-              Icon(Icons.chevron_right, size: 18, color: accent),
-            ],
-          ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, size: 18, color: accent),
+          ],
         ),
       ),
     );
@@ -138,7 +133,7 @@ class DiscoverPage extends GetView<DiscoverController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader(context, title: '探索结果'),
+        _buildSectionHeader(context, title: '探索'),
         if (items.isEmpty && isLoading)
           _buildLoadingGrid(context)
         else if (items.isEmpty && errorText != null)
@@ -171,26 +166,6 @@ class DiscoverPage extends GetView<DiscoverController> {
               title,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          InkWell(
-            onTap: () => controller.loadCurrent(forceRefresh: true),
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              child: Row(
-                children: [
-                  Text(
-                    '刷新',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: _accentColor(context),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(Icons.refresh, size: 18, color: _accentColor(context)),
-                ],
               ),
             ),
           ),
@@ -278,50 +253,50 @@ class DiscoverPage extends GetView<DiscoverController> {
       case DiscoverSource.tmdb:
         return _joinSummary([
           source.label,
-          _fallbackText(filters.mediaType, '全部类型'),
+          _fallbackText(filters.mediaType, '类型:全部'),
           _labelForSort(_tmdbSortLabels(filters.mediaType), filters.sortBy),
           _formatListWithOptions(
             filters.selectedGenres,
             _tmdbGenreOptions(filters.mediaType),
-            '全部风格',
+            '风格:全部',
           ),
           _formatListWithOptions(
             filters.selectedLanguages,
             DiscoverFilterDefines.tmdbLanguageOptions,
-            '全部语言',
+            '语言:全部',
           ),
           _formatRating(filters.voteAverage),
         ]);
       case DiscoverSource.douban:
         return _joinSummary([
           source.label,
-          _fallbackText(filters.mediaType, '全部类型'),
+          _fallbackText(filters.mediaType, '类型:全部'),
           _labelForSort(DiscoverFilterDefines.doubanSortLabels, filters.sortBy),
           _formatListWithOptions(
             filters.selectedGenres,
             DiscoverFilterDefines.doubanGenreOptions,
-            '全部风格',
+            '风格:全部',
           ),
           _formatListWithOptions(
             filters.selectedRegions,
             DiscoverFilterDefines.regionOptions,
-            '全部地区',
+            '地区:全部',
           ),
           _labelForOptionValue(
             filters.selectedDecade,
             DiscoverFilterDefines.decadeOptions,
-            '全部年代',
+            '年代:全部',
           ),
         ]);
       case DiscoverSource.bangumi:
         return _joinSummary([
           source.label,
-          _fallbackText(filters.bangumiCategory, '全部类别'),
+          _fallbackText(filters.bangumiCategory, '类别:全部'),
           _labelForSort(
             DiscoverFilterDefines.bangumiSortLabels,
             filters.sortBy,
           ),
-          _fallbackText(filters.bangumiYear, '全部年份'),
+          _fallbackText(filters.bangumiYear, '年份:全部'),
         ]);
     }
   }
@@ -401,14 +376,13 @@ class DiscoverPage extends GetView<DiscoverController> {
   }
 
   Widget _buildSummaryChip(BuildContext context, String label) {
+    final color = Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceVariant,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.4),
-        ),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: color),
       ),
       child: Text(
         label,

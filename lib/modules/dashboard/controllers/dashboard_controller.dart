@@ -46,7 +46,7 @@ class DashboardController extends GetxController {
   final networkTraffic = <int>[0, 0].obs;
 
   /// 内存数据 [内存占用(字节), 使用率(%)]
-  final memoryData = <int>[].obs;
+  final memoryData = <int>[0, 0].obs;
 
   /// 下载器数据
   final downloaderData = <String, dynamic>{}.obs;
@@ -149,7 +149,7 @@ class DashboardController extends GetxController {
 
   /// 启动周期性刷新
   void _startPeriodicRefresh() {
-    final duration = const Duration(seconds: 5);
+    final duration = const Duration(seconds: kDebugMode ? 1000000 : 5);
     // 初始化定时任务队列，每5秒获取一次数据，根据开关配置获取对应的数据
     _cpuTimer = Timer.periodic(duration, (_) {
       _loadDataBasedOnConfig();

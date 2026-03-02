@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_api_item_ext.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
@@ -21,14 +21,15 @@ class RecommendPage extends GetView<RecommendController> {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.ensureUserCookieRefreshed();
-    });
     return Scaffold(
       appBar: _buildNavigationBar(context),
       body: CustomScrollView(
         controller: scrollController,
         slivers: [
+          CupertinoSliverRefreshControl(
+            onRefresh: () async =>
+                controller.prefetchCurrentCategory(forceRefresh: true),
+          ),
           SliverToBoxAdapter(child: Obx(() => _buildCategoryBar(context))),
           const SliverToBoxAdapter(child: SizedBox(height: 6)),
           SliverToBoxAdapter(child: _buildSectionList(context)),
@@ -54,6 +55,21 @@ class RecommendPage extends GetView<RecommendController> {
         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       centerTitle: false,
+      actions: [
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: const Icon(Icons.tune),
+          onPressed: () => showModalBottomSheet(
+            isScrollControlled: true,
+            context: context,
+            backgroundColor: Colors.transparent,
+            builder: (context) => RecommondCategoryGroupEditPannelWidget(
+              sheetContext: context,
+              controller: controller,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -62,42 +78,24 @@ class RecommendPage extends GetView<RecommendController> {
     final selectedCategory = controller.selectedCategory.value;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 8, 6),
-      child: Row(
-        children: [
-          Expanded(
-            child: SizedBox(
-              height: 46,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  final selected = selectedCategory == category;
-                  return _buildCategoryTab(
-                    context: context,
-                    label: category.label,
-                    icon: _iconForCategory(category),
-                    selected: selected,
-                    onTap: () => controller.selectCategory(category),
-                  );
-                },
-                separatorBuilder: (_, __) => const SizedBox(width: 18),
-                itemCount: categories.length,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () => showCupertinoModalBottomSheet(
+      child: SizedBox(
+        height: 46,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            final selected = selectedCategory == category;
+            return _buildCategoryTab(
               context: context,
-              builder: (sheetContext) => RecommondCategoryGroupEditPannelWidget(
-                sheetContext: sheetContext,
-                controller: controller,
-              ),
-            ),
-            icon: const Icon(Icons.tune),
-            color: AppTheme.textSecondaryColor,
-            tooltip: '筛选',
-          ),
-        ],
+              label: category.label,
+              icon: _iconForCategory(category),
+              selected: selected,
+              onTap: () => controller.selectCategory(category),
+            );
+          },
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemCount: categories.length,
+        ),
       ),
     );
   }
@@ -112,6 +110,11 @@ class RecommendPage extends GetView<RecommendController> {
     final color = selected
         ? _accentColor(context)
         : AppTheme.textSecondaryColor;
+    final style = TextStyle(
+      color: color,
+      fontSize: selected ? 16 : 14,
+      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+    );
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -125,14 +128,7 @@ class RecommendPage extends GetView<RecommendController> {
               children: [
                 Icon(icon, size: 20, color: color),
                 const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text(label, style: style),
               ],
             ),
             const SizedBox(height: 6),
@@ -231,7 +227,11 @@ class RecommendPage extends GetView<RecommendController> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Icon(Icons.chevron_right, size: 18, color: _accentColor(context)),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: _accentColor(context),
+                  ),
                 ],
               ),
             ),
@@ -248,7 +248,11 @@ class RecommendPage extends GetView<RecommendController> {
                 ),
               ),
               const SizedBox(width: 4),
-              Icon(Icons.chevron_right, size: 18, color: AppTheme.textSecondaryColor),
+              Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: AppTheme.textSecondaryColor,
+              ),
             ],
           ),
       ],

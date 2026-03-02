@@ -6,6 +6,8 @@ import 'package:moviepilot_mobile/modules/discover/defines/discover_filter_defin
 import 'package:moviepilot_mobile/modules/discover/models/discover_filters.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/widgets/bottom_sheet.dart';
+import 'package:moviepilot_mobile/widgets/section_header.dart';
 
 class DiscoverFilterSelection {
   const DiscoverFilterSelection({
@@ -103,230 +105,210 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         ? DiscoverFilterDefines.tmdbTvGenreOptions
         : DiscoverFilterDefines.tmdbMovieGenreOptions;
     _syncVoteCountText(_filters.voteCount);
-    return SizedBox(
-      height: height,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('筛选条件'),
-          automaticallyImplyLeading: false,
-          actions: [
-            TextButton(
-              onPressed: _apply,
-              style: TextButton.styleFrom(
-                foregroundColor: _accentColorOf(context),
+    return BottomSheetWidget(
+      header: SectionHeader(
+        title: '筛选条件',
+        trailing: TextButton(
+          onPressed: _apply,
+          style: TextButton.styleFrom(foregroundColor: _accentColorOf(context)),
+          child: const Text(
+            '应用',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+      builder: (context, scrollController) => ListView(
+        controller: scrollController,
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 20 + bottomPadding),
+        children: [
+          _buildSourceSegmented(),
+          const SizedBox(height: 16),
+          if (_source == DiscoverSource.tmdb) ...[
+            _buildSectionBlock(
+              context,
+              title: '类型',
+              color: _typeColor,
+              trailing: _buildPopupMenu(
+                options: DiscoverFilterDefines.typeOptions,
+                selected: _filters.mediaType,
+                color: _typeColor,
+                placeholder: '全部类型',
+                onSelect: (value) =>
+                    _setFilters(_filters.copyWith(mediaType: value)),
               ),
-              child: const Text(
-                '应用',
-                style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            _buildSectionBlock(
+              context,
+              title: '排序',
+              color: _sortColor,
+              trailing: _buildPopupMenu(
+                options: tmdbSortOptions,
+                selected: _filters.sortBy,
+                color: _sortColor,
+                placeholder: '排序',
+                onSelect: (value) =>
+                    _setFilters(_filters.copyWith(sortBy: value)),
+              ),
+            ),
+            _buildSectionBlock(
+              context,
+              title: '风格',
+              color: _genreColor,
+              child: _buildSingleSelectChips(
+                options: tmdbGenreOptions,
+                selected: _firstOrEmpty(_filters.selectedGenres),
+                color: _genreColor,
+                allowEmpty: true,
+                subtle: true,
+                onSelect: (value) => _setFilters(
+                  _filters.copyWith(
+                    selectedGenres: value.isEmpty ? const [] : <String>[value],
+                  ),
+                ),
+              ),
+            ),
+            _buildSectionBlock(
+              context,
+              title: '语言',
+              color: _languageColor,
+              child: _buildSingleSelectChips(
+                options: DiscoverFilterDefines.tmdbLanguageOptions,
+                selected: _firstOrEmpty(_filters.selectedLanguages),
+                color: _languageColor,
+                allowEmpty: true,
+                onSelect: (value) => _setFilters(
+                  _filters.copyWith(
+                    selectedLanguages: value.isEmpty
+                        ? const []
+                        : <String>[value],
+                  ),
+                ),
+              ),
+            ),
+            _buildSectionBlock(
+              context,
+              title: '评分',
+              color: _ratingColor,
+              child: _buildRatingControl(context),
+            ),
+          ],
+          if (_source == DiscoverSource.douban) ...[
+            _buildSectionBlock(
+              context,
+              title: '类型',
+              color: _typeColor,
+              trailing: _buildPopupMenu(
+                options: DiscoverFilterDefines.typeOptions,
+                selected: _filters.mediaType,
+                color: _typeColor,
+                placeholder: '全部类型',
+                onSelect: (value) =>
+                    _setFilters(_filters.copyWith(mediaType: value)),
+              ),
+            ),
+            _buildSectionBlock(
+              context,
+              title: '排序',
+              color: _sortColor,
+              trailing: _buildPopupMenu(
+                options: DiscoverFilterDefines.doubanSortOptions,
+                selected: _filters.sortBy,
+                color: _sortColor,
+                placeholder: '排序',
+                onSelect: (value) =>
+                    _setFilters(_filters.copyWith(sortBy: value)),
+              ),
+            ),
+            _buildSectionBlock(
+              context,
+              title: '风格',
+              color: _genreColor,
+              child: _buildSingleSelectChips(
+                options: DiscoverFilterDefines.doubanGenreOptions,
+                selected: _firstOrEmpty(_filters.selectedGenres),
+                color: _genreColor,
+                allowEmpty: true,
+                subtle: true,
+                onSelect: (value) => _setFilters(
+                  _filters.copyWith(
+                    selectedGenres: value.isEmpty ? const [] : <String>[value],
+                  ),
+                ),
+              ),
+            ),
+            _buildSectionBlock(
+              context,
+              title: '地区',
+              color: _regionColor,
+              child: _buildSingleSelectChips(
+                options: DiscoverFilterDefines.regionOptions,
+                selected: _firstOrEmpty(_filters.selectedRegions),
+                color: _regionColor,
+                allowEmpty: true,
+                onSelect: (value) => _setFilters(
+                  _filters.copyWith(
+                    selectedRegions: value.isEmpty ? const [] : <String>[value],
+                  ),
+                ),
+              ),
+            ),
+            _buildSectionBlock(
+              context,
+              title: '年代',
+              color: _decadeColor,
+              child: _buildSingleSelectChips(
+                options: DiscoverFilterDefines.decadeOptions,
+                selected: _filters.selectedDecade,
+                color: _decadeColor,
+                allowEmpty: true,
+                subtle: true,
+                onSelect: (value) =>
+                    _setFilters(_filters.copyWith(selectedDecade: value)),
               ),
             ),
           ],
-        ),
-        body: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, 20 + bottomPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSourceSegmented(),
-                const SizedBox(height: 16),
-                if (_source == DiscoverSource.tmdb) ...[
-                  _buildSectionBlock(
-                    context,
-                    title: '类型',
-                    color: _typeColor,
-                    trailing: _buildPopupMenu(
-                      options: DiscoverFilterDefines.typeOptions,
-                      selected: _filters.mediaType,
-                      color: _typeColor,
-                      placeholder: '全部类型',
-                      onSelect: (value) =>
-                          _setFilters(_filters.copyWith(mediaType: value)),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '排序',
-                    color: _sortColor,
-                    trailing: _buildPopupMenu(
-                      options: tmdbSortOptions,
-                      selected: _filters.sortBy,
-                      color: _sortColor,
-                      placeholder: '排序',
-                      onSelect: (value) =>
-                          _setFilters(_filters.copyWith(sortBy: value)),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '风格',
-                    color: _genreColor,
-                    child: _buildSingleSelectChips(
-                      options: tmdbGenreOptions,
-                      selected: _firstOrEmpty(_filters.selectedGenres),
-                      color: _genreColor,
-                      allowEmpty: true,
-                      subtle: true,
-                      onSelect: (value) => _setFilters(
-                        _filters.copyWith(
-                          selectedGenres: value.isEmpty
-                              ? const []
-                              : <String>[value],
-                        ),
-                      ),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '语言',
-                    color: _languageColor,
-                    child: _buildSingleSelectChips(
-                      options: DiscoverFilterDefines.tmdbLanguageOptions,
-                      selected: _firstOrEmpty(_filters.selectedLanguages),
-                      color: _languageColor,
-                      allowEmpty: true,
-                      onSelect: (value) => _setFilters(
-                        _filters.copyWith(
-                          selectedLanguages: value.isEmpty
-                              ? const []
-                              : <String>[value],
-                        ),
-                      ),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '评分',
-                    color: _ratingColor,
-                    child: _buildRatingControl(context),
-                  ),
-                ],
-                if (_source == DiscoverSource.douban) ...[
-                  _buildSectionBlock(
-                    context,
-                    title: '类型',
-                    color: _typeColor,
-                    trailing: _buildPopupMenu(
-                      options: DiscoverFilterDefines.typeOptions,
-                      selected: _filters.mediaType,
-                      color: _typeColor,
-                      placeholder: '全部类型',
-                      onSelect: (value) =>
-                          _setFilters(_filters.copyWith(mediaType: value)),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '排序',
-                    color: _sortColor,
-                    trailing: _buildPopupMenu(
-                      options: DiscoverFilterDefines.doubanSortOptions,
-                      selected: _filters.sortBy,
-                      color: _sortColor,
-                      placeholder: '排序',
-                      onSelect: (value) =>
-                          _setFilters(_filters.copyWith(sortBy: value)),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '风格',
-                    color: _genreColor,
-                    child: _buildSingleSelectChips(
-                      options: DiscoverFilterDefines.doubanGenreOptions,
-                      selected: _firstOrEmpty(_filters.selectedGenres),
-                      color: _genreColor,
-                      allowEmpty: true,
-                      subtle: true,
-                      onSelect: (value) => _setFilters(
-                        _filters.copyWith(
-                          selectedGenres: value.isEmpty
-                              ? const []
-                              : <String>[value],
-                        ),
-                      ),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '地区',
-                    color: _regionColor,
-                    child: _buildSingleSelectChips(
-                      options: DiscoverFilterDefines.regionOptions,
-                      selected: _firstOrEmpty(_filters.selectedRegions),
-                      color: _regionColor,
-                      allowEmpty: true,
-                      onSelect: (value) => _setFilters(
-                        _filters.copyWith(
-                          selectedRegions: value.isEmpty
-                              ? const []
-                              : <String>[value],
-                        ),
-                      ),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '年代',
-                    color: _decadeColor,
-                    child: _buildSingleSelectChips(
-                      options: DiscoverFilterDefines.decadeOptions,
-                      selected: _filters.selectedDecade,
-                      color: _decadeColor,
-                      allowEmpty: true,
-                      subtle: true,
-                      onSelect: (value) =>
-                          _setFilters(_filters.copyWith(selectedDecade: value)),
-                    ),
-                  ),
-                ],
-                if (_source == DiscoverSource.bangumi) ...[
-                  _buildSectionBlock(
-                    context,
-                    title: '类别',
-                    color: _categoryColor,
-                    child: _buildSingleSelectChips(
-                      options: DiscoverFilterDefines.bangumiCategoryOptions,
-                      selected: _filters.bangumiCategory,
-                      color: _categoryColor,
-                      allowEmpty: true,
-                      onSelect: (value) => _setFilters(
-                        _filters.copyWith(bangumiCategory: value),
-                      ),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '排序',
-                    color: _sortColor,
-                    trailing: _buildPopupMenu(
-                      options: DiscoverFilterDefines.bangumiSortOptions,
-                      selected: _filters.sortBy,
-                      color: _sortColor,
-                      placeholder: '排序',
-                      onSelect: (value) =>
-                          _setFilters(_filters.copyWith(sortBy: value)),
-                    ),
-                  ),
-                  _buildSectionBlock(
-                    context,
-                    title: '年份',
-                    color: _yearColor,
-                    child: _buildSingleSelectChips(
-                      options: DiscoverFilterDefines.bangumiYearOptions,
-                      selected: _filters.bangumiYear,
-                      color: _yearColor,
-                      allowEmpty: true,
-                      onSelect: (value) =>
-                          _setFilters(_filters.copyWith(bangumiYear: value)),
-                    ),
-                  ),
-                ],
-              ],
+          if (_source == DiscoverSource.bangumi) ...[
+            _buildSectionBlock(
+              context,
+              title: '类别',
+              color: _categoryColor,
+              child: _buildSingleSelectChips(
+                options: DiscoverFilterDefines.bangumiCategoryOptions,
+                selected: _filters.bangumiCategory,
+                color: _categoryColor,
+                allowEmpty: true,
+                onSelect: (value) =>
+                    _setFilters(_filters.copyWith(bangumiCategory: value)),
+              ),
             ),
-          ),
-        ),
+            _buildSectionBlock(
+              context,
+              title: '排序',
+              color: _sortColor,
+              trailing: _buildPopupMenu(
+                options: DiscoverFilterDefines.bangumiSortOptions,
+                selected: _filters.sortBy,
+                color: _sortColor,
+                placeholder: '排序',
+                onSelect: (value) =>
+                    _setFilters(_filters.copyWith(sortBy: value)),
+              ),
+            ),
+            _buildSectionBlock(
+              context,
+              title: '年份',
+              color: _yearColor,
+              child: _buildSingleSelectChips(
+                options: DiscoverFilterDefines.bangumiYearOptions,
+                selected: _filters.bangumiYear,
+                color: _yearColor,
+                allowEmpty: true,
+                onSelect: (value) =>
+                    _setFilters(_filters.copyWith(bangumiYear: value)),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -443,9 +425,8 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
             divisions: 10,
             value: _filters.voteAverage.toDouble(),
             label: '${_filters.voteAverage}',
-            onChanged: (value) => _setFilters(
-              _filters.copyWith(voteAverage: value.round()),
-            ),
+            onChanged: (value) =>
+                _setFilters(_filters.copyWith(voteAverage: value.round())),
           ),
         ),
       ],
@@ -474,8 +455,10 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
               isDense: true,
               filled: true,
               fillColor: Theme.of(context).colorScheme.surfaceVariant,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 6,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(

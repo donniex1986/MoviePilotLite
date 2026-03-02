@@ -1,10 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_api_item_ext.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
+import 'package:moviepilot_mobile/modules/search/pages/search_mid_sheet.dart';
+import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
-class RecommendItemCard extends StatelessWidget {
+class RecommendItemCard extends GetView<SubscribeController> {
   const RecommendItemCard({
     super.key,
     required this.item,
@@ -30,26 +36,168 @@ class RecommendItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isPlaceholder) {
+    if (isPlaceholder || item == null) {
       return _buildPlaceholder();
     }
-    return CupertinoContextMenu(
-      actions: [
-        CupertinoContextMenuAction(
-          onPressed: () {
-            Navigator.pop(context);
+    return Material(
+      child: Obx(() {
+        final subscribeItem = controller.subscribeItems[item!.subscribeKey];
+
+        final isSubscribed = subscribeItem != null && subscribeItem.id != null;
+        return CupertinoContextMenu.builder(
+          builder: (context, menuState) {
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onTap,
+              child: _buildContent(),
+            );
           },
-          isDefaultAction: true,
-          trailingIcon: Icons.favorite,
-          child: const Text('订阅'),
+          actions: [
+            Material(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  item?.overview ?? '',
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            _buildSubscribeAction(
+              context,
+              isSubscribed: isSubscribed,
+              subscribeKey: item!.subscribeKey,
+              subscribeItem: subscribeItem,
+            ),
+            _buildSearchAction(context),
+          ],
+        );
+      }),
+    );
+  }
+
+  Widget _buildSubscribeAction(
+    BuildContext context, {
+    required bool isSubscribed,
+    SubscribeItem? subscribeItem,
+    required String subscribeKey,
+  }) {
+    return Material(
+      child: InkWell(
+        onTap: () async {
+          Navigator.pop(context);
+          final ok = await controller.toggleMediaSubscribe(
+            mediaKey: item!.mediaKey,
+            isTv: item?.type == 'tv',
+            isSubscribed: isSubscribed,
+            doubanid: item?.douban_id?.toString(),
+            name: item?.title,
+            season: item?.season,
+            tmdbid: item?.tmdb_id?.toString(),
+            year: item?.year,
+            subscribeId: subscribeItem?.id?.toString(),
+          );
+          if (ok && isSubscribed) {
+            controller.subscribeItems[subscribeKey] = null;
+          }
+          if (ok && !isSubscribed) {
+            controller.fetchAndSaveSubscribeStatus(
+              item!.mediaKey,
+              season: item?.season,
+              title: item?.title,
+            );
+          }
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (ok) {
+              ToastUtil.success(
+                isSubscribed ? '${item?.title} 取消订阅成功' : '${item?.title} 订阅成功',
+              );
+            } else {
+              ToastUtil.error(
+                isSubscribed ? '${item?.title} 取消订阅失败' : '${item?.title} 订阅失败',
+              );
+            }
+          });
+        },
+        child: SizedBox(
+          height: 44,
+          child: Row(
+            children: [
+              SizedBox(width: 16),
+              Text(
+                isSubscribed ? '取消订阅' : '订阅',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isSubscribed ? Colors.red : Colors.grey,
+                ),
+              ),
+              Spacer(),
+              Icon(
+                isSubscribed ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
+                size: 20,
+                color: isSubscribed ? Colors.red : Colors.grey,
+              ),
+              SizedBox(width: 10),
+            ],
+          ),
         ),
-      ],
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: _buildContent(),
       ),
     );
+  }
+
+  Widget _buildSearchAction(BuildContext context) {
+    return Material(
+      child: InkWell(
+        onTap: () {
+          Navigator.pop(context);
+          _openSearch(context);
+        },
+        child: SizedBox(
+          height: 44,
+          child: Row(
+            children: [
+              SizedBox(width: 16),
+              Text('搜索'),
+              Spacer(),
+              Icon(
+                Icons.search,
+                size: 20,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              SizedBox(width: 10),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openSearch(BuildContext context) async {
+    final searchKey = item?.mediaKey;
+    final detail = item;
+    final season = item?.season;
+    final result = await Get.bottomSheet<({String area, List<int> sites})>(
+      SiteSelectSheet(hasSegment: true),
+    );
+    if (result == null) return;
+    final (area, sites) = (result.area, result.sites);
+    if (sites.isEmpty) {
+      ToastUtil.info('请至少选择一个站点');
+      return;
+    }
+    var params = <String, String>{
+      'mediaSearchKey': searchKey ?? '',
+      'area': area,
+      'sites': sites.join(','),
+      'year': detail?.year ?? '',
+      'mtype': detail?.type ?? 'movie',
+      'title': detail?.title ?? '',
+    };
+    if (season != null) {
+      params['season'] = season.toString();
+    }
+    Get.toNamed('/search-media-result', parameters: params);
   }
 
   Widget _buildContent() {
