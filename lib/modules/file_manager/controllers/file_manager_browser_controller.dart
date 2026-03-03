@@ -137,7 +137,6 @@ class FileManagerBrowserController extends GetxController {
         data: {
           'type': 'dir',
           'storage': storage.type,
-          'name': searchKeyword.value,
           'path': currentPath,
         },
       );
@@ -196,15 +195,28 @@ class FileManagerBrowserController extends GetxController {
     return item.path ?? '${currentPath == '/' ? '' : currentPath}/${item.name}';
   }
 
+  /// 本地过滤后的文件列表
+  List<MediaOrganizeFileItem> get filteredFiles {
+    final kw = searchKeyword.value.trim().toLowerCase();
+    if (kw.isEmpty) return files;
+    return files
+        .where((f) =>
+            (f.name ?? '')
+                .toLowerCase()
+                .contains(kw) ||
+            (f.basename ?? '')
+                .toLowerCase()
+                .contains(kw))
+        .toList();
+  }
+
   void onSearch(String keyword) {
     searchKeyword.value = keyword;
-    loadFiles();
   }
 
   void clearSearch() {
     searchController.clear();
     searchKeyword.value = '';
-    loadFiles();
   }
 
   void setSortBy(String by) {
@@ -217,7 +229,9 @@ class FileManagerBrowserController extends GetxController {
     if (size == null || size <= 0) return '';
     if (size < 1024) return '$size B';
     if (size < 1024 * 1024) return '${(size / 1024).toStringAsFixed(1)} KB';
-    if (size < 1024 * 1024 * 1024) return '${(size / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (size < 1024 * 1024 * 1024) {
+      return '${(size / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(size / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
 
@@ -252,7 +266,9 @@ class FileManagerBrowserController extends GetxController {
   String formatModifyTime(double? modifyTime) {
     if (modifyTime == null) return '';
     try {
-      final dt = DateTime.fromMillisecondsSinceEpoch((modifyTime * 1000).toInt());
+      final dt = DateTime.fromMillisecondsSinceEpoch(
+        (modifyTime * 1000).toInt(),
+      );
       return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
     } catch (_) {
       return '';
@@ -264,7 +280,8 @@ class FileManagerBrowserController extends GetxController {
     final storage = selectedStorage.value;
     if (storage == null) return null;
 
-    final path = item.path ?? '${currentPath == '/' ? '' : currentPath}/${item.name}';
+    final path =
+        item.path ?? '${currentPath == '/' ? '' : currentPath}/${item.name}';
     if (path.isEmpty) return null;
 
     try {
@@ -318,6 +335,74 @@ class FileManagerBrowserController extends GetxController {
       return status >= 200 && status < 300;
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '刮削失败');
+      return false;
+    }
+  }
+
+  /// 获取建议名称 - GET /api/v1/transfer/name?path=...&filetype=dir|file
+  Future<String?> getRecognizedName(MediaOrganizeFileItem item) async {
+    final storage = selectedStorage.value;
+    if (storage == null) return null;
+
+    final path =
+        item.path ?? '${currentPath == '/' ? '' : currentPath}/${item.name}';
+    if (path.isEmpty) return null;
+
+    final filetype = _isDirectory(item) ? 'dir' : 'file';
+
+    try {
+      final response = await _apiClient.get<dynamic>(
+        '/api/v1/transfer/name',
+        queryParameters: {'path': path, 'filetype': filetype},
+      );
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300 &&
+          response.data is Map) {
+        final data = response.data as Map;
+        final result = data['data'];
+        if (result is Map && result['name'] != null) {
+          return result['name']?.toString().trim();
+        }
+      }
+      return null;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '获取建议名称失败');
+      return null;
+    }
+  }
+
+  /// 重命名 - POST /api/v1/storage/rename?new_name=...
+  Future<bool> renameFile(
+    MediaOrganizeFileItem file, {
+    required String newName,
+    bool renameDirFiles = false,
+  }) async {
+    final storage = selectedStorage.value;
+    if (storage == null) return false;
+
+    final body = file.toJson();
+    if (body['storage'] == null || (body['storage'] as String).isEmpty) {
+      body['storage'] = storage.type;
+    }
+    if (renameDirFiles) {
+      body['rename_dir_files'] = true;
+    }
+
+    try {
+      final response = await _apiClient.post<dynamic>(
+        '/api/v1/storage/rename',
+        queryParameters: {'new_name': newName},
+        data: body,
+      );
+      final status = response.statusCode ?? 0;
+      if (status >= 200 && status < 300) {
+        loadFiles();
+        return true;
+      }
+      return false;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '重命名失败');
       return false;
     }
   }

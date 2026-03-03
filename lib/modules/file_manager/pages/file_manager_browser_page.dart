@@ -10,6 +10,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../controllers/file_manager_browser_controller.dart';
 import '../file_manager_picker_service.dart';
 import '../widgets/file_recognize_result_sheet.dart';
+import '../widgets/file_rename_sheet.dart';
 
 /// 存储 type -> 图标资源映射
 Widget _storageIconWidget(String type, {double size = 24}) {
@@ -333,20 +334,21 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
               child: CupertinoSearchTextField(
                 controller: controller.searchController,
                 placeholder: '搜索文件...',
+                onChanged: controller.onSearch,
                 onSubmitted: controller.onSearch,
                 onSuffixTap: controller.clearSearch,
               ),
             ),
           ),
           // 文件列表或空状态
-          if (controller.files.isEmpty)
+          if (controller.filteredFiles.isEmpty)
             SliverFillRemaining(hasScrollBody: false, child: _buildEmptyView())
           else
             SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                final file = controller.files[index];
+                final file = controller.filteredFiles[index];
                 return _buildFileItem(file);
-              }, childCount: controller.files.length),
+              }, childCount: controller.filteredFiles.length),
             ),
           SliverToBoxAdapter(
             child: SizedBox(height: controller.isPickerMode ? 0 : 20),
@@ -394,49 +396,42 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
             );
           }
         },
-        child: Container(
-          decoration: BoxDecoration(
-            color: isSelected
-                ? CupertinoColors.systemBlue.withValues(alpha: 0.08)
-                : null,
-            border: Border(
-              bottom: BorderSide(
-                color: CupertinoColors.systemGrey5,
-                width: 0.5,
-              ),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                _buildFileIcon(file),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        file.name ?? '未知',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
-                          height: 1.3,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  _buildFileIcon(file),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          file.name ?? '未知',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (_hasSubtitle(file)) ...[
-                        const SizedBox(height: 2),
-                        _buildFileSubtitle(file),
+                        if (_hasSubtitle(file)) ...[
+                          const SizedBox(height: 2),
+                          _buildFileSubtitle(file),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                _buildTrailing(file, canSelect, isSelected),
-              ],
-            ),
+                  const SizedBox(width: 8),
+                  _buildTrailing(file, canSelect, isSelected),
+                ],
+              ),
+              Divider(height: 0.5, color: CupertinoColors.systemGrey5),
+            ],
           ),
         ),
       );
@@ -878,7 +873,14 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
   }
 
   void _handleRename(MediaOrganizeFileItem file) {
-    // TODO: 后续实现重命名
+    if (!Get.context!.mounted) return;
+    FileRenameSheet.show(
+      Get.context!,
+      file: file,
+      isDir: _isDirectory(file),
+      getRecognizedName: controller.getRecognizedName,
+      renameFile: controller.renameFile,
+    );
   }
 
   Future<void> _handleScrape(MediaOrganizeFileItem file) async {
