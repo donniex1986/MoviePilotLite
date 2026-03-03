@@ -344,11 +344,25 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
           if (controller.filteredFiles.isEmpty)
             SliverFillRemaining(hasScrollBody: false, child: _buildEmptyView())
           else
-            SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final file = controller.filteredFiles[index];
-                return _buildFileItem(file);
-              }, childCount: controller.filteredFiles.length),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final file = controller.filteredFiles[index];
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: index == 0 ? Radius.circular(16) : Radius.zero,
+                        bottom: index == controller.filteredFiles.length - 1
+                            ? Radius.circular(16)
+                            : Radius.zero,
+                      ),
+                    ),
+                    child: _buildFileItem(file),
+                  );
+                }, childCount: controller.filteredFiles.length),
+              ),
             ),
           SliverToBoxAdapter(
             child: SizedBox(height: controller.isPickerMode ? 0 : 20),
