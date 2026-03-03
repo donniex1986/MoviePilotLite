@@ -18,7 +18,8 @@ class FileItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDir = file.type == 'dir';
-    final canSelect = controller.isPickerMode &&
+    final canSelect =
+        controller.isPickerMode &&
         ((isDir && controller.allowDirSelection) ||
             (!isDir && controller.allowFileSelection));
 
@@ -157,10 +158,7 @@ class FileItemWidget extends StatelessWidget {
 
     return Text(
       parts.join(' · '),
-      style: const TextStyle(
-        fontSize: 12,
-        color: CupertinoColors.systemGrey,
-      ),
+      style: const TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
     );
   }
 
@@ -190,8 +188,12 @@ class FileItemWidget extends StatelessWidget {
         color: CupertinoColors.systemGrey3,
         size: 18,
       );
+    } else {
+      return SizedBox(
+        width: 22,
+        height: 22,
+        child: Icon(CupertinoIcons.ellipsis),
+      );
     }
-
-    return const SizedBox.shrink();
   }
 }

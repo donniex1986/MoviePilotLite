@@ -102,8 +102,8 @@ import 'modules/rule/pages/priority_rule_page.dart';
 import 'modules/rule/pages/download_rule_page.dart';
 import 'modules/workflow/controllers/workflow_controller.dart';
 import 'modules/workflow/pages/workflow_page.dart';
-import 'modules/file_manager/controllers/file_manager_controller.dart';
-import 'modules/file_manager/pages/file_manager_page.dart';
+import 'modules/file_manager/controllers/file_manager_browser_controller.dart';
+import 'modules/file_manager/pages/file_manager_browser_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -581,16 +581,19 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: '/file-manager',
-          page: () => const FileManagerPage(),
+          page: () => const FileManagerBrowserPage(),
           binding: BindingsBuilder(() {
-            final args = Get.arguments;
-            Get.lazyPut(() => FileManagerController(
-              isPickerMode: args is Map ? args['isPickerMode'] == true : false,
-              allowMultipleSelection: args is Map ? args['allowMultipleSelection'] == true : false,
-              allowFileSelection: args is Map ? args['allowFileSelection'] != false : true,
-              allowDirSelection: args is Map ? args['allowDirSelection'] != false : true,
-              initialStorage: args is Map ? args['initialStorage']?.toString() : null,
-              initialPath: args is Map ? args['initialPath']?.toString() : null,
+            if (!Get.isRegistered<StorageListController>()) {
+              Get.put(StorageListController(), permanent: true);
+            }
+            final args = Get.arguments ?? {};
+            Get.put(FileManagerBrowserController(
+              isPickerMode: args['isPickerMode'] == true,
+              allowMultipleSelection: args['allowMultipleSelection'] == true,
+              allowFileSelection: args['allowFileSelection'] != false,
+              allowDirSelection: args['allowDirSelection'] != false,
+              initialStorageType: args['initialStorage']?.toString(),
+              initialPath: args['initialPath']?.toString(),
             ));
           }),
         ),
