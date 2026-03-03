@@ -134,11 +134,7 @@ class FileManagerBrowserController extends GetxController {
     try {
       final response = await _apiClient.post<dynamic>(
         '/api/v1/storage/list?sort=${sortBy.value}',
-        data: {
-          'type': 'dir',
-          'storage': storage.type,
-          'path': currentPath,
-        },
+        data: {'type': 'dir', 'storage': storage.type, 'path': currentPath},
       );
 
       final status = response.statusCode ?? 0;
@@ -200,13 +196,11 @@ class FileManagerBrowserController extends GetxController {
     final kw = searchKeyword.value.trim().toLowerCase();
     if (kw.isEmpty) return files;
     return files
-        .where((f) =>
-            (f.name ?? '')
-                .toLowerCase()
-                .contains(kw) ||
-            (f.basename ?? '')
-                .toLowerCase()
-                .contains(kw))
+        .where(
+          (f) =>
+              (f.name ?? '').toLowerCase().contains(kw) ||
+              (f.basename ?? '').toLowerCase().contains(kw),
+        )
         .toList();
   }
 

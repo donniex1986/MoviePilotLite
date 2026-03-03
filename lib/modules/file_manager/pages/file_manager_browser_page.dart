@@ -351,7 +351,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
                   final file = controller.filteredFiles[index];
                   return Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.vertical(
                         top: index == 0 ? Radius.circular(16) : Radius.zero,
                         bottom: index == controller.filteredFiles.length - 1
@@ -411,7 +411,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
           }
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -444,6 +444,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
                   _buildTrailing(file, canSelect, isSelected),
                 ],
               ),
+              const SizedBox(height: 10),
               Divider(height: 0.5, color: CupertinoColors.systemGrey5),
             ],
           ),
