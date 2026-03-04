@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/gen/assets.gen.dart';
+import 'package:moviepilot_mobile/utils/file_storage_utils.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/modules/media_organize/models/media_organize_models.dart';
 import 'package:moviepilot_mobile/modules/storage/controllers/storage_list_controller.dart';
@@ -11,34 +12,6 @@ import '../controllers/file_manager_browser_controller.dart';
 import '../file_manager_picker_service.dart';
 import '../widgets/file_recognize_result_sheet.dart';
 import '../widgets/file_rename_sheet.dart';
-
-/// 存储 type -> 图标资源映射
-Widget _storageIconWidget(String type, {double size = 24}) {
-  final m = Assets.images.misc;
-  switch (type.toLowerCase()) {
-    case 'alist':
-      return m.alist.svg(width: size, height: size);
-    case 'openlist':
-      return m.openlist.svg(width: size, height: size);
-    case 'alipan':
-      return m.alipan.image(width: size, height: size, fit: BoxFit.contain);
-    case 'u115':
-      return m.u115.image(width: size, height: size, fit: BoxFit.contain);
-    case 'smb':
-      return m.smb.image(width: size, height: size, fit: BoxFit.contain);
-    case 'rclone':
-      return m.rclone.image(width: size, height: size, fit: BoxFit.contain);
-    case 'plex':
-      return m.plex.image(width: size, height: size, fit: BoxFit.contain);
-    case 'emby':
-      return m.emby.image(width: size, height: size, fit: BoxFit.contain);
-    case 'jellyfin':
-      return m.jellyfin.image(width: size, height: size, fit: BoxFit.contain);
-    case 'local':
-    default:
-      return m.storage.image(width: size, height: size, fit: BoxFit.contain);
-  }
-}
 
 /// 文件浏览器页面 - 使用 Get.to 页面级导航
 class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
@@ -77,7 +50,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
                 child: SizedBox(
                   width: 22,
                   height: 22,
-                  child: _storageIconWidget(
+                  child: FileStorageUtils.storageIconWidget(
                     controller.selectedStorage.value!.type,
                     size: 22,
                   ),
@@ -122,7 +95,10 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
                   child: SizedBox(
                     width: 22,
                     height: 22,
-                    child: _storageIconWidget(selected.type, size: 22),
+                    child: FileStorageUtils.storageIconWidget(
+                      selected.type,
+                      size: 22,
+                    ),
                   ),
                 ),
               Text(
@@ -154,7 +130,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
                   SizedBox(
                     width: 24,
                     height: 24,
-                    child: _storageIconWidget(s.type),
+                    child: FileStorageUtils.storageIconWidget(s.type, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

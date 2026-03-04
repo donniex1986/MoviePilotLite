@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/media_organize/models/media_organize_models.dart';
 import 'package:moviepilot_mobile/modules/storage/controllers/storage_list_controller.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/utils/file_storage_utils.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 
 /// 存储列表页
@@ -144,26 +145,7 @@ class _StorageItemCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        theme.colorScheme.primary.withValues(alpha: 0.85),
-                        theme.colorScheme.primary.withValues(alpha: 0.6),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.storage_rounded,
-                    color: theme.colorScheme.onPrimary,
-                    size: 22,
-                  ),
-                ),
+                FileStorageUtils.storageIconWidget(storage.type, size: 22),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
