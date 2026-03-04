@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
@@ -191,7 +193,7 @@ class SearchMediaController extends GetxController {
         endpoint,
         queryParameters: queryParameters,
         token: token,
-        timeout: 60,
+        timeout: 60 * max(sites.length, 1),
       );
 
       final status = response.statusCode ?? 0;
