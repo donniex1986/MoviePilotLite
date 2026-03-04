@@ -87,10 +87,21 @@ class StorageListPage extends GetView<StorageListController> {
             itemBuilder: (context, index) {
               final storage = controller.storages[index];
               return Obx(
-                () => _StorageItemCard(
-                  index: index + 1,
-                  storage: storage,
-                  usage: controller.getUsageFor(storage.type),
+                () => GestureDetector(
+                  onTap: () {
+                    Get.toNamed(
+                      '/file-manager',
+                      arguments: {
+                        'initialStorage': storage.type,
+                        'allowSelectStorage': false,
+                      },
+                    );
+                  },
+                  child: _StorageItemCard(
+                    index: index + 1,
+                    storage: storage,
+                    usage: controller.getUsageFor(storage.type),
+                  ),
                 ),
               );
             },

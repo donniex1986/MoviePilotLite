@@ -600,6 +600,7 @@ class MyApp extends StatelessWidget {
                 allowDirSelection: args['allowDirSelection'] != false,
                 initialStorageType: args['initialStorage']?.toString(),
                 initialPath: args['initialPath']?.toString(),
+                allowSelectStorage: args['allowSelectStorage'] != false,
               ),
               tag: tag,
               permanent: false,

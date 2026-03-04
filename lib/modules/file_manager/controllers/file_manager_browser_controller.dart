@@ -37,7 +37,7 @@ class FileManagerBrowserController extends GetxController {
   final bool allowMultipleSelection;
   final bool allowFileSelection;
   final bool allowDirSelection;
-
+  final bool allowSelectStorage;
   // 文件列表
   final files = <MediaOrganizeFileItem>[].obs;
   final isLoading = false.obs;
@@ -55,6 +55,7 @@ class FileManagerBrowserController extends GetxController {
     this.allowMultipleSelection = false,
     this.allowFileSelection = true,
     this.allowDirSelection = true,
+    this.allowSelectStorage = true,
     String? initialStorageType,
     String? initialPath,
   }) {
@@ -130,7 +131,11 @@ class FileManagerBrowserController extends GetxController {
     try {
       final response = await _apiClient.post<dynamic>(
         '/api/v1/storage/list?sort=${sortBy.value}',
-        data: {'type': 'dir', 'storage': storage.type, 'path': currentPath.value},
+        data: {
+          'type': 'dir',
+          'storage': storage.type,
+          'path': currentPath.value,
+        },
       );
 
       final status = response.statusCode ?? 0;
@@ -272,7 +277,8 @@ class FileManagerBrowserController extends GetxController {
     if (storage == null) return null;
 
     final path =
-        item.path ?? '${currentPath.value == '/' ? '' : currentPath.value}/${item.name}';
+        item.path ??
+        '${currentPath.value == '/' ? '' : currentPath.value}/${item.name}';
     if (path.isEmpty) return null;
 
     try {
@@ -336,7 +342,8 @@ class FileManagerBrowserController extends GetxController {
     if (storage == null) return null;
 
     final path =
-        item.path ?? '${currentPath.value == '/' ? '' : currentPath.value}/${item.name}';
+        item.path ??
+        '${currentPath.value == '/' ? '' : currentPath.value}/${item.name}';
     if (path.isEmpty) return null;
 
     final filetype = _isDirectory(item) ? 'dir' : 'file';

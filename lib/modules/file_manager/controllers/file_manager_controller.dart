@@ -18,7 +18,7 @@ class FileManagerController extends GetxController {
   final bool allowDirSelection;
   final String? initialStorage;
   final String? initialPath;
-
+  
   // 存储相关
   final storages = <StorageSetting>[].obs;
   final selectedStorage = Rxn<StorageSetting>();

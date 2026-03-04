@@ -65,6 +65,32 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
   }
 
   Widget _buildStorageTitle(BuildContext context) {
+    if (!controller.allowSelectStorage) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (controller.selectedStorage.value != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: _storageIconWidget(
+                    controller.selectedStorage.value!.type,
+                    size: 22,
+                  ),
+                ),
+              ),
+            Text(
+              controller.selectedStorage.value?.name ?? '选择存储',
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      );
+    }
     return Obx(() {
       final name = controller.selectedStorage.value?.name ?? '选择存储';
       if (!Get.isRegistered<StorageListController>()) {
@@ -265,6 +291,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
       final args = <String, dynamic>{
         'initialPath': nextPath,
         'initialStorage': controller.selectedStorage.value?.type,
+        'allowSelectStorage': controller.allowSelectStorage,
         'isPickerMode': controller.isPickerMode,
         'allowMultipleSelection': controller.allowMultipleSelection,
         'allowFileSelection': controller.allowFileSelection,
