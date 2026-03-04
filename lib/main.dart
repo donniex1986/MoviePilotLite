@@ -67,6 +67,8 @@ import 'modules/plugin/controllers/plugin_list_controller.dart';
 import 'modules/plugin/pages/plugin_page.dart';
 import 'modules/plugin/pages/plugin_list_page.dart';
 import 'modules/plugin/services/plugin_palette_cache.dart';
+import 'modules/dynamic_form/adapters/plugin_form_adapter_registry.dart';
+import 'modules/dynamic_form/adapters/trash_clean_form_controller.dart';
 import 'modules/dynamic_form/controllers/dynamic_form_controller.dart';
 import 'modules/dynamic_form/pages/dynamic_form_page.dart';
 import 'modules/site/controllers/site_controller.dart';
@@ -114,6 +116,13 @@ void main() {
   Get.put(RealmService());
   Get.put(ApiClient());
   Get.put(MediaDetailService());
+
+  // 注册 vue 模式插件适配器
+  PluginFormAdapterRegistry.register(
+    'TrashClean',
+    ({required formMode}) => TrashCleanFormController(formMode: formMode),
+  );
+
   runApp(const MyApp());
 }
 
