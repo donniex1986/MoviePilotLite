@@ -2,14 +2,15 @@ import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/adapters/plugin_form_adapter.dart';
+import 'package:moviepilot_mobile/modules/dynamic_form/adapters/plugin_form_adapter_registry.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/dynamic_form_models.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/services/form_block_converter.dart';
-import 'package:moviepilot_mobile/modules/dynamic_form/services/trash_clean_converter.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 
-/// 动态表单控制器：拉取接口、解析、转换为 FormBlock 列表；配置表单支持保存
+/// 动态表单控制器：可插件化入口，根据 render_mode 分流 vuetify/vue 渲染
 class DynamicFormController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
   final _appService = Get.find<AppService>();
@@ -35,7 +36,17 @@ class DynamicFormController extends GetxController {
   final pageNodes = <FormNode>[].obs;
 
   /// 配置表单当前数据（key 为 props.model），保存时 PUT 此 Map
-  final formModel = Rx<Map<String, dynamic>>({});
+  final _formModel = Rx<Map<String, dynamic>>({});
+
+  /// vue 模式下注入的插件适配器
+  PluginFormAdapter? _pluginAdapter;
+
+  /// 当前使用的 formModel（vue 模式时指向 adapter 的 formModel）
+  Rx<Map<String, dynamic>> get formModel =>
+      _pluginAdapter?.formModel ?? _formModel;
+
+  /// vue 模式下的插件适配器，供页面判断是否展示插件专属操作
+  PluginFormAdapter? get pluginAdapter => _pluginAdapter;
 
   String? _getToken() =>
       _appService.loginResponse?.accessToken ??
@@ -81,32 +92,25 @@ class DynamicFormController extends GetxController {
   /// 更新字段值（配置表单用）
   void updateField(String? name, dynamic value) {
     if (name == null || name.isEmpty) return;
-    formModel.value = Map<String, dynamic>.from(formModel.value)
-      ..[name] = value;
+    final target = _pluginAdapter?.formModel ?? _formModel;
+    target.value = Map<String, dynamic>.from(target.value)..[name] = value;
   }
 
   /// 是否显示保存按钮（有 formModel 且有 key 时）
   bool get hasFormModel => formModel.value.isNotEmpty;
 
-  bool get _isTrashClean => pluginId == 'TrashClean';
-
   Future<void> load() async {
     isLoading.value = true;
     errorText.value = null;
     saveSuccess.value = false;
+    _pluginAdapter = null;
     try {
       final token = _getToken();
       if (token == null || token.isEmpty) {
         errorText.value = '请先登录';
         blocks.clear();
         pageNodes.clear();
-        formModel.value = {};
-        return;
-      }
-
-      if (_isTrashClean) {
-        pageNodes.clear();
-        await _loadTrashClean(token);
+        _formModel.value = {};
         return;
       }
 
@@ -116,7 +120,7 @@ class DynamicFormController extends GetxController {
         errorText.value = '请求失败 (HTTP $status)';
         blocks.clear();
         pageNodes.clear();
-        formModel.value = {};
+        _formModel.value = {};
         return;
       }
       final data = response.data;
@@ -125,104 +129,70 @@ class DynamicFormController extends GetxController {
         errorText.value = '数据格式错误';
         blocks.clear();
         pageNodes.clear();
-        formModel.value = {};
+        _formModel.value = {};
         return;
       }
       final parsed = DynamicFormResponse.fromJson(
         Map<String, dynamic>.from(map),
       );
-      if (parsed.model != null && parsed.model!.isNotEmpty) {
-        formModel.value = Map<String, dynamic>.from(parsed.model!);
-      } else {
-        formModel.value = {};
+      final renderMode = parsed.render_mode?.toLowerCase().trim();
+
+      if (renderMode == 'vue' &&
+          pluginId != null &&
+          PluginFormAdapterRegistry.hasAdapter(pluginId!)) {
+        await _loadViaAdapter();
+        return;
       }
 
-      // page 模式且有 page 数据时，保存原始节点供 VuetifyRenderer 使用
-      if (!formMode.value && parsed.page.isNotEmpty) {
-        pageNodes.assignAll(parsed.page);
-        blocks.clear();
-      } else {
-        pageNodes.clear();
-      }
-      final blocksList = FormBlockConverter.convert(parsed);
-      blocks.assignAll(blocksList);
+      _loadVuetify(parsed);
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '获取动态表单失败');
       errorText.value = '请求失败，请稍后重试';
       blocks.clear();
       pageNodes.clear();
-      formModel.value = {};
+      _formModel.value = {};
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> _loadTrashClean(String token) async {
-    try {
-      const basePath = '/api/v1/plugin/TrashClean';
-
-      if (formMode.value) {
-        // 配置页：只需 status 接口
-        final resp = await _apiClient.get<dynamic>(
-          '$basePath/status',
-          token: token,
-        );
-        final statusMap = _extractMap(resp.data);
-        if (statusMap == null) {
-          errorText.value = '数据格式错误';
-          blocks.clear();
-          formModel.value = {};
-          return;
-        }
-        final (blocksList, model) = TrashCleanConverter.convertForm(
-          status: statusMap,
-        );
-        formModel.value = model;
-        blocks.assignAll(blocksList);
-      } else {
-        // 展示页：并行请求 5 个接口
-        final results = await Future.wait([
-          _apiClient.get<dynamic>('$basePath/status', token: token),
-          _apiClient.get<dynamic>(
-            '$basePath/latest_clean_result',
-            token: token,
-          ),
-          _apiClient.get<dynamic>('$basePath/clean_progress', token: token),
-          _apiClient.get<dynamic>('$basePath/stats', token: token),
-          _apiClient.get<dynamic>('$basePath/downloaders', token: token),
-        ]);
-
-        final statusMap = _extractMap(results[0].data) ?? {};
-        final cleanResultMap = _extractMap(results[1].data) ?? {};
-        final progressMap = _extractMap(results[2].data) ?? {};
-        final statsData = results[3].data;
-        final statsList = statsData is List
-            ? statsData.cast<Map<String, dynamic>>()
-            : <Map<String, dynamic>>[];
-        final downloadersData = results[4].data;
-        final downloadersList = downloadersData is List
-            ? downloadersData.cast<Map<String, dynamic>>()
-            : <Map<String, dynamic>>[];
-
-        final blocksList = TrashCleanConverter.convertPage(
-          status: statusMap,
-          latestCleanResult: cleanResultMap,
-          cleanProgress: progressMap,
-          stats: statsList,
-          downloaders: downloadersList,
-        );
-        formModel.value = {};
-        blocks.assignAll(blocksList);
-      }
-    } catch (e, st) {
-      _log.handle(e, stackTrace: st, message: '获取 TrashClean 数据失败');
-      errorText.value = '请求失败，请稍后重试';
+  Future<void> _loadViaAdapter() async {
+    final adapter = PluginFormAdapterRegistry.createAdapter(
+      pluginId!,
+      formMode: formMode.value,
+    );
+    if (adapter == null) {
+      errorText.value = '插件适配器未注册';
       blocks.clear();
-      formModel.value = {};
+      pageNodes.clear();
+      _formModel.value = {};
+      return;
     }
+    _pluginAdapter = adapter;
+    await _pluginAdapter!.load();
+    errorText.value = _pluginAdapter!.errorText.value;
+    blocks.assignAll(_pluginAdapter!.blocks);
+    pageNodes.assignAll(_pluginAdapter!.pageNodes);
+    _formModel.value = {};
   }
 
-  /// 保存配置（标准插件 PUT，TrashClean 走 POST /config）
+  void _loadVuetify(DynamicFormResponse parsed) {
+    if (parsed.model != null && parsed.model!.isNotEmpty) {
+      _formModel.value = Map<String, dynamic>.from(parsed.model!);
+    } else {
+      _formModel.value = {};
+    }
+    if (!formMode.value && parsed.page.isNotEmpty) {
+      pageNodes.assignAll(parsed.page);
+      blocks.clear();
+    } else {
+      pageNodes.clear();
+    }
+    final blocksList = FormBlockConverter.convert(parsed);
+    blocks.assignAll(blocksList);
+  }
+
+  /// 保存配置
   Future<bool> save() async {
     if (formModel.value.isEmpty) return false;
     final token = _getToken();
@@ -231,7 +201,11 @@ class DynamicFormController extends GetxController {
       return false;
     }
 
-    if (_isTrashClean) return _saveTrashClean(token);
+    if (_pluginAdapter != null) {
+      final ok = await _pluginAdapter!.save();
+      if (ok) saveSuccess.value = true;
+      return ok;
+    }
 
     final savePath = apiSavePath;
     if (savePath == null || savePath.isEmpty) return false;
@@ -250,7 +224,6 @@ class DynamicFormController extends GetxController {
         errorText.value = '保存失败 (HTTP $status)';
         return false;
       }
-
       saveSuccess.value = true;
       return true;
     } catch (e, st) {
@@ -262,68 +235,22 @@ class DynamicFormController extends GetxController {
     }
   }
 
-  Future<bool> _saveTrashClean(String token) async {
-    isLoading.value = true;
-    errorText.value = null;
-    saveSuccess.value = false;
-    try {
-      final body = TrashCleanConverter.toConfigBody(formModel.value);
-      _log.info('保存 TrashClean 配置: $body');
-      final response = await _apiClient.post<dynamic>(
-        '/api/v1/plugin/TrashClean/config',
-        data: body,
-        token: token,
-      );
-      final status = response.statusCode ?? 0;
-      if (status >= 400) {
-        errorText.value = '保存失败 (HTTP $status)';
-        return false;
-      }
-      saveSuccess.value = true;
-      return true;
-    } catch (e, st) {
-      _log.handle(e, stackTrace: st, message: '保存 TrashClean 配置失败');
-      errorText.value = '保存失败，请稍后重试';
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  /// TrashClean 立即清理，返回清理结果 Map 或 null（失败时）
+  /// 立即清理（仅 PluginFormAdapterWithClean 支持）
   Future<Map<String, dynamic>?> triggerClean() async {
-    final token = _getToken();
-    if (token == null || token.isEmpty) return null;
-    try {
-      final response = await _apiClient.post<dynamic>(
-        '/api/v1/plugin/TrashClean/clean',
-        token: token,
-      );
-      final status = response.statusCode ?? 0;
-      if (status >= 400) return null;
-      return _extractMap(response.data);
-    } catch (e, st) {
-      _log.handle(e, stackTrace: st, message: 'TrashClean 清理失败');
-      return null;
+    final adapter = _pluginAdapter;
+    if (adapter is PluginFormAdapterWithClean) {
+      return adapter.triggerClean();
     }
+    return null;
   }
 
-  /// 获取 TrashClean 清理进度
+  /// 获取清理进度（仅 PluginFormAdapterWithClean 支持）
   Future<Map<String, dynamic>?> fetchCleanProgress() async {
-    final token = _getToken();
-    if (token == null || token.isEmpty) return null;
-    try {
-      final response = await _apiClient.get<dynamic>(
-        '/api/v1/plugin/TrashClean/clean_progress',
-        token: token,
-      );
-      final status = response.statusCode ?? 0;
-      if (status >= 400) return null;
-      return _extractMap(response.data);
-    } catch (e, st) {
-      _log.handle(e, stackTrace: st, message: '获取 TrashClean 清理进度失败');
-      return null;
+    final adapter = _pluginAdapter;
+    if (adapter is PluginFormAdapterWithClean) {
+      return adapter.fetchCleanProgress();
     }
+    return null;
   }
 
   Map<String, dynamic>? _extractMap(dynamic raw) {
@@ -343,6 +270,8 @@ class DynamicFormController extends GetxController {
   final formModePlugins = [
     'AutoSignIn',
     'TrashClean',
+    'ProxmoxVEBackup',
+    'RandomPic',
     'MonitorPaths',
     'SiteStatistic',
     'MedalWall',
