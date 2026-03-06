@@ -383,8 +383,8 @@ class MultifunctionPage extends GetView<MultifunctionController> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            _buildIconBubble(accent, item.icon, size: 38),
-            const SizedBox(width: 10),
+            _buildIconBubble(accent, item.icon, size: 30),
+            const SizedBox(width: 5),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,6 +395,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
+                    overflow: TextOverflow.visible,
                   ),
                   const SizedBox(height: 4),
                   if (item.subtitle != null)
