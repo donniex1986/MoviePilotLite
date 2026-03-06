@@ -267,13 +267,15 @@ class EpisodeGroup with _$EpisodeGroup {
     @JsonKey(fromJson: _intFromJson) int? group_count,
     String? id,
     String? name,
-    String? network,
+    @JsonKey(fromJson: _stringFromJson) String? network,
     @JsonKey(fromJson: _intFromJson) int? type,
   }) = _EpisodeGroup;
 
   factory EpisodeGroup.fromJson(Map<String, dynamic> json) =>
       _$EpisodeGroupFromJson(json);
 }
+
+
 
 int? _intFromJson(Object? value) {
   if (value == null) return null;

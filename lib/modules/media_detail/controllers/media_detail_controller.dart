@@ -266,7 +266,13 @@ class MediaDetailController extends GetxController {
     if (data == null) return null;
     try {
       if (data is Map) {
-        return MediaDetail.fromJson(Map<String, dynamic>.from(data));
+        try {
+          final detail = MediaDetail.fromJson(Map<String, dynamic>.from(data));
+          return detail;
+        } catch (error) {
+          _log.handle(error, message: '解析媒体详情失败');
+          return null;
+        }
       }
       if (data is String) {
         final trimmed = data.trim();
