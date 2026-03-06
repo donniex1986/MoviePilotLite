@@ -34,7 +34,12 @@ mixin _$FormBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -124,7 +129,13 @@ mixin _$FormBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -202,7 +213,13 @@ mixin _$FormBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -469,7 +486,12 @@ class _$StatCardBlockImpl extends StatCardBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -563,7 +585,13 @@ class _$StatCardBlockImpl extends StatCardBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -645,7 +673,13 @@ class _$StatCardBlockImpl extends StatCardBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -946,7 +980,12 @@ class _$ChartBlockImpl extends ChartBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -1040,7 +1079,13 @@ class _$ChartBlockImpl extends ChartBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -1122,7 +1167,13 @@ class _$ChartBlockImpl extends ChartBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -1283,7 +1334,12 @@ abstract class _$$TableBlockImplCopyWith<$Res> {
     $Res Function(_$TableBlockImpl) then,
   ) = __$$TableBlockImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({List<String> headers, List<List<dynamic>> rows});
+  $Res call({
+    List<String> headers,
+    List<List<dynamic>> rows,
+    List<InfoCardRowMenuItem>? actions,
+    void Function(String, int)? onAction,
+  });
 }
 
 /// @nodoc
@@ -1299,7 +1355,12 @@ class __$$TableBlockImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? headers = null, Object? rows = null}) {
+  $Res call({
+    Object? headers = null,
+    Object? rows = null,
+    Object? actions = freezed,
+    Object? onAction = freezed,
+  }) {
     return _then(
       _$TableBlockImpl(
         headers: null == headers
@@ -1310,6 +1371,14 @@ class __$$TableBlockImplCopyWithImpl<$Res>
             ? _value._rows
             : rows // ignore: cast_nullable_to_non_nullable
                   as List<List<dynamic>>,
+        actions: freezed == actions
+            ? _value._actions
+            : actions // ignore: cast_nullable_to_non_nullable
+                  as List<InfoCardRowMenuItem>?,
+        onAction: freezed == onAction
+            ? _value.onAction
+            : onAction // ignore: cast_nullable_to_non_nullable
+                  as void Function(String, int)?,
       ),
     );
   }
@@ -1321,8 +1390,11 @@ class _$TableBlockImpl extends TableBlock {
   const _$TableBlockImpl({
     final List<String> headers = const [],
     final List<List<dynamic>> rows = const [],
+    final List<InfoCardRowMenuItem>? actions = const [],
+    this.onAction,
   }) : _headers = headers,
        _rows = rows,
+       _actions = actions,
        super._();
 
   final List<String> _headers;
@@ -1343,9 +1415,23 @@ class _$TableBlockImpl extends TableBlock {
     return EqualUnmodifiableListView(_rows);
   }
 
+  final List<InfoCardRowMenuItem>? _actions;
+  @override
+  @JsonKey()
+  List<InfoCardRowMenuItem>? get actions {
+    final value = _actions;
+    if (value == null) return null;
+    if (_actions is EqualUnmodifiableListView) return _actions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  final void Function(String, int)? onAction;
+
   @override
   String toString() {
-    return 'FormBlock.table(headers: $headers, rows: $rows)';
+    return 'FormBlock.table(headers: $headers, rows: $rows, actions: $actions, onAction: $onAction)';
   }
 
   @override
@@ -1354,7 +1440,10 @@ class _$TableBlockImpl extends TableBlock {
         (other.runtimeType == runtimeType &&
             other is _$TableBlockImpl &&
             const DeepCollectionEquality().equals(other._headers, _headers) &&
-            const DeepCollectionEquality().equals(other._rows, _rows));
+            const DeepCollectionEquality().equals(other._rows, _rows) &&
+            const DeepCollectionEquality().equals(other._actions, _actions) &&
+            (identical(other.onAction, onAction) ||
+                other.onAction == onAction));
   }
 
   @override
@@ -1362,6 +1451,8 @@ class _$TableBlockImpl extends TableBlock {
     runtimeType,
     const DeepCollectionEquality().hash(_headers),
     const DeepCollectionEquality().hash(_rows),
+    const DeepCollectionEquality().hash(_actions),
+    onAction,
   );
 
   /// Create a copy of FormBlock
@@ -1390,7 +1481,12 @@ class _$TableBlockImpl extends TableBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -1463,7 +1559,7 @@ class _$TableBlockImpl extends TableBlock {
     )
     infoCard,
   }) {
-    return table(headers, rows);
+    return table(headers, rows, actions, onAction);
   }
 
   @override
@@ -1484,7 +1580,13 @@ class _$TableBlockImpl extends TableBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -1545,7 +1647,7 @@ class _$TableBlockImpl extends TableBlock {
     )?
     infoCard,
   }) {
-    return table?.call(headers, rows);
+    return table?.call(headers, rows, actions, onAction);
   }
 
   @override
@@ -1566,7 +1668,13 @@ class _$TableBlockImpl extends TableBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -1629,7 +1737,7 @@ class _$TableBlockImpl extends TableBlock {
     required TResult orElse(),
   }) {
     if (table != null) {
-      return table(headers, rows);
+      return table(headers, rows, actions, onAction);
     }
     return orElse();
   }
@@ -1703,11 +1811,15 @@ abstract class TableBlock extends FormBlock {
   const factory TableBlock({
     final List<String> headers,
     final List<List<dynamic>> rows,
+    final List<InfoCardRowMenuItem>? actions,
+    final void Function(String, int)? onAction,
   }) = _$TableBlockImpl;
   const TableBlock._() : super._();
 
   List<String> get headers;
   List<List<dynamic>> get rows;
+  List<InfoCardRowMenuItem>? get actions;
+  void Function(String, int)? get onAction;
 
   /// Create a copy of FormBlock
   /// with the given fields replaced by the non-null parameter values.
@@ -1827,7 +1939,12 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -1921,7 +2038,13 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -2003,7 +2126,13 @@ class _$SwitchFieldBlockImpl extends SwitchFieldBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -2275,7 +2404,12 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -2369,7 +2503,13 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -2451,7 +2591,13 @@ class _$CronFieldBlockImpl extends CronFieldBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -2725,7 +2871,12 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -2819,7 +2970,13 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -2901,7 +3058,13 @@ class _$TextFieldBlockImpl extends TextFieldBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -3182,7 +3345,12 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -3276,7 +3444,13 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -3358,7 +3532,13 @@ class _$TextAreaBlockImpl extends TextAreaBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -3607,7 +3787,12 @@ class _$AlertBlockImpl extends AlertBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -3701,7 +3886,13 @@ class _$AlertBlockImpl extends AlertBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -3783,7 +3974,13 @@ class _$AlertBlockImpl extends AlertBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -4082,7 +4279,12 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -4176,7 +4378,13 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -4258,7 +4466,13 @@ class _$SelectFieldBlockImpl extends SelectFieldBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -4510,7 +4724,12 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -4604,7 +4823,13 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -4686,7 +4911,13 @@ class _$PageHeaderBlockImpl extends PageHeaderBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -5020,7 +5251,12 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -5121,7 +5357,13 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -5210,7 +5452,13 @@ class _$ExpansionCardBlockImpl extends ExpansionCardBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -5612,7 +5860,12 @@ class _$SiteInfoCardBlockImpl extends SiteInfoCardBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -5718,7 +5971,13 @@ class _$SiteInfoCardBlockImpl extends SiteInfoCardBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -5812,7 +6071,13 @@ class _$SiteInfoCardBlockImpl extends SiteInfoCardBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -6201,7 +6466,12 @@ class _$InfoCardBlockImpl extends InfoCardBlock {
       String chartType,
     )
     chart,
-    required TResult Function(List<String> headers, List<List<dynamic>> rows)
+    required TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )
     table,
     required TResult Function(String label, bool value, String? name)
     switchField,
@@ -6306,7 +6576,13 @@ class _$InfoCardBlockImpl extends InfoCardBlock {
       String chartType,
     )?
     chart,
-    TResult? Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult? Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult? Function(String label, bool value, String? name)? switchField,
     TResult? Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -6399,7 +6675,13 @@ class _$InfoCardBlockImpl extends InfoCardBlock {
       String chartType,
     )?
     chart,
-    TResult Function(List<String> headers, List<List<dynamic>> rows)? table,
+    TResult Function(
+      List<String> headers,
+      List<List<dynamic>> rows,
+      List<InfoCardRowMenuItem>? actions,
+      void Function(String, int)? onAction,
+    )?
+    table,
     TResult Function(String label, bool value, String? name)? switchField,
     TResult Function(String label, String value, String? name, String? hint)?
     cronField,
@@ -9224,6 +9506,7 @@ mixin _$InfoCardRowMenuItem {
   String get label => throw _privateConstructorUsedError;
   String? get iconName => throw _privateConstructorUsedError;
   String? get iconColor => throw _privateConstructorUsedError;
+  bool? get isEnabled => throw _privateConstructorUsedError;
   Map<String, dynamic>? get events => throw _privateConstructorUsedError;
 
   /// Create a copy of InfoCardRowMenuItem
@@ -9244,6 +9527,7 @@ abstract class $InfoCardRowMenuItemCopyWith<$Res> {
     String label,
     String? iconName,
     String? iconColor,
+    bool? isEnabled,
     Map<String, dynamic>? events,
   });
 }
@@ -9266,6 +9550,7 @@ class _$InfoCardRowMenuItemCopyWithImpl<$Res, $Val extends InfoCardRowMenuItem>
     Object? label = null,
     Object? iconName = freezed,
     Object? iconColor = freezed,
+    Object? isEnabled = freezed,
     Object? events = freezed,
   }) {
     return _then(
@@ -9282,6 +9567,10 @@ class _$InfoCardRowMenuItemCopyWithImpl<$Res, $Val extends InfoCardRowMenuItem>
                 ? _value.iconColor
                 : iconColor // ignore: cast_nullable_to_non_nullable
                       as String?,
+            isEnabled: freezed == isEnabled
+                ? _value.isEnabled
+                : isEnabled // ignore: cast_nullable_to_non_nullable
+                      as bool?,
             events: freezed == events
                 ? _value.events
                 : events // ignore: cast_nullable_to_non_nullable
@@ -9305,6 +9594,7 @@ abstract class _$$InfoCardRowMenuItemImplCopyWith<$Res>
     String label,
     String? iconName,
     String? iconColor,
+    bool? isEnabled,
     Map<String, dynamic>? events,
   });
 }
@@ -9326,6 +9616,7 @@ class __$$InfoCardRowMenuItemImplCopyWithImpl<$Res>
     Object? label = null,
     Object? iconName = freezed,
     Object? iconColor = freezed,
+    Object? isEnabled = freezed,
     Object? events = freezed,
   }) {
     return _then(
@@ -9342,6 +9633,10 @@ class __$$InfoCardRowMenuItemImplCopyWithImpl<$Res>
             ? _value.iconColor
             : iconColor // ignore: cast_nullable_to_non_nullable
                   as String?,
+        isEnabled: freezed == isEnabled
+            ? _value.isEnabled
+            : isEnabled // ignore: cast_nullable_to_non_nullable
+                  as bool?,
         events: freezed == events
             ? _value._events
             : events // ignore: cast_nullable_to_non_nullable
@@ -9358,6 +9653,7 @@ class _$InfoCardRowMenuItemImpl implements _InfoCardRowMenuItem {
     required this.label,
     this.iconName,
     this.iconColor,
+    this.isEnabled,
     final Map<String, dynamic>? events,
   }) : _events = events;
 
@@ -9367,6 +9663,8 @@ class _$InfoCardRowMenuItemImpl implements _InfoCardRowMenuItem {
   final String? iconName;
   @override
   final String? iconColor;
+  @override
+  final bool? isEnabled;
   final Map<String, dynamic>? _events;
   @override
   Map<String, dynamic>? get events {
@@ -9379,7 +9677,7 @@ class _$InfoCardRowMenuItemImpl implements _InfoCardRowMenuItem {
 
   @override
   String toString() {
-    return 'InfoCardRowMenuItem(label: $label, iconName: $iconName, iconColor: $iconColor, events: $events)';
+    return 'InfoCardRowMenuItem(label: $label, iconName: $iconName, iconColor: $iconColor, isEnabled: $isEnabled, events: $events)';
   }
 
   @override
@@ -9392,6 +9690,8 @@ class _$InfoCardRowMenuItemImpl implements _InfoCardRowMenuItem {
                 other.iconName == iconName) &&
             (identical(other.iconColor, iconColor) ||
                 other.iconColor == iconColor) &&
+            (identical(other.isEnabled, isEnabled) ||
+                other.isEnabled == isEnabled) &&
             const DeepCollectionEquality().equals(other._events, _events));
   }
 
@@ -9401,6 +9701,7 @@ class _$InfoCardRowMenuItemImpl implements _InfoCardRowMenuItem {
     label,
     iconName,
     iconColor,
+    isEnabled,
     const DeepCollectionEquality().hash(_events),
   );
 
@@ -9421,6 +9722,7 @@ abstract class _InfoCardRowMenuItem implements InfoCardRowMenuItem {
     required final String label,
     final String? iconName,
     final String? iconColor,
+    final bool? isEnabled,
     final Map<String, dynamic>? events,
   }) = _$InfoCardRowMenuItemImpl;
 
@@ -9430,6 +9732,8 @@ abstract class _InfoCardRowMenuItem implements InfoCardRowMenuItem {
   String? get iconName;
   @override
   String? get iconColor;
+  @override
+  bool? get isEnabled;
   @override
   Map<String, dynamic>? get events;
 

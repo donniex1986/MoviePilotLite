@@ -45,6 +45,13 @@ class DynamicFormController extends GetxController {
   Rx<Map<String, dynamic>> get formModel =>
       _pluginAdapter?.formModel ?? _formModel;
 
+  /// 当前使用的 blocks（vue 模式时使用 adapter 的 blocks，以便轮询更新能触发 UI 刷新）
+  RxList<FormBlock> get effectiveBlocks => _pluginAdapter?.blocks ?? blocks;
+
+  /// 当前使用的 pageNodes（vue 模式时使用 adapter 的 pageNodes）
+  RxList<FormNode> get effectivePageNodes =>
+      _pluginAdapter?.pageNodes ?? pageNodes;
+
   /// vue 模式下的插件适配器，供页面判断是否展示插件专属操作
   PluginFormAdapter? get pluginAdapter => _pluginAdapter;
 

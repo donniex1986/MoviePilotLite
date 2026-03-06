@@ -16,6 +16,9 @@ abstract class PluginFormAdapter extends GetxController {
 
   RxnString get errorText;
 
+  /// 行内操作（如容器启动/停止）的 loading 状态，无则返回 null
+  RxBool? get actionLoading;
+
   Future<void> load();
 
   Future<bool> save();

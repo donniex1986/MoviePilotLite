@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/adapters/plugin_form_adapter.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/dynamic_form_models.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.dart';
@@ -42,7 +43,16 @@ class ProxmoxVEBackupFormController extends GetxController
   /// Page 模式下的 PVE 主机状态，供 ProxmoxVeBackupHeader 渲染
   final pveStatus = Rx<Map<String, dynamic>?>(null);
 
+  @override
+  RxBool? get actionLoading => containerActionLoading;
+
+  /// 容器操作（启动/停止/重启/快照）的 loading 状态
+  final containerActionLoading = false.obs;
+
   static const _basePath = '/api/v1/plugin/ProxmoxVEBackup';
+
+  /// 轮询间隔（毫秒），默认 5 秒，与 status_poll_interval 一致
+  static const int _defaultPollIntervalMs = 5000;
 
   Timer? _pollTimer;
 
@@ -82,15 +92,15 @@ class ProxmoxVEBackupFormController extends GetxController
   }
 
   void _startPollTimer() {
-    _pollLoad();
+    _pollTimer?.cancel();
+    final interval = Duration(milliseconds: _defaultPollIntervalMs);
+    _pollTimer = Timer.periodic(interval, (_) => _pollLoad());
   }
 
   Future<void> _pollLoad() async {
     final token = _getToken();
     if (token == null || token.isEmpty) return;
-    try {
-      await _loadPage(token);
-    } catch (_) {}
+    await _loadPage(token);
   }
 
   @override
@@ -167,6 +177,8 @@ class ProxmoxVEBackupFormController extends GetxController
         containerStatusList: containerList,
         backups: backupList,
         useHeaderBlock: true,
+        onContainerAction: (type, vmid, action) =>
+            _handleAction(action: action, vmid: vmid, type: type),
       );
       formModel.value = {};
       blocks.assignAll(blocksList);
@@ -174,8 +186,6 @@ class ProxmoxVEBackupFormController extends GetxController
       _log.handle(e, stackTrace: st, message: '获取 ProxmoxVEBackup 数据失败');
       errorText.value = '请求失败，请稍后重试';
       pveStatus.value = null;
-      blocks.clear();
-      formModel.value = {};
     }
   }
 
@@ -213,6 +223,19 @@ class ProxmoxVEBackupFormController extends GetxController
     }
   }
 
+  /// 从 API 错误响应中提取 msg/message 等字段
+  String _extractErrorMessage(dynamic data, int status, String fallback) {
+    final map = _extractMap(data);
+    if (map != null) {
+      final msg = map['msg']?.toString().trim() ??
+          map['message']?.toString().trim() ??
+          map['detail']?.toString().trim() ??
+          map['error']?.toString().trim();
+      if (msg != null && msg.isNotEmpty) return msg;
+    }
+    return '$fallback (HTTP $status)';
+  }
+
   Map<String, dynamic>? _extractMap(dynamic raw) {
     if (raw is Map<String, dynamic>) return raw;
     if (raw is Map) return Map<String, dynamic>.from(raw);
@@ -225,5 +248,60 @@ class ProxmoxVEBackupFormController extends GetxController
       }
     }
     return null;
+  }
+
+  Future<bool> _handleAction({
+    required String action,
+    required String vmid,
+    required String type,
+  }) async {
+    containerActionLoading.value = true;
+    errorText.value = null;
+    try {
+      final token = _getToken();
+      if (token == null || token.isEmpty) {
+        ToastUtil.error('请先登录');
+        return false;
+      }
+      final path = action == 'snapshot'
+          ? 'container_snapshot'
+          : 'container_action';
+      final data = action == 'snapshot'
+          ? {'vmid': vmid, 'type': type}
+          : {'action': action, 'vmid': vmid, 'type': type};
+      final response = await _apiClient.post<dynamic>(
+        '$_basePath/$path',
+        data: data,
+        token: token,
+      );
+      final status = response.statusCode ?? 0;
+      if (status >= 400) {
+        final msg = _extractErrorMessage(response.data, status, '操作失败');
+        errorText.value = msg;
+        ToastUtil.error(msg);
+        return false;
+      }
+      final actionLabels = {
+        'start': '启动',
+        'stop': '停止',
+        'reboot': '重启',
+        'snapshot': '快照',
+      };
+      ToastUtil.success('${actionLabels[action] ?? action} VMID $vmid 操作成功');
+      // 操作成功后刷新页面
+      final t = _getToken();
+      if (t != null && t.isNotEmpty && !formMode) {
+        await _loadPage(t);
+      }
+      return true;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '处理 ProxmoxVEBackup 操作失败');
+      final msg = e.toString();
+      errorText.value = msg;
+      ToastUtil.error(msg);
+      return false;
+    } finally {
+      containerActionLoading.value = false;
+    }
   }
 }

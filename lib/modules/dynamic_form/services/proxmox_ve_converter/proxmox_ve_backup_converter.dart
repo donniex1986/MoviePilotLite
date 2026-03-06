@@ -10,10 +10,15 @@ class ProxmoxVEBackupConverter {
     List<Map<String, dynamic>> containerStatusList = const [],
     List<Map<String, dynamic>> backups = const [],
     bool useHeaderBlock = false,
+    void Function(String type, String vmid, String action)? onContainerAction,
   }) {
     final blocks = <FormBlock>[];
     _buildPveStatusSection(blocks, pveStatus);
-    _buildContainerStatusSection(blocks, containerStatusList);
+    _buildContainerStatusSection(
+      blocks,
+      containerStatusList,
+      onContainerAction,
+    );
     _buildAvailableBackupsSection(blocks, backups);
 
     blocks.add(
@@ -162,6 +167,7 @@ class ProxmoxVEBackupConverter {
   static void _buildContainerStatusSection(
     List<FormBlock> blocks,
     List<Map<String, dynamic>> containerStatusList,
+    void Function(String type, String vmid, String action)? onContainerAction,
   ) {
     if (containerStatusList.isEmpty) {
       blocks.add(
@@ -188,7 +194,43 @@ class ProxmoxVEBackupConverter {
       rows.add([name, vmid, status, type, _formatUptime(uptime), tags]);
     }
 
-    blocks.add(FormBlock.table(headers: headers, rows: rows));
+    blocks.add(
+      FormBlock.table(
+        onAction: (actionType, index) {
+          final vmid = rows[index][1];
+          final type = rows[index][3];
+          onContainerAction?.call(type, vmid, actionType);
+        },
+        headers: headers,
+        rows: rows,
+        actions: [
+          InfoCardRowMenuItem(
+            label: '启动',
+            iconName: 'mdi-play',
+            iconColor: 'green',
+            events: Map<String, dynamic>.from({'type': 'start'}),
+          ),
+          InfoCardRowMenuItem(
+            label: '停止',
+            iconName: 'mdi-refresh',
+            iconColor: 'red',
+            events: Map<String, dynamic>.from({'type': 'stop'}),
+          ),
+          InfoCardRowMenuItem(
+            label: '重启',
+            iconName: 'mdi-restart',
+            iconColor: 'blue',
+            events: Map<String, dynamic>.from({'type': 'reboot'}),
+          ),
+          InfoCardRowMenuItem(
+            label: '快照',
+            iconName: 'mdi-camera',
+            iconColor: 'blue',
+            events: Map<String, dynamic>.from({'type': 'snapshot'}),
+          ),
+        ],
+      ),
+    );
   }
 
   static void _buildAvailableBackupsSection(
@@ -211,18 +253,14 @@ class ProxmoxVEBackupConverter {
     final rows = <InfoCardRow>[];
     for (final b in backups) {
       final filename = b['filename']?.toString() ?? '';
-      final sizeMb = (b['size_mb'] as num?)?.toDouble() ?? 0.0;
-      final timeStr = b['time_str']?.toString() ?? '';
-      final source = b['source']?.toString() ?? '';
+      final timeStr = b['timestamp']?.toString() ?? '';
       rows.add(
         InfoCardRow(
           iconName: 'mdi-file-archive',
           iconColor: 'teal',
           label: filename,
-          value: timeStr,
-          chipText: _formatSize(sizeMb),
+          subtitle: timeStr,
           chipColor: 'blue',
-          subtitle: source.isNotEmpty ? '来源: $source' : null,
         ),
       );
     }

@@ -38,6 +38,9 @@ class RandomPicFormController extends GetxController
   @override
   final errorText = RxnString();
 
+  @override
+  RxBool? get actionLoading => null;
+
   static const _basePath = '/api/v1/plugin/RandomPic';
 
   String? _getToken() =>

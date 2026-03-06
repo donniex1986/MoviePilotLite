@@ -1,19 +1,26 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/utils/vuetify_mappings.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/widgets/section_header.dart';
 
 /// 表格区块：移动端以卡片列表展示，每行一条卡片
 class TableWidget extends StatelessWidget {
-  const TableWidget({super.key, required this.block});
+  const TableWidget({super.key, required this.block, this.actionLoading});
 
   final TableBlock block;
+
+  /// 行内操作 loading 状态，有则展示 loading 指示器
+  final RxBool? actionLoading;
 
   @override
   Widget build(BuildContext context) {
     final headers = block.headers;
     final rows = block.rows;
+    final actions = block.actions;
+    final onMoreTap = block.onAction;
     if (headers.isEmpty && rows.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -23,7 +30,14 @@ class TableWidget extends StatelessWidget {
       children: [
         ...rows.asMap().entries.map((entry) {
           final row = entry.value;
-          return _TableRowCard(headers: headers, row: row, isHeaderRow: false);
+          return _TableRowCard(
+            headers: headers,
+            row: row,
+            isHeaderRow: false,
+            actions: actions,
+            onMoreTap: (actionType) => onMoreTap?.call(actionType, entry.key),
+            actionLoading: actionLoading,
+          );
         }),
       ],
     );
@@ -35,12 +49,17 @@ class _TableRowCard extends StatelessWidget {
     required this.headers,
     required this.row,
     this.isHeaderRow = false,
+    this.actions,
+    this.onMoreTap,
+    this.actionLoading,
   });
 
   final List<String> headers;
   final List<dynamic> row;
   final bool isHeaderRow;
-
+  final List<InfoCardRowMenuItem>? actions;
+  final void Function(String type)? onMoreTap;
+  final RxBool? actionLoading;
   Widget _buildItem(
     BuildContext context,
     String? header,
@@ -90,10 +109,19 @@ class _TableRowCard extends StatelessWidget {
     final value = row.first;
     final realHeaders = headers.sublist(1, maxCol);
     final realValues = row.sublist(1, maxCol);
+
     return Section(
       separatorBuilder: (context) => Divider(),
       margin: EdgeInsets.zero,
-      header: _buildItem(context, null, value, theme, isHeaderRow),
+      header: SectionHeader(
+        title: value,
+        trailing: _buildActions(
+          context,
+          actions,
+          onMoreTap,
+          actionLoading: actionLoading,
+        ),
+      ),
       children: realHeaders.asMap().entries.map((entry) {
         final index = entry.key;
         final header = entry.value;
@@ -104,6 +132,88 @@ class _TableRowCard extends StatelessWidget {
         );
       }).toList(),
     );
+  }
+
+  Widget _buildActions(
+    BuildContext context,
+    List<InfoCardRowMenuItem>? actions,
+    void Function(String type)? onMoreTap, {
+    RxBool? actionLoading,
+  }) {
+    if (actions == null || actions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    Widget buildButton({required bool enabled}) => PopupMenuButton<String>(
+      onSelected: onMoreTap,
+      enabled: enabled,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      padding: EdgeInsets.zero,
+      elevation: 4,
+      shadowColor: Colors.black.withValues(alpha: 0.1),
+      offset: const Offset(0, 10),
+      itemBuilder: (context) => actions
+          .map(
+            (e) => PopupMenuItem<String>(
+              value: e.events?['type'],
+              child: Row(
+                children: [
+                  Icon(
+                    VuetifyMappings.iconFromMdi(e.iconName),
+                    size: 16,
+                    color: VuetifyMappings.colorFromVuetify(e.iconColor),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    e.label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: VuetifyMappings.colorFromVuetify(e.iconColor),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: actionLoading != null
+            ? Obx(() {
+                final loading = actionLoading.value;
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(
+                      Icons.more_vert,
+                      color: loading
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.5)
+                          : Theme.of(context).colorScheme.primary,
+                    ),
+                    if (loading)
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CupertinoActivityIndicator(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                  ],
+                );
+              })
+            : Icon(
+                Icons.more_vert,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+      ),
+    );
+
+    if (actionLoading != null) {
+      return Obx(() => buildButton(enabled: !actionLoading.value));
+    }
+    return buildButton(enabled: true);
   }
 
   Widget _buildCellContent(

@@ -28,6 +28,8 @@ sealed class FormBlock with _$FormBlock {
   const factory FormBlock.table({
     @Default([]) List<String> headers,
     @Default([]) List<List<dynamic>> rows,
+    @Default([]) List<InfoCardRowMenuItem>? actions,
+    void Function(String type, int index)? onAction,
   }) = TableBlock;
 
   /// 开关：标签 + 当前值
@@ -226,6 +228,7 @@ class InfoCardRowMenuItem with _$InfoCardRowMenuItem {
     required String label,
     String? iconName,
     String? iconColor,
+    bool? isEnabled,
     Map<String, dynamic>? events,
   }) = _InfoCardRowMenuItem;
 }

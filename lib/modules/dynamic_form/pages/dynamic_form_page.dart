@@ -113,8 +113,8 @@ class DynamicFormPage extends GetView<DynamicFormController> {
       body: Obx(() {
         final loading = controller.isLoading.value;
         final error = controller.errorText.value;
-        final blocks = controller.blocks;
-        final pNodes = controller.pageNodes;
+        final blocks = controller.effectiveBlocks;
+        final pNodes = controller.effectivePageNodes;
         final hasContent = blocks.isNotEmpty || pNodes.isNotEmpty;
 
         if (loading && !hasContent) {
@@ -290,7 +290,10 @@ class DynamicFormPage extends GetView<DynamicFormController> {
     return block.map(
       statCard: (b) => StatCardWidget(block: b),
       chart: (b) => ChartWidget(block: b),
-      table: (b) => TableWidget(block: b),
+      table: (b) => TableWidget(
+            block: b,
+            actionLoading: controller.pluginAdapter?.actionLoading,
+          ),
       switchField: (b) => Obx(
         () => SwitchFieldWidget(
           block: b,
