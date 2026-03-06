@@ -409,7 +409,7 @@ _$EpisodeGroupImpl _$$EpisodeGroupImplFromJson(Map<String, dynamic> json) =>
       group_count: _intFromJson(json['group_count']),
       id: json['id'] as String?,
       name: json['name'] as String?,
-      network: json['network'] as String?,
+      network: _stringFromJson(json['network']),
       type: _intFromJson(json['type']),
     );
 

@@ -51,6 +51,150 @@ class AppTheme {
   /// 分隔线颜色
   static const Color dividerColor = Color(0xFFC6C6C8);
 
+  /// 使用自定义主题色的浅色主题
+  static ThemeData lightThemeWithPrimary(Color primary) {
+    return ThemeData(
+      useMaterial3: false,
+      primaryColor: primary,
+      secondaryHeaderColor: secondaryColor,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: lightBackgroundColor,
+      cardColor: lightCardBackgroundColor,
+      cardTheme: CardThemeData(
+        color: lightCardBackgroundColor,
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: borderColor, width: 0.5),
+        ),
+        clipBehavior: Clip.antiAlias,
+      ),
+      textTheme: TextTheme(
+        bodyLarge: TextStyle(color: lightTextPrimaryColor, fontSize: 17),
+        bodyMedium: TextStyle(color: textSecondaryColor, fontSize: 14),
+        titleLarge: TextStyle(
+          color: lightTextPrimaryColor,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        titleMedium: TextStyle(
+          color: lightTextPrimaryColor,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        titleSmall: TextStyle(
+          color: lightTextPrimaryColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: lightBackgroundColor,
+        foregroundColor: lightTextPrimaryColor,
+        elevation: 0,
+        titleTextStyle: TextStyle(
+          color: lightTextPrimaryColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+        actionsIconTheme: IconThemeData(color: primary),
+      ),
+      buttonTheme: ButtonThemeData(
+        buttonColor: primary,
+        textTheme: ButtonTextTheme.primary,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
+        ),
+      ),
+      colorScheme: ColorScheme.light(
+        primary: primary,
+        secondary: secondaryColor,
+        background: lightBackgroundColor,
+        surface: lightCardBackgroundColor,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onBackground: lightTextPrimaryColor,
+        onSurface: lightTextPrimaryColor,
+      ),
+    );
+  }
+
+  /// 使用自定义主题色的深色主题
+  static ThemeData darkThemeWithPrimary(Color primary) {
+    return ThemeData(
+      useMaterial3: false,
+      primaryColor: primary,
+      secondaryHeaderColor: secondaryColor,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: darkBackgroundColor,
+      cardColor: darkCardBackgroundColor,
+      cardTheme: CardThemeData(
+        color: darkCardBackgroundColor,
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: borderColor, width: 0.5),
+        ),
+        clipBehavior: Clip.antiAlias,
+      ),
+      textTheme: TextTheme(
+        bodyLarge: TextStyle(color: darkTextPrimaryColor, fontSize: 17),
+        bodyMedium: TextStyle(color: textSecondaryColor, fontSize: 14),
+        titleLarge: TextStyle(
+          color: darkTextPrimaryColor,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        titleMedium: TextStyle(
+          color: darkTextPrimaryColor,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        titleSmall: TextStyle(
+          color: darkTextPrimaryColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: darkBackgroundColor,
+        foregroundColor: darkTextPrimaryColor,
+        elevation: 0,
+        titleTextStyle: TextStyle(
+          color: darkTextPrimaryColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+        actionsIconTheme: IconThemeData(color: primary),
+      ),
+      buttonTheme: ButtonThemeData(
+        buttonColor: primary,
+        textTheme: ButtonTextTheme.primary,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
+        ),
+      ),
+      colorScheme: ColorScheme.dark(
+        primary: primary,
+        secondary: secondaryColor,
+        background: darkBackgroundColor,
+        surface: darkCardBackgroundColor,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onBackground: darkTextPrimaryColor,
+        onSurface: darkTextPrimaryColor,
+      ),
+    );
+  }
+
   /// 获取浅色主题
   static ThemeData get lightTheme {
     return ThemeData(

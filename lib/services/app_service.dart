@@ -6,18 +6,41 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// 应用全局服务
 class AppService extends GetxService {
+  static const Color _defaultPrimaryColor = Color(0xFF007AFF);
+
   final themeMode = ThemeMode.system.obs;
+  final primaryColor = _defaultPrimaryColor.obs;
+
   @override
   Future<void> onInit() async {
     super.onInit();
     final prefs = await SharedPreferences.getInstance();
     themeMode.value = ThemeMode.values[prefs.getInt('themeMode') ?? 0];
+    // 主题色：以 RGB 存储，读取后还原
+    final r = prefs.getInt('primaryColorR');
+    final g = prefs.getInt('primaryColorG');
+    final b = prefs.getInt('primaryColorB');
+    if (r != null && g != null && b != null) {
+      primaryColor.value = Color.fromARGB(255, r, g, b);
+    }
   }
 
   Future<void> updateThemeMode(ThemeMode mode) async {
     final prefs = await SharedPreferences.getInstance();
     themeMode.value = mode;
     prefs.setInt('themeMode', mode.index);
+    Get.forceAppUpdate();
+  }
+
+  Future<void> updatePrimaryColor(Color color) async {
+    final prefs = await SharedPreferences.getInstance();
+    primaryColor.value = color;
+    final r = (color.r * 255).round().clamp(0, 255).toInt();
+    final g = (color.g * 255).round().clamp(0, 255).toInt();
+    final b = (color.b * 255).round().clamp(0, 255).toInt();
+    prefs.setInt('primaryColorR', r);
+    prefs.setInt('primaryColorG', g);
+    prefs.setInt('primaryColorB', b);
     Get.forceAppUpdate();
   }
 

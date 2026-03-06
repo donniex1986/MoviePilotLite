@@ -40,7 +40,7 @@ class InfoCardWidget extends StatelessWidget {
     final color = _resolveColor(block.iconColor);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
           if (iconData != null) ...[
@@ -133,28 +133,65 @@ class InfoCardWidget extends StatelessWidget {
     Color iconColor,
     _InfoCardClickEvent? clickEvent,
   ) {
-    return CupertinoListTile(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      leading: iconData != null
-          ? _buildSubtleIconBadge(iconData, iconColor)
-          : null,
-      title: Text(
-        row.label,
-        style: TextStyle(
-          fontSize: 15,
-          color: CupertinoDynamicColor.resolve(CupertinoColors.label, context),
-        ),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: _buildSubtitle(context, row.subtitle),
-      trailing: _buildValueChipTrailing(
-        context,
-        value: row.value,
-        chipText: row.chipText,
-        chipColor: row.chipColor,
-      ),
+    return GestureDetector(
       onTap: clickEvent != null ? () => _handleClickEvent(clickEvent) : null,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            iconData != null
+                ? _buildSubtleIconBadge(iconData, iconColor)
+                : const SizedBox.shrink(),
+            const SizedBox(width: 8),
+            if (row.label.isNotEmpty) ...[
+              Expanded(
+                child: Text(
+                  row.label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: CupertinoDynamicColor.resolve(
+                      CupertinoColors.label,
+                      context,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            if (row.subtitle != null && row.subtitle!.isNotEmpty) ...[
+              const SizedBox(width: 1),
+              Expanded(
+                child: Text(
+                  row.subtitle!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: CupertinoDynamicColor.resolve(
+                      CupertinoColors.secondaryLabel,
+                      context,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+
+            if (row.value != null && row.value!.isNotEmpty) ...[
+              Spacer(),
+              Text(row.value!),
+            ],
+            if (row.chipText != null && row.chipText!.isNotEmpty) ...[
+              Spacer(),
+              _buildValueChipTrailing(
+                context,
+                chipText: row.chipText,
+                chipColor: row.chipColor,
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
@@ -165,23 +202,43 @@ class InfoCardWidget extends StatelessWidget {
     Color iconColor,
     _InfoCardClickEvent? clickEvent,
   ) {
-    return CupertinoListTile(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      leading: iconData != null
-          ? _buildSubtleIconBadge(iconData, iconColor)
-          : null,
-      title: Text(
-        row.label,
-        style: TextStyle(
-          fontSize: 15,
-          color: CupertinoDynamicColor.resolve(CupertinoColors.label, context),
-        ),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              iconData != null
+                  ? _buildSubtleIconBadge(iconData, iconColor)
+                  : const SizedBox.shrink(),
+              const SizedBox(width: 8),
+              Text(
+                row.label,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: CupertinoDynamicColor.resolve(
+                    CupertinoColors.label,
+                    context,
+                  ),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (row.chipText != null && row.chipText!.isNotEmpty) ...[
+                Spacer(),
+                _buildValueChipTrailing(
+                  context,
+                  chipText: row.chipText,
+                  chipColor: row.chipColor,
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildProgressTrailing(context, row),
+        ],
       ),
-      subtitle: _buildSubtitle(context, row.subtitle),
-      trailing: _buildProgressTrailing(context, row),
-      onTap: clickEvent != null ? () => _handleClickEvent(clickEvent) : null,
     );
   }
 
@@ -199,11 +256,9 @@ class InfoCardWidget extends StatelessWidget {
       chipColor: row.chipColor,
     );
     final trailingWidgets = <Widget>[];
-    if (valueTrailing != null) {
-      trailingWidgets.add(Flexible(child: valueTrailing));
-      if (row.menuItems.isNotEmpty) {
-        trailingWidgets.add(const SizedBox(width: 6));
-      }
+    trailingWidgets.add(Flexible(child: valueTrailing));
+    if (row.menuItems.isNotEmpty) {
+      trailingWidgets.add(const SizedBox(width: 6));
     }
     if (row.menuItems.isNotEmpty) {
       trailingWidgets.add(_buildPopupMenuButton(context, row.menuItems));
@@ -247,7 +302,7 @@ class InfoCardWidget extends StatelessWidget {
     );
   }
 
-  Widget? _buildValueChipTrailing(
+  Widget _buildValueChipTrailing(
     BuildContext context, {
     String? value,
     String? chipText,
@@ -255,14 +310,14 @@ class InfoCardWidget extends StatelessWidget {
   }) {
     final hasValue = value != null && value.isNotEmpty;
     final hasChip = chipText != null && chipText.isNotEmpty;
-    if (!hasValue && !hasChip) return null;
+    if (!hasValue && !hasChip) return const SizedBox.shrink();
 
     final children = <Widget>[];
     if (hasValue) {
       children.add(
         Flexible(
           child: Text(
-            value!,
+            value,
             style: TextStyle(
               fontSize: 14,
               color: CupertinoDynamicColor.resolve(
@@ -287,7 +342,6 @@ class InfoCardWidget extends StatelessWidget {
 
   Widget _buildProgressTrailing(BuildContext context, InfoCardRowProgress row) {
     final valueText = row.value?.isNotEmpty == true ? row.value : null;
-    final chipText = row.chipText?.isNotEmpty == true ? row.chipText : null;
     final progress = row.progressValue.clamp(0.0, 1.0);
     final progressColor = _resolveColor(row.progressColor);
     final backgroundColor =
@@ -300,11 +354,6 @@ class InfoCardWidget extends StatelessWidget {
         : '${(progress * 100).round()}%';
 
     final children = <Widget>[];
-    if (chipText != null) {
-      children.add(const SizedBox(height: 4));
-      children.add(_buildBadgeChip(chipText, row.chipColor));
-      children.add(const SizedBox(height: 4));
-    }
     if (valueText != null) {
       children.add(
         Text(
@@ -334,26 +383,11 @@ class InfoCardWidget extends StatelessWidget {
       ),
     );
     children.add(const SizedBox(height: 4));
-    children.add(
-      Text(
-        labelText,
-        style: TextStyle(
-          fontSize: 12,
-          color: CupertinoDynamicColor.resolve(
-            CupertinoColors.secondaryLabel,
-            context,
-          ),
-        ),
-      ),
-    );
 
-    return SizedBox(
-      width: 150,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: children,
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: children,
     );
   }
 
@@ -494,7 +528,7 @@ class InfoCardWidget extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color,
+        color: color.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(size * 0.24),
       ),
       child: Icon(icon, size: iconSize, color: Colors.white),

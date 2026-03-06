@@ -28,6 +28,8 @@ sealed class FormBlock with _$FormBlock {
   const factory FormBlock.table({
     @Default([]) List<String> headers,
     @Default([]) List<List<dynamic>> rows,
+    @Default([]) List<InfoCardRowMenuItem>? actions,
+    void Function(String type, int index)? onAction,
   }) = TableBlock;
 
   /// 开关：标签 + 当前值
@@ -218,6 +220,18 @@ class InfoCardRow with _$InfoCardRow {
     @Default([]) List<InfoCardRowMenuItem> menuItems,
     Map<String, dynamic>? events,
   }) = InfoCardRowMenu;
+
+  const factory InfoCardRow.group({
+    String? iconName,
+    String? iconColor,
+    required String label,
+    String? subtitle,
+    String? value,
+    String? chipText,
+    String? chipColor,
+    @Default([]) List<InfoCardRowMenuItem> menuItems,
+    Map<String, dynamic>? events,
+  }) = InfoCardRowMenu;
 }
 
 @freezed
@@ -226,6 +240,7 @@ class InfoCardRowMenuItem with _$InfoCardRowMenuItem {
     required String label,
     String? iconName,
     String? iconColor,
+    bool? isEnabled,
     Map<String, dynamic>? events,
   }) = _InfoCardRowMenuItem;
 }

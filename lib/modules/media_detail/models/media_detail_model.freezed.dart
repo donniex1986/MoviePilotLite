@@ -5159,6 +5159,7 @@ mixin _$EpisodeGroup {
   int? get group_count => throw _privateConstructorUsedError;
   String? get id => throw _privateConstructorUsedError;
   String? get name => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _stringFromJson)
   String? get network => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _intFromJson)
   int? get type => throw _privateConstructorUsedError;
@@ -5186,7 +5187,7 @@ abstract class $EpisodeGroupCopyWith<$Res> {
     @JsonKey(fromJson: _intFromJson) int? group_count,
     String? id,
     String? name,
-    String? network,
+    @JsonKey(fromJson: _stringFromJson) String? network,
     @JsonKey(fromJson: _intFromJson) int? type,
   });
 }
@@ -5265,7 +5266,7 @@ abstract class _$$EpisodeGroupImplCopyWith<$Res>
     @JsonKey(fromJson: _intFromJson) int? group_count,
     String? id,
     String? name,
-    String? network,
+    @JsonKey(fromJson: _stringFromJson) String? network,
     @JsonKey(fromJson: _intFromJson) int? type,
   });
 }
@@ -5336,7 +5337,7 @@ class _$EpisodeGroupImpl implements _EpisodeGroup {
     @JsonKey(fromJson: _intFromJson) this.group_count,
     this.id,
     this.name,
-    this.network,
+    @JsonKey(fromJson: _stringFromJson) this.network,
     @JsonKey(fromJson: _intFromJson) this.type,
   });
 
@@ -5356,6 +5357,7 @@ class _$EpisodeGroupImpl implements _EpisodeGroup {
   @override
   final String? name;
   @override
+  @JsonKey(fromJson: _stringFromJson)
   final String? network;
   @override
   @JsonKey(fromJson: _intFromJson)
@@ -5417,7 +5419,7 @@ abstract class _EpisodeGroup implements EpisodeGroup {
     @JsonKey(fromJson: _intFromJson) final int? group_count,
     final String? id,
     final String? name,
-    final String? network,
+    @JsonKey(fromJson: _stringFromJson) final String? network,
     @JsonKey(fromJson: _intFromJson) final int? type,
   }) = _$EpisodeGroupImpl;
 
@@ -5437,6 +5439,7 @@ abstract class _EpisodeGroup implements EpisodeGroup {
   @override
   String? get name;
   @override
+  @JsonKey(fromJson: _stringFromJson)
   String? get network;
   @override
   @JsonKey(fromJson: _intFromJson)

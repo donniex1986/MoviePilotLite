@@ -38,6 +38,9 @@ class TrashCleanFormController extends GetxController
   @override
   final errorText = RxnString();
 
+  @override
+  RxBool? get actionLoading => null;
+
   static const _basePath = '/api/v1/plugin/TrashClean';
 
   String? _getToken() =>
@@ -206,5 +209,19 @@ class TrashCleanFormController extends GetxController
       }
     }
     return null;
+  }
+
+  @override
+  bool get supportsSave => true;
+
+  @override
+  bool get supportsFormEntry => true;
+
+  @override
+  List<AppBarActionItem>? get actionList => null;
+
+  @override
+  Future<void> onAppBarAction(String type) async {
+    // TODO: implement onAppBarAction
   }
 }

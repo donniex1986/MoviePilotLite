@@ -68,6 +68,7 @@ import 'modules/plugin/pages/plugin_page.dart';
 import 'modules/plugin/pages/plugin_list_page.dart';
 import 'modules/plugin/services/plugin_palette_cache.dart';
 import 'modules/dynamic_form/adapters/plugin_form_adapter_registry.dart';
+import 'modules/dynamic_form/adapters/p115_strm_helper_form_controller.dart';
 import 'modules/dynamic_form/adapters/proxmox_ve_backup_form_controller.dart';
 import 'modules/dynamic_form/adapters/trash_clean_form_controller.dart';
 import 'modules/dynamic_form/widgets/VueStyle/proxmox_ve/proxmox_ve_backup_widgets.dart';
@@ -125,6 +126,11 @@ void main() {
     ({required formMode}) => TrashCleanFormController(formMode: formMode),
   );
   PluginFormAdapterRegistry.register(
+    'P115StrmHelper',
+    ({required formMode}) =>
+        P115StrmHelperFormController(formMode: formMode),
+  );
+  PluginFormAdapterRegistry.register(
     'ProxmoxVEBackup',
     ({required formMode}) => ProxmoxVEBackupFormController(formMode: formMode),
   );
@@ -140,16 +146,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WidgetsFlutterBinding.ensureInitialized();
-    // 获取Talker实例
     final talker = Get.find<AppLog>();
     final appService = Get.find<AppService>();
-    // 创建Talker路由观察器
     final routeObserver = TalkerRouteObserver(talker.talker);
-    return GetMaterialApp(
-      title: 'MoviePilot',
-      themeMode: appService.themeMode.value,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+    return Obx(() {
+      final primary = appService.primaryColor.value;
+      return GetMaterialApp(
+        title: 'MoviePilot',
+        themeMode: appService.themeMode.value,
+        theme: AppTheme.lightThemeWithPrimary(primary),
+        darkTheme: AppTheme.darkThemeWithPrimary(primary),
       initialBinding: AppBinding(),
       initialRoute: '/login',
       navigatorObservers: [
@@ -685,5 +691,6 @@ class MyApp extends StatelessWidget {
         return TalkerWrapper(talker: talker.talker, child: child!);
       },
     );
+    });
   }
 }
