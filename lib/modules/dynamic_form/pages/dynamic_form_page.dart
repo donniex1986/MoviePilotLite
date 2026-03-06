@@ -78,18 +78,28 @@ class DynamicFormPage extends GetView<DynamicFormController> {
         title: Text(controller.pageTitle ?? '动态表单'),
         centerTitle: false,
         actions: [
-          if (controller.pluginAdapter is PluginFormAdapterWithClean)
-            IconButton(
-              icon: Icon(
-                Icons.cleaning_services,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              tooltip: '立即清理',
-              onPressed: () => _onTriggerClean(context),
-            ),
-          if (!controller.formMode.value &&
-              (controller.pluginAdapter?.actionList ?? []).isNotEmpty)
-            _buildAppBarActionMenu(context),
+          Obx(() {
+            // 依赖 isLoading，以便 adapter 注入后能重新计算并显示右侧操作（清理、actionList）
+            controller.isLoading.value;
+            final adapter = controller.pluginAdapter;
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (adapter is PluginFormAdapterWithClean)
+                  IconButton(
+                    icon: Icon(
+                      Icons.cleaning_services,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    tooltip: '立即清理',
+                    onPressed: () => _onTriggerClean(context),
+                  ),
+                if (!controller.formMode.value &&
+                    (adapter?.actionList ?? []).isNotEmpty)
+                  _buildAppBarActionMenu(context),
+              ],
+            );
+          }),
           Obx(() {
             final showSave = controller.hasFormModel;
             if (showSave) {

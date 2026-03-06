@@ -98,19 +98,12 @@ class P115StrmHelperConverter {
           iconName: 'mdi-crown',
           iconColor: isVip ? 'amber' : 'grey',
           label: '会员状态',
-          chipText: isVip ? 'VIP' : '普通用户',
+          chipText: isVip
+              ? 'VIP${vipExpire.isNotEmpty ? '至${vipExpire}' : ''}'
+              : '普通用户',
           chipColor: isVip ? 'amber' : 'grey',
         ),
       );
-      if (vipExpire.isNotEmpty) {
-        rows.add(
-          InfoCardRow(
-            iconName: 'mdi-calendar',
-            label: 'VIP 到期',
-            value: vipExpire,
-          ),
-        );
-      }
     }
     if (storageMap != null) {
       final total = storageMap['total'];
