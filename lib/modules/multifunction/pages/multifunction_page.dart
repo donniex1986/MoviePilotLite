@@ -39,9 +39,10 @@ class MultifunctionPage extends GetView<MultifunctionController> {
 
   AppBar _buildNavigationBar(BuildContext context) {
     return AppBar(
-      leading: Padding(
-        padding: EdgeInsets.only(left: 12),
-        child: Icon(Icons.grid_view_rounded, color: context.primaryColor),
+      leading: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: () {},
+        child: const Icon(Icons.grid_view_outlined),
       ),
       title: const Text(
         'More',

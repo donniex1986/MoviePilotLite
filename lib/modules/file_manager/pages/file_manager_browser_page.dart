@@ -30,7 +30,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
       appBar: _buildAppBar(context),
       body: Column(
         children: [
-          Expanded(child: _buildFileList()),
+          Expanded(child: _buildFileList(context)),
           if (controller.isPickerMode) _buildPickerBottomBar(context),
         ],
       ),
@@ -143,12 +143,12 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
                     ),
                   ),
                   if (controller.selectedStorage.value?.type == s.type)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(left: 8),
                       child: Icon(
                         CupertinoIcons.checkmark,
                         size: 18,
-                        color: CupertinoColors.activeBlue,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                 ],
@@ -210,10 +210,10 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
                       ),
                     ),
                     if (controller.sortBy.value == 'name')
-                      const Icon(
+                      Icon(
                         CupertinoIcons.checkmark,
                         size: 18,
-                        color: CupertinoColors.activeBlue,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                   ],
                 ),
@@ -234,10 +234,10 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
                       ),
                     ),
                     if (controller.sortBy.value == 'time')
-                      const Icon(
+                      Icon(
                         CupertinoIcons.checkmark,
                         size: 18,
-                        color: CupertinoColors.activeBlue,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                   ],
                 ),
@@ -284,7 +284,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
     }
   }
 
-  Widget _buildPathBreadcrumb() {
+  Widget _buildPathBreadcrumb(BuildContext context) {
     return Obx(() {
       final stack = controller.pathStack;
       if (stack.isEmpty) return const SizedBox.shrink();
@@ -309,16 +309,13 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
                   onTap: () => _jumpToPathByPop(i),
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 6,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                     child: Text(
                       _folderNameFromPath(stack[i]),
                       style: TextStyle(
                         fontSize: 14,
                         color: i == stack.length - 1
-                            ? CupertinoColors.systemBlue
+                            ? Theme.of(context).colorScheme.primary
                             : CupertinoColors.systemGrey,
                         fontWeight: i == stack.length - 1
                             ? FontWeight.w600
@@ -341,7 +338,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
     return parts.isEmpty ? '根目录' : parts.last;
   }
 
-  Widget _buildFileList() {
+  Widget _buildFileList(BuildContext context) {
     return Obx(() {
       if (controller.selectedStorage.value == null &&
           controller.errorText.value != null) {
@@ -363,7 +360,7 @@ class FileManagerBrowserPage extends GetView<FileManagerBrowserController> {
       return CustomScrollView(
         slivers: [
           // 路径面包屑
-          SliverToBoxAdapter(child: _buildPathBreadcrumb()),
+          SliverToBoxAdapter(child: _buildPathBreadcrumb(context)),
           // 搜索栏
           SliverToBoxAdapter(
             child: Container(

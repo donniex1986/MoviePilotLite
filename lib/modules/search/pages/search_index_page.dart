@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/widgets/section_header.dart';
 
 import '../controllers/search_index_controller.dart';
 import '../models/search_history.dart';
@@ -33,6 +34,7 @@ class SearchIndexPage extends GetView<SearchIndexController> {
       final sections = <Widget>[
         if (mediaSuggestions.isNotEmpty)
           Section(
+            header: SectionHeader(title: '媒体推荐'),
             child: _buildSuggestionSection(
               context,
               title: '媒体推荐',
@@ -41,6 +43,7 @@ class SearchIndexPage extends GetView<SearchIndexController> {
           ),
         if (siteSuggestions.isNotEmpty)
           Section(
+            header: SectionHeader(title: '站点资源'),
             child: _buildSuggestionSection(
               context,
               title: '站点资源',
@@ -49,16 +52,21 @@ class SearchIndexPage extends GetView<SearchIndexController> {
           ),
         if (historyItems.isNotEmpty)
           Section(
+            header: SectionHeader(title: '整理历史'),
             child: _buildSuggestionSection(
               context,
               title: '整理历史',
               items: historyItems,
             ),
           ),
-        Section(child: _buildHistorySection(context, controller.histories)),
+        Section(
+          header: SectionHeader(title: '最近搜索'),
+          child: _buildHistorySection(context, controller.histories),
+        ),
       ];
 
       return ListView.separated(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 200),
         itemCount: sections.length,
         separatorBuilder: (_, __) => const SizedBox(height: 16),
@@ -94,8 +102,6 @@ class SearchIndexPage extends GetView<SearchIndexController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(title: title),
-        const SizedBox(height: 12),
         if (items.isEmpty)
           const _EmptyState(title: '暂无内容', subtitle: '尝试输入其他关键字')
         else
@@ -120,25 +126,18 @@ class SearchIndexPage extends GetView<SearchIndexController> {
     BuildContext context,
     List<SearchHistoryEntry> items,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          title: '最近搜索',
-          actionLabel: items.isNotEmpty ? '清除' : null,
-          onAction: items.isNotEmpty ? controller.clearHistories : null,
+    if (items.isEmpty) {
+      return const _EmptyState(title: '暂无搜索记录', subtitle: '开始搜索以建立最近记录');
+    } else {
+      return SizedBox(
+        width: double.infinity,
+        child: Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: items.map(_buildHistoryChip).toList(),
         ),
-        const SizedBox(height: 12),
-        if (items.isEmpty)
-          const _EmptyState(title: '暂无搜索记录', subtitle: '开始搜索以建立最近记录')
-        else
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: items.map(_buildHistoryChip).toList(),
-          ),
-      ],
-    );
+      );
+    }
   }
 
   Widget _buildSearchBar(BuildContext context) {
@@ -198,11 +197,10 @@ class _SuggestionTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 5),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _LeadingBadge(label: item.leading ?? ''),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
