@@ -98,13 +98,16 @@ class RecognizePage extends GetView<RecognizeController> {
                         }
 
                         if (result == null && error == null) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Text(
-                              '暂无识别结果',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: CupertinoColors.systemGrey,
+                          return SizedBox(
+                            width: double.infinity,
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Text(
+                                '暂无识别结果',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: CupertinoColors.systemGrey,
+                                ),
                               ),
                             ),
                           );
