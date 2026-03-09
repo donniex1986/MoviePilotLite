@@ -107,6 +107,43 @@ class AuthRepository extends GetxService {
   }
 
   /// 获取用户全局配置（/api/v1/system/global/user）
+  Future<bool?> autoLogin({
+    required String server,
+    required String accessToken,
+  }) async {
+    try {
+      final normalizedServer = _normalizeServer(server);
+      _api.setBaseUrl(normalizedServer);
+      _api.setToken(accessToken);
+
+      _talker.info('开始获取用户全局配置: $normalizedServer');
+      return true;
+      // final response = await _api.get<Map<String, dynamic>>(
+      //   '/api/v1/system/global/user',
+      // );
+      // await _syncCookie(normalizedServer, response: response);
+      // final data = response.data;
+      // if (data == null) {
+      //   _talker.warning('获取用户全局配置失败: 返回数据为空');
+      //   return null;
+      // }
+
+      // final configResponse = UserGlobalConfigResponse.fromJson(data);
+      // if (!configResponse.success) {
+      //   _talker.warning(
+      //     '获取用户全局配置失败: ${configResponse.message ?? 'unknown error'}',
+      //   );
+      //   return null;
+      // }
+      // _talker.info('获取用户全局配置成功');
+      // return configResponse.data;
+    } catch (e) {
+      _talker.warning('获取用户全局配置失败: $e');
+      return null;
+    }
+  }
+
+  /// 获取用户全局配置（/api/v1/system/global/user）
   Future<UserGlobalConfig?> getUserGlobalConfig({
     required String server,
     required String accessToken,

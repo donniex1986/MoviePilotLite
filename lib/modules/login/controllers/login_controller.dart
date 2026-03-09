@@ -172,12 +172,12 @@ class LoginController extends GetxController {
 
     isAutoLogin.value = true;
     try {
-      final userInfo = await _repository.getUserGlobalConfig(
+      final success = await _repository.autoLogin(
         server: latestProfile.server,
         accessToken: latestProfile.accessToken,
       );
 
-      if (userInfo != null) {
+      if (success == true) {
         // 获取用户信息成功，直接跳转到dashboard页面
         _talker.info('自动登录成功');
         ToastUtil.success('自动登录成功');
