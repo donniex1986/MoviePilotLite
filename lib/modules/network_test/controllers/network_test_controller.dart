@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/gen/assets.gen.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 
@@ -26,7 +27,7 @@ class NetworkTestItem {
   final String id;
   final String title;
   final String url;
-  final IconData icon;
+  final Widget icon;
   final Color color;
   final bool proxy;
 
@@ -221,7 +222,7 @@ class NetworkTestController extends GetxController {
         url: _normalizeUrl(
           'https://api.themoviedb.org/3/movie/550?api_key={TMDBAPIKEY}',
         ),
-        icon: CupertinoIcons.film,
+        icon: Assets.images.logos.tmdb.image(width: 22, height: 22),
         color: const Color(0xFF01B4E4),
       ),
       NetworkTestItem(
@@ -230,42 +231,42 @@ class NetworkTestController extends GetxController {
         url: _normalizeUrl(
           'https://api.tmdb.org/3/movie/550?api_key={TMDBAPIKEY}',
         ),
-        icon: CupertinoIcons.film,
+        icon: Assets.images.logos.tmdb.image(width: 22, height: 22),
         color: const Color(0xFF01B4E4),
       ),
       NetworkTestItem(
         id: 'tmdb-web',
         title: 'www.themoviedb.org',
         url: _normalizeUrl('www.themoviedb.org'),
-        icon: CupertinoIcons.film,
+        icon: Assets.images.logos.tmdb.image(width: 22, height: 22),
         color: const Color(0xFF01B4E4),
       ),
       NetworkTestItem(
         id: 'tvdb-api',
         title: 'api.thetvdb.com',
         url: _normalizeUrl('https://api.thetvdb.com/series/81189'),
-        icon: CupertinoIcons.tv,
+        icon: Assets.images.logos.thetvdb.image(width: 22, height: 22),
         color: const Color(0xFF1DB954),
       ),
       NetworkTestItem(
         id: 'fanart-api',
         title: 'webservice.fanart.tv',
         url: _normalizeUrl('webservice.fanart.tv'),
-        icon: CupertinoIcons.photo_on_rectangle,
+        icon: Assets.images.logos.fanart.image(width: 22, height: 22),
         color: const Color(0xFF0094FF),
       ),
       NetworkTestItem(
         id: 'telegram-api',
         title: 'api.telegram.org',
         url: _normalizeUrl('api.telegram.org'),
-        icon: CupertinoIcons.paperplane,
+        icon: Assets.images.logos.telegram.image(width: 22, height: 22),
         color: const Color(0xFF27A7E7),
       ),
       NetworkTestItem(
         id: 'wechat-api',
         title: 'qyapi.weixin.qq.com',
         url: _normalizeUrl('https://qyapi.weixin.qq.com/cgi-bin/gettoken'),
-        icon: CupertinoIcons.chat_bubble_text,
+        icon: Assets.images.logos.wechat.image(width: 22, height: 22),
         color: const Color(0xFF07C160),
         proxy: false,
       ),
@@ -273,7 +274,7 @@ class NetworkTestController extends GetxController {
         id: 'douban-api',
         title: 'frodo.douban.com',
         url: _normalizeUrl('frodo.douban.com'),
-        icon: CupertinoIcons.book,
+        icon: Assets.images.logos.douban.image(width: 22, height: 22),
         color: const Color(0xFF1F7A1F),
         proxy: false,
       ),
@@ -281,42 +282,42 @@ class NetworkTestController extends GetxController {
         id: 'slack-web',
         title: 'slack.com',
         url: _normalizeUrl('slack.com'),
-        icon: CupertinoIcons.bell,
+        icon: Assets.images.logos.slack.image(width: 22, height: 22),
         color: const Color(0xFF4A154B),
       ),
       NetworkTestItem(
         id: 'pypi-web',
         title: 'pypi.org',
         url: _normalizeUrl('pypi.org'),
-        icon: CupertinoIcons.cube_box,
+        icon: Assets.images.logos.python.image(width: 22, height: 22),
         color: const Color(0xFF3776AB),
       ),
       NetworkTestItem(
         id: 'github-web',
         title: 'github.com',
         url: _normalizeUrl('github.com'),
-        icon: CupertinoIcons.chevron_left_slash_chevron_right,
+        icon: Assets.images.logos.github.image(width: 22, height: 22),
         color: const Color(0xFF24292E),
       ),
       NetworkTestItem(
         id: 'github-codeload',
         title: 'codeload.github.com',
         url: _normalizeUrl('codeload.github.com'),
-        icon: CupertinoIcons.arrow_down_circle,
+        icon: Assets.images.logos.github.image(width: 22, height: 22),
         color: const Color(0xFF24292E),
       ),
       NetworkTestItem(
         id: 'github-api',
         title: 'api.github.com',
         url: _normalizeUrl('api.github.com'),
-        icon: CupertinoIcons.cloud,
+        icon: Assets.images.logos.github.image(width: 22, height: 22),
         color: const Color(0xFF24292E),
       ),
       NetworkTestItem(
         id: 'github-raw',
         title: 'raw.githubusercontent.com',
         url: _normalizeUrl('raw.githubusercontent.com'),
-        icon: CupertinoIcons.doc_plaintext,
+        icon: Assets.images.logos.github.image(width: 22, height: 22),
         color: const Color(0xFF24292E),
       ),
     ];

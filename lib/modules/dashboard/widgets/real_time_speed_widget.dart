@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/dashboard/widgets/dashboard_section.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
@@ -41,7 +42,7 @@ class RealTimeSpeedWidget extends StatelessWidget {
                     '上传速度',
                     '${SizeFormatter.formatSize(uploadSpeed)}/s',
                     CupertinoIcons.arrow_up,
-                    CupertinoColors.activeBlue,
+                    Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ],

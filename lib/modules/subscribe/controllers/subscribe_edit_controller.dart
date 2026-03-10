@@ -325,7 +325,7 @@ class SubscribeEditController extends GetxController {
       'episode_group': episodeGroup.value.isEmpty ? null : episodeGroup.value,
       'filter_groups': selectedPriorityRuleNames.isEmpty
           ? null
-          : selectedPriorityRuleNames.map((n) => {'name': n}).toList(),
+          : selectedPriorityRuleNames.map((n) => n).toList(),
     };
   }
 

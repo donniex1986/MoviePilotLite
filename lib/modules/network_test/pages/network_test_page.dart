@@ -33,9 +33,7 @@ class NetworkTestPage extends GetView<NetworkTestController> {
           }),
         ],
       ),
-      body: SafeArea(
-        child: Obx(() => _buildBody(context, controller)),
-      ),
+      body: SafeArea(child: Obx(() => _buildBody(context, controller))),
     );
   }
 
@@ -241,7 +239,10 @@ class NetworkTestPage extends GetView<NetworkTestController> {
         color: item.color.withOpacity(0.12),
         shape: BoxShape.circle,
       ),
-      child: Icon(item.icon, size: 22, color: item.color),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: item.icon,
+      ),
     );
   }
 
@@ -269,11 +270,7 @@ class NetworkTestPage extends GetView<NetworkTestController> {
         child: Center(
           child: isBusy
               ? const CupertinoActivityIndicator(radius: 8)
-              : const Icon(
-                  CupertinoIcons.bolt,
-                  size: 18,
-                  color: Colors.white,
-                ),
+              : const Icon(CupertinoIcons.bolt, size: 18, color: Colors.white),
         ),
       ),
     );

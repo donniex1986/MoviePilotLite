@@ -18,11 +18,11 @@ class DashboardWidgetHeader extends StatelessWidget {
       enabled: title.isEmpty,
       child: Row(
         children: [
-          Icon(icon, size: 20),
+          Icon(icon, size: 20, color: color),
           SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
           if (onTapMore != null) ...[
             Spacer(),

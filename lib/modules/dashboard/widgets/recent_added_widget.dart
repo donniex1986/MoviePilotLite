@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:moviepilot_mobile/modules/dashboard/widgets/dashboard_section.dart';
-import 'package:moviepilot_mobile/modules/dashboard/widgets/dashboard_widget_header.dart';
-import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../controllers/dashboard_controller.dart';
 
@@ -31,30 +29,23 @@ class RecentAddedWidget extends StatelessWidget {
             height: 180,
             child: SfCartesianChart(
               primaryXAxis: CategoryAxis(
+                isVisible: false,
                 majorGridLines: const MajorGridLines(width: 0),
                 axisLine: const AxisLine(width: 0),
                 labelStyle: const TextStyle(fontSize: 10),
               ),
               primaryYAxis: NumericAxis(
-                isVisible: false,
+                isVisible: true,
                 majorGridLines: const MajorGridLines(width: 0),
+                axisLine: const AxisLine(width: 0),
+                labelStyle: const TextStyle(fontSize: 10),
               ),
               plotAreaBorderWidth: 0,
               series: <ColumnSeries<Map<String, dynamic>, String>>[
                 ColumnSeries<Map<String, dynamic>, String>(
                   dataSource: chartData,
                   xValueMapper: (data, index) {
-                    final maxDay = 7;
-                    final now = DateTime.now();
-                    final startDate = now.subtract(Duration(days: maxDay));
-
-                    final dateCache = List.generate(
-                      maxDay + 1,
-                      (i) => DateFormat(
-                        'MM/dd',
-                      ).format(startDate.add(Duration(days: i))),
-                    );
-                    return dateCache[index];
+                    return index.toString();
                   },
                   yValueMapper: (data, _) => data['count'] as int,
                   borderRadius: const BorderRadius.all(Radius.circular(4)),
@@ -110,12 +101,7 @@ class RecentAddedWidget extends StatelessWidget {
 
   // 准备图表数据
   List<Map<String, dynamic>> _prepareChartData(List<int> transferData) {
-    // 确保数据长度为7（一周）
     final data = List<int>.from(transferData);
-    while (data.length < 7) {
-      data.add(0);
-    }
-
     // 准备图表数据
     return data.asMap().entries.map((entry) {
       return {'day': entry.key, 'count': entry.value};
