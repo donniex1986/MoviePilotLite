@@ -216,7 +216,9 @@ class PluginListController extends GetxController {
 
   void _preloadPalettes() {
     try {
-      final cache = Get.find<PluginPaletteCache>();
+      final cache = Get.isRegistered<PluginPaletteCache>()
+          ? Get.find<PluginPaletteCache>()
+          : Get.put(PluginPaletteCache(), permanent: true);
       final urls = visibleItems
           .map(
             (e) => e.pluginIcon != null && e.pluginIcon!.isNotEmpty
