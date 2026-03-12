@@ -642,7 +642,7 @@ class MediaDetailController extends GetxController {
           payload: {
             'doubanid': detail.douban_id?.toString() ?? '',
             'name': detail.title?.trim() ?? '',
-            'season': season?.toString() ?? '',
+            'season': season ?? 0,
             'year': detail.year?.trim() ?? '',
             'tmdbid': detail.tmdb_id?.toString(),
           },

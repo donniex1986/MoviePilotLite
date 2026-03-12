@@ -34,30 +34,32 @@ class PluginItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = _resolveThemeColor();
-    return RepaintBoundary(
-      child: Section(
-        padding: const EdgeInsets.all(0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(_cardRadius),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildDarkSection(context, themeColor),
-              _buildLightSection(context),
-            ],
+    return Obx(() {
+      final themeColor = _resolveThemeColor();
+      return RepaintBoundary(
+        child: Section(
+          padding: const EdgeInsets.all(0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(_cardRadius),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildDarkSection(context, themeColor),
+                _buildLightSection(context),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// 仅读缓存，不订阅 Rx，避免任一 palette 更新导致所有卡片重建引发卡顿
   Color _resolveThemeColor() {
     try {
       final cache = Get.find<PluginPaletteCache>();
-      return cache.getCached(iconUrl) ?? PluginPaletteCache.defaultColor;
+      return cache.watchColor(iconUrl) ?? PluginPaletteCache.defaultColor;
     } catch (_) {
       return PluginPaletteCache.defaultColor;
     }
