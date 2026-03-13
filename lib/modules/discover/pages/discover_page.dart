@@ -191,7 +191,6 @@ class DiscoverPage extends GetView<DiscoverController> {
         final item = items[index];
         return RecommendItemCard(
           item: item,
-          width: layout.cardWidth,
           onTap: () => _openDetail(item),
         );
       },
@@ -213,7 +212,7 @@ class DiscoverPage extends GetView<DiscoverController> {
         childAspectRatio: _cardAspectRatio,
       ),
       itemBuilder: (context, index) =>
-          RecommendItemCard(width: layout.cardWidth, item: null),
+          const RecommendItemCard(item: null),
     );
   }
 

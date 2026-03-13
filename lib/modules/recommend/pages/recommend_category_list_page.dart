@@ -60,7 +60,6 @@ class RecommendCategoryListPage
                     final item = items[index];
                     return RecommendItemCard(
                       item: item,
-                      width: layout.cardWidth,
                       onTap: () => _openDetail(item),
                     );
                   }, childCount: items.length),

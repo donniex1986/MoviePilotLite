@@ -1,14 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_api_item_ext.dart';
-import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
-import 'package:moviepilot_mobile/modules/search/pages/search_mid_sheet.dart';
+import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_base_card.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_service.dart';
-import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
-import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 class RecommendItemCard extends GetView<SubscribeService> {
@@ -16,199 +12,77 @@ class RecommendItemCard extends GetView<SubscribeService> {
     super.key,
     required this.item,
     this.onTap,
-    this.width,
+    this.compact = false,
+    this.cardRadius = 10,
+    this.cardWidth = 150,
+    this.cardHeight,
   }) : isPlaceholder = false;
 
-  const RecommendItemCard.placeholder({super.key, this.width})
-    : item = null,
-      isPlaceholder = true,
-      onTap = null;
+  const RecommendItemCard.placeholder({
+    super.key,
+    this.compact = false,
+    this.cardRadius = 10,
+    this.cardWidth = 150,
+    this.cardHeight,
+  }) : item = null,
+       isPlaceholder = true,
+       onTap = null;
 
+  final bool compact;
+  final double cardRadius;
   final RecommendApiItem? item;
   final bool isPlaceholder;
   final VoidCallback? onTap;
-  final double? width;
+  final double cardWidth;
+  final double? cardHeight;
 
-  static const double cardWidth = 150;
-  static const double cardRadius = 10;
-
-  double get _cardWidth => width ?? cardWidth;
-  double get _cardHeight => _cardWidth * 1.4;
+  static const double _defaultAspectRatio = 200 / 150;
 
   @override
   Widget build(BuildContext context) {
     if (isPlaceholder || item == null) {
-      return _buildPlaceholder();
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final size = _resolveSize(constraints);
+          return _buildPlaceholder(size.width, size.height);
+        },
+      );
     }
-    return Material(
-      child: Obx(() {
-        final subscribeItem = controller.subscribeItems[item!.subscribeKey];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = _resolveSize(constraints);
+        return RecommendItemBaseCard(
+          item: item,
 
-        final isSubscribed = subscribeItem != null && subscribeItem.id != null;
-        return CupertinoContextMenu.builder(
-          builder: (context, menuState) {
-            return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: onTap,
-              child: _buildContent(),
-            );
-          },
-          actions: [
-            Material(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  item?.overview ?? '',
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            _buildSubscribeAction(
-              context,
-              isSubscribed: isSubscribed,
-              subscribeKey: item!.subscribeKey,
-              subscribeItem: subscribeItem,
-            ),
-            _buildSearchAction(context),
-          ],
+          child: GestureDetector(
+            onTap: onTap,
+            child: _buildContent(size.width, size.height),
+          ),
         );
-      }),
+      },
     );
   }
 
-  Widget _buildSubscribeAction(
-    BuildContext context, {
-    required bool isSubscribed,
-    SubscribeItem? subscribeItem,
-    required String subscribeKey,
-  }) {
-    return Material(
-      child: InkWell(
-        onTap: () async {
-          Navigator.pop(context);
-          final ok = await controller.toggleMediaSubscribe(
-            mediaKey: item!.mediaKey,
-            isTv: item?.type == 'tv',
-            isSubscribed: isSubscribed,
-            doubanid: item?.douban_id?.toString(),
-            name: item?.title,
-            season: item?.season,
-            tmdbid: item?.tmdb_id?.toString(),
-            year: item?.year,
-            subscribeId: subscribeItem?.id?.toString(),
-          );
-          if (ok && isSubscribed) {
-            controller.subscribeItems[subscribeKey] = null;
-          }
-          if (ok && !isSubscribed) {
-            controller.fetchAndSaveSubscribeStatus(
-              item!.mediaKey,
-              season: item?.season,
-              title: item?.title,
-            );
-          }
-          Future.delayed(const Duration(milliseconds: 200), () {
-            if (ok) {
-              ToastUtil.success(
-                isSubscribed ? '${item?.title} 取消订阅成功' : '${item?.title} 订阅成功',
-              );
-            } else {
-              ToastUtil.error(
-                isSubscribed ? '${item?.title} 取消订阅失败' : '${item?.title} 订阅失败',
-              );
-            }
-          });
-        },
-        child: SizedBox(
-          height: 44,
-          child: Row(
-            children: [
-              SizedBox(width: 16),
-              Text(
-                isSubscribed ? '取消订阅' : '订阅',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isSubscribed ? Colors.red : Colors.grey,
-                ),
-              ),
-              Spacer(),
-              Icon(
-                isSubscribed ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-                size: 20,
-                color: isSubscribed ? Colors.red : Colors.grey,
-              ),
-              SizedBox(width: 10),
-            ],
-          ),
-        ),
-      ),
-    );
+  Size _resolveSize(BoxConstraints constraints) {
+    final maxWidth = constraints.maxWidth.isFinite
+        ? constraints.maxWidth
+        : cardWidth;
+    final width = maxWidth;
+    final height = cardHeight ?? width * _defaultAspectRatio;
+    return Size(width, height);
   }
 
-  Widget _buildSearchAction(BuildContext context) {
-    return Material(
-      child: InkWell(
-        onTap: () {
-          Navigator.pop(context);
-          _openSearch(context);
-        },
-        child: SizedBox(
-          height: 44,
-          child: Row(
-            children: [
-              SizedBox(width: 16),
-              Text('搜索'),
-              Spacer(),
-              Icon(
-                Icons.search,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              SizedBox(width: 10),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _openSearch(BuildContext context) async {
-    final searchKey = item?.mediaKey;
-    final detail = item;
-    final season = item?.season;
-    final result = await Get.bottomSheet<({String area, List<int> sites})>(
-      SiteSelectSheet(hasSegment: true),
-    );
-    if (result == null) return;
-    final (area, sites) = (result.area, result.sites);
-    if (sites.isEmpty) {
-      ToastUtil.info('请至少选择一个站点');
-      return;
-    }
-    var params = <String, String>{
-      'mediaSearchKey': searchKey ?? '',
-      'area': area,
-      'sites': sites.join(','),
-      'year': detail?.year ?? '',
-      'mtype': detail?.type ?? 'movie',
-      'title': detail?.title ?? '',
-    };
-    if (season != null) {
-      params['season'] = season.toString();
-    }
-    Get.toNamed('/search-media-result', parameters: params);
-  }
-
-  Widget _buildContent() {
+  Widget _buildContent(double width, double height) {
     final data = item;
+    if (compact) {
+      return _buildCompactContent(width, height);
+    }
     return SizedBox(
-      width: _cardWidth,
-      height: _cardHeight,
+      width: width,
+      height: height,
       child: Stack(
         children: [
-          _buildPoster(data),
+          _buildPoster(data, width, height),
           if (data?.type != null && data!.type!.isNotEmpty)
             Positioned(left: 10, top: 10, child: _buildPill(data.type!)),
           Positioned(
@@ -219,16 +93,20 @@ class RecommendItemCard extends GetView<SubscribeService> {
           ),
           if (data?.vote_average != null && data!.vote_average! > 0)
             Positioned(
-              right: 10,
+              right: 20,
               top: 10,
               child: _buildPill(
-                data?.vote_average?.toStringAsFixed(1) ?? '',
+                data.vote_average?.toStringAsFixed(1) ?? '',
                 background: const Color(0xFF7C4DFF),
               ),
             ),
         ],
       ),
     );
+  }
+
+  Widget _buildCompactContent(double width, double height) {
+    return _buildPoster(item, width, height);
   }
 
   Widget _buildTitle(String title) {
@@ -254,39 +132,39 @@ class RecommendItemCard extends GetView<SubscribeService> {
     );
   }
 
-  Widget _buildPoster(RecommendApiItem? data) {
+  Widget _buildPoster(RecommendApiItem? data, double width, double height) {
     var imageUrl = data?.poster_path;
     if (imageUrl != null && imageUrl.isNotEmpty) {
       imageUrl = ImageUtil.convertCacheImageUrl(imageUrl);
       return CachedImage(
         imageUrl: imageUrl,
         fit: BoxFit.cover,
-        width: _cardWidth,
-        height: _cardHeight,
+        width: width,
+        height: height,
         borderRadius: BorderRadius.circular(cardRadius),
       );
     }
     return Container(
-      width: _cardWidth,
-      height: _cardHeight,
+      width: width,
+      height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(cardRadius),
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [Color(0xFF9FA8DA), Color(0xFF5C6BC0)],
         ),
       ),
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(double width, double height) {
     return SizedBox(
-      width: _cardWidth,
+      width: width,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(cardRadius),
         child: Container(
-          height: _cardHeight,
+          height: height,
           decoration: BoxDecoration(
             color: const Color(0xFFE1E3EA),
             borderRadius: BorderRadius.circular(cardRadius),

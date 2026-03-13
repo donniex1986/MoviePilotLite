@@ -1107,7 +1107,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(right: 8),
         itemBuilder: (context, index) =>
-            RecommendItemCard(width: 150, item: null),
+            const RecommendItemCard(item: null),
         separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemCount: 6,
       ),
