@@ -42,8 +42,6 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
       final isLoading = controller.isLoading.value;
       final error = controller.error.value;
       final hasMore = controller.hasMore.value;
-      final cardWidth = _gridCardWidth(context);
-
       return RefreshIndicator(
         onRefresh: () => controller.search(),
         child: CustomScrollView(
@@ -63,7 +61,6 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
                     final item = items[index];
                     return RecommendItemCard(
                       item: item,
-                      width: cardWidth,
                       onTap: () => _openDetail(item),
                     );
                   }, childCount: items.length),

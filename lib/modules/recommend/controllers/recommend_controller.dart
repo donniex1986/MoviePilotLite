@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_api_item_ext.dart';
@@ -98,6 +99,12 @@ class RecommendController extends GetxController {
 
   final subscribeService = Get.put(SubscribeService());
 
+  PageController? _bannerPageController;
+  PageController get bannerPageController =>
+      _bannerPageController ??= PageController(viewportFraction: 1);
+
+  final bannerPageIndex = 0.obs;
+
   Future<void> _requestQueue = Future.value();
   final _pendingKeys = <String>{};
   final Map<String, DateTime> _lastFetchAt = {};
@@ -113,6 +120,8 @@ class RecommendController extends GetxController {
     return _visibleSubCategoriesFor(category);
   }
 
+  List<String> get allVisibleSubCategories => _visibleAllSubCategories();
+
   @override
   void onInit() {
     super.onInit();
@@ -122,14 +131,17 @@ class RecommendController extends GetxController {
   Future<void> _initLocalConfig() async {
     await _loadLocalConfig();
     _syncSubCategory();
-    prefetchCurrentCategory();
-    ever(selectedCategory, (_) => prefetchCurrentCategory(forceRefresh: true));
+    prefetchAllVisibleCategories();
+    ever(
+      selectedCategory,
+      (_) => prefetchAllVisibleCategories(forceRefresh: true),
+    );
   }
 
-  void ensureUserCookieRefreshed() {
+  Future<void> ensureUserCookieRefreshed() async {
     if (_cookieRefreshTriggered) return;
     _cookieRefreshTriggered = true;
-    _refreshUserCookie();
+    await _refreshUserCookie();
   }
 
   Future<void> _refreshUserCookie() async {
@@ -148,7 +160,10 @@ class RecommendController extends GetxController {
       );
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '刷新推荐 Cookie 失败');
+    } finally {
+      _cookieRefreshTriggered = false;
     }
+    return;
   }
 
   void selectCategory(RecommendCategory category) {
@@ -211,6 +226,13 @@ class RecommendController extends GetxController {
     }
   }
 
+  void prefetchAllVisibleCategories({bool forceRefresh = false}) {
+    _refreshUserCookie();
+    for (final subCategory in allVisibleSubCategories) {
+      ensureSubCategoryLoaded(subCategory, forceRefresh: forceRefresh);
+    }
+  }
+
   bool isCategoryVisible(RecommendCategory category) {
     return _visibleCategories.contains(category);
   }
@@ -233,7 +255,7 @@ class RecommendController extends GetxController {
     );
     _visibleCategories.assignAll(next);
     _ensureSelectedCategoryVisible();
-    prefetchCurrentCategory();
+    prefetchAllVisibleCategories();
     unawaited(_saveLocalConfig());
   }
 
@@ -256,7 +278,7 @@ class RecommendController extends GetxController {
     }
     _hiddenSubCategoryKeys.refresh();
     _syncSubCategory();
-    prefetchCurrentCategory();
+    prefetchAllVisibleCategories();
     unawaited(_saveLocalConfig());
   }
 
@@ -461,7 +483,7 @@ class RecommendController extends GetxController {
       final category = _categoryForSubCategory(subCategory);
       final fallbackMediaType = category?.label ?? '电影';
       final items = _parseItems(list, fallbackMediaType: fallbackMediaType);
-      ensureUserCookieRefreshed();
+      await ensureUserCookieRefreshed();
 
       itemsByKey[key] = items;
       itemsByKey.refresh();
