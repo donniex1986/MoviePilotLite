@@ -1,10 +1,16 @@
+import 'dart:math' as math;
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_category_list_controller.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
+import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
+import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
+import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 class RecommendCategoryListPage
     extends GetView<RecommendCategoryListController> {
@@ -16,20 +22,33 @@ class RecommendCategoryListPage
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: Get.back,
+    final themeColor = controller.appBarThemeColor;
+    if (themeColor == null) {
+      return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: Get.back,
+          ),
+          title: Text(controller.categoryTitle),
+          centerTitle: false,
         ),
-        title: Text(controller.categoryTitle),
-        centerTitle: false,
-      ),
-      body: SafeArea(child: _buildBody(context)),
+        body: _buildBody(context, immersive: false),
+      );
+    }
+
+    final bodyColor = AppTheme.darkBackgroundColor;
+    return Scaffold(
+      backgroundColor: bodyColor,
+      body: _buildBody(context, immersive: true, bodyColor: bodyColor),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(
+    BuildContext context, {
+    required bool immersive,
+    Color? bodyColor,
+  }) {
     return Obx(() {
       final items = controller.items.toList();
       final isLoading = controller.isLoading.value;
@@ -42,16 +61,36 @@ class RecommendCategoryListPage
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
+            if (immersive)
+              _buildImmersiveHeader(context, items, bodyColor: bodyColor)
+            else
+              const SliverToBoxAdapter(child: SizedBox.shrink()),
             if (items.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: _buildPlaceholderState(isLoading, error),
               )
-            else
+            else ...[
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
+                padding: EdgeInsetsGeometry.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Text(
+                    controller.categoryTitle,
+                    style: const TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
                   _gridPadding,
-                  8,
+                  immersive ? 0 : 8,
                   _gridPadding,
                   _gridPadding,
                 ),
@@ -71,6 +110,7 @@ class RecommendCategoryListPage
                   ),
                 ),
               ),
+            ],
             SliverToBoxAdapter(
               child: _buildBottomStatus(
                 context,
@@ -85,6 +125,98 @@ class RecommendCategoryListPage
         ),
       );
     });
+  }
+
+  SliverAppBar _buildImmersiveHeader(
+    BuildContext context,
+    List<RecommendApiItem> items, {
+    Color? bodyColor,
+  }) {
+    final themeColor = controller.appBarThemeColor ?? Colors.black;
+    final secondaryColor = controller.appBarSecondaryThemeColor ?? Colors.black;
+    final topItems = items.take(3).toList();
+    return SliverAppBar(
+      pinned: true,
+      expandedHeight: 250,
+      backgroundColor: Colors.transparent,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: Get.back,
+      ),
+
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                secondaryColor,
+                themeColor.withValues(alpha: 0.5),
+                bodyColor ?? Colors.black87,
+              ],
+              stops: const [0, 0.6, 1.0],
+            ),
+          ),
+          child: Center(
+            child: SizedBox(height: 160, child: _buildPosterRow(topItems)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPosterRow(List<RecommendApiItem> items) {
+    final posters = items
+        .map((e) => e.poster_path ?? e.backdrop_path)
+        .whereType<String>()
+        .where((url) => url.isNotEmpty)
+        .toList();
+    if (posters.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final size = 90.0;
+    final children = <Widget>[];
+    for (var i = 0; i < posters.length && i < 3; i++) {
+      var angleValue = 0.0;
+      var offsetValue = Offset(0, 0);
+      if (i == 0) {
+        angleValue = 10;
+        offsetValue = Offset(-size + 10, 0);
+      } else if (i == 1) {
+        angleValue = -5;
+        offsetValue = Offset(0, size / 4);
+      } else {
+        angleValue = 8;
+        offsetValue = Offset(size - 10, size - 30);
+      }
+
+      final angle = angleValue * math.pi / 180;
+
+      children.add(
+        Align(
+          alignment: Alignment.center,
+          child: Transform.translate(
+            offset: offsetValue,
+            child: Transform.rotate(
+              angle: angle,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: CachedImage(
+                  imageUrl: ImageUtil.convertCacheImageUrl(posters[i]),
+                  width: size,
+                  height: size,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Stack(
+      children: [if (children.length == 1) children[0] else ...children],
+    );
   }
 
   Widget _buildPlaceholderState(bool isLoading, String? error) {

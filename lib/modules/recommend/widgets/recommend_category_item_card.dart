@@ -28,7 +28,7 @@ class RecommendCategoryItemCard extends StatelessWidget {
   final String name;
   final List<RecommendApiItem> items;
   final int colorIndex;
-  final VoidCallback? onTap;
+  final Function(Color themeColor, Color secondaryThemeColor)? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class RecommendCategoryItemCard extends StatelessWidget {
         .toList();
     final colors = _categoryGradients[colorIndex % _categoryGradients.length];
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => onTap?.call(colors[0], colors[1]),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),

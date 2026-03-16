@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
@@ -12,11 +13,15 @@ class RecommendCategoryListController extends GetxController {
   RecommendCategoryListController({
     required String key,
     required String title,
-  })  : _key = key,
-        _title = title;
+    this.appBarThemeColor,
+    this.appBarSecondaryThemeColor,
+  }) : _key = key,
+       _title = title;
 
   final String _key;
   final String _title;
+  final Color? appBarThemeColor;
+  final Color? appBarSecondaryThemeColor;
   final _apiClient = Get.find<ApiClient>();
   final _log = Get.find<AppLog>();
   final _authRepository = Get.find<AuthRepository>();
@@ -49,13 +54,11 @@ class RecommendCategoryListController extends GetxController {
 
   Future<void> _refreshUserCookie() async {
     final server = _appService.baseUrl ?? _apiClient.baseUrl;
-    final token = _appService.loginResponse?.accessToken ??
+    final token =
+        _appService.loginResponse?.accessToken ??
         _appService.latestLoginProfileAccessToken ??
         _apiClient.token;
-    if (server == null ||
-        server.isEmpty ||
-        token == null ||
-        token.isEmpty) {
+    if (server == null || server.isEmpty || token == null || token.isEmpty) {
       return;
     }
     try {
@@ -91,10 +94,7 @@ class RecommendCategoryListController extends GetxController {
       final path = '$_basePath$_key';
       final response = await _apiClient.get<dynamic>(
         path,
-        queryParameters: {
-          'page': page,
-          'title': _title,
-        },
+        queryParameters: {'page': page, 'title': _title},
       );
       final statusCode = response.statusCode ?? 0;
       if (statusCode >= 400) {
@@ -108,10 +108,7 @@ class RecommendCategoryListController extends GetxController {
       final list = _extractList(payload);
       final parsed = list
           .whereType<Map>()
-          .map(
-            (e) =>
-                RecommendApiItem.fromJson(Map<String, dynamic>.from(e)),
-          )
+          .map((e) => RecommendApiItem.fromJson(Map<String, dynamic>.from(e)))
           .toList();
 
       if (append) {
@@ -165,9 +162,7 @@ class RecommendCategoryListController extends GetxController {
     int? total;
     bool? hasMoreFromServer;
     if (raw is Map) {
-      final map = raw.map(
-        (k, v) => MapEntry(k?.toString() ?? '', v),
-      );
+      final map = raw.map((k, v) => MapEntry(k?.toString() ?? '', v));
       total = _asInt(
         map['total'] ??
             map['total_count'] ??
@@ -175,10 +170,7 @@ class RecommendCategoryListController extends GetxController {
             map['total_results'],
       );
       hasMoreFromServer = _asBool(
-        map['has_more'] ??
-            map['hasMore'] ??
-            map['has_next'] ??
-            map['hasNext'],
+        map['has_more'] ?? map['hasMore'] ?? map['has_next'] ?? map['hasNext'],
       );
     }
     if (total != null) totalItems.value = total;
