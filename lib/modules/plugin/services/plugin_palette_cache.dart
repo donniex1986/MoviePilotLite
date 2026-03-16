@@ -3,21 +3,23 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/modules/plugin/models/plugin_palette_cache_entry.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
-import 'package:palette_generator/palette_generator.dart';
+import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/utils/image_cache_manager.dart';
+import 'package:palette_generator/palette_generator.dart';
 
-/// 插件图标主题色缓存与预加载
-/// 避免重复进行耗时的 Palette 提取，支持批量预加载
 class PluginPaletteCache extends GetxController {
+  final _realm = Get.find<RealmService>().realm;
+
   /// 缓存：iconUrl -> 主题色
   final RxMap<String, Color> _cache = <String, Color>{}.obs;
 
   /// 正在提取中的 URL，避免重复请求
   final Set<String> _pending = {};
 
-  /// 最大并发提取数
-  static const int _maxConcurrent = 4;
+  /// 最大并发提取数（控制 CPU 占用，避免卡顿）
+  static const int _maxConcurrent = 2;
   int _activeCount = 0;
   final List<Completer<void>> _queue = [];
 
@@ -75,10 +77,12 @@ class PluginPaletteCache extends GetxController {
       final imageProvider = FileImage(File(file.path));
       final palette = await PaletteGenerator.fromImageProvider(
         imageProvider,
-        maximumColorCount: 5,
+        maximumColorCount: 6,
+        size: const Size(80, 80),
       );
       final color = palette.dominantColor?.color ?? defaultColor;
       _cache[url] = color;
+      _saveToRealm(url, color);
     } catch (error) {
       _cache[url] = defaultColor;
     } finally {
@@ -89,5 +93,19 @@ class PluginPaletteCache extends GetxController {
         if (!next.isCompleted) next.complete();
       }
     }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    for (final entry in _realm.all<PluginPaletteCacheEntry>()) {
+      _cache[entry.url] = Color(entry.colorValue);
+    }
+  }
+
+  void _saveToRealm(String url, Color color) {
+    _realm.write(() {
+      _realm.add(PluginPaletteCacheEntry(url, color.value), update: true);
+    });
   }
 }

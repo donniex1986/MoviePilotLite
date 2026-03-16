@@ -456,8 +456,30 @@ class MyApp extends StatelessWidget {
             binding: BindingsBuilder(() {
               final key = Get.parameters['key'] ?? '';
               final title = Get.parameters['title'] ?? '';
+              final colorParam = Get.parameters['themeColor'];
+              final secondaryColorParam = Get.parameters['secondaryThemeColor'];
+              Color? themeColor;
+              Color? secondaryColor;
+              if (colorParam != null && colorParam.isNotEmpty) {
+                try {
+                  final value = int.parse(colorParam, radix: 16);
+                  themeColor = Color(value);
+                } catch (_) {}
+              }
+              if (secondaryColorParam != null &&
+                  secondaryColorParam.isNotEmpty) {
+                try {
+                  final value = int.parse(secondaryColorParam, radix: 16);
+                  secondaryColor = Color(value);
+                } catch (_) {}
+              }
               Get.put(
-                RecommendCategoryListController(key: key, title: title),
+                RecommendCategoryListController(
+                  key: key,
+                  title: title,
+                  appBarThemeColor: themeColor,
+                  appBarSecondaryThemeColor: secondaryColor,
+                ),
                 permanent: false,
               );
             }),

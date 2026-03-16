@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
@@ -29,12 +31,15 @@ class RecommendItemHorizontalCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            CachedImage(
-              borderRadius: BorderRadius.circular(25),
-              imageUrl: url,
-              width: 50,
-              height: 50,
-              fit: BoxFit.cover,
+            Transform.rotate(
+              angle: -10 * math.pi / 180,
+              child: CachedImage(
+                borderRadius: BorderRadius.circular(10),
+                imageUrl: url,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+              ),
             ),
             SizedBox(width: 10),
             Expanded(

@@ -9,7 +9,6 @@ import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_cache
 import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_model.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_notexists.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
-import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_service.dart';
 import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
@@ -51,7 +50,6 @@ class MediaDetailController extends GetxController {
   final recommendSupported = false.obs;
 
   String? _relatedKey;
-  bool _cookieRefreshTriggered = false;
 
   late final MediaDetailArgs _args;
 
@@ -75,7 +73,6 @@ class MediaDetailController extends GetxController {
 
   void ensureUserCookieRefreshed() {
     // if (_cookieRefreshTriggered) return;
-    _cookieRefreshTriggered = true;
     _refreshUserCookie();
   }
 

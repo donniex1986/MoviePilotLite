@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -23,6 +25,17 @@ class RecommendItemRankCard extends StatelessWidget {
     final posterUrl = item.poster_path ?? item.backdrop_path ?? '';
     final url = ImageUtil.convertCacheImageUrl(posterUrl);
     final cache = Get.find<PluginPaletteCache>();
+    var angleValue = 0.0;
+    if (rank == 1) {
+      angleValue = 15;
+    } else if (rank == 2) {
+      angleValue = -15;
+    } else if (rank == 3) {
+      angleValue = 5;
+    } else {
+      angleValue = -10;
+    }
+    final angle = angleValue * math.pi / 180;
     return GestureDetector(
       onTap: onTap,
       child: Obx(() {
@@ -50,7 +63,7 @@ class RecommendItemRankCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: SizedBox(
-                  width: 110,
+                  width: 130,
                   height: 130,
                   child: Stack(
                     children: [
@@ -68,9 +81,12 @@ class RecommendItemRankCard extends StatelessWidget {
                       const SizedBox(width: 12),
                       Align(
                         alignment: Alignment.bottomRight,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: _buildPoster(),
+                        child: Transform.rotate(
+                          angle: angle,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: _buildPoster(),
+                          ),
                         ),
                       ),
                     ],
@@ -119,8 +135,8 @@ class RecommendItemRankCard extends StatelessWidget {
     final imageUrl = item.poster_path ?? item.backdrop_path;
     if (imageUrl == null || imageUrl.isEmpty) {
       return SizedBox(
-        width: 60,
-        height: 60,
+        width: 80,
+        height: 80,
         child: Icon(
           Icons.movie_outlined,
           color: Colors.white.withValues(alpha: 0.5),
@@ -129,9 +145,10 @@ class RecommendItemRankCard extends StatelessWidget {
       );
     }
     return CachedImage(
+      borderRadius: BorderRadius.circular(25),
       imageUrl: ImageUtil.convertCacheImageUrl(imageUrl),
-      width: 60,
-      height: 60,
+      width: 80,
+      height: 80,
       fit: BoxFit.cover,
     );
   }

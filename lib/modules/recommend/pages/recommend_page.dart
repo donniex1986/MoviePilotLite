@@ -543,11 +543,20 @@ class RecommendPage extends GetView<RecommendController> {
     );
   }
 
-  void _openCategoryList({required String key, required String title}) {
-    Get.toNamed(
-      '/recommend-category-list',
-      parameters: {'key': key, 'title': title},
-    );
+  void _openCategoryList({
+    required String key,
+    required String title,
+    Color? themeColor,
+    Color? secondaryColor,
+  }) {
+    final params = <String, String>{
+      'key': key,
+      'title': title,
+      if (themeColor != null) 'themeColor': themeColor.value.toRadixString(16),
+      if (secondaryColor != null)
+        'secondaryColor': secondaryColor.value.toRadixString(16),
+    };
+    Get.toNamed('/recommend-category-list', parameters: params);
   }
 
   Widget _buildPosterRail(BuildContext context, String subCategory) {
@@ -619,7 +628,7 @@ class RecommendPage extends GetView<RecommendController> {
               final key = controller.keyForSubCategory(name);
               final items = controller
                   .itemsForSubCategory(name)
-                  .take(2)
+                  .take(3)
                   .toList();
               return SizedBox(
                 width: cellWidth,
@@ -628,7 +637,12 @@ class RecommendPage extends GetView<RecommendController> {
                   name: name,
                   items: items,
                   colorIndex: start + i,
-                  onTap: () => _openCategoryList(key: key ?? '', title: name),
+                  onTap: (colorTheme, secondaryColor) => _openCategoryList(
+                    key: key ?? '',
+                    title: name,
+                    themeColor: colorTheme,
+                    secondaryColor: secondaryColor,
+                  ),
                 ),
               );
             }

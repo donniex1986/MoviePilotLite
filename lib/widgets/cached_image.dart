@@ -76,8 +76,11 @@ class CachedImage extends StatelessWidget {
       headers['cookie'] = imageCookie;
     }
 
+    final cacheKey = _buildCacheKey(imageUrl);
+
     Widget imageWidget = CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheKey: cacheKey,
       width: width,
       height: height,
       fit: fit,
@@ -166,6 +169,22 @@ class CachedImage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _buildCacheKey(String url) {
+    if (url.isEmpty) return url;
+    Uri? uri;
+    try {
+      uri = Uri.parse(url);
+    } catch (_) {
+      return url;
+    }
+    final qp = uri.queryParameters;
+    final inner = qp['url'] ?? qp['imgurl'];
+    if (inner != null && inner.isNotEmpty) {
+      return inner;
+    }
+    return url;
   }
 }
 
