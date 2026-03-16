@@ -93,7 +93,7 @@ class RecommendItemCard extends GetView<SubscribeService> {
           ),
           if (data?.vote_average != null && data!.vote_average! > 0)
             Positioned(
-              right: 20,
+              right: 10,
               top: 10,
               child: _buildPill(
                 data.vote_average?.toStringAsFixed(1) ?? '',

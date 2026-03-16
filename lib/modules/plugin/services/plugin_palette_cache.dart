@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:moviepilot_mobile/utils/image_cache_manager.dart';
 
 /// 插件图标主题色缓存与预加载
 /// 避免重复进行耗时的 Palette 提取，支持批量预加载
@@ -20,7 +22,7 @@ class PluginPaletteCache extends GetxController {
   final List<Completer<void>> _queue = [];
 
   /// 默认色（提取失败或空 URL 时使用）
-  static const Color defaultColor = Color(0xFF2563EB);
+  static Color defaultColor = Colors.amberAccent;
 
   /// 获取已缓存的主题色，若无则返回 null
   Color? getCached(String iconUrl) {
@@ -59,14 +61,25 @@ class PluginPaletteCache extends GetxController {
     _activeCount++;
 
     try {
-      final provider = CachedNetworkImageProvider(url);
+      // 构建请求头
+      final headers = <String, String>{};
+      // 获取cookie，如果没有提供则从AppService获取
+      final imageCookie = Get.find<AppService>().cookie;
+      if (imageCookie != null && imageCookie.isNotEmpty) {
+        headers['cookie'] = imageCookie;
+      }
+      final file = await AppImageCacheManager.instance.getSingleFile(
+        url,
+        headers: headers,
+      );
+      final imageProvider = FileImage(File(file.path));
       final palette = await PaletteGenerator.fromImageProvider(
-        provider,
+        imageProvider,
         maximumColorCount: 5,
       );
       final color = palette.dominantColor?.color ?? defaultColor;
       _cache[url] = color;
-    } catch (_) {
+    } catch (error) {
       _cache[url] = defaultColor;
     } finally {
       _pending.remove(url);

@@ -149,6 +149,7 @@ class CachedImage extends StatelessWidget {
       color: CupertinoColors.systemGrey6,
       child: Center(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(

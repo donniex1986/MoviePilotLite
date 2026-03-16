@@ -99,6 +99,8 @@ class RecommendController extends GetxController {
 
   final subscribeService = Get.put(SubscribeService());
 
+  final categoryPageController = PageController(viewportFraction: 0.95);
+
   PageController? _bannerPageController;
   PageController get bannerPageController =>
       _bannerPageController ??= PageController(viewportFraction: 1);
