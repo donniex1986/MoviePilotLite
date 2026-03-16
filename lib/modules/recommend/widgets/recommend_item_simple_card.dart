@@ -26,7 +26,7 @@ class RecommendItemSimpleCard extends GetView<SubscribeService> {
         children: [
           _buildBackground(context),
           Positioned(
-            top: 20,
+            top: 30,
             left: 0,
             right: 0,
             child: Center(child: _buildPoster(context)),
@@ -77,8 +77,8 @@ class RecommendItemSimpleCard extends GetView<SubscribeService> {
     return CachedImage(
       imageUrl: poster,
       fit: BoxFit.cover,
-      width: 80,
-      height: 80,
+      width: 100,
+      height: 100,
       borderRadius: BorderRadius.circular(25),
     );
   }
