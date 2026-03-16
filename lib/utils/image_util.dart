@@ -80,7 +80,7 @@ class ImageUtil extends GetxService {
       return imageUrl;
     }
     final imageUtil = Get.find<ImageUtil>();
-    if (!imageUtil.globalCachedEnabled.value) {
+    if (!imageUrl.contains('douban') && !imageUtil.globalCachedEnabled.value) {
       return imageUrl;
     }
     final apiClient = Get.find<ApiClient>();
@@ -100,7 +100,8 @@ class ImageUtil extends GetxService {
   static String convertPluginIconUrl(String pluginIcon, {String? baseUrl}) {
     if (pluginIcon.isEmpty) return '';
     final imageUtil = Get.find<ImageUtil>();
-    if (!imageUtil.globalCachedEnabled.value) {
+    if (!pluginIcon.contains('douban') &&
+        !imageUtil.globalCachedEnabled.value) {
       return pluginIcon;
     }
     final apiClient = Get.find<ApiClient>();

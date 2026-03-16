@@ -43,6 +43,7 @@ class RecommendItemSimpleCard extends GetView<SubscribeService> {
     if (imageUrl == null || imageUrl.isEmpty) {
       return Container(
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
           gradient: LinearGradient(
             colors: [themeColor.withOpacity(0.8), themeColor],
             begin: Alignment.topCenter,
@@ -54,7 +55,12 @@ class RecommendItemSimpleCard extends GetView<SubscribeService> {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [themeColor.withOpacity(0.6), themeColor],
+          colors: [
+            Colors.white.withOpacity(0.1),
+            themeColor.withOpacity(0.1),
+            themeColor.withOpacity(0.8),
+            themeColor,
+          ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -71,8 +77,8 @@ class RecommendItemSimpleCard extends GetView<SubscribeService> {
     return CachedImage(
       imageUrl: poster,
       fit: BoxFit.cover,
-      width: 120,
-      height: 120,
+      width: 80,
+      height: 80,
       borderRadius: BorderRadius.circular(25),
     );
   }
@@ -146,7 +152,7 @@ class RecommendItemSimpleCard extends GetView<SubscribeService> {
                 color: Colors.white.withOpacity(0.9),
                 fontSize: 12,
               ),
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ],
