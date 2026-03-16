@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
