@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:moviepilot_mobile/gen/assets.gen.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_controller.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_detail_model.dart';
 import 'package:moviepilot_mobile/modules/media_detail/models/media_notexists.dart';
@@ -32,48 +33,43 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _immersiveBodyColor,
-      body: SafeArea(
-        top: false,
-        bottom: false,
-        left: false,
-        right: false,
-        child: Obx(() {
-          final detail = controller.mediaDetail.value;
-          final prefill = controller.prefillDetail;
-          final isLoading = controller.isLoading.value;
-          final errorText = controller.errorText.value;
-          final hasError = errorText != null && errorText.trim().isNotEmpty;
-          if (detail == null && prefill == null && !isLoading) {
-            if (hasError) {
-              return _buildErrorState(context, errorText);
-            }
-            return _buildEmptyState(context);
+      body: Obx(() {
+        final detail = controller.mediaDetail.value;
+        final prefill = controller.prefillDetail;
+        final isLoading = controller.isLoading.value;
+        final errorText = controller.errorText.value;
+        final hasError = errorText != null && errorText.trim().isNotEmpty;
+        if (detail == null && prefill == null && !isLoading) {
+          if (hasError) {
+            return _buildErrorState(context, errorText);
           }
+          return _buildEmptyState(context);
+        }
 
-          final headerDetail = detail ?? prefill ?? _skeletonDetail();
-          final viewDetail = detail ?? _skeletonDetail();
-          final contentSkeletonEnabled = isLoading && detail == null;
-          return CustomScrollView(
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
-            slivers: [
-              _buildSliverAppBar(context, headerDetail, isLoading: isLoading),
-              SliverToBoxAdapter(
-                child: Skeletonizer(
-                  enabled: contentSkeletonEnabled,
-                  child: _buildContent(
-                    context,
-                    viewDetail,
-                    errorText: hasError && !isLoading ? errorText : null,
-                    isLoading: isLoading,
-                  ),
+        final headerDetail = detail ?? prefill ?? _skeletonDetail();
+        final viewDetail = detail ?? _skeletonDetail();
+        final contentSkeletonEnabled = isLoading && detail == null;
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            _buildSliverAppBar(context, headerDetail, isLoading: isLoading),
+            SliverToBoxAdapter(
+              child: Skeletonizer(
+                enabled: contentSkeletonEnabled,
+                child: _buildContent(
+                  context,
+                  viewDetail,
+                  errorText: hasError && !isLoading ? errorText : null,
+                  isLoading: isLoading,
                 ),
               ),
-            ],
-          );
-        }),
-      ),
+            ),
+            SliverToBoxAdapter(child: SizedBox(height: 44)),
+          ],
+        );
+      }),
     );
   }
 
@@ -349,8 +345,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           children: [
             if (detail?.year != null && detail?.year!.isNotEmpty == true)
               _buildMetaChip(detail?.year),
-            if (detail?.type != null && detail?.type!.isNotEmpty == true)
-              _buildMetaChip(detail?.type),
             if (detail?.category != null &&
                 detail?.category!.isNotEmpty == true)
               _buildMetaChip(detail?.category),
@@ -426,46 +420,38 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         if (errorText != null && errorText.trim().isNotEmpty) ...[
           _buildSectionTitle('请求错误'),
           Section(child: _buildErrorBanner(errorText)),
-          const SizedBox(height: 12),
         ],
         _buildOverView(context, detail),
-        // if (_hasExternalLinks(detail)) ...[
-        //   const SizedBox(height: 12),
-        //   _buildSectionTitle('相关链接'),
-        //   _buildExternalLinks(detail, isLoading),
-        // ],
-        // const SizedBox(height: 16),
-        // _buildSectionTitle('核心信息'),
-        // Section(child: _buildInfoList(context, detail)),
-        // const SizedBox(height: 16),
         if (detail.season_info != null && detail.season_info!.isNotEmpty) ...[
+          const SizedBox(height: 16),
           _buildSectionTitle('季度信息'),
           _buildSeasonList(context, detail.season_info!, detail),
-          const SizedBox(height: 16),
         ],
-        if (detail.genres != null && detail.genres!.isNotEmpty) ...[
-          _buildSectionTitle('类型'),
-          _buildGenreChips(detail),
+        if (_hasExternalLinks(detail)) ...[
           const SizedBox(height: 16),
+          _buildSectionTitle('相关链接'),
+          _buildExternalLinks(context, detail, isLoading),
         ],
+        const SizedBox(height: 16),
+        _buildSectionTitle('核心信息'),
+        _buildInfoList(context, detail),
 
         if (detail.actors != null && detail.actors!.isNotEmpty) ...[
+          const SizedBox(height: 16),
           _buildSectionTitle('主演'),
+          const SizedBox(height: 16),
           _buildActorList(detail.actors!),
           const SizedBox(height: 16),
         ],
-        if (detail.created_by != null && detail.created_by!.isNotEmpty) ...[
-          _buildSectionTitle('主创'),
-          _buildCreatorList(detail.created_by!),
-        ],
+
         if (similarSupported &&
             _shouldShowRelatedSection(
               similarItems,
               similarLoading,
               similarError,
             )) ...[
-          const SizedBox(height: 16),
           _buildSectionTitle(_relatedSectionTitle(detail, isSimilar: true)),
+          const SizedBox(height: 16),
           _buildRelatedRail(
             context,
             items: similarItems,
@@ -481,6 +467,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
             )) ...[
           const SizedBox(height: 16),
           _buildSectionTitle(_relatedSectionTitle(detail, isSimilar: false)),
+          const SizedBox(height: 16),
           _buildRelatedRail(
             context,
             items: recommendItems,
@@ -601,81 +588,170 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
 
   Widget _buildInfoList(BuildContext context, MediaDetail? detail) {
     if (detail == null) {
-      return Text('暂无核心信息', style: Theme.of(context).textTheme.bodyMedium);
+      return const SizedBox.shrink();
     }
-    final infoItems = <MapEntry<String, String>>[];
+
+    Widget row({
+      required IconData icon,
+      required String label,
+      required String value,
+      Color? accent,
+    }) {
+      final a = accent ?? const Color(0xFF7C4DFF);
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: a.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 16, color: a),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.75),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              maxLines: 1,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     final firstAir = detail.first_air_date ?? detail.release_date;
-    if (firstAir != null && firstAir.isNotEmpty) {
-      infoItems.add(MapEntry('首播', firstAir));
-    }
-    if (detail.last_air_date != null && detail.last_air_date!.isNotEmpty) {
-      infoItems.add(MapEntry('最后播出', detail.last_air_date!));
-    }
-    if (detail.number_of_seasons != null && detail.number_of_seasons! > 0) {
-      infoItems.add(MapEntry('季数', detail.number_of_seasons!.toString()));
-    }
-    if (detail.number_of_episodes != null && detail.number_of_episodes! > 0) {
-      infoItems.add(MapEntry('集数', detail.number_of_episodes!.toString()));
-    }
     final runtime = _formatRuntime(detail);
-    if (runtime != null) {
-      infoItems.add(MapEntry('时长', runtime));
+    final country =
+        (detail.origin_country != null && detail.origin_country!.isNotEmpty)
+        ? detail.origin_country!.join(' / ')
+        : null;
+    final networks = (detail.networks != null && detail.networks!.isNotEmpty)
+        ? detail.networks!.map((e) => e.name).whereType<String>().join(' / ')
+        : null;
+
+    final rows = <Widget>[];
+    void addRow(Widget w) {
+      if (rows.isNotEmpty) rows.add(const SizedBox(height: 12));
+      rows.add(w);
     }
-    if (detail.status != null && detail.status!.isNotEmpty) {
-      infoItems.add(MapEntry('状态', detail.status!));
-    }
-    if (detail.original_language != null &&
-        detail.original_language!.isNotEmpty) {
-      infoItems.add(MapEntry('语言', detail.original_language!));
-    }
-    if (detail.origin_country != null && detail.origin_country!.isNotEmpty) {
-      infoItems.add(MapEntry('地区', detail.origin_country!.join(' / ')));
-    }
-    if (detail.networks != null && detail.networks!.isNotEmpty) {
-      infoItems.add(
-        MapEntry(
-          '播出平台',
-          detail.networks!.map((e) => e.name).whereType<String>().join(' / '),
+
+    if (firstAir != null && firstAir.isNotEmpty) {
+      addRow(
+        row(
+          icon: CupertinoIcons.calendar,
+          label: '首播',
+          value: firstAir,
+          accent: const Color(0xFF60A5FA),
         ),
       );
     }
+    if (detail.last_air_date != null && detail.last_air_date!.isNotEmpty) {
+      addRow(
+        row(
+          icon: CupertinoIcons.clock,
+          label: '最后播出',
+          value: detail.last_air_date!,
+          accent: const Color(0xFF34D399),
+        ),
+      );
+    }
+    if (detail.number_of_seasons != null && detail.number_of_seasons! > 0) {
+      addRow(
+        row(
+          icon: CupertinoIcons.square_stack_3d_up,
+          label: '季数',
+          value: detail.number_of_seasons!.toString(),
+        ),
+      );
+    }
+    if (detail.number_of_episodes != null && detail.number_of_episodes! > 0) {
+      addRow(
+        row(
+          icon: CupertinoIcons.film,
+          label: '集数',
+          value: detail.number_of_episodes!.toString(),
+        ),
+      );
+    }
+    if (runtime != null && runtime.isNotEmpty) {
+      addRow(
+        row(
+          icon: CupertinoIcons.timer,
+          label: '时长',
+          value: runtime,
+          accent: const Color(0xFFF97316),
+        ),
+      );
+    }
+    if (detail.status != null && detail.status!.isNotEmpty) {
+      addRow(
+        row(
+          icon: CupertinoIcons.bolt_circle,
+          label: '状态',
+          value: detail.status!,
+          accent: const Color(0xFFF5C518),
+        ),
+      );
+    }
+    if (detail.original_language != null &&
+        detail.original_language!.isNotEmpty) {
+      addRow(
+        row(
+          icon: CupertinoIcons.globe,
+          label: '语言',
+          value: detail.original_language!,
+        ),
+      );
+    }
+    if (country != null && country.isNotEmpty) {
+      addRow(row(icon: CupertinoIcons.map, label: '地区', value: country));
+    }
+    if (networks != null && networks.isNotEmpty) {
+      addRow(row(icon: CupertinoIcons.tv, label: '播出平台', value: networks));
+    }
     if (detail.homepage != null && detail.homepage!.isNotEmpty) {
-      infoItems.add(MapEntry('官网', detail.homepage!));
+      addRow(
+        row(
+          icon: CupertinoIcons.link,
+          label: '官网',
+          value: detail.homepage!,
+          accent: const Color(0xFF60A5FA),
+        ),
+      );
     }
 
-    if (infoItems.isEmpty) {
-      return Text('暂无核心信息', style: Theme.of(context).textTheme.bodyMedium);
-    }
+    if (rows.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      children: infoItems
-          .map(
-            (entry) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 80,
-                    child: Text(
-                      entry.key,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: CupertinoColors.systemGrey,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      entry.value,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
-          .toList(),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: rows,
+        ),
+      ),
     );
   }
 
@@ -753,19 +829,22 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     List<SeasonInfo> seasons,
     MediaDetail detail,
   ) {
-    return SizedBox(
-      height: 200,
-      child: PageView.builder(
-        controller: controller.seasonPageCntroller,
-        scrollDirection: Axis.horizontal,
-        itemCount: seasons.length,
-        itemBuilder: (context, index) {
-          final season = seasons[index];
-          return Padding(
-            padding: EdgeInsets.only(left: index == 0 ? 0 : 12),
-            child: _buildSeasonListContent(context, season),
-          );
-        },
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: SizedBox(
+        height: 200,
+        child: PageView.builder(
+          controller: controller.seasonPageCntroller,
+          scrollDirection: Axis.horizontal,
+          itemCount: seasons.length,
+          itemBuilder: (context, index) {
+            final season = seasons[index];
+            return Padding(
+              padding: EdgeInsets.only(left: index == 0 ? 0 : 12),
+              child: _buildSeasonListContent(context, season),
+            );
+          },
+        ),
       ),
     );
   }
@@ -828,12 +907,13 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     return SizedBox(
       height: 120,
       child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 16),
         scrollDirection: Axis.horizontal,
         itemCount: actors.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final actor = actors[index];
-          final avatarUrl = _resolveImageUrl(actor.avatar?.large);
+          final avatarUrl = _resolveAvatarUrl(actor);
           return SizedBox(
             width: 90,
             child: Column(
@@ -855,7 +935,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12, color: Colors.white),
                 ),
                 if (actor.character != null && actor.character!.isNotEmpty)
                   Text(
@@ -882,7 +962,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final creator = creators[index];
-          final avatarUrl = _resolveImageUrl(creator.profile_path);
+          final avatarUrl = _resolveCreatedByUrl(creator);
           return SizedBox(
             width: 90,
             child: Column(
@@ -1000,14 +1080,20 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     });
   }
 
-  Widget _buildExternalLinks(MediaDetail detail, bool isLoading) {
+  Widget _buildExternalLinks(
+    BuildContext context,
+    MediaDetail detail,
+    bool isLoading,
+  ) {
     final actions = <Widget>[];
     final tmdbUrl = _tmdbUrl(detail);
     if (tmdbUrl != null) {
       actions.add(
         _buildLinkAction(
+          iconPath: Assets.images.logos.thetvdb.path,
           label: 'TMDB',
           onPressed: isLoading ? null : () => WebUtil.open(url: tmdbUrl),
+          context: context,
         ),
       );
     }
@@ -1017,6 +1103,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         _buildLinkAction(
           label: 'IMDB',
           onPressed: isLoading ? null : () => WebUtil.open(url: imdbUrl),
+          context: context,
         ),
       );
     }
@@ -1024,12 +1111,25 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     if (doubanUrl != null) {
       actions.add(
         _buildLinkAction(
+          iconPath: Assets.images.logos.douban.path,
           label: '豆瓣',
           onPressed: isLoading ? null : () => WebUtil.open(url: doubanUrl),
+          context: context,
         ),
       );
     }
-    return Wrap(spacing: 10, runSpacing: 10, children: actions);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: actions
+            .map(
+              (el) => Expanded(
+                child: Padding(padding: const EdgeInsets.all(8.0), child: el),
+              ),
+            )
+            .toList(),
+      ),
+    );
   }
 
   bool _hasExternalLinks(MediaDetail detail) {
@@ -1072,7 +1172,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       height: 200,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemBuilder: (context, index) {
           final item = items[index];
           return RecommendItemCard(
@@ -1179,14 +1279,33 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     );
   }
 
-  Widget _buildLinkAction({required String label, VoidCallback? onPressed}) {
+  Widget _buildLinkAction({
+    required String label,
+    String? iconPath,
+    required BuildContext context,
+    VoidCallback? onPressed,
+  }) {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: BorderSide(color: Colors.white.withOpacity(0.2)),
       ),
-      child: Text(label),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (iconPath != null) Image.asset(iconPath, width: 18, height: 18),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1300,6 +1419,27 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     if (path == null || path.trim().isEmpty) return null;
     final trimmed = path.trim();
     return ImageUtil.convertCacheImageUrl(trimmed);
+  }
+
+  String? _resolveAvatarUrl(Actor actor) {
+    if (actor.avatar == null) {
+      return "https://image.tmdb.org/t/p/w600_and_h900_bestv2/${actor.profile_path}";
+    }
+    final avatar = actor.avatar!;
+    if (avatar.large != null && avatar.large!.trim().isNotEmpty) {
+      return ImageUtil.convertCacheImageUrl(avatar.large!);
+    }
+    if (avatar.normal != null && avatar.normal!.trim().isNotEmpty) {
+      return ImageUtil.convertCacheImageUrl(avatar.normal!);
+    }
+    return null;
+  }
+
+  String? _resolveCreatedByUrl(CreatedBy creator) {
+    if (creator.profile_path == null || creator.profile_path!.trim().isEmpty) {
+      return "https://image.tmdb.org/t/p/w600_and_h900_bestv2/${creator.profile_path}";
+    }
+    return ImageUtil.convertCacheImageUrl(creator.profile_path!);
   }
 
   MediaDetail _skeletonDetail() {
