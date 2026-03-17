@@ -70,8 +70,8 @@ class ApiClient extends g.GetxController {
       BaseOptions(
         // 初始时 baseUrl 为空，后续在登录时根据服务器地址进行配置。
         baseUrl: _appService.baseUrl ?? '',
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        connectTimeout: const Duration(seconds: 120),
+        receiveTimeout: const Duration(seconds: 120),
         // FormData 需要 multipart/form-data；这里不强行设置，
         // 让 dio 根据 data 类型自动推导 Content-Type。
         headers: const {'accept': 'application/json'},

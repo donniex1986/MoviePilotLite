@@ -41,7 +41,7 @@ class SearchResultTorrentItem extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: Theme.of(context).dividerColor.withValues(alpha: 0.08),
             width: 1,
@@ -523,7 +523,7 @@ class SearchResultTorrentItem extends StatelessWidget {
   }
 
   Color _promotionColor(String text) {
-    if (text.contains('免费')) return const Color(0xFFEF4444);
+    if (text.contains('免费')) return const Color.fromARGB(255, 176, 239, 68);
     return const Color(0xFFF97316);
   }
 

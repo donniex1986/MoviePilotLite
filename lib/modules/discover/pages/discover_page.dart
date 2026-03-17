@@ -8,6 +8,7 @@ import 'package:moviepilot_mobile/modules/discover/widgets/discover_filter_sheet
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/utils/grid_layout.dart';
 import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 
@@ -16,9 +17,9 @@ class DiscoverPage extends GetView<DiscoverController> {
 
   final ScrollController? scrollController;
 
-  static const double _gridSpacing = 12;
+  static const double _gridSpacing = 8;
   static const double _gridPadding = 16;
-  static const double _cardAspectRatio = 1 / 1.4;
+  static const double _cardAspectRatio = 1 / 1.3;
 
   Color _accentColor(BuildContext context) =>
       Theme.of(context).colorScheme.primary;
@@ -175,7 +176,11 @@ class DiscoverPage extends GetView<DiscoverController> {
   }
 
   Widget _buildItemsGrid(BuildContext context, List<RecommendApiItem> items) {
-    final layout = _gridLayout(context);
+    final layout = gridLayout(
+      context,
+      gridSpacing: _gridSpacing,
+      gridPadding: _gridPadding,
+    );
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: _gridPadding),
       shrinkWrap: true,
@@ -184,21 +189,22 @@ class DiscoverPage extends GetView<DiscoverController> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: layout.crossAxisCount,
         crossAxisSpacing: _gridSpacing,
-        mainAxisSpacing: 16,
+        mainAxisSpacing: _gridSpacing,
         childAspectRatio: _cardAspectRatio,
       ),
       itemBuilder: (context, index) {
         final item = items[index];
-        return RecommendItemCard(
-          item: item,
-          onTap: () => _openDetail(item),
-        );
+        return RecommendItemCard(item: item, onTap: () => _openDetail(item));
       },
     );
   }
 
   Widget _buildLoadingGrid(BuildContext context) {
-    final layout = _gridLayout(context);
+    final layout = gridLayout(
+      context,
+      gridSpacing: _gridSpacing,
+      gridPadding: _gridPadding,
+    );
     final placeholderCount = layout.crossAxisCount * 3;
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: _gridPadding),
@@ -208,11 +214,10 @@ class DiscoverPage extends GetView<DiscoverController> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: layout.crossAxisCount,
         crossAxisSpacing: _gridSpacing,
-        mainAxisSpacing: 16,
+        mainAxisSpacing: _gridSpacing,
         childAspectRatio: _cardAspectRatio,
       ),
-      itemBuilder: (context, index) =>
-          const RecommendItemCard(item: null),
+      itemBuilder: (context, index) => const RecommendItemCard(item: null),
     );
   }
 
@@ -405,6 +410,12 @@ class DiscoverPage extends GetView<DiscoverController> {
       if (title != null && title.isNotEmpty) 'title': title,
       if (item.year != null && item.year!.isNotEmpty) 'year': item.year!,
       if (item.type != null && item.type!.isNotEmpty) 'type_name': item.type!,
+      if (item.poster_path != null && item.poster_path!.isNotEmpty)
+        'poster_path': item.poster_path!,
+      if (item.backdrop_path != null && item.backdrop_path!.isNotEmpty)
+        'backdrop_path': item.backdrop_path!,
+      if (item.vote_average != null && item.vote_average! > 0)
+        'vote_average': item.vote_average!.toStringAsFixed(1),
     };
     Get.toNamed('/media-detail', parameters: params);
   }
@@ -420,20 +431,4 @@ class DiscoverPage extends GetView<DiscoverController> {
     }
     return null;
   }
-
-  _GridLayout _gridLayout(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = width >= 520 ? 4 : 2;
-    final available =
-        width - (_gridPadding * 2) - (_gridSpacing * (crossAxisCount - 1));
-    final cardWidth = available / crossAxisCount;
-    return _GridLayout(crossAxisCount: crossAxisCount, cardWidth: cardWidth);
-  }
-}
-
-class _GridLayout {
-  const _GridLayout({required this.crossAxisCount, required this.cardWidth});
-
-  final int crossAxisCount;
-  final double cardWidth;
 }

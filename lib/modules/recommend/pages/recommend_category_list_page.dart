@@ -7,19 +7,20 @@ import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_catego
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/utils/grid_layout.dart';
 import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class RecommendCategoryListPage
     extends GetView<RecommendCategoryListController> {
   const RecommendCategoryListPage({super.key});
 
-  static const double _gridSpacing = 12;
+  static const double _gridSpacing = 8;
   static const double _gridPadding = 16;
-  static const double _cardAspectRatio = 1 / 1.4;
-
+  static const double _cardAspectRatio = 1 / 1.3;
   @override
   Widget build(BuildContext context) {
     final themeColor = controller.appBarThemeColor;
@@ -54,7 +55,11 @@ class RecommendCategoryListPage
       final isLoading = controller.isLoading.value;
       final error = controller.error.value;
       final hasMore = controller.hasMore.value;
-      final layout = _gridLayout(context);
+      final layout = gridLayout(
+        context,
+        gridSpacing: _gridSpacing,
+        gridPadding: _gridPadding,
+      );
 
       return RefreshIndicator(
         onRefresh: () => controller.refreshData(),
@@ -65,36 +70,35 @@ class RecommendCategoryListPage
               _buildImmersiveHeader(context, items, bodyColor: bodyColor)
             else
               const SliverToBoxAdapter(child: SizedBox.shrink()),
-            if (items.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: _buildPlaceholderState(isLoading, error),
-              )
-            else ...[
-              SliverPadding(
-                padding: EdgeInsetsGeometry.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                sliver: SliverToBoxAdapter(
-                  child: Text(
-                    controller.categoryTitle,
-                    style: const TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
+
+            immersive
+                ? SliverPadding(
+                    padding: EdgeInsetsGeometry.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
                     ),
-                  ),
-                ),
+                    sliver: SliverToBoxAdapter(
+                      child: Text(
+                        controller.categoryTitle,
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                : const SliverToBoxAdapter(child: SizedBox.shrink()),
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                _gridPadding,
+                immersive ? 0 : 8,
+                _gridPadding,
+                _gridPadding,
               ),
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  _gridPadding,
-                  immersive ? 0 : 8,
-                  _gridPadding,
-                  _gridPadding,
-                ),
-                sliver: SliverGrid(
+              sliver: Skeletonizer.sliver(
+                enabled: isLoading || items.isEmpty,
+                child: SliverGrid(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final item = items[index];
                     return RecommendItemCard(
@@ -104,13 +108,13 @@ class RecommendCategoryListPage
                   }, childCount: items.length),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: layout.crossAxisCount,
-                    mainAxisSpacing: 16,
+                    mainAxisSpacing: _gridSpacing,
                     crossAxisSpacing: _gridSpacing,
                     childAspectRatio: _cardAspectRatio,
                   ),
                 ),
               ),
-            ],
+            ),
             SliverToBoxAdapter(
               child: _buildBottomStatus(
                 context,
@@ -283,15 +287,6 @@ class RecommendCategoryListPage
     );
   }
 
-  _GridLayout _gridLayout(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = width >= 520 ? 4 : 2;
-    final available =
-        width - (_gridPadding * 2) - (_gridSpacing * (crossAxisCount - 1));
-    final cardWidth = available / crossAxisCount;
-    return _GridLayout(crossAxisCount: crossAxisCount, cardWidth: cardWidth);
-  }
-
   void _openDetail(RecommendApiItem item) {
     final path = HttpPathBuilderUtil.buildMediaPath(item);
     if (path.isEmpty) {
@@ -304,6 +299,12 @@ class RecommendCategoryListPage
       if (title != null && title.isNotEmpty) 'title': title,
       if (item.year != null && item.year!.isNotEmpty) 'year': item.year!,
       if (item.type != null && item.type!.isNotEmpty) 'type_name': item.type!,
+      if (item.poster_path != null && item.poster_path!.isNotEmpty)
+        'poster_path': item.poster_path!,
+      if (item.backdrop_path != null && item.backdrop_path!.isNotEmpty)
+        'backdrop_path': item.backdrop_path!,
+      if (item.vote_average != null && item.vote_average! > 0)
+        'vote_average': item.vote_average!.toStringAsFixed(1),
     };
     Get.toNamed('/media-detail', parameters: params);
   }
@@ -319,11 +320,4 @@ class RecommendCategoryListPage
     }
     return null;
   }
-}
-
-class _GridLayout {
-  const _GridLayout({required this.crossAxisCount, required this.cardWidth});
-
-  final int crossAxisCount;
-  final double cardWidth;
 }

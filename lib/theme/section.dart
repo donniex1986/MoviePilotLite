@@ -14,6 +14,7 @@ class Section extends StatelessWidget {
     this.margin = EdgeInsets.zero,
     this.color,
     this.separatorBuilder,
+    this.footer,
   });
 
   final Widget? child;
@@ -24,6 +25,7 @@ class Section extends StatelessWidget {
   final EdgeInsets? margin;
   final Color? color;
   final Function(BuildContext context)? separatorBuilder;
+  final Widget? footer;
   @override
   Widget build(BuildContext context) {
     final color = this.color ?? Theme.of(context).cardColor;
@@ -51,6 +53,8 @@ class Section extends StatelessWidget {
                   )
                 : child,
           ),
+          if (footer != null)
+            Padding(padding: const EdgeInsets.only(top: 16), child: footer!),
         ],
       ),
     );

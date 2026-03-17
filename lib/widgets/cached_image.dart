@@ -112,10 +112,10 @@ class CachedImage extends StatelessWidget {
     } else if (progress is double) {
       progressValue = progress;
     }
-    return Container(
+    return SizedBox(
       width: width,
       height: height,
-      color: CupertinoColors.systemGrey6,
+
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
