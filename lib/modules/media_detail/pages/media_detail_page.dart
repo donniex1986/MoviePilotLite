@@ -154,6 +154,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           ),
         ),
       ),
+
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.parallax,
         background: Stack(
@@ -953,47 +954,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     );
   }
 
-  Widget _buildCreatorList(List<CreatedBy> creators) {
-    return SizedBox(
-      height: 120,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: creators.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final creator = creators[index];
-          final avatarUrl = _resolveCreatedByUrl(creator);
-          return SizedBox(
-            width: 90,
-            child: Column(
-              children: [
-                if (avatarUrl != null)
-                  CachedAvatar(imageUrl: avatarUrl, radius: 28)
-                else
-                  const CircleAvatar(
-                    radius: 32,
-                    backgroundColor: CupertinoColors.systemGrey5,
-                    child: Icon(
-                      CupertinoIcons.person,
-                      color: CupertinoColors.systemGrey,
-                    ),
-                  ),
-                const SizedBox(height: 8),
-                Text(
-                  creator.name ?? '未知',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildActionButtons(
     BuildContext context,
     MediaDetail? detail,
@@ -1274,7 +1234,14 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       sizeStyle: CupertinoButtonSize.medium,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [Icon(icon, size: 18), const SizedBox(width: 8), Text(label)],
+        children: [
+          Icon(icon, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }
