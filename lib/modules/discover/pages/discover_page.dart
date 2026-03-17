@@ -405,6 +405,12 @@ class DiscoverPage extends GetView<DiscoverController> {
       if (title != null && title.isNotEmpty) 'title': title,
       if (item.year != null && item.year!.isNotEmpty) 'year': item.year!,
       if (item.type != null && item.type!.isNotEmpty) 'type_name': item.type!,
+      if (item.poster_path != null && item.poster_path!.isNotEmpty)
+        'poster_path': item.poster_path!,
+      if (item.backdrop_path != null && item.backdrop_path!.isNotEmpty)
+        'backdrop_path': item.backdrop_path!,
+      if (item.vote_average != null && item.vote_average! > 0)
+        'vote_average': item.vote_average!.toStringAsFixed(1),
     };
     Get.toNamed('/media-detail', parameters: params);
   }

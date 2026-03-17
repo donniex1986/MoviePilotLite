@@ -34,6 +34,8 @@ class MediaDetailController extends GetxController {
 
   final mediaNotExists = <MediaNotExists>[].obs;
 
+  final seasonPageCntroller = PageController(viewportFraction: 0.93);
+
   /// 季号 -> 该季的订阅项（有则已订阅）
   final seasonSubscribeMap = <int, SubscribeItem>{}.obs;
 
@@ -54,6 +56,26 @@ class MediaDetailController extends GetxController {
   late final MediaDetailArgs _args;
 
   MediaDetailArgs get args => _args;
+
+  MediaDetail? get prefillDetail => _buildPrefillDetail();
+
+  MediaDetail? _buildPrefillDetail() {
+    final a = _args;
+    if (a.title.isEmpty &&
+        a.posterPath == null &&
+        a.backdropPath == null &&
+        a.year == null &&
+        a.voteAverage == null) {
+      return null;
+    }
+    return MediaDetail(
+      title: a.title.isEmpty ? null : a.title,
+      year: a.year,
+      poster_path: a.posterPath,
+      backdrop_path: a.backdropPath,
+      vote_average: a.voteAverage,
+    );
+  }
 
   @override
   void onInit() {
@@ -171,6 +193,7 @@ class MediaDetailController extends GetxController {
       final response = await _apiClient.get<dynamic>(
         path,
         queryParameters: query,
+        timeout: 120,
       );
 
       statusCode.value = response.statusCode ?? 0;
@@ -705,6 +728,9 @@ class MediaDetailArgs {
     this.year,
     this.typeName,
     this.session,
+    this.posterPath,
+    this.backdropPath,
+    this.voteAverage,
   });
 
   final String path;
@@ -712,6 +738,9 @@ class MediaDetailArgs {
   final String? year;
   final String? typeName;
   final String? session;
+  final String? posterPath;
+  final String? backdropPath;
+  final double? voteAverage;
 
   bool get isValid => path.trim().isNotEmpty;
 
@@ -756,12 +785,20 @@ class MediaDetailArgs {
     final year = readKey(['year']);
     final typeName = readKey(['type_name', 'typeName', 'type']);
     final session = readKey(['session']);
+    final posterPath = readKey(['poster_path', 'poster']);
+    final backdropPath = readKey(['backdrop_path', 'backdrop']);
+    double? voteAverage;
+    final voteStr = readKey(['vote_average', 'vote']);
+    if (voteStr != null) voteAverage = double.tryParse(voteStr);
     return MediaDetailArgs(
       path: path,
       title: title,
       year: year,
       typeName: typeName,
       session: session,
+      posterPath: posterPath,
+      backdropPath: backdropPath,
+      voteAverage: voteAverage,
     );
   }
 }
