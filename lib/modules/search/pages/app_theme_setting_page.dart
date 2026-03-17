@@ -128,13 +128,6 @@ class AppThemeSettingPage extends GetView<AppSettingController> {
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: SectionHeader(title: title),
-    );
-  }
-
   bool _colorEquals(Color a, Color b) =>
       (a.r * 255).round() == (b.r * 255).round() &&
       (a.g * 255).round() == (b.g * 255).round() &&
