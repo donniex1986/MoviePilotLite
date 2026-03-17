@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
+import 'package:moviepilot_mobile/utils/grid_layout.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../controllers/media_search_list_controller.dart';
 
 class MediaSearchListPage extends GetView<MediaSearchListController> {
   const MediaSearchListPage({super.key});
-
+  static const double _gridSpacing = 8;
+  static const double _gridPadding = 16;
+  static const double _cardAspectRatio = 1 / 1.3;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,6 +46,11 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
       final isLoading = controller.isLoading.value;
       final error = controller.error.value;
       final hasMore = controller.hasMore.value;
+      final layout = gridLayout(
+        context,
+        gridSpacing: _gridSpacing,
+        gridPadding: _gridPadding,
+      );
       return RefreshIndicator(
         onRefresh: () => controller.search(),
         child: CustomScrollView(
@@ -55,20 +64,28 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                sliver: SliverGrid(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final item = items[index];
-                    return RecommendItemCard(
-                      item: item,
-                      onTap: () => _openDetail(item),
-                    );
-                  }, childCount: items.length),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 0.68,
+                padding: EdgeInsets.fromLTRB(
+                  _gridPadding,
+                  8,
+                  _gridPadding,
+                  _gridPadding,
+                ),
+                sliver: Skeletonizer.sliver(
+                  enabled: isLoading || items.isEmpty,
+                  child: SliverGrid(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final item = items[index];
+                      return RecommendItemCard(
+                        item: item,
+                        onTap: () => _openDetail(item),
+                      );
+                    }, childCount: items.length),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: layout.crossAxisCount,
+                      mainAxisSpacing: _gridSpacing,
+                      crossAxisSpacing: _gridSpacing,
+                      childAspectRatio: _cardAspectRatio,
+                    ),
                   ),
                 ),
               ),
