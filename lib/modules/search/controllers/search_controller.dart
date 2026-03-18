@@ -285,11 +285,13 @@ class SearchMediaController extends GetxController {
       );
 
       // 连接 SSE 端点
-      _sseSubscription = _sseClient!.connect(_progressPath).listen(
-        _handleProgressEvent,
-        onError: _handleProgressError,
-        onDone: _handleProgressDone,
-      );
+      _sseSubscription = _sseClient!
+          .connect(_progressPath)
+          .listen(
+            _handleProgressEvent,
+            onError: _handleProgressError,
+            onDone: _handleProgressDone,
+          );
       _log.info('SSE connection initiated');
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: 'Failed to start SSE connection');
@@ -354,22 +356,24 @@ class SearchMediaController extends GetxController {
     progressMessage.value = event.message ?? progressMessage.value;
     // 从 data 中提取额外信息
     if (event.data != null) {
-      progressCurrent.value = event.data!['current'] as int? ?? progressCurrent.value;
+      progressCurrent.value =
+          event.data!['current'] as int? ?? progressCurrent.value;
       progressTotal.value = event.data!['total'] as int? ?? progressTotal.value;
-      progressSource.value = event.data!['source']?.toString() ?? progressSource.value;
+      progressSource.value =
+          event.data!['source']?.toString() ?? progressSource.value;
     }
 
     _log.info(
       'Search progress: ${(event.progress * 100).toStringAsFixed(1)}% - ${event.status} - ${event.message}',
     );
 
-    // 如果进度已完成，延迟停止跟踪
-    if (event.isCompleted) {
-      final sessionId = _progressSessionId;
-      Future.delayed(const Duration(seconds: 2), () {
-        _stopProgressTracking(sessionId: sessionId);
-      });
-    }
+    // // 如果进度已完成，延迟停止跟踪
+    // if (event.isCompleted) {
+    //   final sessionId = _progressSessionId;
+    //   Future.delayed(const Duration(seconds: 2), () {
+    //     _stopProgressTracking(sessionId: sessionId);
+    //   });
+    // }
   }
 
   /// 处理进度错误

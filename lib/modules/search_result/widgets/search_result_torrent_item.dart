@@ -33,7 +33,7 @@ class SearchResultTorrentItem extends StatelessWidget {
 
   Color cardColor(BuildContext context) => _isInverted()
       ? Color.alphaBlend(
-          Colors.white.withValues(alpha: 0.06),
+          Colors.black.withValues(alpha: 0.1),
           AppTheme.darkBackgroundColor,
         )
       : Theme.of(context).cardColor;
@@ -169,31 +169,6 @@ class SearchResultTorrentItem extends StatelessWidget {
     );
   }
 
-  Widget _buildSiteBadge(String label, {bool dense = false}) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: dense ? 8 : 10,
-        vertical: dense ? 4 : 6,
-      ),
-      decoration: BoxDecoration(
-        color: _isInverted()
-            ? Colors.white.withValues(alpha: 0.10)
-            : AppTheme.textSecondaryColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: dense ? 11 : 12,
-          fontWeight: FontWeight.w600,
-          color: _isInverted()
-              ? Colors.white.withValues(alpha: 0.75)
-              : AppTheme.textSecondaryColor,
-        ),
-      ),
-    );
-  }
-
   Widget _buildSiteAndStatsRow(
     BuildContext context,
     SearchTorrentInfo? torrent,
@@ -293,7 +268,7 @@ class SearchResultTorrentItem extends StatelessWidget {
 
   Widget _imageFromBytes(List<int> bytes) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(3),
+      borderRadius: BorderRadius.circular(25),
       child: Image.memory(
         Uint8List.fromList(bytes),
         width: 18,
@@ -310,7 +285,7 @@ class SearchResultTorrentItem extends StatelessWidget {
       height: 18,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Icon(
         Icons.public,
@@ -332,7 +307,7 @@ class SearchResultTorrentItem extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: accent.withValues(alpha: _isInverted() ? 0.22 : 0.16),
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Text(
         text,
@@ -380,7 +355,7 @@ class SearchResultTorrentItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: _isInverted() ? 0.22 : 0.14),
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -409,7 +384,7 @@ class SearchResultTorrentItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: _isInverted() ? 0.22 : 0.14),
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -443,7 +418,7 @@ class SearchResultTorrentItem extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: accent.withValues(alpha: _isInverted() ? 0.22 : 0.14),
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Text(
         label,
@@ -485,7 +460,7 @@ class SearchResultTorrentItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: _isInverted() ? 0.22 : 0.16),
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Text(
         text,
@@ -507,7 +482,7 @@ class SearchResultTorrentItem extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Text(
         text,

@@ -418,6 +418,8 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         if (errorText != null && errorText.trim().isNotEmpty) ...[
           _buildSectionTitle('请求错误'),
@@ -598,6 +600,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       required String label,
       required String value,
       Color? accent,
+      VoidCallback? onTap,
     }) {
       final a = accent ?? const Color(0xFF7C4DFF);
       return Row(
@@ -623,13 +626,21 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              value,
-              maxLines: 1,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+            child: GestureDetector(
+              onTap: onTap,
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: onTap != null
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.white,
+                  decoration: onTap != null ? TextDecoration.underline : null,
+                  decorationThickness: onTap != null ? 1.5 : 0,
+                ),
               ),
             ),
           ),
@@ -734,6 +745,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           label: '官网',
           value: detail.homepage!,
           accent: const Color(0xFF60A5FA),
+          onTap: () => WebUtil.open(url: detail.homepage!),
         ),
       );
     }
@@ -757,92 +769,24 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     );
   }
 
-  Widget _buildGenreChips(MediaDetail detail) {
-    final genres = detail.genres ?? const [];
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: genres
-          .map(
-            (genre) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Text(
-                genre.name ?? '未知',
-                style: const TextStyle(fontSize: 12),
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
-
-  Widget _buildNextEpisode(NextEpisodeToAir nextEpisode) {
-    final info = <String, String>{};
-    if (nextEpisode.season_number != null) {
-      info['季'] = '第 ${nextEpisode.season_number} 季';
-    }
-    if (nextEpisode.episode_number != null) {
-      info['集'] = '第 ${nextEpisode.episode_number} 集';
-    }
-    if (nextEpisode.air_date != null && nextEpisode.air_date!.isNotEmpty) {
-      info['播出'] = nextEpisode.air_date!;
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          nextEpisode.name?.isNotEmpty == true ? nextEpisode.name! : '即将播出',
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: info.entries
-              .map(
-                (entry) => Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${entry.key}: ${entry.value}',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-      ],
-    );
-  }
-
   Widget _buildSeasonList(
     BuildContext context,
     List<SeasonInfo> seasons,
     MediaDetail detail,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      padding: const EdgeInsets.only(top: 16.0, bottom: 16.0),
       child: SizedBox(
-        height: 200,
+        height: 350,
         child: PageView.builder(
+          padEnds: false,
           controller: controller.seasonPageCntroller,
           scrollDirection: Axis.horizontal,
           itemCount: seasons.length,
           itemBuilder: (context, index) {
             final season = seasons[index];
             return Padding(
-              padding: EdgeInsets.only(left: index == 0 ? 0 : 12),
+              padding: EdgeInsets.only(left: index == 0 ? 16 : 12),
               child: _buildSeasonListContent(context, season),
             );
           },
@@ -853,7 +797,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
 
   Widget _buildSeasonListContent(BuildContext context, SeasonInfo season) {
     return Obx(() {
-      final theme = Theme.of(context);
       final posterUrl = ImageUtil.convertMediaSeasonImageUrl(
         season.poster_path ?? '',
       );
@@ -964,7 +907,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       return const SizedBox.shrink();
     }
     final isTv = _isTv(detail);
-    final showSearch = Get.find<AppService>().showSearchButton;
     return Obx(() {
       final movieSubscribed = controller.movieSubscribeItem.value != null;
       final seasons = detail.season_info;
@@ -976,17 +918,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
             onPressed: isLoading ? null : () => _openSearch(context),
             backgroundColor: Theme.of(context).colorScheme.secondary,
           );
-          if (!showSearch.value) {
-            if (isTv && seasons?.isNotEmpty == true) {
-              return const SizedBox.shrink();
-            }
-            return _buildSubscribeButton(
-              context,
-              detail,
-              isLoading,
-              movieSubscribed,
-            );
-          }
           if (isTv && seasons?.isNotEmpty == true) {
             return Row(children: [Expanded(child: search)]);
           }
@@ -1309,7 +1240,8 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       'year': detail?.year ?? '',
       'mtype': detail?.type ?? 'movie',
       'title': detail?.title ?? '',
-      if ((detail?.backdrop_path ?? '').isNotEmpty) 'backdrop': detail!.backdrop_path!,
+      if ((detail?.backdrop_path ?? '').isNotEmpty)
+        'backdrop': detail!.backdrop_path!,
     };
     if (season != null) {
       params['season'] = season.toString();

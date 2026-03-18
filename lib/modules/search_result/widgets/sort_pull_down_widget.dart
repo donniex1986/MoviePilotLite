@@ -56,10 +56,9 @@ class SortPullDownWidget<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelColor = CupertinoDynamicColor.resolve(
-      CupertinoColors.label,
+    final labelColor = Theme.of(
       context,
-    );
+    ).colorScheme.primary.withValues(alpha: 0.9);
 
     return GestureDetector(
       onTap: () => _showPullMenu(context),

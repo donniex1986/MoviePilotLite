@@ -24,7 +24,7 @@ class SseClient {
     _streamController = StreamController<SseEvent>.broadcast(
       onCancel: () {
         _log.info('SSE stream cancelled');
-        disconnect();
+        // disconnect();
       },
     );
 
