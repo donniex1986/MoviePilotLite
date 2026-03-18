@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/widgets/section_header.dart';
 
@@ -171,6 +172,20 @@ class SearchIndexPage extends GetView<SearchIndexController> {
                     },
                   ),
                 ),
+                Obx(() {
+                  final enabled = Get.find<AppService>().showSearchButton.value;
+                  if (!enabled) return const SizedBox.shrink();
+                  return SizedBox(
+                    width: 56,
+                    height: 36,
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () =>
+                          controller.submit(controller.textController.text),
+                      child: const Icon(CupertinoIcons.search, size: 20),
+                    ),
+                  );
+                }),
               ],
             ),
           ),

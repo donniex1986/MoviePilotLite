@@ -64,6 +64,12 @@ List<SettingsCategory> get settingsCategories => [
     icon: Icons.settings_outlined,
     items: const [
       SettingsSubItem(
+        id: 'app-setting',
+        title: '应用设置',
+        route: '/settings/app/app-setting',
+        icon: Icons.tune,
+      ),
+      SettingsSubItem(
         id: 'theme-mode',
         title: '主题模式',
         route: '/settings/app/theme-mode',

@@ -8,11 +8,17 @@ class AppSettingController extends GetxController {
   final primaryColor = Color(0xFF007AFF).obs;
   final service = Get.find<AppService>();
   final version = '1.0.0'.obs;
+  final showSearchButton = true.obs;
+  final enableDownloaderManager = false.obs;
+  final useExternalBrowser = false.obs;
   @override
   void onInit() {
     super.onInit();
     themeMode.value = service.themeMode.value;
     primaryColor.value = service.primaryColor.value;
+    showSearchButton.value = service.showSearchButton.value;
+    enableDownloaderManager.value = service.enableDownloaderManager.value;
+    useExternalBrowser.value = service.useExternalBrowser.value;
     loadAppVersion();
   }
 
@@ -24,6 +30,21 @@ class AppSettingController extends GetxController {
   void updatePrimaryColor(Color color) {
     primaryColor.value = color;
     service.updatePrimaryColor(color);
+  }
+
+  void updateShowSearchButton(bool value) {
+    showSearchButton.value = value;
+    service.updateShowSearchButton(value);
+  }
+
+  void updateEnableDownloaderManager(bool value) {
+    enableDownloaderManager.value = value;
+    service.updateEnableDownloaderManager(value);
+  }
+
+  void updateUseExternalBrowser(bool value) {
+    useExternalBrowser.value = value;
+    service.updateUseExternalBrowser(value);
   }
 
   loadAppVersion() async {

@@ -52,7 +52,6 @@ class RecommendItemCard extends GetView<SubscribeService> {
         final size = _resolveSize(constraints);
         return RecommendItemBaseCard(
           item: item,
-
           child: GestureDetector(
             onTap: onTap,
             child: _buildContent(size.width, size.height),

@@ -7,7 +7,11 @@ class GridLayout {
   final double cardWidth;
 }
 
-GridLayout gridLayout(BuildContext context, {double gridSpacing = 8, double gridPadding = 16}) {
+GridLayout gridLayout(
+  BuildContext context, {
+  double gridSpacing = 8,
+  double gridPadding = 16,
+}) {
   final width = MediaQuery.of(context).size.width;
   final crossAxisCount = width >= 520 ? 4 : 2;
   final available =

@@ -51,6 +51,7 @@ class SettingsPage extends GetView<SettingsController> {
                     ),
                   )
                 : null,
+
             children: [
               for (int i = 0; i < rowCount; i++)
                 _buildTile(

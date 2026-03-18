@@ -1,9 +1,11 @@
 import 'package:moviepilot_mobile/utils/toast_util.dart';
+import 'package:get/get.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class WebUtil {
   /// 打开链接
-  static Future<void> open({String? url}) async {
+  static Future<void> open({String? url, String? cookie}) async {
     final raw = url?.trim() ?? '';
     if (raw.isEmpty) {
       ToastUtil.error('链接不能为空');
@@ -19,10 +21,19 @@ class WebUtil {
     if (uri.scheme.isEmpty) {
       uri = Uri.parse('https://$raw');
     }
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      ToastUtil.error('无法打开链接: ${uri.toString()}');
+    final useExternal = Get.find<AppService>().useExternalBrowser.value;
+    if (!useExternal) {
+      Get.toNamed(
+        '/web-view',
+        parameters: {'url': uri.toString(), 'cookie': cookie ?? ''},
+      );
+      return;
     }
+
+    if (!await canLaunchUrl(uri)) {
+      ToastUtil.error('无法打开链接: ${uri.toString()}');
+      return;
+    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }
