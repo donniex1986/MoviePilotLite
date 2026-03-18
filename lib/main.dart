@@ -264,6 +264,8 @@ class MyApp extends StatelessWidget {
                 c.season = args['season'];
                 c.mtype = args['mtype'] ?? 'movie';
                 c.searchText.value = args['title'] ?? '';
+                c.prefillTitle = args['title'];
+                c.prefillBackdrop = args['backdrop'] ?? args['backdrop_path'];
                 return c;
               });
             }),

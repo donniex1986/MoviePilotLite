@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -6,14 +8,13 @@ import 'package:moviepilot_mobile/modules/search/controllers/search_controller.d
 import 'package:moviepilot_mobile/modules/search_result/controllers/search_result_controller.dart';
 import 'package:moviepilot_mobile/modules/search_result/models/search_result_models.dart';
 import 'package:moviepilot_mobile/modules/search_result/widgets/search_result_filter_sheet.dart'
-    show
-        SearchResultFilterSectionConfig,
-        SearchResultFilterSheet,
-        chipColorForType;
+    show SearchResultFilterSectionConfig, SearchResultFilterSheet;
 import 'package:moviepilot_mobile/modules/search_result/widgets/search_result_torrent_item.dart';
 import 'package:moviepilot_mobile/modules/search_result/widgets/sort_pull_down_widget.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/utils/image_util.dart';
+import 'package:moviepilot_mobile/widgets/cached_image.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SearchMediaResultPage extends GetView<SearchMediaController> {
@@ -22,18 +23,20 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
   static const double _horizontalPadding = 16;
   static const double _cardSpacing = 12;
   static const int _skeletonCardCount = 4;
+  static const double _immersiveHeaderHeight = 250;
+  static const double _floatingBarHeight = 52;
 
+  bool get immersive =>
+      (controller.prefillBackdrop ?? '').trim().isNotEmpty &&
+      (controller.prefillTitle ?? '').trim().isNotEmpty;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildNavigationBar(context),
-      body: Stack(
-        children: [
-          _buildBody(context),
-          // SSE 进度条（顶部线性进度条，类似 WebView）
-          _buildProgressIndicator(),
-        ],
-      ),
+      backgroundColor: immersive ? AppTheme.darkBackgroundColor : null,
+      appBar: immersive ? null : _buildNavigationBar(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: _buildFloatingBar(context),
+      body: _buildBody(context, immersive: immersive),
     );
   }
 
@@ -84,17 +87,6 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -117,7 +109,6 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
                 Text(
                   controller.progressMessage.value,
                   style: const TextStyle(
-                    color: Colors.white,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -127,10 +118,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
                 if (controller.progressSource.value.isNotEmpty)
                   Text(
                     controller.progressSource.value,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 11,
-                    ),
+                    style: TextStyle(fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -140,11 +128,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
           const SizedBox(width: 8),
           Text(
             controller.formattedProgress,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -165,7 +149,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
     }
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context, {required bool immersive}) {
     return Obx(() {
       if (controller.isClosed) return const SizedBox.shrink();
       final items = controller.visibleItems;
@@ -176,25 +160,83 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
       final showSkeleton = isLoading && controller.items.isEmpty;
       return CustomScrollView(
         slivers: [
+          if (immersive)
+            _buildImmersiveHeader(context)
+          else
+            const SliverToBoxAdapter(child: SizedBox.shrink()),
           SliverPadding(
             padding: const EdgeInsets.symmetric(
               horizontal: _horizontalPadding,
               vertical: 15,
             ),
-            sliver: SliverToBoxAdapter(child: _buildSearchAndToolbar(context)),
+            sliver: SliverToBoxAdapter(
+              child: immersive
+                  ? _buildSearchMetaChips(context)
+                  : _buildSearchAndToolbar(context),
+            ),
           ),
           if (showSkeleton)
             _buildSkeletonSliver(context)
           else if (errorText != null)
-            SliverToBoxAdapter(child: _buildErrorState(context, errorText))
+            SliverToBoxAdapter(
+              child: _buildErrorState(context, errorText, immersive: immersive),
+            )
           else if (items.isEmpty)
-            SliverToBoxAdapter(child: _buildEmptyState(context))
+            SliverToBoxAdapter(
+              child: _buildEmptyState(context, immersive: immersive),
+            )
           else
             _buildResults(context, items, viewMode),
-          SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: immersive
+                  ? _floatingBarHeight + 32
+                  : _bottomSpacer(context),
+            ),
+          ),
         ],
       );
     });
+  }
+
+  SliverAppBar _buildImmersiveHeader(BuildContext context) {
+    final backdrop = (controller.prefillBackdrop ?? '').trim();
+    final title = (controller.prefillTitle ?? '').trim();
+    return SliverAppBar(
+      pinned: true,
+      expandedHeight: _immersiveHeaderHeight,
+      backgroundColor: Colors.transparent,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: Get.back,
+      ),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            CachedImage(
+              imageUrl: ImageUtil.convertCacheImageUrl(backdrop),
+              fit: BoxFit.cover,
+            ),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black54,
+                    Colors.transparent,
+                    AppTheme.darkBackgroundColor,
+                  ],
+                  stops: [0.0, 0.55, 1.0],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildSkeletonSliver(BuildContext context) {
@@ -289,32 +331,189 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
     );
   }
 
-  Widget _buildToolbar(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: Row(
-        children: [
-          Obx(
-            () => SortPullDownWidget<SearchResultSortKey>(
-              isAscending: controller.sortDirection.value == SortDirection.asc,
-              currentValue: controller.sortKey.value,
-              options: SearchResultSortKey.values,
-              labelBuilder: _sortLabel,
-              onDirectionChanged: (asc) {
-                final want = asc ? SortDirection.asc : SortDirection.desc;
-                if (controller.sortDirection.value != want) {
-                  controller.toggleSortDirection();
-                }
-              },
-              onValueChanged: controller.updateSortKey,
+  Widget _buildFloatingBar(BuildContext context) {
+    return Obx(() {
+      final inSearching = controller.isProgressActive.value;
+      final child = inSearching
+          ? _buildProgressIndicator()
+          : Row(
+              children: [
+                _buildFloatingFilterButton(context),
+                const SizedBox(width: 8),
+                Expanded(child: _buildFakeSearchBar(context)),
+                const SizedBox(width: 8),
+                _buildFloatingSortButton(context),
+              ],
+            );
+      final pill = Container(
+        height: _floatingBarHeight,
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
+        child: child,
+      );
+      return Padding(
+        padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+            child: pill,
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildFloatingFilterButton(BuildContext context) {
+    return Obx(() {
+      final has = controller.hasActiveFilters;
+      final color = has
+          ? CupertinoDynamicColor.resolve(CupertinoColors.activeBlue, context)
+          : CupertinoDynamicColor.resolve(Colors.white, context);
+      return CupertinoButton(
+        padding: EdgeInsets.zero,
+        minSize: 0,
+        onPressed: () => _openFilterSheet(context),
+        child: Icon(CupertinoIcons.slider_horizontal_3, size: 20, color: color),
+      );
+    });
+  }
+
+  Widget _buildFloatingSortButton(BuildContext context) {
+    return Obx(
+      () => SortPullDownWidget<SearchResultSortKey>(
+        isAscending: controller.sortDirection.value == SortDirection.asc,
+        currentValue: controller.sortKey.value,
+        options: SearchResultSortKey.values,
+        labelBuilder: _sortLabel,
+        onDirectionChanged: (asc) {
+          final want = asc ? SortDirection.asc : SortDirection.desc;
+          if (controller.sortDirection.value != want) {
+            controller.toggleSortDirection();
+          }
+        },
+        onValueChanged: controller.updateSortKey,
+      ),
+    );
+  }
+
+  Widget _buildFakeSearchBar(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _openKeywordSheet(context),
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
+        child: Row(
+          children: [
+            Icon(
+              CupertinoIcons.search,
+              size: 18,
+              color: CupertinoDynamicColor.resolve(Colors.white, context),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Obx(
+                () => Text(
+                  controller.keyword.value.isEmpty
+                      ? '筛选标题、描述、站点…'
+                      : controller.keyword.value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: CupertinoDynamicColor.resolve(
+                      controller.keyword.value.isEmpty
+                          ? CupertinoColors.tertiaryLabel
+                          : CupertinoColors.label,
+                      context,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openKeywordSheet(BuildContext context) async {
+    final controllerText = TextEditingController(
+      text: controller.keyword.value,
+    );
+    final submitted = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final insets = MediaQuery.of(ctx).viewInsets;
+        return Padding(
+          padding: EdgeInsets.only(bottom: insets.bottom),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            decoration: BoxDecoration(
+              color: CupertinoDynamicColor.resolve(
+                CupertinoColors.systemBackground,
+                ctx,
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(18),
+              ),
+            ),
+            child: CupertinoSearchTextField(
+              controller: controllerText,
+              autofocus: true,
+              placeholder: '筛选标题、描述、站点…',
+              onSubmitted: (v) => Navigator.of(ctx).pop(v),
             ),
           ),
-          const SizedBox(width: 6),
-          Expanded(child: _buildFilterBar(context)),
-          const SizedBox(width: 6),
-          _buildFilterButton(context),
-        ],
-      ),
+        );
+      },
+    );
+    controllerText.dispose();
+    if (submitted == null) return;
+    controller.updateKeyword(submitted);
+  }
+
+  Future<void> _openSortSheet(BuildContext context) async {
+    await showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) {
+        return CupertinoActionSheet(
+          title: const Text('排序'),
+          actions: [
+            for (final key in SearchResultSortKey.values)
+              CupertinoActionSheetAction(
+                onPressed: () {
+                  controller.updateSortKey(key);
+                  Navigator.of(ctx).pop();
+                },
+                child: Text(_sortLabel(key)),
+              ),
+            CupertinoActionSheetAction(
+              onPressed: () {
+                controller.toggleSortDirection();
+                Navigator.of(ctx).pop();
+              },
+              child: Obx(
+                () => Text(
+                  controller.sortDirection.value == SortDirection.asc
+                      ? '切换为降序'
+                      : '切换为升序',
+                ),
+              ),
+            ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('取消'),
+          ),
+        );
+      },
     );
   }
 
@@ -333,101 +532,6 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
     }
   }
 
-  Widget _buildFilterButton(BuildContext context) {
-    return Obx(() {
-      final hasFilters = controller.hasActiveFilters;
-      final accent = context.primaryColor;
-      return CupertinoButton(
-        padding: const EdgeInsets.all(6),
-        minSize: 0,
-        pressedOpacity: 0.7,
-        onPressed: () => _openFilterSheet(context),
-        child: _buildLightChip(
-          context,
-          isActive: hasFilters,
-          child: Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              Icon(
-                CupertinoIcons.slider_horizontal_3,
-                size: 16,
-                color: hasFilters
-                    ? accent
-                    : CupertinoDynamicColor.resolve(
-                        CupertinoColors.tertiaryLabel,
-                        context,
-                      ),
-              ),
-              if (hasFilters)
-                Positioned(
-                  right: -2,
-                  top: -2,
-                  child: Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: accent,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildLightChip(
-    BuildContext context, {
-    required Widget child,
-    bool isActive = false,
-  }) {
-    final baseColor = CupertinoDynamicColor.resolve(
-      CupertinoColors.tertiarySystemFill,
-      context,
-    );
-    final activeTint = context.primaryColor.withValues(
-      alpha: isActive ? 0.2 : 0,
-    );
-    final bgColor = Color.alphaBlend(activeTint, baseColor);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-        border: isActive
-            ? Border.all(
-                color: context.primaryColor.withValues(alpha: 0.3),
-                width: 1,
-              )
-            : null,
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildCountBadge(BuildContext context, int count, [Color? color]) {
-    final c = color ?? context.primaryColor;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-      decoration: BoxDecoration(
-        color: c,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        '$count',
-        style: const TextStyle(
-          color: CupertinoColors.white,
-          fontWeight: FontWeight.w600,
-          fontSize: 10,
-        ),
-      ),
-    );
-  }
-
   AppBar _buildNavigationBar(BuildContext context) {
     return AppBar(title: const Text('搜索结果'), centerTitle: false);
   }
@@ -444,7 +548,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(25),
         border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
       ),
       child: Text(
@@ -455,6 +559,60 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
           color: color.withValues(alpha: 0.95),
         ),
       ),
+    );
+  }
+
+  Widget _buildSearchMetaChips(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _buildFilterChip(
+              context,
+              label: '媒体',
+              value: controller.mediaSearchKey,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            _buildFilterChip(
+              context,
+              label: '搜索: ${controller.area == 'title' ? '标题' : 'IMDB'}',
+              value: '',
+              color: const Color(0xFF34C759),
+              valueOnly: true,
+            ),
+            if (controller.sites.isNotEmpty)
+              _buildFilterChip(
+                context,
+                label: '站点',
+                value: '${controller.sites.length} 个',
+                color: const Color(0xFFFF9500),
+              ),
+            if (controller.year.isNotEmpty)
+              _buildFilterChip(
+                context,
+                label: '年份',
+                value: controller.year,
+                color: const Color(0xFFAF52DE),
+              ),
+            if (controller.season != null && controller.season!.isNotEmpty)
+              _buildFilterChip(
+                context,
+                label: '季',
+                value: controller.season!,
+                color: const Color(0xFF5AC8FA),
+              ),
+            _buildFilterChip(
+              context,
+              label: '类型',
+              value: controller.mtype,
+              color: const Color(0xFF8E8E93),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -519,7 +677,6 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
               ],
             ),
           ),
-          _buildToolbar(context),
         ],
       ),
     );
@@ -545,15 +702,24 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
   }
 
   Widget _buildListCard(BuildContext context, SearchResultItem item) {
-    return SearchResultTorrentItem(item: item);
+    return SearchResultTorrentItem(item: item, immersive: immersive);
   }
 
-  Widget _buildErrorState(BuildContext context, String message) {
+  Widget _buildErrorState(
+    BuildContext context,
+    String message, {
+    required bool immersive,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          Text(message, style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            message,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: immersive ? Colors.white70 : null,
+            ),
+          ),
           const SizedBox(height: 12),
           ElevatedButton(
             onPressed: controller.performSearch,
@@ -635,119 +801,15 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
     ];
   }
 
-  Widget _buildFilterBar(BuildContext context) {
-    return Obx(() {
-      final items = [
-        _FilterChipItem(
-          filterType: SearchResultFilterType.site,
-          label: _filterSectionTitles[SearchResultFilterType.site]!,
-          icon: CupertinoIcons.cube_box,
-          count: controller.selectedSites.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.season,
-          label: _filterSectionTitles[SearchResultFilterType.season]!,
-          icon: CupertinoIcons.tv,
-          count: controller.selectedSeasons.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.promotion,
-          label: _filterSectionTitles[SearchResultFilterType.promotion]!,
-          icon: CupertinoIcons.tag,
-          count: controller.selectedPromotions.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.videoEncode,
-          label: _filterSectionTitles[SearchResultFilterType.videoEncode]!,
-          icon: CupertinoIcons.film,
-          count: controller.selectedVideoEncodes.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.quality,
-          label: _filterSectionTitles[SearchResultFilterType.quality]!,
-          icon: CupertinoIcons.star,
-          count: controller.selectedQualities.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.resolution,
-          label: _filterSectionTitles[SearchResultFilterType.resolution]!,
-          icon: CupertinoIcons.rectangle,
-          count: controller.selectedResolutions.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.team,
-          label: _filterSectionTitles[SearchResultFilterType.team]!,
-          icon: CupertinoIcons.person_2,
-          count: controller.selectedTeams.length,
-        ),
-      ];
-
-      return SizedBox(
-        height: 32,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return _buildFilterPill(context, item);
-          },
-          separatorBuilder: (_, __) => const SizedBox(width: 6),
-          itemCount: items.length,
-        ),
-      );
-    });
-  }
-
-  Widget _buildFilterPill(BuildContext context, _FilterChipItem item) {
-    final hasCount = item.count > 0;
-    final chipColor = chipColorForType(item.filterType, selected: hasCount);
-    final bgColor = hasCount ? chipColor : chipColor.withValues(alpha: 0.12);
-    final borderColor = hasCount
-        ? chipColor
-        : chipColor.withValues(alpha: 0.35);
-
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      minSize: 0,
-      pressedOpacity: 0.7,
-      onPressed: () => _openFilterSheet(context, item.filterType),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(5),
-          border: Border.all(color: borderColor, width: 1),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              item.icon,
-              size: 14,
-              color: hasCount ? Colors.white : chipColor,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              item.label,
-              style: TextStyle(
-                color: hasCount ? Colors.white : chipColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (hasCount) ...[
-              const SizedBox(width: 4),
-              _buildCountBadge(context, item.count, chipColor),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, {required bool immersive}) {
     return Padding(
       padding: const EdgeInsets.all(24),
-      child: Text('暂无搜索结果', style: Theme.of(context).textTheme.bodyMedium),
+      child: Text(
+        '暂无搜索结果',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: immersive ? Colors.white70 : null,
+        ),
+      ),
     );
   }
 
@@ -779,18 +841,4 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
       },
     );
   }
-}
-
-class _FilterChipItem {
-  const _FilterChipItem({
-    required this.filterType,
-    required this.label,
-    required this.icon,
-    required this.count,
-  });
-
-  final SearchResultFilterType filterType;
-  final String label;
-  final IconData icon;
-  final int count;
 }

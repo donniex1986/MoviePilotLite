@@ -1309,6 +1309,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       'year': detail?.year ?? '',
       'mtype': detail?.type ?? 'movie',
       'title': detail?.title ?? '',
+      if ((detail?.backdrop_path ?? '').isNotEmpty) 'backdrop': detail!.backdrop_path!,
     };
     if (season != null) {
       params['season'] = season.toString();

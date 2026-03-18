@@ -18,6 +18,8 @@ class SearchMediaController extends GetxController {
   final _log = Get.find<AppLog>();
 
   final searchText = ''.obs;
+  String? prefillTitle;
+  String? prefillBackdrop;
   var mediaSearchKey = '';
   var mtype = '电影';
   var area = 'title';

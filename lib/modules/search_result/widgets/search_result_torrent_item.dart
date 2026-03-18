@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 import 'package:moviepilot_mobile/modules/download/controllers/download_controller.dart';
 import 'package:moviepilot_mobile/modules/download/widgets/download_sheet.dart';
@@ -21,29 +20,54 @@ class SearchResultTorrentItem extends StatelessWidget {
     super.key,
     required this.item,
     this.similarItems,
+    this.immersive = false,
+    this.invertColors = false,
   });
   final SearchResultItem item;
   final List<SearchResultItem>? similarItems;
   static final Map<int, Future<List<int>?>> _iconFutures = {};
+  final bool immersive;
+  final bool invertColors;
+
+  bool _isInverted() => immersive || invertColors;
+
+  Color cardColor(BuildContext context) => _isInverted()
+      ? Color.alphaBlend(
+          Colors.white.withValues(alpha: 0.06),
+          AppTheme.darkBackgroundColor,
+        )
+      : Theme.of(context).cardColor;
+
+  Color themeColor(BuildContext context) =>
+      _isInverted() ? CupertinoColors.activeBlue : context.primaryColor;
+
+  Color primaryTextColor(BuildContext context) =>
+      _isInverted() ? Colors.white : Theme.of(context).colorScheme.onSurface;
+
+  Color secondaryTextColor(BuildContext context) => _isInverted()
+      ? Colors.white.withValues(alpha: 0.72)
+      : AppTheme.textSecondaryColor;
+
   @override
   Widget build(BuildContext context) {
     final meta = item.meta_info;
     final torrent = item.torrent_info;
-    final accent = context.primaryColor;
+    final accent = themeColor(context);
     final title = _displayTitle(item);
     final season = _seasonLabel(item);
     final tags = _buildTags(item);
     final promotion = _promotionBadgeLabel(item);
-
     return GestureDetector(
       onTap: () => _openDownloadSheet(context, item),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: cardColor(context),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: Theme.of(context).dividerColor.withValues(alpha: 0.08),
+            color: (_isInverted()
+                ? Colors.white.withValues(alpha: 0.08)
+                : Theme.of(context).dividerColor.withValues(alpha: 0.08)),
             width: 1,
           ),
         ),
@@ -57,6 +81,7 @@ class SearchResultTorrentItem extends StatelessWidget {
                     title,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w600,
+                      color: primaryTextColor(context),
                     ),
                   ),
                 ),
@@ -72,9 +97,10 @@ class SearchResultTorrentItem extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               torrent?.title ?? meta?.title ?? '',
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: secondaryTextColor(context),
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -84,7 +110,7 @@ class SearchResultTorrentItem extends StatelessWidget {
               Text(
                 meta?.subtitle ?? torrent?.description ?? '',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.textSecondaryColor,
+                  color: secondaryTextColor(context),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -105,7 +131,9 @@ class SearchResultTorrentItem extends StatelessWidget {
 
   Widget _buildMoreFooter(BuildContext context, SearchResultItem item) {
     return Container(
-      decoration: BoxDecoration(color: Theme.of(context).cardColor),
+      decoration: BoxDecoration(
+        color: _isInverted() ? Colors.transparent : Theme.of(context).cardColor,
+      ),
       child: Column(
         children: [
           const SizedBox(height: 10),
@@ -124,7 +152,7 @@ class SearchResultTorrentItem extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                  color: AppTheme.textSecondaryColor,
+                  color: secondaryTextColor(context),
                 ),
               ],
               Spacer(),
@@ -132,7 +160,7 @@ class SearchResultTorrentItem extends StatelessWidget {
               const SizedBox(width: 6),
               GestureDetector(
                 onTap: () => _openInfoSheet(context, item),
-                child: Icon(Icons.info_outline, color: context.primaryColor),
+                child: Icon(Icons.info_outline, color: themeColor(context)),
               ),
             ],
           ),
@@ -148,7 +176,9 @@ class SearchResultTorrentItem extends StatelessWidget {
         vertical: dense ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        color: AppTheme.textSecondaryColor.withOpacity(0.12),
+        color: _isInverted()
+            ? Colors.white.withValues(alpha: 0.10)
+            : AppTheme.textSecondaryColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Text(
@@ -156,7 +186,9 @@ class SearchResultTorrentItem extends StatelessWidget {
         style: TextStyle(
           fontSize: dense ? 11 : 12,
           fontWeight: FontWeight.w600,
-          color: AppTheme.textSecondaryColor,
+          color: _isInverted()
+              ? Colors.white.withValues(alpha: 0.75)
+              : AppTheme.textSecondaryColor,
         ),
       ),
     );
@@ -213,12 +245,6 @@ class SearchResultTorrentItem extends StatelessWidget {
       final icon = _buildSiteIcon(context, controller, siteItem);
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(
-            alpha: 0.35,
-          ),
-          borderRadius: BorderRadius.circular(3),
-        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -228,7 +254,7 @@ class SearchResultTorrentItem extends StatelessWidget {
               siteName,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurfaceVariant,
+                color: primaryTextColor(context),
               ),
             ),
           ],
@@ -305,7 +331,7 @@ class SearchResultTorrentItem extends StatelessWidget {
         vertical: dense ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        color: accent.withOpacity(0.16),
+        color: accent.withValues(alpha: _isInverted() ? 0.22 : 0.16),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Text(
@@ -323,6 +349,7 @@ class SearchResultTorrentItem extends StatelessWidget {
     final timeLabel = _timeLabel(item);
     final size = item.torrent_info?.size;
     final sizeLabel = size == null ? '未知大小' : SizeFormatter.formatSize(size, 2);
+    final accent = themeColor(context);
     return Wrap(
       spacing: 8,
       runSpacing: 6,
@@ -337,7 +364,7 @@ class SearchResultTorrentItem extends StatelessWidget {
           context,
           icon: Icons.sd_storage_rounded,
           label: sizeLabel,
-          color: context.primaryColor,
+          color: accent,
         ),
       ],
     );
@@ -352,7 +379,7 @@ class SearchResultTorrentItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.14),
+        color: color.withValues(alpha: _isInverted() ? 0.22 : 0.14),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Row(
@@ -381,7 +408,7 @@ class SearchResultTorrentItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.14),
+        color: color.withValues(alpha: _isInverted() ? 0.22 : 0.14),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Row(
@@ -406,6 +433,7 @@ class SearchResultTorrentItem extends StatelessWidget {
     SearchResultItem item, {
     bool dense = false,
   }) {
+    final accent = themeColor(context);
     final size = item.torrent_info?.size;
     final label = size == null ? '--' : SizeFormatter.formatSize(size, 2);
     return Container(
@@ -414,13 +442,13 @@ class SearchResultTorrentItem extends StatelessWidget {
         vertical: dense ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        color: context.primaryColor.withOpacity(0.14),
+        color: accent.withValues(alpha: _isInverted() ? 0.22 : 0.14),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: context.primaryColor,
+          color: accent,
           fontWeight: FontWeight.w600,
           fontSize: dense ? 11 : 12,
         ),
@@ -456,7 +484,7 @@ class SearchResultTorrentItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.16),
+        color: color.withValues(alpha: _isInverted() ? 0.22 : 0.16),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Text(

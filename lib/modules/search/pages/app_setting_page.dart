@@ -111,31 +111,31 @@ class AppSettingPage extends GetView<AppSettingController> {
                       ),
                     );
                   }),
-                  Obx(() {
-                    return CupertinoListTile(
-                      leading: Container(
-                        width: 29,
-                        height: 29,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.2,
-                          ),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Icon(
-                          Icons.download_outlined,
-                          size: 18,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      title: const Text('下载器管理'),
-                      trailing: Switch.adaptive(
-                        value: controller.enableDownloaderManager.value,
-                        onChanged: controller.updateEnableDownloaderManager,
-                      ),
-                    );
-                  }),
+                  // Obx(() {
+                  //   return CupertinoListTile(
+                  //     leading: Container(
+                  //       width: 29,
+                  //       height: 29,
+                  //       alignment: Alignment.center,
+                  //       decoration: BoxDecoration(
+                  //         color: theme.colorScheme.primary.withValues(
+                  //           alpha: 0.2,
+                  //         ),
+                  //         borderRadius: BorderRadius.circular(6),
+                  //       ),
+                  //       child: Icon(
+                  //         Icons.download_outlined,
+                  //         size: 18,
+                  //         color: theme.colorScheme.primary,
+                  //       ),
+                  //     ),
+                  //     title: const Text('下载器管理'),
+                  //     trailing: Switch.adaptive(
+                  //       value: controller.enableDownloaderManager.value,
+                  //       onChanged: controller.updateEnableDownloaderManager,
+                  //     ),
+                  //   );
+                  // }),
                 ],
               ),
             ],
