@@ -856,7 +856,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
 
   Widget _buildSeasonListContent(BuildContext context, SeasonInfo season) {
     return Obx(() {
-      final theme = Theme.of(context);
       final posterUrl = ImageUtil.convertMediaSeasonImageUrl(
         season.poster_path ?? '',
       );

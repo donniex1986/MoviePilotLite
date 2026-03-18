@@ -224,7 +224,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: Get.back,
       ),
-      title: Text(title, style: const TextStyle(color: Colors.white)),
+      // title: Text(title, style: const TextStyle(color: Colors.white)),
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
