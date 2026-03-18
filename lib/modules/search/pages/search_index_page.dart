@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/section_header.dart';
 
 import '../controllers/search_index_controller.dart';
@@ -61,7 +62,22 @@ class SearchIndexPage extends GetView<SearchIndexController> {
             ),
           ),
         Section(
-          header: SectionHeader(title: '最近搜索'),
+          header: SectionHeader(
+            title: '最近搜索',
+            trailing: InkWell(
+              child: Text(
+                '清空',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              onTap: () => ToastUtil.warning(
+                '确定清空所有历史数据',
+                onConfirm: () => controller.clearHistories(),
+              ),
+            ),
+          ),
           child: _buildHistorySection(context, controller.histories),
         ),
       ];
@@ -353,23 +369,26 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          subtitle,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

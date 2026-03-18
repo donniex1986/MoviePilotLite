@@ -69,12 +69,6 @@ List<SettingsCategory> get settingsCategories => [
         route: '/settings/app/app-setting',
         icon: Icons.tune,
       ),
-      SettingsSubItem(
-        id: 'theme-mode',
-        title: '主题模式',
-        route: '/settings/app/theme-mode',
-        icon: Icons.settings_outlined,
-      ),
       // SettingsSubItem(
       //   id: 'dashboard-config',
       //   title: 'Dashboard配置',

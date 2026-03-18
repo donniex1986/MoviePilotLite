@@ -21,7 +21,8 @@ class AppSettingPage extends GetView<AppSettingController> {
             children: [
               Section(
                 padding: EdgeInsets.all(0),
-                header: SectionHeader(title: '主题风格'),
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                header: _buildHeader(context, '主题风格'),
                 children: [
                   CupertinoListTile.notched(
                     leading: Container(
@@ -46,8 +47,9 @@ class AppSettingPage extends GetView<AppSettingController> {
                 ],
               ),
               Section(
+                margin: const EdgeInsets.symmetric(vertical: 8),
                 padding: EdgeInsets.all(0),
-                header: SectionHeader(title: '搜索'),
+                header: _buildHeader(context, '搜索'),
                 children: [
                   Obx(() {
                     return CupertinoListTile(
@@ -78,9 +80,11 @@ class AppSettingPage extends GetView<AppSettingController> {
                   }),
                 ],
               ),
+
               Section(
                 padding: EdgeInsets.all(0),
-                header: SectionHeader(title: '浏览器'),
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                header: _buildHeader(context, '实验功能'),
                 children: [
                   Obx(() {
                     return CupertinoListTile(
@@ -107,12 +111,6 @@ class AppSettingPage extends GetView<AppSettingController> {
                       ),
                     );
                   }),
-                ],
-              ),
-              Section(
-                padding: EdgeInsets.all(0),
-                header: SectionHeader(title: '实验功能'),
-                children: [
                   Obx(() {
                     return CupertinoListTile(
                       leading: Container(
@@ -183,6 +181,16 @@ class AppSettingPage extends GetView<AppSettingController> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, bottom: 6),
+      child: Text(
+        title,
+        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
       ),
     );
   }

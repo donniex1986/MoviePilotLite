@@ -38,20 +38,6 @@ class SettingsPage extends GetView<SettingsController> {
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
               ),
             ),
-            footer: index == 0
-                ? Obx(
-                    () => Center(
-                      child: Text(
-                        'v${controller.version}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                  )
-                : null,
-
             children: [
               for (int i = 0; i < rowCount; i++)
                 _buildTile(

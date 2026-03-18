@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 
@@ -108,9 +107,10 @@ class CachePage extends GetView<CacheController> {
     final siteCount = controller.siteCount;
     final filtered = controller.filteredItems.length;
     final siteActive = controller.hasSiteFilter;
-    final siteColor = siteActive
-        ? CupertinoColors.systemBlue
-        : CupertinoColors.systemGrey;
+    final siteColor = CupertinoDynamicColor.resolve(
+      siteActive ? CupertinoColors.activeBlue : CupertinoColors.secondaryLabel,
+      context,
+    );
     const pillHeight = 42.0;
 
     return Material(
@@ -208,8 +208,11 @@ class CachePage extends GetView<CacheController> {
     final baseColor = CupertinoDynamicColor.resolve(
       CupertinoColors.systemBackground,
       context,
-    );
-    final activeTint = Theme.of(context).colorScheme.primary.withOpacity(0.2);
+    ).withValues(alpha: 0.88);
+    final activeTint = CupertinoDynamicColor.resolve(
+      CupertinoColors.activeBlue,
+      context,
+    ).withValues(alpha: isActive ? 0.14 : 0.0);
     final glassColor = Color.alphaBlend(activeTint, baseColor);
 
     final pill = ClipRRect(
@@ -220,26 +223,21 @@ class CachePage extends GetView<CacheController> {
       ),
     );
     if (height == null) return pill;
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: CupertinoColors.systemGrey.withOpacity(0.1)),
-      ),
-      child: SizedBox(height: height, child: pill),
-    );
+    return SizedBox(height: height, child: pill);
   }
 
   Widget _buildCountBadge(int count) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: CupertinoColors.systemBlue.withOpacity(0.18),
+        color: CupertinoColors.activeBlue.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         '$count',
         style: const TextStyle(
           fontSize: 10,
-          color: CupertinoColors.systemBlue,
+          color: CupertinoColors.activeBlue,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -271,7 +269,12 @@ class CachePage extends GetView<CacheController> {
             child: Icon(
               isOpen ? CupertinoIcons.xmark : CupertinoIcons.ellipsis,
               size: 16,
-              color: CupertinoColors.systemGrey,
+              color: CupertinoDynamicColor.resolve(
+                isOpen
+                    ? CupertinoColors.activeBlue
+                    : CupertinoColors.secondaryLabel,
+                context,
+              ),
             ),
           ),
         );
@@ -285,7 +288,6 @@ class CachePage extends GetView<CacheController> {
   ) async {
     controller.showActions.value = true;
     final overlay = Overlay.of(buttonContext);
-    if (overlay == null) return;
     final overlayBox = overlay.context.findRenderObject() as RenderBox?;
     final buttonBox = buttonContext.findRenderObject() as RenderBox?;
     if (overlayBox == null || buttonBox == null) return;
