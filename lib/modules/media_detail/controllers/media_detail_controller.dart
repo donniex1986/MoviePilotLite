@@ -34,7 +34,7 @@ class MediaDetailController extends GetxController {
 
   final mediaNotExists = <MediaNotExists>[].obs;
 
-  final seasonPageCntroller = PageController(viewportFraction: 0.93);
+  final seasonPageCntroller = PageController(viewportFraction: 0.6);
 
   /// 季号 -> 该季的订阅项（有则已订阅）
   final seasonSubscribeMap = <int, SubscribeItem>{}.obs;

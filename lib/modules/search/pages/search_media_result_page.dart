@@ -41,7 +41,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
   }
 
   /// 构建 SSE 进度指示器
-  Widget _buildProgressIndicator() {
+  Widget _buildProgressIndicator(BuildContext context) {
     return Obx(() {
       if (!controller.isProgressActive.value) {
         return const SizedBox.shrink();
@@ -75,7 +75,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
             ),
             // 进度信息卡片
             if (controller.progressMessage.value.isNotEmpty)
-              _buildProgressInfoCard(),
+              _buildProgressInfoCard(context),
           ],
         ),
       );
@@ -83,7 +83,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
   }
 
   /// 构建进度信息卡片
-  Widget _buildProgressInfoCard() {
+  Widget _buildProgressInfoCard(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -128,7 +128,11 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
           const SizedBox(width: 8),
           Text(
             controller.formattedProgress,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ],
       ),
@@ -155,7 +159,6 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
       final items = controller.visibleItems;
       final isLoading = controller.isLoading.value;
       final errorText = controller.errorText.value;
-      final viewMode = controller.viewMode.value;
 
       final showSkeleton = isLoading && controller.items.isEmpty;
       return CustomScrollView(
@@ -175,18 +178,29 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
                   : _buildSearchAndToolbar(context),
             ),
           ),
-          if (showSkeleton)
-            _buildSkeletonSliver(context)
-          else if (errorText != null)
+          if (errorText != null)
             SliverToBoxAdapter(
               child: _buildErrorState(context, errorText, immersive: immersive),
             )
-          else if (items.isEmpty)
-            SliverToBoxAdapter(
-              child: _buildEmptyState(context, immersive: immersive),
-            )
           else
-            _buildResults(context, items, viewMode),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: _horizontalPadding,
+              ),
+              sliver: Skeletonizer.sliver(
+                enabled: showSkeleton,
+                child: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => Padding(
+                      padding: const EdgeInsets.only(bottom: _cardSpacing),
+                      child: _buildListCard(context, items[index]),
+                    ),
+                    childCount: items.length,
+                  ),
+                ),
+              ),
+            ),
+
           SliverToBoxAdapter(
             child: SizedBox(
               height: immersive
@@ -261,8 +275,19 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: AppTheme.darkBackgroundColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppTheme.borderColor.withValues(alpha: 0.08),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,7 +360,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
     return Obx(() {
       final inSearching = controller.isProgressActive.value;
       final child = inSearching
-          ? _buildProgressIndicator()
+          ? _buildProgressIndicator(context)
           : Row(
               children: [
                 _buildFloatingFilterButton(context),
@@ -348,19 +373,22 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
       final pill = Container(
         height: _floatingBarHeight,
         padding: EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(999),
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
         child: child,
       );
       return Padding(
-        padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
-            child: pill,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+              child: pill,
+            ),
           ),
         ),
       );
@@ -425,12 +453,7 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13,
-                    color: CupertinoDynamicColor.resolve(
-                      controller.keyword.value.isEmpty
-                          ? CupertinoColors.tertiaryLabel
-                          : CupertinoColors.label,
-                      context,
-                    ),
+                    color: Colors.white.withValues(alpha: 0.72),
                   ),
                 ),
               ),
@@ -678,25 +701,6 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildResults(
-    BuildContext context,
-    List<SearchResultItem> items,
-    SearchResultViewMode mode,
-  ) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => Padding(
-            padding: const EdgeInsets.only(bottom: 5),
-            child: _buildListCard(context, items[index]),
-          ),
-          childCount: items.length,
-        ),
       ),
     );
   }

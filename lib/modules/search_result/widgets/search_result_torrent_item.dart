@@ -33,7 +33,7 @@ class SearchResultTorrentItem extends StatelessWidget {
 
   Color cardColor(BuildContext context) => _isInverted()
       ? Color.alphaBlend(
-          Colors.white.withValues(alpha: 0.06),
+          Colors.black.withValues(alpha: 0.1),
           AppTheme.darkBackgroundColor,
         )
       : Theme.of(context).cardColor;

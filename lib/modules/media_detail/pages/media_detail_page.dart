@@ -418,6 +418,8 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         if (errorText != null && errorText.trim().isNotEmpty) ...[
           _buildSectionTitle('请求错误'),
@@ -832,17 +834,18 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
     MediaDetail detail,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      padding: const EdgeInsets.only(top: 16.0, bottom: 16.0),
       child: SizedBox(
-        height: 200,
+        height: 350,
         child: PageView.builder(
+          padEnds: false,
           controller: controller.seasonPageCntroller,
           scrollDirection: Axis.horizontal,
           itemCount: seasons.length,
           itemBuilder: (context, index) {
             final season = seasons[index];
             return Padding(
-              padding: EdgeInsets.only(left: index == 0 ? 0 : 12),
+              padding: EdgeInsets.only(left: index == 0 ? 16 : 12),
               child: _buildSeasonListContent(context, season),
             );
           },
@@ -964,7 +967,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       return const SizedBox.shrink();
     }
     final isTv = _isTv(detail);
-    final showSearch = Get.find<AppService>().showSearchButton;
     return Obx(() {
       final movieSubscribed = controller.movieSubscribeItem.value != null;
       final seasons = detail.season_info;
@@ -976,17 +978,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
             onPressed: isLoading ? null : () => _openSearch(context),
             backgroundColor: Theme.of(context).colorScheme.secondary,
           );
-          if (!showSearch.value) {
-            if (isTv && seasons?.isNotEmpty == true) {
-              return const SizedBox.shrink();
-            }
-            return _buildSubscribeButton(
-              context,
-              detail,
-              isLoading,
-              movieSubscribed,
-            );
-          }
           if (isTv && seasons?.isNotEmpty == true) {
             return Row(children: [Expanded(child: search)]);
           }
@@ -1309,7 +1300,8 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       'year': detail?.year ?? '',
       'mtype': detail?.type ?? 'movie',
       'title': detail?.title ?? '',
-      if ((detail?.backdrop_path ?? '').isNotEmpty) 'backdrop': detail!.backdrop_path!,
+      if ((detail?.backdrop_path ?? '').isNotEmpty)
+        'backdrop': detail!.backdrop_path!,
     };
     if (season != null) {
       params['season'] = season.toString();
