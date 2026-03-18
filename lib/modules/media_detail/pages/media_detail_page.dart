@@ -600,6 +600,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
       required String label,
       required String value,
       Color? accent,
+      VoidCallback? onTap,
     }) {
       final a = accent ?? const Color(0xFF7C4DFF);
       return Row(
@@ -625,13 +626,21 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              value,
-              maxLines: 1,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+            child: GestureDetector(
+              onTap: onTap,
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: onTap != null
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.white,
+                  decoration: onTap != null ? TextDecoration.underline : null,
+                  decorationThickness: onTap != null ? 1.5 : 0,
+                ),
               ),
             ),
           ),
@@ -736,6 +745,7 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           label: '官网',
           value: detail.homepage!,
           accent: const Color(0xFF60A5FA),
+          onTap: () => WebUtil.open(url: detail.homepage!),
         ),
       );
     }
@@ -756,75 +766,6 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           children: rows,
         ),
       ),
-    );
-  }
-
-  Widget _buildGenreChips(MediaDetail detail) {
-    final genres = detail.genres ?? const [];
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: genres
-          .map(
-            (genre) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Text(
-                genre.name ?? '未知',
-                style: const TextStyle(fontSize: 12),
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
-
-  Widget _buildNextEpisode(NextEpisodeToAir nextEpisode) {
-    final info = <String, String>{};
-    if (nextEpisode.season_number != null) {
-      info['季'] = '第 ${nextEpisode.season_number} 季';
-    }
-    if (nextEpisode.episode_number != null) {
-      info['集'] = '第 ${nextEpisode.episode_number} 集';
-    }
-    if (nextEpisode.air_date != null && nextEpisode.air_date!.isNotEmpty) {
-      info['播出'] = nextEpisode.air_date!;
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          nextEpisode.name?.isNotEmpty == true ? nextEpisode.name! : '即将播出',
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: info.entries
-              .map(
-                (entry) => Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${entry.key}: ${entry.value}',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-      ],
     );
   }
 

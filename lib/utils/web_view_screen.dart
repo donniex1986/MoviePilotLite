@@ -10,11 +10,7 @@ class WebViewScreen extends StatefulWidget {
   final String url;
   final String? cookie;
 
-  const WebViewScreen({
-    super.key,
-    required this.url,
-    this.cookie,
-  });
+  const WebViewScreen({super.key, required this.url, this.cookie});
 
   @override
   State<WebViewScreen> createState() => _WebViewScreenState();
@@ -31,7 +27,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   // 点击事件回调
   void Function(String tagName, String? href, Map<String, dynamic>? data)?
-      onWebViewClick;
+  onWebViewClick;
 
   @override
   void initState() {
@@ -76,7 +72,10 @@ class _WebViewScreenState extends State<WebViewScreen> {
                 widget.cookie!.isNotEmpty &&
                 !_cookieSet) {
               await _setCookiesWithJavaScript(
-                  controller, widget.url, widget.cookie!);
+                controller,
+                widget.url,
+                widget.cookie!,
+              );
               _cookieSet = true;
             }
             // 注入点击事件监听脚本
@@ -154,12 +153,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
           // 使用 WebViewCookieManager 设置 cookie
           await cookieManager.setCookie(
-            WebViewCookie(
-              name: name,
-              value: value,
-              domain: domain,
-              path: '/',
-            ),
+            WebViewCookie(name: name, value: value, domain: domain, path: '/'),
           );
         }
       }
@@ -316,8 +310,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
             debugPrint('🔔 检测到点击事件: ${clickEvent['raw']}');
 
             // 重置标志
-            await _controller
-                .runJavaScript('window._hasNewClickEvent = false;');
+            await _controller.runJavaScript(
+              'window._hasNewClickEvent = false;',
+            );
 
             // 调用回调
             if (onWebViewClick != null) {
@@ -586,7 +581,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                     tooltip: '前进',
                     color: Theme.of(context).colorScheme.secondary,
                   ),
-                ]
+                ],
 
                 // // 更多按钮 - 下拉菜单
                 // PopupMenuButton<String>(
@@ -695,6 +690,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
           isIOS
               ? SafeArea(
                   bottom: false,
+                  top: false,
                   child: WebViewWidget(controller: _controller),
                 )
               : WebViewWidget(controller: _controller),
