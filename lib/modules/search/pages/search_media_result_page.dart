@@ -47,37 +47,32 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
         return const SizedBox.shrink();
       }
 
-      return Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 线性进度条
-            TweenAnimationBuilder<double>(
-              tween: Tween<double>(
-                begin: 0,
-                end: controller.searchProgress.value,
-              ),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              builder: (context, value, child) {
-                return LinearProgressIndicator(
-                  value: value > 0 ? value : null,
-                  backgroundColor: Colors.grey.withValues(alpha: 0.2),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    _getProgressColor(controller.progressStatus.value),
-                  ),
-                  minHeight: 3,
-                );
-              },
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 线性进度条
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(
+              begin: 0,
+              end: controller.searchProgress.value,
             ),
-            // 进度信息卡片
-            if (controller.progressMessage.value.isNotEmpty)
-              _buildProgressInfoCard(context),
-          ],
-        ),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            builder: (context, value, child) {
+              return LinearProgressIndicator(
+                value: value > 0 ? value : null,
+                backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  _getProgressColor(controller.progressStatus.value),
+                ),
+                minHeight: 3,
+              );
+            },
+          ),
+          // 进度信息卡片
+          if (controller.progressMessage.value.isNotEmpty)
+            _buildProgressInfoCard(context),
+        ],
       );
     });
   }
@@ -215,7 +210,6 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
 
   SliverAppBar _buildImmersiveHeader(BuildContext context) {
     final backdrop = (controller.prefillBackdrop ?? '').trim();
-    final title = (controller.prefillTitle ?? '').trim();
     return SliverAppBar(
       pinned: true,
       expandedHeight: _immersiveHeaderHeight,
