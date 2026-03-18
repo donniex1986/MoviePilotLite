@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
+import 'package:moviepilot_mobile/widgets/bottom_sheet.dart';
+import 'package:moviepilot_mobile/widgets/section_header.dart';
 
 /// 排序下拉控件：常态显示「正序/逆序」与当前条件，点击后弹出 pull menu。
 /// 上方 section 为排序方向切换（正序/逆序），下方 section 为排序条件列表。
@@ -45,7 +47,7 @@ class SortPullDownWidget<T> extends StatelessWidget {
   /// 常态下显示的文案：逆序 · 默认
   String get _displayText {
     final cond = labelBuilder(currentValue);
-    return '$cond';
+    return cond;
   }
 
   IconData get _displayDirectionIcon {
@@ -58,25 +60,11 @@ class SortPullDownWidget<T> extends StatelessWidget {
       CupertinoColors.label,
       context,
     );
-    final secondaryColor = CupertinoDynamicColor.resolve(
-      CupertinoColors.secondaryLabel,
-      context,
-    );
-    final fillColor = CupertinoDynamicColor.resolve(
-      CupertinoColors.tertiarySystemFill,
-      context,
-    );
-    final primary = context.primaryColor;
 
     return GestureDetector(
       onTap: () => _showPullMenu(context),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: fillColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: primary.withValues(alpha: 0.25), width: 1),
-        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -97,8 +85,12 @@ class SortPullDownWidget<T> extends StatelessWidget {
   }
 
   void _showPullMenu(BuildContext context) {
-    showCupertinoModalPopup<void>(
+    showModalBottomSheet<T>(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (ctx) => _SortPullMenu<T>(
         initialAscending: isAscending,
         currentValue: currentValue,
@@ -179,175 +171,133 @@ class _SortPullMenuState<T> extends State<_SortPullMenu<T>> {
       CupertinoColors.secondaryLabel,
       context,
     );
-
     return Material(
-      child: Container(
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  '排序',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: secondaryColor,
+      child: BottomSheetWidget(
+        header: SectionHeader(title: '排序'),
+        builder: (context, scrollController) => ListView(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          children: [
+            Text(
+              widget.sectionTitleSort,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: secondaryColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            CupertinoSlidingSegmentedControl<bool>(
+              groupValue: _isAscending,
+              thumbColor: primary,
+              backgroundColor: groupedBg,
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              onValueChanged: (value) {
+                if (value != null && value != _isAscending) {
+                  setState(() => _isAscending = value);
+                  widget.onDirectionChanged(value);
+                }
+              },
+              children: {
+                true: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        CupertinoIcons.arrow_up,
+                        size: 14,
+                        color: _isAscending
+                            ? CupertinoColors.white
+                            : secondaryColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.directionLabelAsc,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _isAscending
+                              ? CupertinoColors.white
+                              : labelColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              // Section 1: 排序方向（正序/逆序）— 使用 SegmentedControl 风格
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.sectionTitleSort,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: secondaryColor,
+                false: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        CupertinoIcons.arrow_down,
+                        size: 14,
+                        color: !_isAscending
+                            ? CupertinoColors.white
+                            : secondaryColor,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    CupertinoSlidingSegmentedControl<bool>(
-                      groupValue: _isAscending,
-                      thumbColor: primary,
-                      backgroundColor: groupedBg,
-                      padding: const EdgeInsets.all(3),
-                      onValueChanged: (value) {
-                        if (value != null && value != _isAscending) {
-                          setState(() => _isAscending = value);
-                          widget.onDirectionChanged(value);
-                        }
-                      },
-                      children: {
-                        true: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                CupertinoIcons.arrow_up,
-                                size: 14,
-                                color: _isAscending
-                                    ? CupertinoColors.white
-                                    : secondaryColor,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                widget.directionLabelAsc,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: _isAscending
-                                      ? CupertinoColors.white
-                                      : labelColor,
-                                ),
-                              ),
-                            ],
-                          ),
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.directionLabelDesc,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: !_isAscending
+                              ? CupertinoColors.white
+                              : labelColor,
                         ),
-                        false: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                CupertinoIcons.arrow_down,
-                                size: 14,
-                                color: !_isAscending
-                                    ? CupertinoColors.white
-                                    : secondaryColor,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                widget.directionLabelDesc,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: !_isAscending
-                                      ? CupertinoColors.white
-                                      : labelColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      },
+                      ),
+                    ],
+                  ),
+                ),
+              },
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.sectionTitleCondition,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: secondaryColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                color: groupedBg,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  for (int i = 0; i < widget.options.length; i++) ...[
+                    if (i > 0)
+                      Container(
+                        height: 1,
+                        color: dividerColor,
+                        margin: const EdgeInsets.only(left: 12),
+                      ),
+                    _ConditionTile<T>(
+                      value: widget.options[i],
+                      label: widget.labelBuilder(widget.options[i]),
+                      isSelected: widget.options[i] == widget.currentValue,
+                      primary: primary,
+                      labelColor: labelColor,
+                      onTap: () => widget.onValueChanged(widget.options[i]),
                     ),
                   ],
-                ),
+                ],
               ),
-              const SizedBox(height: 20),
-              // Section 2: 排序条件
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.sectionTitleCondition,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: secondaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: groupedBg,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        children: [
-                          for (int i = 0; i < widget.options.length; i++) ...[
-                            if (i > 0)
-                              Container(
-                                height: 1,
-                                color: dividerColor,
-                                margin: const EdgeInsets.only(left: 12),
-                              ),
-                            _ConditionTile<T>(
-                              value: widget.options[i],
-                              label: widget.labelBuilder(widget.options[i]),
-                              isSelected:
-                                  widget.options[i] == widget.currentValue,
-                              primary: primary,
-                              labelColor: labelColor,
-                              onTap: () =>
-                                  widget.onValueChanged(widget.options[i]),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

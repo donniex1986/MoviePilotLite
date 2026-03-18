@@ -160,7 +160,7 @@ class _SiteFilterSheetState extends State<SiteFilterSheet> {
 
   Widget _buildControls(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+      padding: const EdgeInsets.fromLTRB(12, 4, 16, 18),
       child: Column(
         children: [
           const SizedBox(height: 10),
@@ -256,9 +256,9 @@ class _SiteFilterSheetState extends State<SiteFilterSheet> {
     required bool selected,
   }) {
     final baseColor = _chipColor(label, context);
-    final bgColor = baseColor.withOpacity(selected ? 0.22 : 0.12);
+    final bgColor = baseColor.withOpacity(selected ? 0.8 : 0.12);
     final borderColor = baseColor.withOpacity(selected ? 0.5 : 0.3);
-    final textColor = baseColor.withOpacity(selected ? 0.95 : 0.85);
+    final textColor = selected ? Colors.white : baseColor.withOpacity(0.85);
 
     return GestureDetector(
       onTap: () => _toggleSite(label),

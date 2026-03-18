@@ -10,6 +10,9 @@ class AppService extends GetxService {
 
   final themeMode = ThemeMode.system.obs;
   final primaryColor = _defaultPrimaryColor.obs;
+  final showSearchButton = true.obs;
+  final enableDownloaderManager = false.obs;
+  final useExternalBrowser = false.obs;
 
   @override
   Future<void> onInit() async {
@@ -23,6 +26,10 @@ class AppService extends GetxService {
     if (r != null && g != null && b != null) {
       primaryColor.value = Color.fromARGB(255, r, g, b);
     }
+    showSearchButton.value = prefs.getBool('showSearchButton') ?? true;
+    enableDownloaderManager.value =
+        prefs.getBool('enableDownloaderManager') ?? false;
+    useExternalBrowser.value = prefs.getBool('useExternalBrowser') ?? false;
   }
 
   Future<void> updateThemeMode(ThemeMode mode) async {
@@ -42,6 +49,24 @@ class AppService extends GetxService {
     prefs.setInt('primaryColorG', g);
     prefs.setInt('primaryColorB', b);
     Get.forceAppUpdate();
+  }
+
+  Future<void> updateShowSearchButton(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    showSearchButton.value = value;
+    await prefs.setBool('showSearchButton', value);
+  }
+
+  Future<void> updateEnableDownloaderManager(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    enableDownloaderManager.value = value;
+    await prefs.setBool('enableDownloaderManager', value);
+  }
+
+  Future<void> updateUseExternalBrowser(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    useExternalBrowser.value = value;
+    await prefs.setBool('useExternalBrowser', value);
   }
 
   /// 基础URL

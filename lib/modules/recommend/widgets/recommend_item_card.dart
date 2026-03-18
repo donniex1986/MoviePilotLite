@@ -52,7 +52,6 @@ class RecommendItemCard extends GetView<SubscribeService> {
         final size = _resolveSize(constraints);
         return RecommendItemBaseCard(
           item: item,
-
           child: GestureDetector(
             onTap: onTap,
             child: _buildContent(size.width, size.height),
@@ -88,7 +87,10 @@ class RecommendItemCard extends GetView<SubscribeService> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: _buildTitle(data?.title ?? ''),
+            child: _buildTitle(
+              data?.title ?? '',
+              overview: data?.overview ?? '',
+            ),
           ),
           if (data?.vote_average != null && data!.vote_average! > 0)
             Positioned(
@@ -108,25 +110,46 @@ class RecommendItemCard extends GetView<SubscribeService> {
     return _buildPoster(item, width, height);
   }
 
-  Widget _buildTitle(String title) {
+  Widget _buildTitle(String title, {String? overview}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      // height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(cardRadius),
           bottomRight: Radius.circular(cardRadius),
         ),
-        gradient: LinearGradient(colors: [Colors.black, Colors.transparent]),
-      ),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
+        gradient: LinearGradient(
+          colors: [Colors.black.withValues(alpha: 0.5), Colors.black],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 3),
+          Text(
+            overview?.trim() ?? '',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withValues(alpha: 0.8),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 3),
+        ],
       ),
     );
   }

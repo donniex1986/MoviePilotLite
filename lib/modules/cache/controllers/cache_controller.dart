@@ -71,7 +71,7 @@ class CacheController extends GetxController {
   }
 
   void updateSelectedSites(Set<String> values) {
-    selectedSites.addAll(values);
+    selectedSites.assignAll(values);
   }
 
   void toggleActions() {
@@ -135,7 +135,6 @@ class CacheController extends GetxController {
 
     final keywordText = keyword.value.trim().toLowerCase();
     final siteFilter = Set<String>.from(selectedSites);
-
     return items.where((item) {
       final siteLabel = _siteLabel(item) ?? '';
       if (siteFilter.isNotEmpty && !siteFilter.contains(siteLabel)) {

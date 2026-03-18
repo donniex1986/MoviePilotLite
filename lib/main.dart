@@ -8,6 +8,7 @@ import 'package:moviepilot_mobile/modules/search/controllers/app_setting_control
 import 'package:moviepilot_mobile/modules/search/controllers/media_search_list_controller.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/search_controller.dart';
 import 'package:moviepilot_mobile/modules/search/pages/app_theme_setting_page.dart';
+import 'package:moviepilot_mobile/modules/search/pages/app_setting_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/media_search_list_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/search_media_result_page.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
@@ -263,6 +264,8 @@ class MyApp extends StatelessWidget {
                 c.season = args['season'];
                 c.mtype = args['mtype'] ?? 'movie';
                 c.searchText.value = args['title'] ?? '';
+                c.prefillTitle = args['title'];
+                c.prefillBackdrop = args['backdrop'] ?? args['backdrop_path'];
                 return c;
               });
             }),
@@ -705,6 +708,13 @@ class MyApp extends StatelessWidget {
           GetPage(
             name: '/settings/app/theme-mode',
             page: () => const AppThemeSettingPage(),
+            binding: BindingsBuilder(() {
+              Get.lazyPut(() => AppSettingController());
+            }),
+          ),
+          GetPage(
+            name: '/settings/app/app-setting',
+            page: () => const AppSettingPage(),
             binding: BindingsBuilder(() {
               Get.lazyPut(() => AppSettingController());
             }),

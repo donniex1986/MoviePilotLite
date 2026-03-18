@@ -1,9 +1,16 @@
+import 'dart:math' as math;
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/modules/plugin/services/plugin_palette_cache.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
+import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/utils/grid_layout.dart';
+import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
+import 'package:moviepilot_mobile/widgets/cached_image.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../controllers/media_search_list_controller.dart';
@@ -13,34 +20,38 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
   static const double _gridSpacing = 8;
   static const double _gridPadding = 16;
   static const double _cardAspectRatio = 1 / 1.3;
+  static const double _immersiveHeaderHeight = 250;
+  static const int _skeletonGridCount = 8;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: Get.back,
+    return Obx(() {
+      final items = controller.items.toList();
+      final theme = _firstItemTheme(items);
+      final bodyColor = AppTheme.darkBackgroundColor;
+      final immersive = true;
+      return Scaffold(
+        backgroundColor: bodyColor,
+        body: _buildBody(
+          context,
+          immersive: immersive,
+          bodyColor: bodyColor,
+          theme: theme,
         ),
-        title: Obx(
-          () => Text(
-            controller.keyword.value.isEmpty
-                ? '媒体搜索'
-                : '搜索：${controller.keyword.value}',
-          ),
-        ),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => controller.search(),
-          ),
-        ],
-      ),
-      body: SafeArea(child: Stack(children: [_buildBody(context)])),
-    );
+      );
+    });
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(
+    BuildContext context, {
+    required bool immersive,
+    required Color bodyColor,
+    required ({
+      Color themeColor,
+      Color secondaryColor,
+      List<RecommendApiItem> topItems,
+    })?
+    theme,
+  }) {
     return Obx(() {
       final items = controller.items.toList();
       final isLoading = controller.isLoading.value;
@@ -51,35 +62,60 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
         gridSpacing: _gridSpacing,
         gridPadding: _gridPadding,
       );
+      final showSkeletonGrid = isLoading && items.isEmpty;
       return RefreshIndicator(
         onRefresh: () => controller.search(),
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            SliverToBoxAdapter(child: _buildSummary(context)),
-            if (items.isEmpty)
+            _buildImmersiveHeader(
+              context,
+              theme: theme,
+              bodyColor: bodyColor,
+              isLoading: isLoading,
+              hasItems: items.isNotEmpty,
+            ),
+            SliverToBoxAdapter(
+              child: _buildSummary(context, immersive: immersive),
+            ),
+            if (!showSkeletonGrid && items.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,
-                child: _buildPlaceholderState(isLoading, error),
+                child: _buildPlaceholderState(
+                  isLoading,
+                  error,
+                  immersive: immersive,
+                ),
               )
             else
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(
                   _gridPadding,
-                  8,
+                  0,
                   _gridPadding,
                   _gridPadding,
                 ),
                 sliver: Skeletonizer.sliver(
-                  enabled: isLoading || items.isEmpty,
+                  enabled: showSkeletonGrid,
                   child: SliverGrid(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final item = items[index];
-                      return RecommendItemCard(
-                        item: item,
-                        onTap: () => _openDetail(item),
-                      );
-                    }, childCount: items.length),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (showSkeletonGrid) {
+                          return RecommendItemCard(
+                            item: RecommendApiItem(),
+                            onTap: null,
+                          );
+                        }
+                        final item = items[index];
+                        return RecommendItemCard(
+                          item: item,
+                          onTap: () => _openDetail(item),
+                        );
+                      },
+                      childCount: showSkeletonGrid
+                          ? _skeletonGridCount
+                          : items.length,
+                    ),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: layout.crossAxisCount,
                       mainAxisSpacing: _gridSpacing,
@@ -96,6 +132,7 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
                 hasMore: hasMore,
                 hasItems: items.isNotEmpty,
                 error: error,
+                immersive: immersive,
               ),
             ),
             const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
@@ -105,34 +142,57 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
     });
   }
 
-  Widget _buildSummary(BuildContext context) {
+  Widget _buildSummary(BuildContext context, {required bool immersive}) {
     return Obx(() {
       final count = controller.items.length;
       final total = controller.totalItems.value;
       final summary = total != null ? '共找到 $total 条结果' : '共找到 $count 条结果';
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                summary,
-                style: Theme.of(context).textTheme.titleMedium,
+      return Skeletonizer(
+        enabled: controller.isLoading.value && count == 0,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  summary,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(color: Colors.white),
+                ),
               ),
-            ),
-            TextButton(
-              onPressed: () => controller.search(),
-              child: const Text('重新搜索'),
-            ),
-          ],
+              TextButton(
+                onPressed: () => controller.search(),
+                child: const Text('重新搜索'),
+              ),
+            ],
+          ),
         ),
       );
     });
   }
 
-  Widget _buildPlaceholderState(bool isLoading, String? error) {
+  Widget _buildPlaceholderState(
+    bool isLoading,
+    String? error, {
+    required bool immersive,
+  }) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Skeletonizer(
+        enabled: true,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16, immersive ? 0 : 24, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              SizedBox(height: 12),
+              Text('正在搜索…', style: TextStyle(fontSize: 16)),
+              SizedBox(height: 12),
+              Expanded(child: SizedBox.shrink()),
+            ],
+          ),
+        ),
+      );
     }
     final message = error ?? '暂无数据，请尝试其它关键字';
     return Column(
@@ -154,6 +214,7 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
     required bool hasMore,
     required bool hasItems,
     required String? error,
+    required bool immersive,
   }) {
     if (!hasItems) {
       return const SizedBox.shrink();
@@ -188,18 +249,170 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ),
-          const Text('已经到底啦', style: TextStyle(color: Colors.grey)),
+          Text(
+            '已经到底啦',
+            style: TextStyle(color: immersive ? Colors.white70 : Colors.grey),
+          ),
         ],
       ),
     );
   }
 
-  double _gridCardWidth(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    const horizontalPadding = 32.0; // left + right padding of 16
-    const crossAxisSpacing = 16.0;
-    final available = screenWidth - horizontalPadding - crossAxisSpacing;
-    return available / 2;
+  ({Color themeColor, Color secondaryColor, List<RecommendApiItem> topItems})?
+  _firstItemTheme(List<RecommendApiItem> items) {
+    if (items.isEmpty) return null;
+    final first = items.first;
+    final url = (first.poster_path ?? first.backdrop_path) ?? '';
+    if (url.isEmpty) return null;
+    final cache = Get.find<PluginPaletteCache>();
+    final color = cache.watchColor(url) ?? cache.getCached(url);
+    if (color == null) return null;
+    final secondUrl = items.length > 1
+        ? (items[1].poster_path ?? items[1].backdrop_path) ?? ''
+        : '';
+    final secondary =
+        (secondUrl.isNotEmpty ? cache.watchColor(secondUrl) : null)?.withValues(
+          alpha: 0.6,
+        ) ??
+        color.withValues(alpha: 0.9);
+    return (
+      themeColor: color,
+      secondaryColor: secondary,
+      topItems: items.take(3).toList(),
+    );
+  }
+
+  SliverAppBar _buildImmersiveHeader(
+    BuildContext context, {
+    required ({
+      Color themeColor,
+      Color secondaryColor,
+      List<RecommendApiItem> topItems,
+    })?
+    theme,
+    required Color bodyColor,
+    required bool isLoading,
+    required bool hasItems,
+  }) {
+    final baseA = Colors.black;
+    final baseB = Colors.black.withValues(alpha: 0.5);
+    final baseC = bodyColor;
+    final targetA = theme?.secondaryColor ?? baseA;
+    final targetB = (theme?.themeColor ?? baseA).withValues(alpha: 0.5);
+    final targetC = bodyColor;
+    final title = Obx(
+      () => Text(
+        controller.keyword.value.isEmpty
+            ? '媒体搜索'
+            : '搜索：${controller.keyword.value}',
+        style: const TextStyle(color: Colors.white),
+      ),
+    );
+    return SliverAppBar(
+      pinned: true,
+      expandedHeight: _immersiveHeaderHeight,
+      backgroundColor: Colors.transparent,
+      title: hasItems ? title : null,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: Get.back,
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        background: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: theme == null ? 0 : 1),
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOutCubic,
+          builder: (context, t, child) {
+            final a = Color.lerp(baseA, targetA, t)!;
+            final b = Color.lerp(baseB, targetB, t)!;
+            final c = Color.lerp(baseC, targetC, t)!;
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [a, b, c],
+                  stops: const [0, 0.6, 1.0],
+                ),
+              ),
+              child: child,
+            );
+          },
+          child: Center(
+            child: SizedBox(
+              height: 160,
+              child: (!isLoading && theme != null)
+                  ? _buildPosterRow(theme.topItems)
+                  : Center(
+                      child: CupertinoActivityIndicator(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPosterRow(List<RecommendApiItem> items) {
+    final posters = items
+        .map((e) => e.poster_path ?? e.backdrop_path)
+        .whereType<String>()
+        .where((url) => url.isNotEmpty)
+        .toList();
+    if (posters.isEmpty) return const SizedBox.shrink();
+    final size = 90.0;
+    if (posters.length == 1) {
+      return Center(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: CachedImage(
+            imageUrl: ImageUtil.convertCacheImageUrl(posters.first),
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+    final children = <Widget>[];
+    for (var i = 0; i < posters.length && i < 3; i++) {
+      var angleValue = 0.0;
+      var offsetValue = Offset.zero;
+      if (i == 0) {
+        angleValue = 10;
+        offsetValue = Offset(-size + 10, 0);
+      } else if (i == 1) {
+        angleValue = -5;
+        offsetValue = Offset(0, size / 4);
+      } else {
+        angleValue = 8;
+        offsetValue = Offset(size - 10, size - 30);
+      }
+      final angle = angleValue * math.pi / 180;
+      children.add(
+        Align(
+          alignment: Alignment.center,
+          child: Transform.translate(
+            offset: offsetValue,
+            child: Transform.rotate(
+              angle: angle,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: CachedImage(
+                  imageUrl: ImageUtil.convertCacheImageUrl(posters[i]),
+                  width: size,
+                  height: size,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Stack(children: children);
   }
 
   void _openDetail(RecommendApiItem item) {
