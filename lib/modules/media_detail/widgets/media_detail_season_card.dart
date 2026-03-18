@@ -62,13 +62,11 @@ class MediaDetailSeasonCard extends StatelessWidget {
                 ],
               ),
             ],
-            child: Positioned.fill(
-              child: CachedImage(
-                imageUrl: posterUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              ),
+            child: CachedImage(
+              imageUrl: posterUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
             ),
           ),
           Positioned(
