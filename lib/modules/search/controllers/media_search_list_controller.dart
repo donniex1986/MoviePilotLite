@@ -43,11 +43,6 @@ class MediaSearchListController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
   Future<void> search({String? keyword}) async {
     final term = (keyword ?? this.keyword.value).trim();
     if (term.isEmpty) {
@@ -86,7 +81,7 @@ class MediaSearchListController extends GetxController {
       final response = await _apiClient.get<dynamic>(
         _basePath,
         token: token,
-        timeout: 30,
+        timeout: 120,
         queryParameters: params,
       );
       final status = response.statusCode ?? 0;

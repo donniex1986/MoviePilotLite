@@ -317,12 +317,6 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: Get.back,
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.refresh, color: Colors.white),
-          onPressed: () => controller.search(),
-        ),
-      ],
       flexibleSpace: FlexibleSpaceBar(
         background: TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: 0, end: theme == null ? 0 : 1),
