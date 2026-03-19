@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_response.dart';
@@ -13,6 +15,13 @@ class AppService extends GetxService {
   final showSearchButton = true.obs;
   final enableDownloaderManager = false.obs;
   final useExternalBrowser = false.obs;
+
+  // 背景图设置
+  final backgroundImageBytes = Rxn<Uint8List>();
+  final backgroundImageOpacity = 0.5.obs;
+  final backgroundImageGradientTop = Colors.transparent.obs;
+  final backgroundImageGradientBottom = Colors.black.obs;
+  final backgroundImageEnabled = false.obs;
 
   @override
   Future<void> onInit() async {
@@ -30,6 +39,26 @@ class AppService extends GetxService {
     enableDownloaderManager.value =
         prefs.getBool('enableDownloaderManager') ?? false;
     useExternalBrowser.value = prefs.getBool('useExternalBrowser') ?? false;
+
+    // 背景图设置
+    backgroundImageEnabled.value = prefs.getBool('backgroundImageEnabled') ?? false;
+    backgroundImageOpacity.value = prefs.getDouble('backgroundImageOpacity') ?? 0.5;
+
+    final imageBase64 = prefs.getString('backgroundImageBase64');
+    if (imageBase64 != null && imageBase64.isNotEmpty) {
+      try {
+        backgroundImageBytes.value = base64Decode(imageBase64);
+      } catch (_) {}
+    }
+
+    final gradientTopValue = prefs.getInt('backgroundGradientTop');
+    if (gradientTopValue != null) {
+      backgroundImageGradientTop.value = Color(gradientTopValue);
+    }
+    final gradientBottomValue = prefs.getInt('backgroundGradientBottom');
+    if (gradientBottomValue != null) {
+      backgroundImageGradientBottom.value = Color(gradientBottomValue);
+    }
   }
 
   Future<void> updateThemeMode(ThemeMode mode) async {
@@ -67,6 +96,48 @@ class AppService extends GetxService {
     final prefs = await SharedPreferences.getInstance();
     useExternalBrowser.value = value;
     await prefs.setBool('useExternalBrowser', value);
+  }
+
+  Future<void> updateBackgroundImageEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    backgroundImageEnabled.value = value;
+    await prefs.setBool('backgroundImageEnabled', value);
+  }
+
+  Future<void> updateBackgroundImageOpacity(double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    backgroundImageOpacity.value = value;
+    await prefs.setDouble('backgroundImageOpacity', value);
+  }
+
+  Future<void> updateBackgroundImageGradientTop(Color color) async {
+    final prefs = await SharedPreferences.getInstance();
+    backgroundImageGradientTop.value = color;
+    await prefs.setInt('backgroundGradientTop', color.toARGB32());
+  }
+
+  Future<void> updateBackgroundImageGradientBottom(Color color) async {
+    final prefs = await SharedPreferences.getInstance();
+    backgroundImageGradientBottom.value = color;
+    await prefs.setInt('backgroundGradientBottom', color.toARGB32());
+  }
+
+  Future<void> updateBackgroundImage(Uint8List? bytes) async {
+    final prefs = await SharedPreferences.getInstance();
+    backgroundImageBytes.value = bytes;
+    if (bytes != null) {
+      await prefs.setString('backgroundImageBase64', base64Encode(bytes));
+    } else {
+      await prefs.remove('backgroundImageBase64');
+    }
+  }
+
+  Future<void> clearBackgroundImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    backgroundImageBytes.value = null;
+    backgroundImageEnabled.value = false;
+    await prefs.remove('backgroundImageBase64');
+    await prefs.setBool('backgroundImageEnabled', false);
   }
 
   /// 基础URL

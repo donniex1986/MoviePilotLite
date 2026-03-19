@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
@@ -11,6 +12,14 @@ class AppSettingController extends GetxController {
   final showSearchButton = true.obs;
   final enableDownloaderManager = false.obs;
   final useExternalBrowser = false.obs;
+
+  // 背景图设置
+  final backgroundImageEnabled = false.obs;
+  final backgroundImageOpacity = 0.5.obs;
+  final backgroundImageGradientTop = Colors.transparent.obs;
+  final backgroundImageGradientBottom = Colors.black.obs;
+  final backgroundImageBytes = Rxn<Uint8List>();
+
   @override
   void onInit() {
     super.onInit();
@@ -19,6 +28,21 @@ class AppSettingController extends GetxController {
     showSearchButton.value = service.showSearchButton.value;
     enableDownloaderManager.value = service.enableDownloaderManager.value;
     useExternalBrowser.value = service.useExternalBrowser.value;
+
+    // 同步背景图设置
+    backgroundImageEnabled.value = service.backgroundImageEnabled.value;
+    backgroundImageOpacity.value = service.backgroundImageOpacity.value;
+    backgroundImageGradientTop.value = service.backgroundImageGradientTop.value;
+    backgroundImageGradientBottom.value = service.backgroundImageGradientBottom.value;
+    backgroundImageBytes.value = service.backgroundImageBytes.value;
+
+    // 监听变化
+    ever(service.backgroundImageEnabled, (v) => backgroundImageEnabled.value = v);
+    ever(service.backgroundImageOpacity, (v) => backgroundImageOpacity.value = v);
+    ever(service.backgroundImageGradientTop, (v) => backgroundImageGradientTop.value = v);
+    ever(service.backgroundImageGradientBottom, (v) => backgroundImageGradientBottom.value = v);
+    ever(service.backgroundImageBytes, (v) => backgroundImageBytes.value = v);
+
     loadAppVersion();
   }
 
@@ -45,6 +69,35 @@ class AppSettingController extends GetxController {
   void updateUseExternalBrowser(bool value) {
     useExternalBrowser.value = value;
     service.updateUseExternalBrowser(value);
+  }
+
+  void updateBackgroundImageEnabled(bool value) {
+    backgroundImageEnabled.value = value;
+    service.updateBackgroundImageEnabled(value);
+  }
+
+  void updateBackgroundImageOpacity(double value) {
+    backgroundImageOpacity.value = value;
+    service.updateBackgroundImageOpacity(value);
+  }
+
+  void updateBackgroundImageGradientTop(Color color) {
+    backgroundImageGradientTop.value = color;
+    service.updateBackgroundImageGradientTop(color);
+  }
+
+  void updateBackgroundImageGradientBottom(Color color) {
+    backgroundImageGradientBottom.value = color;
+    service.updateBackgroundImageGradientBottom(color);
+  }
+
+  Future<void> updateBackgroundImage(Uint8List? bytes) async {
+    await service.updateBackgroundImage(bytes);
+    backgroundImageBytes.value = bytes;
+  }
+
+  Future<void> clearBackgroundImage() async {
+    await service.clearBackgroundImage();
   }
 
   loadAppVersion() async {
