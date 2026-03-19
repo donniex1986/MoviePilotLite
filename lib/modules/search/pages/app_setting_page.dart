@@ -22,6 +22,12 @@ class AppSettingPage extends GetView<AppSettingController> {
                 padding: EdgeInsets.all(0),
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 header: _buildHeader(context, '主题风格'),
+                separatorBuilder: (context) => Divider(
+                  height: 0.1,
+                  color: Theme.of(context).dividerColor,
+                  endIndent: 16,
+                  indent: 16,
+                ),
                 children: [
                   CupertinoListTile.notched(
                     leading: Container(

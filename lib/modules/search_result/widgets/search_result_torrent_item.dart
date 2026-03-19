@@ -521,7 +521,6 @@ class SearchResultTorrentItem extends StatelessWidget {
     final volume = torrent.volume_factor ?? '';
     if (volume.contains('%')) return volume;
     if (volume.contains('免费')) return '免费';
-    if (torrent.freedate != null && torrent.freedate!.isNotEmpty) return '免费';
     return null;
   }
 
