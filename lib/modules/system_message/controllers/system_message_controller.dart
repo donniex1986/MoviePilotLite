@@ -184,7 +184,7 @@ class SystemMessageController extends GetxController {
       _checkUnreadStatus();
     } finally {
       isLoading.value = false;
-      _scrollToBottom();
+      await _scrollToBottom();
     }
   }
 
@@ -260,22 +260,41 @@ class SystemMessageController extends GetxController {
     return const [];
   }
 
-  void _scrollToBottom() {
-    scrollToBottom();
+  Future<void> _scrollToBottom() {
+    return scrollToBottom();
   }
 
   /// 公共方法：滚动到底部
-  void scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!scrollController.hasClients) {
-        // 如果 scrollController 还没有 attach，延迟再试一次
-        Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
-        return;
-      }
-      final position = scrollController.position;
-      // 直接滚动到底部，不管 maxScrollExtent 是多少
-      scrollController.jumpTo(position.maxScrollExtent);
-    });
+  Future<void> scrollToBottom({int retries = 6}) async {
+    await WidgetsBinding.instance.endOfFrame;
+
+    if (!scrollController.hasClients) {
+      if (retries <= 0) return;
+      await Future.delayed(const Duration(milliseconds: 80));
+      return scrollToBottom(retries: retries - 1);
+    }
+
+    final position = scrollController.position;
+    if (!position.hasContentDimensions) {
+      if (retries <= 0) return;
+      await Future.delayed(const Duration(milliseconds: 80));
+      return scrollToBottom(retries: retries - 1);
+    }
+
+    final target = position.maxScrollExtent;
+    if ((position.pixels - target).abs() > 1) {
+      scrollController.jumpTo(target);
+    }
+
+    if (retries <= 0) return;
+
+    await WidgetsBinding.instance.endOfFrame;
+    if (!scrollController.hasClients) return;
+    final latestTarget = scrollController.position.maxScrollExtent;
+    if ((latestTarget - target).abs() > 1) {
+      await Future.delayed(const Duration(milliseconds: 16));
+      return scrollToBottom(retries: retries - 1);
+    }
   }
 
   Future<void> sendMessage() async {
@@ -295,7 +314,7 @@ class SystemMessageController extends GetxController {
         _saveLastReadMessageId(maxId);
       }
       _saveLastReadMessageId(maxId);
-      _scrollToBottom();
+      await _scrollToBottom();
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '发送消息失败');
     } finally {

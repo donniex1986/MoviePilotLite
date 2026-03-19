@@ -32,7 +32,11 @@ class DashboardSection extends StatelessWidget {
             onTapMore: onTapMore,
           ),
         ),
-        Section(padding: padding, child: child),
+        Section(
+          padding: padding,
+          borderRadius: BorderRadius.circular(25),
+          child: child,
+        ),
         SizedBox(height: 16),
       ],
     );
