@@ -7,6 +7,7 @@ import 'package:moviepilot_mobile/modules/discover/models/discover_filters.dart'
 import 'package:moviepilot_mobile/modules/discover/widgets/discover_filter_sheet.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/utils/grid_layout.dart';
 import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
@@ -29,28 +30,57 @@ class DiscoverPage extends GetView<DiscoverController> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.ensureUserCookieRefreshed();
     });
-    return Scaffold(
-      appBar: _buildNavigationBar(context),
-      body: CustomScrollView(
-        controller: scrollController,
-        slivers: [
-          CupertinoSliverRefreshControl(
-            onRefresh: () async => controller.loadCurrent(forceRefresh: true),
-          ),
-          SliverToBoxAdapter(child: Obx(() => _buildFilterSummary(context))),
-          SliverToBoxAdapter(child: Obx(() => _buildSection(context))),
-          SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
-        ],
-      ),
-    );
+    final appService = Get.find<AppService>();
+    return Obx(() {
+      final hasPageBackground =
+          appService.backgroundImageEnabled.value &&
+          appService.backgroundImageBytes.value != null;
+      final topInset = hasPageBackground
+          ? MediaQuery.paddingOf(context).top + kToolbarHeight
+          : 0.0;
+      return Scaffold(
+        extendBodyBehindAppBar: hasPageBackground,
+        appBar: _buildNavigationBar(context, transparent: hasPageBackground),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasPageBackground)
+              Positioned.fill(child: _buildBackgroundImage(appService)),
+            Padding(
+              padding: EdgeInsets.only(top: topInset),
+              child: CustomScrollView(
+                controller: scrollController,
+                slivers: [
+                  CupertinoSliverRefreshControl(
+                    onRefresh: () async =>
+                        controller.loadCurrent(forceRefresh: true),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Obx(() => _buildFilterSummary(context)),
+                  ),
+                  SliverToBoxAdapter(child: Obx(() => _buildSection(context))),
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: _bottomSpacer(context)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   double _bottomSpacer(BuildContext context) {
     return 100;
   }
 
-  AppBar _buildNavigationBar(BuildContext context) {
+  AppBar _buildNavigationBar(BuildContext context, {bool transparent = false}) {
     return AppBar(
+      backgroundColor: transparent ? Colors.transparent : null,
+      elevation: transparent ? 0 : null,
+      scrolledUnderElevation: transparent ? 0 : null,
+      surfaceTintColor: transparent ? Colors.transparent : null,
       leading: CupertinoButton(
         padding: EdgeInsets.zero,
         onPressed: () {},
@@ -68,6 +98,40 @@ class DiscoverPage extends GetView<DiscoverController> {
           child: const Icon(Icons.filter_list),
         ),
       ],
+    );
+  }
+
+  Widget _buildBackgroundImage(AppService appService) {
+    final bytes = appService.backgroundImageBytes.value;
+    if (bytes == null) return const SizedBox.shrink();
+    return IgnorePointer(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Opacity(
+            opacity: appService.backgroundImageOpacity.value,
+            child: Image.memory(
+              bytes,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    appService.backgroundImageGradientTop.value,
+                    appService.backgroundImageGradientBottom.value,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -91,7 +155,7 @@ class DiscoverPage extends GetView<DiscoverController> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: accent.withOpacity(0.12),
+                color: accent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(Icons.tune, size: 18, color: accent),
@@ -360,7 +424,7 @@ class DiscoverPage extends GetView<DiscoverController> {
 
   String _formatRating(int value) {
     if (value <= 0) return '评分不限';
-    return '${value}分+';
+    return '$value分+';
   }
 
   String _fallbackText(String value, String fallback) {
@@ -384,7 +448,7 @@ class DiscoverPage extends GetView<DiscoverController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(30),
         border: Border.all(color: color),
       ),

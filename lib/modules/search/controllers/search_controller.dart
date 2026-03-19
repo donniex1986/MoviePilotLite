@@ -525,10 +525,8 @@ class SearchMediaController extends GetxController {
     if (torrent == null) return null;
     final volume = torrent.volume_factor?.trim();
     final download = torrent.downloadvolumefactor;
-    final freedate = torrent.freedate;
     if ((download != null && download == 0) ||
-        (volume != null && volume.contains('免费')) ||
-        (freedate != null && freedate.isNotEmpty)) {
+        (volume != null && volume.contains('免费'))) {
       return '免费';
     }
     if (download != null && download < 1) {

@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/app_setting_controller.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
-import 'package:moviepilot_mobile/widgets/section_header.dart';
 
 class AppSettingPage extends GetView<AppSettingController> {
   const AppSettingPage({super.key});
@@ -23,6 +22,12 @@ class AppSettingPage extends GetView<AppSettingController> {
                 padding: EdgeInsets.all(0),
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 header: _buildHeader(context, '主题风格'),
+                separatorBuilder: (context) => Divider(
+                  height: 0.1,
+                  color: Theme.of(context).dividerColor,
+                  endIndent: 16,
+                  indent: 16,
+                ),
                 children: [
                   CupertinoListTile.notched(
                     leading: Container(
@@ -43,6 +48,25 @@ class AppSettingPage extends GetView<AppSettingController> {
                     // subtitle: displaySubtitle != null ? Text(displaySubtitle) : null,
                     trailing: const CupertinoListTileChevron(),
                     onTap: () => Get.toNamed('/settings/app/theme-mode'),
+                  ),
+                  CupertinoListTile.notched(
+                    leading: Container(
+                      width: 29,
+                      height: 29,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        Icons.photo_outlined,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    title: const Text('背景图片'),
+                    trailing: const CupertinoListTileChevron(),
+                    onTap: () => Get.toNamed('/settings/app/background-image'),
                   ),
                 ],
               ),

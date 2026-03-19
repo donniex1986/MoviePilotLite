@@ -14,36 +14,100 @@ import 'package:moviepilot_mobile/modules/recognize/pages/recognize_page.dart';
 import 'package:moviepilot_mobile/modules/system_message/controllers/system_message_controller.dart';
 
 import 'package:moviepilot_mobile/services/realm_service.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import '../controllers/dashboard_controller.dart';
 import '../widgets/dashboard_widgets.dart';
-import 'edit_dashboard_page.dart';
 
 class DashboardPage extends GetView<DashboardController> {
   const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildNavigationBar(context),
-      body: CustomScrollView(
-        slivers: [
-          CupertinoSliverRefreshControl(
-            onRefresh: () async {
-              await controller.refreshData();
-            },
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: _buildWidgetGrid(context),
+    final appService = Get.find<AppService>();
+    return Obx(() {
+      final hasDashboardBackground =
+          appService.backgroundImageEnabled.value &&
+          appService.backgroundImageBytes.value != null;
+      final topInset = hasDashboardBackground
+          ? MediaQuery.paddingOf(context).top + kToolbarHeight
+          : 0.0;
+
+      return Scaffold(
+        extendBodyBehindAppBar: hasDashboardBackground,
+        appBar: _buildNavigationBar(
+          context,
+          transparent: hasDashboardBackground,
+        ),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasDashboardBackground)
+              Positioned.fill(child: _buildBackgroundImage(appService)),
+            Padding(
+              padding: EdgeInsets.only(top: topInset),
+              child: CustomScrollView(
+                slivers: [
+                  CupertinoSliverRefreshControl(
+                    onRefresh: () async {
+                      await controller.refreshData();
+                    },
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: _buildWidgetGrid(
+                        context,
+                        translucentSections: hasDashboardBackground,
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: _bottomSpacer(context)),
+                  ),
+                ],
+              ),
             ),
-          ),
-          SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
-        ],
-      ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildBackgroundImage(AppService appService) {
+    return IgnorePointer(
+      child: Obx(() {
+        final bytes = appService.backgroundImageBytes.value;
+        if (bytes == null) return const SizedBox.shrink();
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Opacity(
+              opacity: appService.backgroundImageOpacity.value,
+              child: Image.memory(
+                bytes,
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      appService.backgroundImageGradientTop.value,
+                      appService.backgroundImageGradientBottom.value,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 
@@ -90,11 +154,15 @@ class DashboardPage extends GetView<DashboardController> {
   }
 
   /// 构建导航栏
-  AppBar _buildNavigationBar(BuildContext context) {
+  AppBar _buildNavigationBar(BuildContext context, {bool transparent = false}) {
     // 获取最新的登录配置文件
     final loginProfile = _getLatestLoginProfile();
 
     return AppBar(
+      backgroundColor: transparent ? Colors.transparent : null,
+      elevation: transparent ? 0 : null,
+      scrolledUnderElevation: transparent ? 0 : null,
+      surfaceTintColor: transparent ? Colors.transparent : null,
       leading: Builder(
         builder: (buttonContext) => CupertinoButton(
           padding: EdgeInsets.zero,
@@ -176,13 +244,23 @@ class DashboardPage extends GetView<DashboardController> {
   }
 
   /// 构建组件网格
-  Widget _buildWidgetGrid(BuildContext context) {
+  Widget _buildWidgetGrid(
+    BuildContext context, {
+    bool translucentSections = false,
+  }) {
     return Obx(() {
-      return Column(
+      final content = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: controller.displayedWidgets
             .map((widget) => _buildWidgetCard(context, widget))
             .toList(),
+      );
+      if (!translucentSections) return content;
+      final theme = Theme.of(context);
+      final translucentCardColor = theme.cardColor.withValues(alpha: 0.7);
+      return Theme(
+        data: theme.copyWith(cardColor: translucentCardColor),
+        child: content,
       );
     });
   }
@@ -266,22 +344,9 @@ class DashboardPage extends GetView<DashboardController> {
     overlay.insert(entry);
   }
 
-  /// 显示通知
-  void _showNotifications(BuildContext context) {
-    Get.snackbar('通知', '通知功能开发中');
-  }
-
   /// 显示个人资料
   void _showProfile(BuildContext context) {
     Get.toNamed('/profile');
-  }
-
-  /// 显示组件选择器
-  void _showWidgetSelector(BuildContext context) {
-    showCupertinoModalPopup(
-      context: context,
-      builder: (_) => EditDashboardPage(),
-    );
   }
 
   /// 显示识别模块（Modal）

@@ -9,23 +9,33 @@ import 'package:moviepilot_mobile/utils/open_url.dart';
 import '../controllers/system_message_controller.dart';
 import '../models/system_message.dart';
 
-class SystemMessagePage extends GetView<SystemMessageController> {
+class SystemMessagePage extends StatefulWidget {
   const SystemMessagePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // 页面构建完成后加载数据并标记为已读
+  State<SystemMessagePage> createState() => _SystemMessagePageState();
+}
+
+class _SystemMessagePageState extends State<SystemMessagePage> {
+  late final SystemMessageController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<SystemMessageController>();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // 如果消息列表为空，重新加载数据
+      if (!mounted) return;
       if (controller.messages.isEmpty) {
         await controller.loadInitial();
       } else {
-        // 已有数据，直接滚动到底部
-        controller.scrollToBottom();
+        await controller.scrollToBottom();
       }
-      controller.markAsRead();
+      await controller.markAsRead();
     });
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('系统消息')),
       body: SafeArea(
@@ -55,6 +65,8 @@ class SystemMessagePage extends GetView<SystemMessageController> {
               Expanded(
                 child: CustomScrollView(
                   controller: controller.scrollController,
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
                   slivers: [
                     CupertinoSliverRefreshControl(
                       onRefresh: controller.loadMore,
@@ -166,7 +178,7 @@ class SystemMessagePage extends GetView<SystemMessageController> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: CupertinoColors.systemBlue.withOpacity(0.12),
+                  color: CupertinoColors.systemBlue.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -256,9 +268,9 @@ class SystemMessagePage extends GetView<SystemMessageController> {
                           children: [
                             _buildTypeChip(
                               message.mtype,
-                              background: Colors.white.withOpacity(0.18),
+                              background: Colors.white.withValues(alpha: 0.18),
                               textColor: Colors.white,
-                              borderColor: Colors.white.withOpacity(0.35),
+                              borderColor: Colors.white.withValues(alpha: 0.35),
                             ),
                             const Spacer(),
                             Text(
@@ -332,7 +344,7 @@ class SystemMessagePage extends GetView<SystemMessageController> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: CupertinoColors.systemPurple.withOpacity(0.12),
+                  color: CupertinoColors.systemPurple.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -344,7 +356,9 @@ class SystemMessagePage extends GetView<SystemMessageController> {
               const SizedBox(width: 8),
               _buildTypeChip(
                 message.mtype.isEmpty ? '搜索' : message.mtype,
-                background: CupertinoColors.systemPurple.withOpacity(0.12),
+                background: CupertinoColors.systemPurple.withValues(
+                  alpha: 0.12,
+                ),
                 textColor: CupertinoColors.systemPurple,
               ),
               const Spacer(),
@@ -461,9 +475,11 @@ class SystemMessagePage extends GetView<SystemMessageController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: background ?? baseColor.withOpacity(0.16),
+        color: background ?? baseColor.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: borderColor ?? baseColor.withOpacity(0.45)),
+        border: Border.all(
+          color: borderColor ?? baseColor.withValues(alpha: 0.45),
+        ),
       ),
       child: Text(
         type.isEmpty ? '消息' : type,
@@ -495,9 +511,9 @@ class SystemMessagePage extends GetView<SystemMessageController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: baseColor.withOpacity(0.14),
+        color: baseColor.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: baseColor.withOpacity(0.35)),
+        border: Border.all(color: baseColor.withValues(alpha: 0.35)),
       ),
       child: Text(
         text,
