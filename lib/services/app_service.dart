@@ -15,6 +15,7 @@ class AppService extends GetxService {
   final showSearchButton = true.obs;
   final enableDownloaderManager = false.obs;
   final useExternalBrowser = false.obs;
+  final enableFetchMediaserverLibraryStatus = false.obs;
 
   // 背景图设置
   final backgroundImageBytes = Rxn<Uint8List>();
@@ -39,6 +40,8 @@ class AppService extends GetxService {
     enableDownloaderManager.value =
         prefs.getBool('enableDownloaderManager') ?? false;
     useExternalBrowser.value = prefs.getBool('useExternalBrowser') ?? false;
+    enableFetchMediaserverLibraryStatus.value =
+        prefs.getBool('enableFetchMediaserverLibraryStatus') ?? false;
 
     // 背景图设置
     backgroundImageEnabled.value = prefs.getBool('backgroundImageEnabled') ?? false;
@@ -96,6 +99,12 @@ class AppService extends GetxService {
     final prefs = await SharedPreferences.getInstance();
     useExternalBrowser.value = value;
     await prefs.setBool('useExternalBrowser', value);
+  }
+
+  Future<void> updateEnableFetchMediaserverLibraryStatus(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    enableFetchMediaserverLibraryStatus.value = value;
+    await prefs.setBool('enableFetchMediaserverLibraryStatus', value);
   }
 
   Future<void> updateBackgroundImageEnabled(bool value) async {

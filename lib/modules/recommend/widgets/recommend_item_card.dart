@@ -15,6 +15,7 @@ class RecommendItemCard extends GetView<SubscribeService> {
     this.cardRadius = 10,
     this.cardWidth = 150,
     this.cardHeight,
+    this.inLibrary = false,
   }) : isPlaceholder = false;
 
   const RecommendItemCard.placeholder({
@@ -25,7 +26,8 @@ class RecommendItemCard extends GetView<SubscribeService> {
     this.cardHeight,
   }) : item = null,
        isPlaceholder = true,
-       onTap = null;
+       onTap = null,
+       inLibrary = false;
 
   final bool compact;
   final double cardRadius;
@@ -34,6 +36,7 @@ class RecommendItemCard extends GetView<SubscribeService> {
   final VoidCallback? onTap;
   final double cardWidth;
   final double? cardHeight;
+  final bool inLibrary;
 
   static const double _defaultAspectRatio = 200 / 150;
 
@@ -90,6 +93,7 @@ class RecommendItemCard extends GetView<SubscribeService> {
             child: _buildTitle(
               data?.title ?? '',
               overview: data?.overview ?? '',
+              inLibrary: inLibrary,
             ),
           ),
           if (data?.vote_average != null && data!.vote_average! > 0)
@@ -110,7 +114,7 @@ class RecommendItemCard extends GetView<SubscribeService> {
     return _buildPoster(item, width, height);
   }
 
-  Widget _buildTitle(String title, {String? overview}) {
+  Widget _buildTitle(String title, {String? overview, bool inLibrary = false}) {
     return Container(
       // height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
@@ -128,17 +132,31 @@ class RecommendItemCard extends GetView<SubscribeService> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Row(
+            children: [
+              if (inLibrary) ...[
+                const Icon(
+                  Icons.inventory_2,
+                  size: 14,
+                  color: Color(0xFF81C784),
+                ),
+                const SizedBox(width: 4),
+              ],
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 3),
+          const SizedBox(height: 3),
           Text(
             overview?.trim() ?? '',
             style: TextStyle(

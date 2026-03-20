@@ -12,6 +12,7 @@ class AppSettingController extends GetxController {
   final showSearchButton = true.obs;
   final enableDownloaderManager = false.obs;
   final useExternalBrowser = false.obs;
+  final enableFetchMediaserverLibraryStatus = false.obs;
 
   // 背景图设置
   final backgroundImageEnabled = false.obs;
@@ -28,6 +29,8 @@ class AppSettingController extends GetxController {
     showSearchButton.value = service.showSearchButton.value;
     enableDownloaderManager.value = service.enableDownloaderManager.value;
     useExternalBrowser.value = service.useExternalBrowser.value;
+    enableFetchMediaserverLibraryStatus.value =
+        service.enableFetchMediaserverLibraryStatus.value;
 
     // 同步背景图设置
     backgroundImageEnabled.value = service.backgroundImageEnabled.value;
@@ -69,6 +72,11 @@ class AppSettingController extends GetxController {
   void updateUseExternalBrowser(bool value) {
     useExternalBrowser.value = value;
     service.updateUseExternalBrowser(value);
+  }
+
+  void updateEnableFetchMediaserverLibraryStatus(bool value) {
+    enableFetchMediaserverLibraryStatus.value = value;
+    service.updateEnableFetchMediaserverLibraryStatus(value);
   }
 
   void updateBackgroundImageEnabled(bool value) {

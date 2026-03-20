@@ -945,27 +945,7 @@ class RecommendPage extends GetView<RecommendController> {
   }
 
   String? _buildMediaPath(RecommendApiItem item) {
-    final prefix = item.mediaid_prefix;
-    final mediaId = item.media_id;
-    if (prefix != null &&
-        prefix.isNotEmpty &&
-        mediaId != null &&
-        mediaId.isNotEmpty) {
-      return '$prefix:$mediaId';
-    }
-    final tmdbId = item.tmdb_id;
-    if (tmdbId != null && tmdbId.isNotEmpty) {
-      return 'tmdb:$tmdbId';
-    }
-    final doubanId = item.douban_id;
-    if (doubanId != null && doubanId.isNotEmpty) {
-      return 'douban:$doubanId';
-    }
-    final bangumiId = item.bangumi_id;
-    if (bangumiId != null && bangumiId.isNotEmpty) {
-      return 'bangumi:$bangumiId';
-    }
-    return null;
+    return HttpPathBuilderUtil.buildMediaPath(item);
   }
 
   (String title, String? subtitle, AssetGenImage?) _parseSubCategory(

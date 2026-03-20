@@ -34,6 +34,9 @@ class MediaSearchListController extends GetxController {
   final RxnInt pageSize = RxnInt();
 
   static const _basePath = '/api/v1/media/search';
+  static const _mediaserverExistsPath = '/api/v1/mediaserver/exists';
+
+  final RxMap<String, bool> mediaserverInLibrary = <String, bool>{}.obs;
 
   @override
   void onReady() {
@@ -103,6 +106,7 @@ class MediaSearchListController extends GetxController {
       if (append) {
         items.addAll(parsed);
       } else {
+        mediaserverInLibrary.clear();
         items.assignAll(parsed);
       }
       currentPage.value = page;
@@ -116,6 +120,11 @@ class MediaSearchListController extends GetxController {
           season: item.season,
           title: item.title,
         );
+      }
+      if (_appService.enableFetchMediaserverLibraryStatus.value) {
+        for (final item in parsed) {
+          unawaited(_fetchMediaserverExists(item, token));
+        }
       }
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '媒体搜索失败');
@@ -191,6 +200,75 @@ class MediaSearchListController extends GetxController {
     if (value is num) return value.toInt();
     if (value is String) return int.tryParse(value);
     return null;
+  }
+
+  String mediaserverExistsKey(RecommendApiItem item) {
+    final t = _existsTitle(item);
+    return '$t|${item.year ?? ''}|${item.type ?? ''}';
+  }
+
+  String _existsTitle(RecommendApiItem item) {
+    final a = item.title?.trim();
+    if (a != null && a.isNotEmpty) return a;
+    final b = item.en_title?.trim();
+    if (b != null && b.isNotEmpty) return b;
+    final c = item.original_title?.trim();
+    if (c != null && c.isNotEmpty) return c;
+    final d = item.original_name?.trim();
+    if (d != null && d.isNotEmpty) return d;
+    return '';
+  }
+
+  Future<void> queryMediaserverExists(RecommendApiItem item) async {
+    if (!_appService.enableFetchMediaserverLibraryStatus.value) return;
+    final token =
+        _appService.loginResponse?.accessToken ??
+        _appService.latestLoginProfileAccessToken ??
+        _apiClient.token;
+    if (token == null || token.isEmpty) return;
+    await _fetchMediaserverExists(item, token);
+  }
+
+  Future<void> _fetchMediaserverExists(
+    RecommendApiItem item,
+    String token,
+  ) async {
+    final title = _existsTitle(item);
+    if (title.isEmpty) return;
+    final key = mediaserverExistsKey(item);
+    try {
+      final query = <String, dynamic>{'title': title};
+      final y = item.year?.trim();
+      if (y != null && y.isNotEmpty) query['year'] = y;
+      final m = item.type?.trim();
+      if (m != null && m.isNotEmpty) query['mtype'] = m;
+      final response = await _apiClient.get<dynamic>(
+        _mediaserverExistsPath,
+        token: token,
+        queryParameters: query,
+      );
+      if (response.statusCode != 200) {
+        mediaserverInLibrary[key] = false;
+        return;
+      }
+      mediaserverInLibrary[key] = _parseMediaserverExists(response.data);
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '媒体入库状态查询失败');
+      mediaserverInLibrary[key] = false;
+    }
+  }
+
+  bool _parseMediaserverExists(dynamic raw) {
+    if (raw is! Map) return false;
+    final m = Map<String, dynamic>.from(raw);
+    if (m['success'] != true) return false;
+    final data = m['data'];
+    if (data is! Map) return false;
+    final inner = data['item'];
+    if (inner is! Map) return false;
+    final id = inner['id'];
+    if (id == null) return false;
+    return id.toString().trim().isNotEmpty;
   }
 
   bool? _asBool(dynamic value) {

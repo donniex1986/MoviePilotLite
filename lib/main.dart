@@ -13,6 +13,7 @@ import 'package:moviepilot_mobile/modules/search/pages/background_image_setting_
 import 'package:moviepilot_mobile/modules/search/pages/media_search_list_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/search_media_result_page.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:moviepilot_mobile/l10n/app_localizations.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
@@ -155,6 +156,8 @@ class MyApp extends StatelessWidget {
       final primary = appService.primaryColor.value;
       return GetMaterialApp(
         title: 'MoviePilot',
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         themeMode: appService.themeMode.value,
         theme: AppTheme.lightThemeWithPrimary(primary),
         darkTheme: AppTheme.darkThemeWithPrimary(primary),

@@ -371,7 +371,6 @@ class MediaDetailController extends GetxController {
       } else {
         final item = await _mediaDetailService.getSubscribeMediaStatus(
           mediaKey,
-          season: 0,
           title: title,
         );
         movieSubscribeItem.value = item;

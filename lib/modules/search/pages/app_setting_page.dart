@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/l10n/app_localizations.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/app_setting_controller.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
@@ -99,6 +100,35 @@ class AppSettingPage extends GetView<AppSettingController> {
                         padding: EdgeInsets.zero,
                         value: controller.showSearchButton.value,
                         onChanged: controller.updateShowSearchButton,
+                      ),
+                    );
+                  }),
+                  Obx(() {
+                    return CupertinoListTile(
+                      leading: Container(
+                        width: 29,
+                        height: 29,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.2,
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.inventory_2_outlined,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      title: Text('搜索页入库状态'),
+                      trailing: Switch.adaptive(
+                        padding: EdgeInsets.zero,
+                        value: controller
+                            .enableFetchMediaserverLibraryStatus
+                            .value,
+                        onChanged: controller
+                            .updateEnableFetchMediaserverLibraryStatus,
                       ),
                     );
                   }),
