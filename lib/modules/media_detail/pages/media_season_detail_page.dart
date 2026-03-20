@@ -44,10 +44,8 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
   String? get _tmdbId => widget.tmdbId;
   int? get _seasonNumber => widget.seasonNumber;
   String? get _title => widget.title;
-  String? get _year => widget.year;
-  String? get _doubanId => widget.doubanId;
-  String? get _mediaId => widget.mediaId;
-  bool _submitting = false;
+
+  final bool _submitting = false;
   String? get _reqPath => widget.reqPath;
 
   final _subscribeItem = Rx<SubscribeItem?>(null);
@@ -115,24 +113,24 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
       ToastUtil.error('${wasSubscribed ? '取消' : ''}订阅失败');
       return;
     }
-
-    if (!wasSubscribed && isTv && subscribeId != null) {
-      ToastUtil.success(
-        '${_title ?? ''} 第 $_seasonNumber 季 订阅成功',
-        title: '订阅成功',
-        duration: const Duration(seconds: 3),
-        mainButtonText: '编辑',
-        onMainButtonPressed: () {
-          Get.toNamed(
-            '/subscribe-edit',
-            arguments: SubscribeItem(id: subscribeId),
-          );
-        },
-      );
-    } else if (wasSubscribed) {
+    if (_isSubscribed) {
       ToastUtil.success('${wasSubscribed ? '取消' : ''}订阅成功');
     } else {
-      ToastUtil.info('${wasSubscribed ? '取消' : ''}订阅成功');
+      Get.back();
+      Future.delayed(const Duration(seconds: 1), () {
+        ToastUtil.success(
+          '${_title ?? ''} 第 $_seasonNumber 季 订阅成功',
+          title: '订阅成功',
+          duration: const Duration(seconds: 3),
+          mainButtonText: '编辑',
+          onMainButtonPressed: () {
+            Get.toNamed(
+              '/subscribe-edit',
+              arguments: SubscribeItem(id: subscribeId),
+            );
+          },
+        );
+      });
     }
     _loadSubscribeStatus();
   }

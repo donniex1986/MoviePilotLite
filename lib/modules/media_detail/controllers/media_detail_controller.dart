@@ -635,12 +635,15 @@ class MediaDetailController extends GetxController {
     subscribeLoadingState.value = true;
     var detail = mediaDetail.value ?? prefillDetail;
     if (detail == null) {
-      // 页面可能在编辑页返回后短暂重建，此时详情还未拉取完成。
-      if (!isLoading.value) {
-        await fetchDetail();
-      }
+      _log.debug(
+        'handleSubscribe: detail null, isLoading=${isLoading.value} mediaDetail=${mediaDetail.value != null} prefillDetail=${prefillDetail != null} args.path=${args.path} args.title=${args.title} args.backdropPath=${args.backdropPath} args.posterPath=${args.posterPath} args.year=${args.year} args.typeName=${args.typeName}',
+      );
+      await fetchDetail();
       detail = mediaDetail.value ?? prefillDetail;
       if (detail == null) {
+        _log.debug(
+          'handleSubscribe: after fetchDetail still null, errorText=${errorText.value} statusCode=${statusCode.value}',
+        );
         ToastUtil.error('媒体详情不存在');
         subscribeLoadingState.value = false;
         return (false, false, null);
