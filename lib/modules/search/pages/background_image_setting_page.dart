@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:moviepilot_mobile/l10n/app_localizations.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/app_setting_controller.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/widgets/bottom_sheet.dart';
@@ -18,10 +20,10 @@ class BackgroundImageSettingPage extends StatefulWidget {
 
 class _BackgroundImageSettingPageState
     extends State<BackgroundImageSettingPage> {
-  static const double _collapsedBarHeight = 50;
-  static const double _panelHeightFactor = 0.9;
+  static const double _collapsedBarHeight = 70;
+  static const double _panelHeightFactor = 0.6;
   static const double _panelSideGap = 12;
-  static const double _panelBottomGap = 12;
+  static const double _panelBottomGap = 0;
   static const double _panelTopGap = 10;
 
   late final AppSettingController controller;
@@ -31,8 +33,12 @@ class _BackgroundImageSettingPageState
   late Color _gradientTop;
   late Color _gradientBottom;
   Uint8List? _imageBytes;
+  late bool _useServer;
+  late String _serverUrl;
+  late final TextEditingController _urlController;
 
   bool _saving = false;
+  bool _serverLoading = false;
   bool _panelExpanded = false;
 
   @override
@@ -44,6 +50,9 @@ class _BackgroundImageSettingPageState
     _gradientTop = controller.backgroundImageGradientTop.value;
     _gradientBottom = controller.backgroundImageGradientBottom.value;
     _imageBytes = controller.backgroundImageBytes.value;
+    _useServer = controller.backgroundImageUseServer.value;
+    _serverUrl = controller.backgroundImageServerUrl.value;
+    _urlController = TextEditingController(text: _serverUrl);
   }
 
   bool get _hasChanges {
@@ -53,7 +62,9 @@ class _BackgroundImageSettingPageState
             controller.backgroundImageGradientTop.value.toARGB32() ||
         _gradientBottom.toARGB32() !=
             controller.backgroundImageGradientBottom.value.toARGB32() ||
-        !_bytesEquals(_imageBytes, controller.backgroundImageBytes.value);
+        !_bytesEquals(_imageBytes, controller.backgroundImageBytes.value) ||
+        _useServer != controller.backgroundImageUseServer.value ||
+        _serverUrl.trim() != controller.backgroundImageServerUrl.value.trim();
   }
 
   bool _bytesEquals(Uint8List? a, Uint8List? b) {
@@ -65,9 +76,20 @@ class _BackgroundImageSettingPageState
   Future<void> _save() async {
     if (_saving || !_hasChanges) return;
     setState(() => _saving = true);
-    final shouldEnable = _enabled && _imageBytes != null;
+    final url = _serverUrl.trim();
+    final canEnable = _useServer ? _isValidHttpUrl(url) : (_imageBytes != null);
+    final shouldEnable = _enabled && canEnable;
     try {
-      await controller.updateBackgroundImage(_imageBytes);
+      controller.updateBackgroundImageUseServer(_useServer);
+      controller.updateBackgroundImageServerUrl(url);
+      if (_useServer) {
+        final ok = await controller.cacheBackgroundImageFromServerUrl();
+        if (ok) {
+          _imageBytes = controller.backgroundImageBytes.value;
+        }
+      } else {
+        await controller.updateBackgroundImage(_imageBytes);
+      }
       controller.updateBackgroundImageOpacity(_opacity);
       controller.updateBackgroundImageGradientTop(_gradientTop);
       controller.updateBackgroundImageGradientBottom(_gradientBottom);
@@ -81,6 +103,37 @@ class _BackgroundImageSettingPageState
       if (mounted) {
         setState(() => _saving = false);
       }
+    }
+  }
+
+  bool _isValidHttpUrl(String url) {
+    final u = Uri.tryParse(url.trim());
+    if (u == null) return false;
+    if (!u.hasScheme) return false;
+    return u.scheme == 'http' || u.scheme == 'https';
+  }
+
+  Future<void> _refreshServerPreview() async {
+    final url = _serverUrl.trim();
+    if (!_isValidHttpUrl(url)) return;
+    setState(() => _serverLoading = true);
+    try {
+      controller.updateBackgroundImageUseServer(true);
+      controller.updateBackgroundImageServerUrl(url);
+      final ok = await controller.cacheBackgroundImageFromServerUrl();
+      if (!mounted) return;
+      setState(() {
+        _imageBytes = ok ? controller.backgroundImageBytes.value : null;
+        _enabled = ok;
+        _serverLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _imageBytes = null;
+        _enabled = false;
+        _serverLoading = false;
+      });
     }
   }
 
@@ -99,6 +152,7 @@ class _BackgroundImageSettingPageState
       setState(() {
         _imageBytes = Uint8List.fromList(bytes);
         _enabled = true;
+        _useServer = false;
       });
     } catch (_) {
       Get.snackbar('错误', '无法读取图片，请检查相册权限设置');
@@ -110,6 +164,12 @@ class _BackgroundImageSettingPageState
       _imageBytes = null;
       _enabled = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
   }
 
   @override
@@ -177,10 +237,18 @@ class _BackgroundImageSettingPageState
 
   Widget _buildLiveBackground(BuildContext context) {
     final bytes = _imageBytes;
+    if (_useServer && _serverLoading) {
+      return DecoratedBox(
+        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
+        child: const Center(child: CupertinoActivityIndicator()),
+      );
+    }
     if (!_enabled || bytes == null) {
       return DecoratedBox(
         decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
-        child: const Center(child: Text('选择图片后可实时预览效果')),
+        child: Center(
+          child: Text(_useServer ? '服务器图片预览中/未缓存，请稍后或保存后重试' : '选择图片后可实时预览效果'),
+        ),
       );
     }
 
@@ -281,6 +349,7 @@ class _BackgroundImageSettingPageState
   }
 
   Widget _buildSettingsSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Section(
       padding: EdgeInsets.zero,
       margin: EdgeInsets.zero,
@@ -299,22 +368,119 @@ class _BackgroundImageSettingPageState
             setState(() => _enabled = value);
           },
         ),
-        ListTile(
-          title: Text('选择图片', style: Theme.of(context).textTheme.bodyLarge),
-          subtitle: Text(_imageBytes != null ? '已选择图片' : '请从相册选择'),
-          trailing: _imageBytes != null
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.memory(
-                    _imageBytes!,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                  ),
-                )
-              : const Icon(CupertinoIcons.photo),
-          onTap: _pickImage,
+        SwitchListTile(
+          title: Text(
+            l10n.backgroundImageUseServer,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          value: _useServer,
+          onChanged: (value) {
+            setState(() {
+              _useServer = value;
+              _serverLoading = false;
+              if (_useServer) _enabled = true;
+            });
+            if (value) unawaited(_refreshServerPreview());
+          },
         ),
+        if (_useServer)
+          ListTile(
+            title: Text(
+              l10n.backgroundImageServerUrl,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            subtitle: Text(
+              _serverUrl.trim().isEmpty ? '-' : _serverUrl.trim(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Icon(
+              _isValidHttpUrl(_serverUrl) ? Icons.check_circle : Icons.error,
+              color: _isValidHttpUrl(_serverUrl)
+                  ? Colors.green
+                  : Theme.of(context).colorScheme.error,
+            ),
+            onTap: () async {
+              final result = await showDialog<String>(
+                context: context,
+                builder: (ctx) {
+                  return AlertDialog(
+                    title: Text(l10n.backgroundImageServerUrl),
+                    content: TextField(
+                      controller: _urlController,
+                      keyboardType: TextInputType.url,
+                      decoration: InputDecoration(
+                        hintText: 'https://example.com/image',
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text('取消'),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.of(ctx).pop(_urlController.text),
+                        child: const Text('确定'),
+                      ),
+                    ],
+                  );
+                },
+              );
+              if (result == null) return;
+              setState(() {
+                _serverUrl = result.trim();
+                _enabled = true;
+              });
+              unawaited(_refreshServerPreview());
+            },
+          ),
+        if (!_useServer)
+          ListTile(
+            title: Text('选择图片', style: Theme.of(context).textTheme.bodyLarge),
+            subtitle: Text(_imageBytes != null ? '已选择图片' : '请从相册选择'),
+            trailing: SizedBox(
+              width: 50,
+              height: 50,
+              child: _imageBytes != null
+                  ? Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned.fill(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.memory(
+                              _imageBytes!,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: InkWell(
+                            onTap: _clearImage,
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.45),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : const Icon(CupertinoIcons.photo),
+            ),
+            onTap: _pickImage,
+          ),
         if (_enabled) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -356,25 +522,6 @@ class _BackgroundImageSettingPageState
               setState(() => _gradientBottom = color);
             },
           ),
-          if (_imageBytes != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: SizedBox(
-                width: double.infinity,
-                child: CupertinoButton(
-                  color: CupertinoColors.systemGrey5.resolveFrom(context),
-                  onPressed: _clearImage,
-                  child: Text(
-                    '清除图片',
-                    style: TextStyle(
-                      color: CupertinoColors.destructiveRed.resolveFrom(
-                        context,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
         ],
       ],
     );

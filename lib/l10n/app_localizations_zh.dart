@@ -10,4 +10,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fetchMediaserverLibraryStatus => '搜索时查询媒体入库状态';
+
+  @override
+  String get backgroundImageUseServer => '使用服务器图片';
+
+  @override
+  String get backgroundImageServerUrl => '服务器图片地址';
 }

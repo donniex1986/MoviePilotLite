@@ -103,6 +103,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Query media library status when searching'**
   String get fetchMediaserverLibraryStatus;
+
+  /// No description provided for @backgroundImageUseServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Use server image'**
+  String get backgroundImageUseServer;
+
+  /// No description provided for @backgroundImageServerUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Server image URL'**
+  String get backgroundImageServerUrl;
 }
 
 class _AppLocalizationsDelegate

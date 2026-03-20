@@ -1,4 +1,6 @@
 {
   "@@locale": "zh",
-  "fetchMediaserverLibraryStatus": "搜索时查询媒体入库状态"
+  "fetchMediaserverLibraryStatus": "搜索时查询媒体入库状态",
+  "backgroundImageUseServer": "使用服务器图片",
+  "backgroundImageServerUrl": "服务器图片地址"
 }

@@ -11,4 +11,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get fetchMediaserverLibraryStatus =>
       'Query media library status when searching';
+
+  @override
+  String get backgroundImageUseServer => 'Use server image';
+
+  @override
+  String get backgroundImageServerUrl => 'Server image URL';
 }
