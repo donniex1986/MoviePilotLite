@@ -19,7 +19,11 @@ class PersonDetailPage extends GetView<PersonDetailController> {
       return Scaffold(
         backgroundColor: AppTheme.darkBackgroundColor,
         body: isLoading
-            ? const Center(child: CupertinoActivityIndicator())
+            ? Center(
+                child: CupertinoActivityIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              )
             : error != null
             ? Center(
                 child: Padding(

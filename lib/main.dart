@@ -323,7 +323,6 @@ class MyApp extends StatelessWidget {
               final source = Get.parameters['source'] ?? '';
               Get.put(
                 PersonDetailController(personId: personId, source: source),
-                permanent: false,
               );
             }),
           ),
