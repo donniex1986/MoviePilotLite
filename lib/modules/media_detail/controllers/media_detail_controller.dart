@@ -633,11 +633,18 @@ class MediaDetailController extends GetxController {
 
   Future<(bool, bool, int? subscribeId)> handleSubscribe({int? season}) async {
     subscribeLoadingState.value = true;
-    final detail = mediaDetail.value ?? prefillDetail;
+    var detail = mediaDetail.value ?? prefillDetail;
     if (detail == null) {
-      ToastUtil.error('媒体详情不存在');
-      subscribeLoadingState.value = false;
-      return (false, false, null);
+      // 页面可能在编辑页返回后短暂重建，此时详情还未拉取完成。
+      if (!isLoading.value) {
+        await fetchDetail();
+      }
+      detail = mediaDetail.value ?? prefillDetail;
+      if (detail == null) {
+        ToastUtil.error('媒体详情不存在');
+        subscribeLoadingState.value = false;
+        return (false, false, null);
+      }
     }
 
     final mediaKey = args.path;
