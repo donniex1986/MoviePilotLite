@@ -173,7 +173,7 @@ class PersonSearchResultPage extends GetView<PersonSearchListController> {
                   ? CachedImage(
                       imageUrl: avatarUrl,
                       width: double.infinity,
-                      height: 100,
+                      height: 150,
                       fit: BoxFit.cover,
                     )
                   : Container(
