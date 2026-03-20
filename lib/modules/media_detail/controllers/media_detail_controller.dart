@@ -624,9 +624,7 @@ class MediaDetailController extends GetxController {
   }
 
   bool _isSubscribed(MediaDetail detail, int? season) {
-    final isTv =
-        (detail.number_of_seasons ?? 0) > 0 ||
-        (detail.season_info != null && detail.season_info!.isNotEmpty);
+    final isTv = _isTv(detail);
     if (isTv) {
       return seasonSubscribeMap.containsKey(season);
     }
@@ -635,7 +633,7 @@ class MediaDetailController extends GetxController {
 
   Future<(bool, bool, int? subscribeId)> handleSubscribe({int? season}) async {
     subscribeLoadingState.value = true;
-    final detail = mediaDetail.value;
+    final detail = mediaDetail.value ?? prefillDetail;
     if (detail == null) {
       ToastUtil.error('媒体详情不存在');
       subscribeLoadingState.value = false;

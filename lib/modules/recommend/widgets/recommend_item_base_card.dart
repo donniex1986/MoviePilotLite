@@ -89,26 +89,17 @@ class RecommendItemBaseCard extends GetView<SubscribeService> {
           Future.delayed(const Duration(milliseconds: 200), () {
             if (ok) {
               if (showEditSnack) {
-                Get.snackbar(
-                  '订阅成功',
+                ToastUtil.success(
                   '${item?.title ?? ''} 订阅成功',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor:
-                      CupertinoColors.systemGreen.withOpacity(0.9),
-                  colorText: CupertinoColors.white,
+                  title: '订阅成功',
                   duration: const Duration(seconds: 3),
-                  mainButton: TextButton(
-                    onPressed: () {
-                      Get.toNamed(
-                        '/subscribe-edit',
-                        arguments: SubscribeItem(id: subscribeId),
-                      );
-                    },
-                    child: const Text(
-                      '编辑',
-                      style: TextStyle(color: CupertinoColors.white),
-                    ),
-                  ),
+                  mainButtonText: '编辑',
+                  onMainButtonPressed: () {
+                    Get.toNamed(
+                      '/subscribe-edit',
+                      arguments: SubscribeItem(id: subscribeId),
+                    );
+                  },
                 );
               } else {
                 ToastUtil.success(
