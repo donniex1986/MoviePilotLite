@@ -26,6 +26,7 @@ class RecommendItemBaseCard extends GetView<SubscribeService> {
         final subscribeItem = controller.subscribeItems[item?.subscribeKey];
         final isSubscribed = subscribeItem != null && subscribeItem.id != null;
         return CupertinoContextMenu.builder(
+          enableHapticFeedback: true,
           builder: (context, menuState) {
             return child;
           },
