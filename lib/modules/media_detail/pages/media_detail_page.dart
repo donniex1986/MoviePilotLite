@@ -11,6 +11,7 @@ import 'package:moviepilot_mobile/modules/media_detail/widgets/media_detail_seas
 import 'package:moviepilot_mobile/modules/search/pages/search_mid_sheet.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
@@ -962,10 +963,39 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
             : CupertinoIcons.heart_fill,
         onPressed: () async {
           try {
-            final (success, x) = await controller.handleSubscribe();
+            final (success, isTv, subscribeId) =
+                await controller.handleSubscribe();
             if (!success) {
               ToastUtil.error('${isSubscribed ? '取消' : ''}订阅失败');
-            } else if (isSubscribed) {
+              return;
+            }
+
+            if (!isSubscribed && isTv && subscribeId != null) {
+              Get.snackbar(
+                '订阅成功',
+                '${detail.title ?? ''} 订阅成功',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor:
+                    CupertinoColors.systemGreen.withOpacity(0.9),
+                colorText: CupertinoColors.white,
+                duration: const Duration(seconds: 3),
+                mainButton: TextButton(
+                  onPressed: () {
+                    Get.toNamed(
+                      '/subscribe-edit',
+                      arguments: SubscribeItem(id: subscribeId),
+                    );
+                  },
+                  child: const Text(
+                    '编辑',
+                    style: TextStyle(color: CupertinoColors.white),
+                  ),
+                ),
+              );
+              return;
+            }
+
+            if (isSubscribed) {
               ToastUtil.success('${isSubscribed ? '取消' : ''}订阅成功');
             } else {
               ToastUtil.info('${isSubscribed ? '取消' : ''}订阅成功');

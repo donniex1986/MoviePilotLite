@@ -64,7 +64,7 @@ class SubscribeService extends GetxService {
     }
   }
 
-  Future<bool> toggleMediaSubscribe({
+  Future<(bool isSuccess, int? subscribeId)> toggleMediaSubscribe({
     required String mediaKey,
     required bool isTv,
     required bool isSubscribed,
@@ -78,13 +78,13 @@ class SubscribeService extends GetxService {
     if (isSubscribed) {
       if (subscribeId != null) {
         final ok = await deleteSubscribes(subscribeId);
-        return ok;
+        return (ok, null);
       } else {
         final ok = await deleteMediaSubscribe(
           mediaKey,
           season: season?.toString() ?? '0',
         );
-        return ok;
+        return (ok, null);
       }
     }
 
@@ -96,7 +96,7 @@ class SubscribeService extends GetxService {
         year: year,
         tmdbid: tmdbid,
       );
-      return ok.success == true;
+      return (ok.success == true, ok.data?.id);
     } else {
       final ok = await submitMovieSubscribe(
         doubanid: doubanid,
@@ -105,7 +105,7 @@ class SubscribeService extends GetxService {
         year: year,
         tmdbid: tmdbid,
       );
-      return ok.success == true;
+      return (ok.success == true, ok.data?.id);
     }
   }
 

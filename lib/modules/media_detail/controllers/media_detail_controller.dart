@@ -633,71 +633,54 @@ class MediaDetailController extends GetxController {
     return movieSubscribeItem.value?.id != null;
   }
 
-  Future<(bool, bool)> handleSubscribe({int? season}) async {
+  Future<(bool, bool, int? subscribeId)> handleSubscribe({int? season}) async {
     subscribeLoadingState.value = true;
-    if (_isSubscribed(mediaDetail.value!, season)) {
-      final mediaKey = args.path;
-      final ok = await _subscribeService.deleteMediaSubscribe(
-        mediaKey,
-        season: season == null ? '0' : season.toString(),
-      );
+    final detail = mediaDetail.value;
+    if (detail == null) {
+      ToastUtil.error('媒体详情不存在');
       subscribeLoadingState.value = false;
-      if (ok) {
-        seasonSubscribeMap.remove(season);
-        movieSubscribeItem.value = null;
-      }
-      return (ok, false);
-    } else {
-      final detail = mediaDetail.value;
-      if (detail == null) {
-        ToastUtil.error('媒体详情不存在');
-        subscribeLoadingState.value = false;
-        return (false, false);
-      }
-      final isTv = _isTv(detail);
-      if (isTv) {
-        final ok = await _subscribeService.submitSubscribe(
-          'tv',
-          payload: {
-            'doubanid': detail.douban_id?.toString() ?? '',
-            'name': detail.title?.trim() ?? '',
-            'season': season ?? 0,
-            'year': detail.year?.trim() ?? '',
-            'tmdbid': detail.tmdb_id?.toString(),
-          },
-        );
-        if (ok.success == true) {
-          final tvItem = SubscribeItem(
-            id: ok.data?.id ?? 0,
-            name: detail.title?.trim() ?? '',
-            season: season ?? 0,
-            year: detail.year?.trim() ?? '',
-            tmdbid: detail.tmdb_id?.toInt(),
-          );
-          if (detail.season_info != null && detail.season_info!.isNotEmpty) {
-            seasonSubscribeMap[season ?? 0] = tvItem;
-          } else {
-            movieSubscribeItem.value = tvItem;
-          }
-          subscribeLoadingState.value = false;
-        }
-        subscribeLoadingState.value = false;
-        return (ok.success == true, true);
-      } else {
-        final ok = await _subscribeService.submitMovieSubscribe(
-          doubanid: detail.douban_id?.toString() ?? '',
-          name: detail.title?.trim() ?? '',
-          season: season,
-          year: detail.year?.trim() ?? '',
-          tmdbid: detail.tmdb_id?.toString(),
-        );
-        if (ok.success == true) {
-          await _fetchSubscribeStatus(detail);
-        }
-        subscribeLoadingState.value = false;
-        return (ok.success == true, true);
-      }
+      return (false, false, null);
     }
+
+    final mediaKey = args.path;
+    if (mediaKey.isEmpty) {
+      subscribeLoadingState.value = false;
+      return (false, false, null);
+    }
+
+    final isTv = _isTv(detail);
+    final isSubscribed = _isSubscribed(detail, season);
+
+    final subscribeId = () {
+      if (!isSubscribed) return null;
+      if (isTv) {
+        final key = season ?? 0;
+        return seasonSubscribeMap[key]?.id?.toString();
+      }
+      return movieSubscribeItem.value?.id?.toString();
+    }();
+
+    final apiSeason = isTv ? (season ?? 0) : season;
+
+    final (ok, newSubscribeId) = await _subscribeService.toggleMediaSubscribe(
+      mediaKey: mediaKey,
+      isTv: isTv,
+      isSubscribed: isSubscribed,
+      doubanid: detail.douban_id?.toString() ?? '',
+      name: detail.title?.trim() ?? '',
+      season: apiSeason,
+      year: detail.year?.trim() ?? '',
+      tmdbid: detail.tmdb_id?.toString(),
+      subscribeId: subscribeId,
+    );
+
+    if (ok) {
+      await _fetchSubscribeStatus(detail);
+    } else {
+      subscribeLoadingState.value = false;
+    }
+
+    return (ok, isTv, newSubscribeId);
   }
 
   bool _isTv(MediaDetail detail) {

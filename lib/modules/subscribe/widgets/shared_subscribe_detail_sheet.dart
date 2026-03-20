@@ -135,7 +135,39 @@ class _SharedSubscribeDetailSheetState
                           item: widget.item,
                         );
                         if (mounted && resp.success == true) {
-                          ToastUtil.success(resp.message ?? '订阅成功');
+                          final isTv = (widget.item.type ?? '')
+                                  .toLowerCase()
+                                  .contains('tv') ||
+                              (widget.item.type ?? '').contains('电视剧');
+                          final subscribeId = resp.data?.id;
+                          if (isTv && subscribeId != null) {
+                            Get.snackbar(
+                              '订阅成功',
+                              resp.message ?? '订阅成功',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor:
+                                  CupertinoColors.systemGreen.withOpacity(0.9),
+                              colorText: CupertinoColors.white,
+                              duration: const Duration(seconds: 3),
+                              mainButton: TextButton(
+                                onPressed: () {
+                                  Get.toNamed(
+                                    '/subscribe-edit',
+                                    arguments: SubscribeItem(id: subscribeId),
+                                  );
+                                },
+                                child: const Text(
+                                  '编辑',
+                                  style:
+                                      TextStyle(color: CupertinoColors.white),
+                                ),
+                              ),
+                            );
+                          } else {
+                            ToastUtil.success(
+                              resp.message ?? '订阅成功',
+                            );
+                          }
                           state.value = SharedSubscribeDetailSheetState.forked;
                           controller.loadAll();
                         } else {

@@ -108,17 +108,39 @@ class _MediaSeasonDetailPageState extends State<MediaSeasonDetailPage> {
   }
 
   Future<void> _onSubscribeTap() async {
-    final (success, x) = await _mediaDetailController.handleSubscribe(
-      season: _seasonNumber,
-    );
+    final wasSubscribed = _isSubscribed;
+    final (success, isTv, subscribeId) = await _mediaDetailController
+        .handleSubscribe(season: _seasonNumber);
     if (!success) {
-      ToastUtil.error('${_isSubscribed ? '取消' : ''}订阅失败');
+      ToastUtil.error('${wasSubscribed ? '取消' : ''}订阅失败');
       return;
     }
-    if (_isSubscribed) {
-      ToastUtil.success('${_isSubscribed ? '取消' : ''}订阅成功');
+
+    if (!wasSubscribed && isTv && subscribeId != null) {
+      Get.snackbar(
+        '订阅成功',
+        '${_title ?? ''} 第 $_seasonNumber 季 订阅成功',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: CupertinoColors.systemGreen.withOpacity(0.9),
+        colorText: CupertinoColors.white,
+        duration: const Duration(seconds: 3),
+        mainButton: TextButton(
+          onPressed: () {
+            Get.toNamed(
+              '/subscribe-edit',
+              arguments: SubscribeItem(id: subscribeId),
+            );
+          },
+          child: const Text(
+            '编辑',
+            style: TextStyle(color: CupertinoColors.white),
+          ),
+        ),
+      );
+    } else if (wasSubscribed) {
+      ToastUtil.success('${wasSubscribed ? '取消' : ''}订阅成功');
     } else {
-      ToastUtil.info('${_isSubscribed ? '取消' : ''}订阅成功');
+      ToastUtil.info('${wasSubscribed ? '取消' : ''}订阅成功');
     }
     _loadSubscribeStatus();
   }
