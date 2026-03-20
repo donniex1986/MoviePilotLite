@@ -63,7 +63,7 @@ class RecommendItemBaseCard extends GetView<SubscribeService> {
       child: InkWell(
         onTap: () async {
           Navigator.pop(context);
-          final ok = await controller.toggleMediaSubscribe(
+          final (ok, subscribeId) = await controller.toggleMediaSubscribe(
             mediaKey: item!.mediaKey,
             isTv: item?.type == 'tv',
             isSubscribed: isSubscribed,
@@ -74,6 +74,8 @@ class RecommendItemBaseCard extends GetView<SubscribeService> {
             year: item?.year,
             subscribeId: subscribeItem?.id?.toString(),
           );
+          final isTv = item?.type == 'tv';
+          final showEditSnack = ok && !isSubscribed && isTv && subscribeId != null;
           if (ok && isSubscribed) {
             controller.subscribeItems[subscribeKey] = null;
           }
@@ -86,9 +88,26 @@ class RecommendItemBaseCard extends GetView<SubscribeService> {
           }
           Future.delayed(const Duration(milliseconds: 200), () {
             if (ok) {
-              ToastUtil.success(
-                isSubscribed ? '${item?.title} 取消订阅成功' : '${item?.title} 订阅成功',
-              );
+              if (showEditSnack) {
+                ToastUtil.success(
+                  '${item?.title ?? ''} 订阅成功',
+                  title: '订阅成功',
+                  duration: const Duration(seconds: 3),
+                  mainButtonText: '编辑',
+                  onMainButtonPressed: () {
+                    Get.toNamed(
+                      '/subscribe-edit',
+                      arguments: SubscribeItem(id: subscribeId),
+                    );
+                  },
+                );
+              } else {
+                ToastUtil.success(
+                  isSubscribed
+                      ? '${item?.title} 取消订阅成功'
+                      : '${item?.title} 订阅成功',
+                );
+              }
             } else {
               ToastUtil.error(
                 isSubscribed ? '${item?.title} 取消订阅失败' : '${item?.title} 订阅失败',
@@ -170,7 +189,8 @@ class RecommendItemBaseCard extends GetView<SubscribeService> {
       'year': detail?.year ?? '',
       'mtype': detail?.type ?? 'movie',
       'title': detail?.title ?? '',
-      if ((detail?.backdrop_path ?? '').isNotEmpty) 'backdrop': detail!.backdrop_path!,
+      if ((detail?.backdrop_path ?? '').isNotEmpty)
+        'backdrop': detail!.backdrop_path!,
     };
     if (season != null) {
       params['season'] = season.toString();

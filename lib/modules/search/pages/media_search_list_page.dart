@@ -9,6 +9,7 @@ import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/utils/grid_layout.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -107,8 +108,16 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
                           );
                         }
                         final item = items[index];
+                        final appService = Get.find<AppService>();
+                        final existsOn =
+                            appService.enableFetchMediaserverLibraryStatus.value;
+                        final existsKey = controller.mediaserverExistsKey(item);
+                        final inLib = existsOn &&
+                            (controller.mediaserverInLibrary[existsKey] ??
+                                false);
                         return RecommendItemCard(
                           item: item,
+                          inLibrary: inLib,
                           onTap: () => _openDetail(item),
                         );
                       },
@@ -374,6 +383,31 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
             fit: BoxFit.cover,
           ),
         ),
+      );
+    } else if (posters.length == 2) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: CachedImage(
+              imageUrl: ImageUtil.convertCacheImageUrl(posters[0]),
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 24),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: CachedImage(
+              imageUrl: ImageUtil.convertCacheImageUrl(posters[1]),
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ],
       );
     }
     final children = <Widget>[];

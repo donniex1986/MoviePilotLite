@@ -11,11 +11,13 @@ import 'package:moviepilot_mobile/modules/media_detail/widgets/media_detail_seas
 import 'package:moviepilot_mobile/modules/search/pages/search_mid_sheet.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/recommend/widgets/recommend_item_card.dart';
+import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/http_path_builder_util.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
+import 'package:moviepilot_mobile/utils/media_source_util.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
@@ -859,38 +861,49 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
         itemBuilder: (context, index) {
           final actor = actors[index];
           final avatarUrl = _resolveAvatarUrl(actor);
-          return SizedBox(
-            width: 90,
-            child: Column(
-              children: [
-                if (avatarUrl != null)
-                  CachedAvatar(imageUrl: avatarUrl, radius: 32)
-                else
-                  const CircleAvatar(
-                    radius: 32,
-                    backgroundColor: CupertinoColors.systemGrey5,
-                    child: Icon(
-                      CupertinoIcons.person,
-                      color: CupertinoColors.systemGrey,
+          return GestureDetector(
+            onTap: () {
+              final source = controller.mediaDetail.value?.source;
+              if (source == null) return;
+              final sourceValue = MediaSourceUtil.sourceValue(source);
+              Get.toNamed(
+                '/person-detail',
+                parameters: {'id': actor.id.toString(), 'source': sourceValue},
+              );
+            },
+            child: SizedBox(
+              width: 90,
+              child: Column(
+                children: [
+                  if (avatarUrl != null)
+                    CachedAvatar(imageUrl: avatarUrl, radius: 32)
+                  else
+                    const CircleAvatar(
+                      radius: 32,
+                      backgroundColor: CupertinoColors.systemGrey5,
+                      child: Icon(
+                        CupertinoIcons.person,
+                        color: CupertinoColors.systemGrey,
+                      ),
                     ),
-                  ),
-                const SizedBox(height: 8),
-                Text(
-                  actor.name ?? '未知演员',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12, color: Colors.white),
-                ),
-                if (actor.character != null && actor.character!.isNotEmpty)
+                  const SizedBox(height: 8),
                   Text(
-                    actor.character!,
+                    actor.name ?? '未知演员',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    style: const TextStyle(fontSize: 12, color: Colors.white),
                   ),
-              ],
+                  if (actor.character != null && actor.character!.isNotEmpty)
+                    Text(
+                      actor.character!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                ],
+              ),
             ),
           );
         },
@@ -962,10 +975,30 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
             : CupertinoIcons.heart_fill,
         onPressed: () async {
           try {
-            final (success, x) = await controller.handleSubscribe();
+            final (success, isTv, subscribeId) = await controller
+                .handleSubscribe();
             if (!success) {
               ToastUtil.error('${isSubscribed ? '取消' : ''}订阅失败');
-            } else if (isSubscribed) {
+              return;
+            }
+
+            if (!isSubscribed && isTv && subscribeId != null) {
+              ToastUtil.success(
+                '${detail.title ?? ''} 订阅成功',
+                title: '订阅成功',
+                duration: const Duration(seconds: 3),
+                mainButtonText: '编辑',
+                onMainButtonPressed: () {
+                  Get.toNamed(
+                    '/subscribe-edit',
+                    arguments: SubscribeItem(id: subscribeId),
+                  );
+                },
+              );
+              return;
+            }
+
+            if (isSubscribed) {
               ToastUtil.success('${isSubscribed ? '取消' : ''}订阅成功');
             } else {
               ToastUtil.info('${isSubscribed ? '取消' : ''}订阅成功');

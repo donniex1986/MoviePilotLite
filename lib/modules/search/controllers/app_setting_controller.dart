@@ -12,6 +12,7 @@ class AppSettingController extends GetxController {
   final showSearchButton = true.obs;
   final enableDownloaderManager = false.obs;
   final useExternalBrowser = false.obs;
+  final enableFetchMediaserverLibraryStatus = false.obs;
 
   // 背景图设置
   final backgroundImageEnabled = false.obs;
@@ -19,6 +20,8 @@ class AppSettingController extends GetxController {
   final backgroundImageGradientTop = Colors.transparent.obs;
   final backgroundImageGradientBottom = Colors.black.obs;
   final backgroundImageBytes = Rxn<Uint8List>();
+  final backgroundImageUseServer = false.obs;
+  final backgroundImageServerUrl = ''.obs;
 
   @override
   void onInit() {
@@ -28,13 +31,18 @@ class AppSettingController extends GetxController {
     showSearchButton.value = service.showSearchButton.value;
     enableDownloaderManager.value = service.enableDownloaderManager.value;
     useExternalBrowser.value = service.useExternalBrowser.value;
+    enableFetchMediaserverLibraryStatus.value =
+        service.enableFetchMediaserverLibraryStatus.value;
 
     // 同步背景图设置
     backgroundImageEnabled.value = service.backgroundImageEnabled.value;
     backgroundImageOpacity.value = service.backgroundImageOpacity.value;
     backgroundImageGradientTop.value = service.backgroundImageGradientTop.value;
-    backgroundImageGradientBottom.value = service.backgroundImageGradientBottom.value;
+    backgroundImageGradientBottom.value =
+        service.backgroundImageGradientBottom.value;
     backgroundImageBytes.value = service.backgroundImageBytes.value;
+    backgroundImageUseServer.value = service.backgroundImageUseServer.value;
+    backgroundImageServerUrl.value = service.backgroundImageServerUrl.value;
 
     // 监听变化
     ever(service.backgroundImageEnabled, (v) => backgroundImageEnabled.value = v);
@@ -42,6 +50,8 @@ class AppSettingController extends GetxController {
     ever(service.backgroundImageGradientTop, (v) => backgroundImageGradientTop.value = v);
     ever(service.backgroundImageGradientBottom, (v) => backgroundImageGradientBottom.value = v);
     ever(service.backgroundImageBytes, (v) => backgroundImageBytes.value = v);
+    ever(service.backgroundImageUseServer, (v) => backgroundImageUseServer.value = v);
+    ever(service.backgroundImageServerUrl, (v) => backgroundImageServerUrl.value = v);
 
     loadAppVersion();
   }
@@ -71,6 +81,11 @@ class AppSettingController extends GetxController {
     service.updateUseExternalBrowser(value);
   }
 
+  void updateEnableFetchMediaserverLibraryStatus(bool value) {
+    enableFetchMediaserverLibraryStatus.value = value;
+    service.updateEnableFetchMediaserverLibraryStatus(value);
+  }
+
   void updateBackgroundImageEnabled(bool value) {
     backgroundImageEnabled.value = value;
     service.updateBackgroundImageEnabled(value);
@@ -98,6 +113,22 @@ class AppSettingController extends GetxController {
 
   Future<void> clearBackgroundImage() async {
     await service.clearBackgroundImage();
+  }
+
+  void updateBackgroundImageUseServer(bool value) {
+    backgroundImageUseServer.value = value;
+    service.updateBackgroundImageUseServer(value);
+  }
+
+  void updateBackgroundImageServerUrl(String url) {
+    backgroundImageServerUrl.value = url;
+    service.updateBackgroundImageServerUrl(url);
+  }
+
+  Future<bool> cacheBackgroundImageFromServerUrl() async {
+    final ok = await service.cacheBackgroundImageFromServerUrl();
+    backgroundImageBytes.value = service.backgroundImageBytes.value;
+    return ok;
   }
 
   loadAppVersion() async {

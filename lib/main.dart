@@ -6,13 +6,18 @@ import 'package:moviepilot_mobile/modules/index.dart';
 import 'package:moviepilot_mobile/modules/media_detail/controllers/media_detail_service.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/app_setting_controller.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/media_search_list_controller.dart';
+import 'package:moviepilot_mobile/modules/search/controllers/person_detail_controller.dart';
+import 'package:moviepilot_mobile/modules/search/controllers/person_search_list_controller.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/search_controller.dart';
 import 'package:moviepilot_mobile/modules/search/pages/app_theme_setting_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/app_setting_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/background_image_setting_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/media_search_list_page.dart';
+import 'package:moviepilot_mobile/modules/search/pages/person_detail_page.dart';
+import 'package:moviepilot_mobile/modules/search/pages/person_search_result_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/search_media_result_page.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:moviepilot_mobile/l10n/app_localizations.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
@@ -155,6 +160,8 @@ class MyApp extends StatelessWidget {
       final primary = appService.primaryColor.value;
       return GetMaterialApp(
         title: 'MoviePilot',
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         themeMode: appService.themeMode.value,
         theme: AppTheme.lightThemeWithPrimary(primary),
         darkTheme: AppTheme.darkThemeWithPrimary(primary),
@@ -289,6 +296,33 @@ class MyApp extends StatelessWidget {
                   initialKeyword: keyword,
                   initialType: type,
                 ),
+              );
+            }),
+          ),
+          GetPage(
+            name: '/person-search-list',
+            page: () => const PersonSearchResultPage(),
+            binding: BindingsBuilder(() {
+              final keyword = (Get.arguments?['keyword']?.toString() ?? '')
+                  .trim();
+              Get.put(
+                PersonSearchListController(initialKeyword: keyword),
+                permanent: false,
+              );
+            }),
+          ),
+          GetPage(
+            name: '/person-detail',
+            page: () => const PersonDetailPage(),
+            binding: BindingsBuilder(() {
+              final rawId =
+                  Get.arguments?['id']?.toString() ??
+                  Get.parameters['id']?.toString() ??
+                  '';
+              final personId = int.tryParse(rawId) ?? 0;
+              final source = Get.parameters['source'] ?? '';
+              Get.put(
+                PersonDetailController(personId: personId, source: source),
               );
             }),
           ),

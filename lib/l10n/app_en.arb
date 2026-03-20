@@ -1,0 +1,6 @@
+{
+  "@@locale": "en",
+  "fetchMediaserverLibraryStatus": "Query media library status when searching",
+  "backgroundImageUseServer": "Use server image",
+  "backgroundImageServerUrl": "Server image URL"
+}

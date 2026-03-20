@@ -2181,6 +2181,7 @@ Actor _$ActorFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Actor {
   bool? get adult => throw _privateConstructorUsedError;
+  String? get source => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _intFromJson)
   int? get gender => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _intFromJson)
@@ -2197,6 +2198,7 @@ mixin _$Actor {
   int? get order => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _actorAvatarFromJson, toJson: _actorAvatarToJson)
   ActorAvatar? get avatar => throw _privateConstructorUsedError;
+  ActorImages? get images => throw _privateConstructorUsedError;
   String? get sharing_url => throw _privateConstructorUsedError;
 
   /// Serializes this Actor to a JSON map.
@@ -2215,6 +2217,7 @@ abstract class $ActorCopyWith<$Res> {
   @useResult
   $Res call({
     bool? adult,
+    String? source,
     @JsonKey(fromJson: _intFromJson) int? gender,
     @JsonKey(fromJson: _intFromJson) int? id,
     String? known_for_department,
@@ -2227,10 +2230,12 @@ abstract class $ActorCopyWith<$Res> {
     @JsonKey(fromJson: _intFromJson) int? order,
     @JsonKey(fromJson: _actorAvatarFromJson, toJson: _actorAvatarToJson)
     ActorAvatar? avatar,
+    ActorImages? images,
     String? sharing_url,
   });
 
   $ActorAvatarCopyWith<$Res>? get avatar;
+  $ActorImagesCopyWith<$Res>? get images;
 }
 
 /// @nodoc
@@ -2249,6 +2254,7 @@ class _$ActorCopyWithImpl<$Res, $Val extends Actor>
   @override
   $Res call({
     Object? adult = freezed,
+    Object? source = freezed,
     Object? gender = freezed,
     Object? id = freezed,
     Object? known_for_department = freezed,
@@ -2260,6 +2266,7 @@ class _$ActorCopyWithImpl<$Res, $Val extends Actor>
     Object? credit_id = freezed,
     Object? order = freezed,
     Object? avatar = freezed,
+    Object? images = freezed,
     Object? sharing_url = freezed,
   }) {
     return _then(
@@ -2268,6 +2275,10 @@ class _$ActorCopyWithImpl<$Res, $Val extends Actor>
                 ? _value.adult
                 : adult // ignore: cast_nullable_to_non_nullable
                       as bool?,
+            source: freezed == source
+                ? _value.source
+                : source // ignore: cast_nullable_to_non_nullable
+                      as String?,
             gender: freezed == gender
                 ? _value.gender
                 : gender // ignore: cast_nullable_to_non_nullable
@@ -2312,6 +2323,10 @@ class _$ActorCopyWithImpl<$Res, $Val extends Actor>
                 ? _value.avatar
                 : avatar // ignore: cast_nullable_to_non_nullable
                       as ActorAvatar?,
+            images: freezed == images
+                ? _value.images
+                : images // ignore: cast_nullable_to_non_nullable
+                      as ActorImages?,
             sharing_url: freezed == sharing_url
                 ? _value.sharing_url
                 : sharing_url // ignore: cast_nullable_to_non_nullable
@@ -2334,6 +2349,20 @@ class _$ActorCopyWithImpl<$Res, $Val extends Actor>
       return _then(_value.copyWith(avatar: value) as $Val);
     });
   }
+
+  /// Create a copy of Actor
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ActorImagesCopyWith<$Res>? get images {
+    if (_value.images == null) {
+      return null;
+    }
+
+    return $ActorImagesCopyWith<$Res>(_value.images!, (value) {
+      return _then(_value.copyWith(images: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -2346,6 +2375,7 @@ abstract class _$$ActorImplCopyWith<$Res> implements $ActorCopyWith<$Res> {
   @useResult
   $Res call({
     bool? adult,
+    String? source,
     @JsonKey(fromJson: _intFromJson) int? gender,
     @JsonKey(fromJson: _intFromJson) int? id,
     String? known_for_department,
@@ -2358,11 +2388,14 @@ abstract class _$$ActorImplCopyWith<$Res> implements $ActorCopyWith<$Res> {
     @JsonKey(fromJson: _intFromJson) int? order,
     @JsonKey(fromJson: _actorAvatarFromJson, toJson: _actorAvatarToJson)
     ActorAvatar? avatar,
+    ActorImages? images,
     String? sharing_url,
   });
 
   @override
   $ActorAvatarCopyWith<$Res>? get avatar;
+  @override
+  $ActorImagesCopyWith<$Res>? get images;
 }
 
 /// @nodoc
@@ -2380,6 +2413,7 @@ class __$$ActorImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? adult = freezed,
+    Object? source = freezed,
     Object? gender = freezed,
     Object? id = freezed,
     Object? known_for_department = freezed,
@@ -2391,6 +2425,7 @@ class __$$ActorImplCopyWithImpl<$Res>
     Object? credit_id = freezed,
     Object? order = freezed,
     Object? avatar = freezed,
+    Object? images = freezed,
     Object? sharing_url = freezed,
   }) {
     return _then(
@@ -2399,6 +2434,10 @@ class __$$ActorImplCopyWithImpl<$Res>
             ? _value.adult
             : adult // ignore: cast_nullable_to_non_nullable
                   as bool?,
+        source: freezed == source
+            ? _value.source
+            : source // ignore: cast_nullable_to_non_nullable
+                  as String?,
         gender: freezed == gender
             ? _value.gender
             : gender // ignore: cast_nullable_to_non_nullable
@@ -2443,6 +2482,10 @@ class __$$ActorImplCopyWithImpl<$Res>
             ? _value.avatar
             : avatar // ignore: cast_nullable_to_non_nullable
                   as ActorAvatar?,
+        images: freezed == images
+            ? _value.images
+            : images // ignore: cast_nullable_to_non_nullable
+                  as ActorImages?,
         sharing_url: freezed == sharing_url
             ? _value.sharing_url
             : sharing_url // ignore: cast_nullable_to_non_nullable
@@ -2457,6 +2500,7 @@ class __$$ActorImplCopyWithImpl<$Res>
 class _$ActorImpl implements _Actor {
   const _$ActorImpl({
     this.adult,
+    this.source,
     @JsonKey(fromJson: _intFromJson) this.gender,
     @JsonKey(fromJson: _intFromJson) this.id,
     this.known_for_department,
@@ -2469,6 +2513,7 @@ class _$ActorImpl implements _Actor {
     @JsonKey(fromJson: _intFromJson) this.order,
     @JsonKey(fromJson: _actorAvatarFromJson, toJson: _actorAvatarToJson)
     this.avatar,
+    this.images,
     this.sharing_url,
   });
 
@@ -2477,6 +2522,8 @@ class _$ActorImpl implements _Actor {
 
   @override
   final bool? adult;
+  @override
+  final String? source;
   @override
   @JsonKey(fromJson: _intFromJson)
   final int? gender;
@@ -2505,11 +2552,13 @@ class _$ActorImpl implements _Actor {
   @JsonKey(fromJson: _actorAvatarFromJson, toJson: _actorAvatarToJson)
   final ActorAvatar? avatar;
   @override
+  final ActorImages? images;
+  @override
   final String? sharing_url;
 
   @override
   String toString() {
-    return 'Actor(adult: $adult, gender: $gender, id: $id, known_for_department: $known_for_department, name: $name, original_name: $original_name, popularity: $popularity, profile_path: $profile_path, character: $character, credit_id: $credit_id, order: $order, avatar: $avatar, sharing_url: $sharing_url)';
+    return 'Actor(adult: $adult, source: $source, gender: $gender, id: $id, known_for_department: $known_for_department, name: $name, original_name: $original_name, popularity: $popularity, profile_path: $profile_path, character: $character, credit_id: $credit_id, order: $order, avatar: $avatar, images: $images, sharing_url: $sharing_url)';
   }
 
   @override
@@ -2518,6 +2567,7 @@ class _$ActorImpl implements _Actor {
         (other.runtimeType == runtimeType &&
             other is _$ActorImpl &&
             (identical(other.adult, adult) || other.adult == adult) &&
+            (identical(other.source, source) || other.source == source) &&
             (identical(other.gender, gender) || other.gender == gender) &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.known_for_department, known_for_department) ||
@@ -2535,6 +2585,7 @@ class _$ActorImpl implements _Actor {
                 other.credit_id == credit_id) &&
             (identical(other.order, order) || other.order == order) &&
             (identical(other.avatar, avatar) || other.avatar == avatar) &&
+            (identical(other.images, images) || other.images == images) &&
             (identical(other.sharing_url, sharing_url) ||
                 other.sharing_url == sharing_url));
   }
@@ -2544,6 +2595,7 @@ class _$ActorImpl implements _Actor {
   int get hashCode => Object.hash(
     runtimeType,
     adult,
+    source,
     gender,
     id,
     known_for_department,
@@ -2555,6 +2607,7 @@ class _$ActorImpl implements _Actor {
     credit_id,
     order,
     avatar,
+    images,
     sharing_url,
   );
 
@@ -2575,6 +2628,7 @@ class _$ActorImpl implements _Actor {
 abstract class _Actor implements Actor {
   const factory _Actor({
     final bool? adult,
+    final String? source,
     @JsonKey(fromJson: _intFromJson) final int? gender,
     @JsonKey(fromJson: _intFromJson) final int? id,
     final String? known_for_department,
@@ -2587,6 +2641,7 @@ abstract class _Actor implements Actor {
     @JsonKey(fromJson: _intFromJson) final int? order,
     @JsonKey(fromJson: _actorAvatarFromJson, toJson: _actorAvatarToJson)
     final ActorAvatar? avatar,
+    final ActorImages? images,
     final String? sharing_url,
   }) = _$ActorImpl;
 
@@ -2594,6 +2649,8 @@ abstract class _Actor implements Actor {
 
   @override
   bool? get adult;
+  @override
+  String? get source;
   @override
   @JsonKey(fromJson: _intFromJson)
   int? get gender;
@@ -2622,6 +2679,8 @@ abstract class _Actor implements Actor {
   @JsonKey(fromJson: _actorAvatarFromJson, toJson: _actorAvatarToJson)
   ActorAvatar? get avatar;
   @override
+  ActorImages? get images;
+  @override
   String? get sharing_url;
 
   /// Create a copy of Actor
@@ -2629,6 +2688,361 @@ abstract class _Actor implements Actor {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ActorImplCopyWith<_$ActorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+ActorImages _$ActorImagesFromJson(Map<String, dynamic> json) {
+  return _ActorImages.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ActorImages {
+  ActorImage? get large => throw _privateConstructorUsedError;
+  ActorImage? get normal => throw _privateConstructorUsedError;
+
+  /// Serializes this ActorImages to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of ActorImages
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ActorImagesCopyWith<ActorImages> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ActorImagesCopyWith<$Res> {
+  factory $ActorImagesCopyWith(
+    ActorImages value,
+    $Res Function(ActorImages) then,
+  ) = _$ActorImagesCopyWithImpl<$Res, ActorImages>;
+  @useResult
+  $Res call({ActorImage? large, ActorImage? normal});
+
+  $ActorImageCopyWith<$Res>? get large;
+  $ActorImageCopyWith<$Res>? get normal;
+}
+
+/// @nodoc
+class _$ActorImagesCopyWithImpl<$Res, $Val extends ActorImages>
+    implements $ActorImagesCopyWith<$Res> {
+  _$ActorImagesCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ActorImages
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? large = freezed, Object? normal = freezed}) {
+    return _then(
+      _value.copyWith(
+            large: freezed == large
+                ? _value.large
+                : large // ignore: cast_nullable_to_non_nullable
+                      as ActorImage?,
+            normal: freezed == normal
+                ? _value.normal
+                : normal // ignore: cast_nullable_to_non_nullable
+                      as ActorImage?,
+          )
+          as $Val,
+    );
+  }
+
+  /// Create a copy of ActorImages
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ActorImageCopyWith<$Res>? get large {
+    if (_value.large == null) {
+      return null;
+    }
+
+    return $ActorImageCopyWith<$Res>(_value.large!, (value) {
+      return _then(_value.copyWith(large: value) as $Val);
+    });
+  }
+
+  /// Create a copy of ActorImages
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ActorImageCopyWith<$Res>? get normal {
+    if (_value.normal == null) {
+      return null;
+    }
+
+    return $ActorImageCopyWith<$Res>(_value.normal!, (value) {
+      return _then(_value.copyWith(normal: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$ActorImagesImplCopyWith<$Res>
+    implements $ActorImagesCopyWith<$Res> {
+  factory _$$ActorImagesImplCopyWith(
+    _$ActorImagesImpl value,
+    $Res Function(_$ActorImagesImpl) then,
+  ) = __$$ActorImagesImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({ActorImage? large, ActorImage? normal});
+
+  @override
+  $ActorImageCopyWith<$Res>? get large;
+  @override
+  $ActorImageCopyWith<$Res>? get normal;
+}
+
+/// @nodoc
+class __$$ActorImagesImplCopyWithImpl<$Res>
+    extends _$ActorImagesCopyWithImpl<$Res, _$ActorImagesImpl>
+    implements _$$ActorImagesImplCopyWith<$Res> {
+  __$$ActorImagesImplCopyWithImpl(
+    _$ActorImagesImpl _value,
+    $Res Function(_$ActorImagesImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ActorImages
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? large = freezed, Object? normal = freezed}) {
+    return _then(
+      _$ActorImagesImpl(
+        large: freezed == large
+            ? _value.large
+            : large // ignore: cast_nullable_to_non_nullable
+                  as ActorImage?,
+        normal: freezed == normal
+            ? _value.normal
+            : normal // ignore: cast_nullable_to_non_nullable
+                  as ActorImage?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ActorImagesImpl implements _ActorImages {
+  const _$ActorImagesImpl({this.large, this.normal});
+
+  factory _$ActorImagesImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ActorImagesImplFromJson(json);
+
+  @override
+  final ActorImage? large;
+  @override
+  final ActorImage? normal;
+
+  @override
+  String toString() {
+    return 'ActorImages(large: $large, normal: $normal)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ActorImagesImpl &&
+            (identical(other.large, large) || other.large == large) &&
+            (identical(other.normal, normal) || other.normal == normal));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, large, normal);
+
+  /// Create a copy of ActorImages
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ActorImagesImplCopyWith<_$ActorImagesImpl> get copyWith =>
+      __$$ActorImagesImplCopyWithImpl<_$ActorImagesImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ActorImagesImplToJson(this);
+  }
+}
+
+abstract class _ActorImages implements ActorImages {
+  const factory _ActorImages({
+    final ActorImage? large,
+    final ActorImage? normal,
+  }) = _$ActorImagesImpl;
+
+  factory _ActorImages.fromJson(Map<String, dynamic> json) =
+      _$ActorImagesImpl.fromJson;
+
+  @override
+  ActorImage? get large;
+  @override
+  ActorImage? get normal;
+
+  /// Create a copy of ActorImages
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ActorImagesImplCopyWith<_$ActorImagesImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+ActorImage _$ActorImageFromJson(Map<String, dynamic> json) {
+  return _ActorImage.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ActorImage {
+  String? get url => throw _privateConstructorUsedError;
+
+  /// Serializes this ActorImage to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of ActorImage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ActorImageCopyWith<ActorImage> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ActorImageCopyWith<$Res> {
+  factory $ActorImageCopyWith(
+    ActorImage value,
+    $Res Function(ActorImage) then,
+  ) = _$ActorImageCopyWithImpl<$Res, ActorImage>;
+  @useResult
+  $Res call({String? url});
+}
+
+/// @nodoc
+class _$ActorImageCopyWithImpl<$Res, $Val extends ActorImage>
+    implements $ActorImageCopyWith<$Res> {
+  _$ActorImageCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ActorImage
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? url = freezed}) {
+    return _then(
+      _value.copyWith(
+            url: freezed == url
+                ? _value.url
+                : url // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$ActorImageImplCopyWith<$Res>
+    implements $ActorImageCopyWith<$Res> {
+  factory _$$ActorImageImplCopyWith(
+    _$ActorImageImpl value,
+    $Res Function(_$ActorImageImpl) then,
+  ) = __$$ActorImageImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String? url});
+}
+
+/// @nodoc
+class __$$ActorImageImplCopyWithImpl<$Res>
+    extends _$ActorImageCopyWithImpl<$Res, _$ActorImageImpl>
+    implements _$$ActorImageImplCopyWith<$Res> {
+  __$$ActorImageImplCopyWithImpl(
+    _$ActorImageImpl _value,
+    $Res Function(_$ActorImageImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ActorImage
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? url = freezed}) {
+    return _then(
+      _$ActorImageImpl(
+        url: freezed == url
+            ? _value.url
+            : url // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ActorImageImpl implements _ActorImage {
+  const _$ActorImageImpl({this.url});
+
+  factory _$ActorImageImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ActorImageImplFromJson(json);
+
+  @override
+  final String? url;
+
+  @override
+  String toString() {
+    return 'ActorImage(url: $url)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ActorImageImpl &&
+            (identical(other.url, url) || other.url == url));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, url);
+
+  /// Create a copy of ActorImage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ActorImageImplCopyWith<_$ActorImageImpl> get copyWith =>
+      __$$ActorImageImplCopyWithImpl<_$ActorImageImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ActorImageImplToJson(this);
+  }
+}
+
+abstract class _ActorImage implements ActorImage {
+  const factory _ActorImage({final String? url}) = _$ActorImageImpl;
+
+  factory _ActorImage.fromJson(Map<String, dynamic> json) =
+      _$ActorImageImpl.fromJson;
+
+  @override
+  String? get url;
+
+  /// Create a copy of ActorImage
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ActorImageImplCopyWith<_$ActorImageImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

@@ -90,8 +90,12 @@ class ImageUtil extends GetxService {
     final sanitizedBase = baseUrl.endsWith('/')
         ? baseUrl.substring(0, baseUrl.length - 1)
         : baseUrl;
-    final encodedImageUrl = Uri.encodeComponent(imageUrl);
-    return '$sanitizedBase/api/v1/system/cache/image?url=$encodedImageUrl';
+    if (imageUrl.startsWith('http')) {
+      final encodedImageUrl = Uri.encodeComponent(imageUrl);
+      return '$sanitizedBase/api/v1/system/cache/image?url=$encodedImageUrl';
+    } else {
+      return convertCacheImageUrl("https://image.tmdb.org/t/p/w200/$imageUrl");
+    }
   }
 
   /// 将插件图标地址转换为可访问的 URL

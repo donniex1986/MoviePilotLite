@@ -191,6 +191,7 @@ Map<String, dynamic> _$$SeasonInfoImplToJson(_$SeasonInfoImpl instance) =>
 
 _$ActorImpl _$$ActorImplFromJson(Map<String, dynamic> json) => _$ActorImpl(
   adult: json['adult'] as bool?,
+  source: json['source'] as String?,
   gender: _intFromJson(json['gender']),
   id: _intFromJson(json['id']),
   known_for_department: json['known_for_department'] as String?,
@@ -202,12 +203,16 @@ _$ActorImpl _$$ActorImplFromJson(Map<String, dynamic> json) => _$ActorImpl(
   credit_id: json['credit_id'] as String?,
   order: _intFromJson(json['order']),
   avatar: _actorAvatarFromJson(json['avatar']),
+  images: json['images'] == null
+      ? null
+      : ActorImages.fromJson(json['images'] as Map<String, dynamic>),
   sharing_url: json['sharing_url'] as String?,
 );
 
 Map<String, dynamic> _$$ActorImplToJson(_$ActorImpl instance) =>
     <String, dynamic>{
       'adult': instance.adult,
+      'source': instance.source,
       'gender': instance.gender,
       'id': instance.id,
       'known_for_department': instance.known_for_department,
@@ -219,8 +224,28 @@ Map<String, dynamic> _$$ActorImplToJson(_$ActorImpl instance) =>
       'credit_id': instance.credit_id,
       'order': instance.order,
       'avatar': _actorAvatarToJson(instance.avatar),
+      'images': instance.images,
       'sharing_url': instance.sharing_url,
     };
+
+_$ActorImagesImpl _$$ActorImagesImplFromJson(Map<String, dynamic> json) =>
+    _$ActorImagesImpl(
+      large: json['large'] == null
+          ? null
+          : ActorImage.fromJson(json['large'] as Map<String, dynamic>),
+      normal: json['normal'] == null
+          ? null
+          : ActorImage.fromJson(json['normal'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$$ActorImagesImplToJson(_$ActorImagesImpl instance) =>
+    <String, dynamic>{'large': instance.large, 'normal': instance.normal};
+
+_$ActorImageImpl _$$ActorImageImplFromJson(Map<String, dynamic> json) =>
+    _$ActorImageImpl(url: json['url'] as String?);
+
+Map<String, dynamic> _$$ActorImageImplToJson(_$ActorImageImpl instance) =>
+    <String, dynamic>{'url': instance.url};
 
 _$ActorAvatarImpl _$$ActorAvatarImplFromJson(Map<String, dynamic> json) =>
     _$ActorAvatarImpl(

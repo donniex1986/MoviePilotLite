@@ -135,7 +135,29 @@ class _SharedSubscribeDetailSheetState
                           item: widget.item,
                         );
                         if (mounted && resp.success == true) {
-                          ToastUtil.success(resp.message ?? '订阅成功');
+                          final isTv = (widget.item.type ?? '')
+                                  .toLowerCase()
+                                  .contains('tv') ||
+                              (widget.item.type ?? '').contains('电视剧');
+                          final subscribeId = resp.data?.id;
+                          if (isTv && subscribeId != null) {
+                            ToastUtil.success(
+                              resp.message ?? '订阅成功',
+                              title: '订阅成功',
+                              duration: const Duration(seconds: 3),
+                              mainButtonText: '编辑',
+                              onMainButtonPressed: () {
+                                Get.toNamed(
+                                  '/subscribe-edit',
+                                  arguments: SubscribeItem(id: subscribeId),
+                                );
+                              },
+                            );
+                          } else {
+                            ToastUtil.success(
+                              resp.message ?? '订阅成功',
+                            );
+                          }
                           state.value = SharedSubscribeDetailSheetState.forked;
                           controller.loadAll();
                         } else {

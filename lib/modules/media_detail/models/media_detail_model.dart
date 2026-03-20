@@ -106,6 +106,7 @@ class SeasonInfo with _$SeasonInfo {
 class Actor with _$Actor {
   const factory Actor({
     bool? adult,
+    String? source,
     @JsonKey(fromJson: _intFromJson) int? gender,
     @JsonKey(fromJson: _intFromJson) int? id,
     String? known_for_department,
@@ -118,10 +119,28 @@ class Actor with _$Actor {
     @JsonKey(fromJson: _intFromJson) int? order,
     @JsonKey(fromJson: _actorAvatarFromJson, toJson: _actorAvatarToJson)
     ActorAvatar? avatar,
+    ActorImages? images,
     String? sharing_url,
   }) = _Actor;
 
   factory Actor.fromJson(Map<String, dynamic> json) => _$ActorFromJson(json);
+}
+
+@freezed
+class ActorImages with _$ActorImages {
+  const factory ActorImages({ActorImage? large, ActorImage? normal}) =
+      _ActorImages;
+
+  factory ActorImages.fromJson(Map<String, dynamic> json) =>
+      _$ActorImagesFromJson(json);
+}
+
+@freezed
+class ActorImage with _$ActorImage {
+  const factory ActorImage({String? url}) = _ActorImage;
+
+  factory ActorImage.fromJson(Map<String, dynamic> json) =>
+      _$ActorImageFromJson(json);
 }
 
 @freezed
@@ -274,8 +293,6 @@ class EpisodeGroup with _$EpisodeGroup {
   factory EpisodeGroup.fromJson(Map<String, dynamic> json) =>
       _$EpisodeGroupFromJson(json);
 }
-
-
 
 int? _intFromJson(Object? value) {
   if (value == null) return null;

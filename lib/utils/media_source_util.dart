@@ -14,4 +14,18 @@ class MediaSourceUtil {
     }
     return null;
   }
+
+  static String sourceValue(String source) {
+    switch (source) {
+      case 'tmdb':
+      case 'themoviedb':
+      case 'thetvdb':
+        return 'tmdb';
+      case 'douban':
+        return 'douban';
+      case 'bangumi':
+        return 'bangumi';
+    }
+    return 'douban';
+  }
 }

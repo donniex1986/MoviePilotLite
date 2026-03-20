@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_response.dart';
@@ -15,6 +17,7 @@ class AppService extends GetxService {
   final showSearchButton = true.obs;
   final enableDownloaderManager = false.obs;
   final useExternalBrowser = false.obs;
+  final enableFetchMediaserverLibraryStatus = false.obs;
 
   // 背景图设置
   final backgroundImageBytes = Rxn<Uint8List>();
@@ -22,6 +25,8 @@ class AppService extends GetxService {
   final backgroundImageGradientTop = Colors.transparent.obs;
   final backgroundImageGradientBottom = Colors.black.obs;
   final backgroundImageEnabled = false.obs;
+  final backgroundImageUseServer = false.obs;
+  final backgroundImageServerUrl = ''.obs;
 
   @override
   Future<void> onInit() async {
@@ -39,10 +44,18 @@ class AppService extends GetxService {
     enableDownloaderManager.value =
         prefs.getBool('enableDownloaderManager') ?? false;
     useExternalBrowser.value = prefs.getBool('useExternalBrowser') ?? false;
+    enableFetchMediaserverLibraryStatus.value =
+        prefs.getBool('enableFetchMediaserverLibraryStatus') ?? false;
 
     // 背景图设置
-    backgroundImageEnabled.value = prefs.getBool('backgroundImageEnabled') ?? false;
-    backgroundImageOpacity.value = prefs.getDouble('backgroundImageOpacity') ?? 0.5;
+    backgroundImageEnabled.value =
+        prefs.getBool('backgroundImageEnabled') ?? false;
+    backgroundImageOpacity.value =
+        prefs.getDouble('backgroundImageOpacity') ?? 0.5;
+    backgroundImageUseServer.value =
+        prefs.getBool('backgroundImageUseServer') ?? false;
+    backgroundImageServerUrl.value =
+        prefs.getString('backgroundImageServerUrl') ?? '';
 
     final imageBase64 = prefs.getString('backgroundImageBase64');
     if (imageBase64 != null && imageBase64.isNotEmpty) {
@@ -58,6 +71,10 @@ class AppService extends GetxService {
     final gradientBottomValue = prefs.getInt('backgroundGradientBottom');
     if (gradientBottomValue != null) {
       backgroundImageGradientBottom.value = Color(gradientBottomValue);
+    }
+
+    if (backgroundImageEnabled.value && backgroundImageUseServer.value) {
+      await cacheBackgroundImageFromServerUrl();
     }
   }
 
@@ -98,6 +115,12 @@ class AppService extends GetxService {
     await prefs.setBool('useExternalBrowser', value);
   }
 
+  Future<void> updateEnableFetchMediaserverLibraryStatus(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    enableFetchMediaserverLibraryStatus.value = value;
+    await prefs.setBool('enableFetchMediaserverLibraryStatus', value);
+  }
+
   Future<void> updateBackgroundImageEnabled(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     backgroundImageEnabled.value = value;
@@ -129,6 +152,59 @@ class AppService extends GetxService {
       await prefs.setString('backgroundImageBase64', base64Encode(bytes));
     } else {
       await prefs.remove('backgroundImageBase64');
+    }
+  }
+
+  Future<void> updateBackgroundImageUseServer(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    backgroundImageUseServer.value = value;
+    await prefs.setBool('backgroundImageUseServer', value);
+  }
+
+  Future<void> updateBackgroundImageServerUrl(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    backgroundImageServerUrl.value = url;
+    await prefs.setString('backgroundImageServerUrl', url);
+  }
+
+  bool _isValidHttpUrl(String url) {
+    final u = Uri.tryParse(url.trim());
+    if (u == null) return false;
+    if (!u.hasScheme) return false;
+    return u.scheme == 'http' || u.scheme == 'https';
+  }
+
+  String _cacheBustingUrl(String url) {
+    final uri = Uri.parse(url);
+    final qp = Map<String, String>.from(uri.queryParameters);
+    qp['_t'] = DateTime.now().millisecondsSinceEpoch.toString();
+    qp['_r'] = math.Random().nextInt(1 << 30).toString();
+    return uri.replace(queryParameters: qp).toString();
+  }
+
+  Future<bool> cacheBackgroundImageFromServerUrl() async {
+    final raw = backgroundImageServerUrl.value.trim();
+    if (!_isValidHttpUrl(raw)) return false;
+    try {
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 20),
+          receiveTimeout: const Duration(seconds: 20),
+          responseType: ResponseType.bytes,
+          headers: const {
+            'cache-control': 'no-cache',
+            'pragma': 'no-cache',
+          },
+        ),
+      );
+      final resp = await dio.get<List<int>>(_cacheBustingUrl(raw));
+      if (resp.statusCode != 200) return false;
+      final data = resp.data;
+      if (data == null || data.isEmpty) return false;
+      await updateBackgroundImage(Uint8List.fromList(data));
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 
