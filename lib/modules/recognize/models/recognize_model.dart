@@ -155,6 +155,7 @@ class SeasonInfo with _$SeasonInfo {
 @freezed
 class Actor with _$Actor {
   const factory Actor({
+    String? source,
     bool? adult,
     @JsonKey(fromJson: _intFromJson) int? gender,
     @JsonKey(fromJson: _intFromJson) int? id,

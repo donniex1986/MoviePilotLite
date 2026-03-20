@@ -37,11 +37,20 @@ class MediaSearchListController extends GetxController {
   static const _mediaserverExistsPath = '/api/v1/mediaserver/exists';
 
   final RxMap<String, bool> mediaserverInLibrary = <String, bool>{}.obs;
+  bool _navigatedToPerson = false;
 
   @override
   void onReady() {
     super.onReady();
     if (keyword.value.isNotEmpty) {
+      if (type.toLowerCase() == 'person' && !_navigatedToPerson) {
+        _navigatedToPerson = true;
+        Get.offNamed(
+          '/person-search-list',
+          arguments: {'keyword': keyword.value},
+        );
+        return;
+      }
       search(keyword: keyword.value);
     }
   }
@@ -52,6 +61,16 @@ class MediaSearchListController extends GetxController {
       error.value = '请输入搜索关键字';
       items.clear();
       hasMore.value = false;
+      return;
+    }
+    if (type.toLowerCase() == 'person') {
+      if (!_navigatedToPerson) {
+        _navigatedToPerson = true;
+        Get.offNamed(
+          '/person-search-list',
+          arguments: {'keyword': term},
+        );
+      }
       return;
     }
     this.keyword.value = term;

@@ -3230,6 +3230,7 @@ Actor _$ActorFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Actor {
+  String? get source => throw _privateConstructorUsedError;
   bool? get adult => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _intFromJson)
   int? get gender => throw _privateConstructorUsedError;
@@ -3261,6 +3262,7 @@ abstract class $ActorCopyWith<$Res> {
       _$ActorCopyWithImpl<$Res, Actor>;
   @useResult
   $Res call({
+    String? source,
     bool? adult,
     @JsonKey(fromJson: _intFromJson) int? gender,
     @JsonKey(fromJson: _intFromJson) int? id,
@@ -3290,6 +3292,7 @@ class _$ActorCopyWithImpl<$Res, $Val extends Actor>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? source = freezed,
     Object? adult = freezed,
     Object? gender = freezed,
     Object? id = freezed,
@@ -3304,6 +3307,10 @@ class _$ActorCopyWithImpl<$Res, $Val extends Actor>
   }) {
     return _then(
       _value.copyWith(
+            source: freezed == source
+                ? _value.source
+                : source // ignore: cast_nullable_to_non_nullable
+                      as String?,
             adult: freezed == adult
                 ? _value.adult
                 : adult // ignore: cast_nullable_to_non_nullable
@@ -3363,6 +3370,7 @@ abstract class _$$ActorImplCopyWith<$Res> implements $ActorCopyWith<$Res> {
   @override
   @useResult
   $Res call({
+    String? source,
     bool? adult,
     @JsonKey(fromJson: _intFromJson) int? gender,
     @JsonKey(fromJson: _intFromJson) int? id,
@@ -3391,6 +3399,7 @@ class __$$ActorImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? source = freezed,
     Object? adult = freezed,
     Object? gender = freezed,
     Object? id = freezed,
@@ -3405,6 +3414,10 @@ class __$$ActorImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ActorImpl(
+        source: freezed == source
+            ? _value.source
+            : source // ignore: cast_nullable_to_non_nullable
+                  as String?,
         adult: freezed == adult
             ? _value.adult
             : adult // ignore: cast_nullable_to_non_nullable
@@ -3458,6 +3471,7 @@ class __$$ActorImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ActorImpl implements _Actor {
   const _$ActorImpl({
+    this.source,
     this.adult,
     @JsonKey(fromJson: _intFromJson) this.gender,
     @JsonKey(fromJson: _intFromJson) this.id,
@@ -3474,6 +3488,8 @@ class _$ActorImpl implements _Actor {
   factory _$ActorImpl.fromJson(Map<String, dynamic> json) =>
       _$$ActorImplFromJson(json);
 
+  @override
+  final String? source;
   @override
   final bool? adult;
   @override
@@ -3503,7 +3519,7 @@ class _$ActorImpl implements _Actor {
 
   @override
   String toString() {
-    return 'Actor(adult: $adult, gender: $gender, id: $id, known_for_department: $known_for_department, name: $name, original_name: $original_name, popularity: $popularity, profile_path: $profile_path, character: $character, credit_id: $credit_id, order: $order)';
+    return 'Actor(source: $source, adult: $adult, gender: $gender, id: $id, known_for_department: $known_for_department, name: $name, original_name: $original_name, popularity: $popularity, profile_path: $profile_path, character: $character, credit_id: $credit_id, order: $order)';
   }
 
   @override
@@ -3511,6 +3527,7 @@ class _$ActorImpl implements _Actor {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ActorImpl &&
+            (identical(other.source, source) || other.source == source) &&
             (identical(other.adult, adult) || other.adult == adult) &&
             (identical(other.gender, gender) || other.gender == gender) &&
             (identical(other.id, id) || other.id == id) &&
@@ -3534,6 +3551,7 @@ class _$ActorImpl implements _Actor {
   @override
   int get hashCode => Object.hash(
     runtimeType,
+    source,
     adult,
     gender,
     id,
@@ -3563,6 +3581,7 @@ class _$ActorImpl implements _Actor {
 
 abstract class _Actor implements Actor {
   const factory _Actor({
+    final String? source,
     final bool? adult,
     @JsonKey(fromJson: _intFromJson) final int? gender,
     @JsonKey(fromJson: _intFromJson) final int? id,
@@ -3578,6 +3597,8 @@ abstract class _Actor implements Actor {
 
   factory _Actor.fromJson(Map<String, dynamic> json) = _$ActorImpl.fromJson;
 
+  @override
+  String? get source;
   @override
   bool? get adult;
   @override

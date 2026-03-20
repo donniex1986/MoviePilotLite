@@ -274,6 +274,7 @@ Map<String, dynamic> _$$SeasonInfoImplToJson(_$SeasonInfoImpl instance) =>
     };
 
 _$ActorImpl _$$ActorImplFromJson(Map<String, dynamic> json) => _$ActorImpl(
+  source: json['source'] as String?,
   adult: json['adult'] as bool?,
   gender: _intFromJson(json['gender']),
   id: _intFromJson(json['id']),
@@ -289,6 +290,7 @@ _$ActorImpl _$$ActorImplFromJson(Map<String, dynamic> json) => _$ActorImpl(
 
 Map<String, dynamic> _$$ActorImplToJson(_$ActorImpl instance) =>
     <String, dynamic>{
+      'source': instance.source,
       'adult': instance.adult,
       'gender': instance.gender,
       'id': instance.id,
