@@ -76,13 +76,19 @@ class ImageUtil extends GetxService {
   /// https://xx.x.ddnsto.com/api/v1/system/cache/image?url=https%3A%2F%2Fimage.tmdb.org%2F...
   static String convertCacheImageUrl(String imageUrl, {String? baseUrl}) {
     if (imageUrl.isEmpty) return '';
-    if (imageUrl.contains('/api/v1/system/cache/image')) {
-      return imageUrl;
-    }
+
+    // 已经是缓存代理地址：直接返回，避免重复包一层代理。
+    if (imageUrl.contains('/api/v1/system/cache/image')) return imageUrl;
+
     final imageUtil = Get.find<ImageUtil>();
-    if (!imageUrl.contains('douban') && !imageUtil.globalCachedEnabled.value) {
+    final globalCachedEnabled = imageUtil.globalCachedEnabled.value;
+    final isDouban = imageUrl.contains('douban');
+
+    // 关闭全局缓存时：非 douban 且为 http 链接，直接跳过代理。
+    if (!isDouban && !globalCachedEnabled && imageUrl.startsWith('http')) {
       return imageUrl;
     }
+
     final apiClient = Get.find<ApiClient>();
     baseUrl ??= apiClient.baseUrl ?? '';
     if (baseUrl.isEmpty) return imageUrl;
@@ -90,12 +96,17 @@ class ImageUtil extends GetxService {
     final sanitizedBase = baseUrl.endsWith('/')
         ? baseUrl.substring(0, baseUrl.length - 1)
         : baseUrl;
-    if (imageUrl.startsWith('http')) {
-      final encodedImageUrl = Uri.encodeComponent(imageUrl);
-      return '$sanitizedBase/api/v1/system/cache/image?url=$encodedImageUrl';
-    } else {
-      return convertCacheImageUrl("https://image.tmdb.org/t/p/w200/$imageUrl");
-    }
+
+    // 相对路径默认按 TMDB w200 进行补全（与原逻辑一致）。
+    final resolvedUrl = imageUrl.startsWith('http')
+        ? imageUrl
+        : 'https://image.tmdb.org/t/p/w200/$imageUrl';
+
+    // 关闭全局缓存时：相对路径解析后直接返回解析结果，不走缓存代理。
+    if (!isDouban && !globalCachedEnabled) return resolvedUrl;
+
+    final encodedImageUrl = Uri.encodeComponent(resolvedUrl);
+    return '$sanitizedBase/api/v1/system/cache/image?url=$encodedImageUrl';
   }
 
   /// 将插件图标地址转换为可访问的 URL
