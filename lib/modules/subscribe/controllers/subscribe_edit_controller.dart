@@ -58,8 +58,12 @@ class SubscribeEditController extends GetxController {
   RuleController get _ruleController =>
       Get.find<RuleController>(tag: 'subscribe_edit_priority');
   SiteController get _siteController => Get.find<SiteController>();
-  SubscribeController get _subscribeController =>
-      Get.find<SubscribeController>();
+  SubscribeController get _subscribeController {
+    if (Get.isRegistered<SubscribeController>()) {
+      return Get.find<SubscribeController>();
+    }
+    return Get.put(SubscribeController(), permanent: false);
+  }
 
   /// 下载器列表（从 downloader controller）
   List<String> get downloaders =>
@@ -129,6 +133,12 @@ class SubscribeEditController extends GetxController {
     _ensureControllersLoaded();
     _siteController.load();
     _siteController.loadRssSiteIds();
+    final type = (_item.type ?? '').toLowerCase();
+    final isMovie = type.contains('movie') ||
+        type.contains('电影') ||
+        type.contains('film');
+    _subscribeController.subscribeType =
+        isMovie ? SubscribeType.movie : SubscribeType.tv;
     if (_item.id != null) {
       _loadSubscribeDetail();
     }
