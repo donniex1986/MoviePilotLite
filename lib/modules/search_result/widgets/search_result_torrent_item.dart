@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/download/controllers/download_controller.dart';
 import 'package:moviepilot_mobile/modules/download/widgets/download_sheet.dart';
+import 'package:moviepilot_mobile/modules/recognize/controllers/recognize_controller.dart';
+import 'package:moviepilot_mobile/modules/recognize/pages/recognize_page.dart';
 import 'package:moviepilot_mobile/modules/site/controllers/site_controller.dart';
 import 'package:moviepilot_mobile/modules/site/models/site_models.dart';
 import 'package:moviepilot_mobile/modules/setting/controllers/setting_controller.dart';
@@ -22,12 +25,14 @@ class SearchResultTorrentItem extends StatelessWidget {
     this.similarItems,
     this.immersive = false,
     this.invertColors = false,
+    this.onRecognizeInfoTap,
   });
   final SearchResultItem item;
   final List<SearchResultItem>? similarItems;
   static final Map<int, Future<List<int>?>> _iconFutures = {};
   final bool immersive;
   final bool invertColors;
+  final Function(SearchResultItem)? onRecognizeInfoTap;
 
   bool _isInverted() => immersive || invertColors;
 
@@ -130,6 +135,7 @@ class SearchResultTorrentItem extends StatelessWidget {
   }
 
   Widget _buildMoreFooter(BuildContext context, SearchResultItem item) {
+    final accent = themeColor(context);
     return Container(
       decoration: BoxDecoration(
         color: _isInverted() ? Colors.transparent : Theme.of(context).cardColor,
@@ -141,6 +147,41 @@ class SearchResultTorrentItem extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
+              GestureDetector(
+                onTap: () async {
+                  if (onRecognizeInfoTap != null) {
+                    onRecognizeInfoTap?.call(item);
+                    return;
+                  }
+                  await _showRecognizeSheet(context, item);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(
+                      alpha: _isInverted() ? 0.22 : 0.14,
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(CupertinoIcons.sparkles, size: 12, color: accent),
+                      SizedBox(width: 6),
+                      Text(
+                        '识别',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               if (similarItems != null && similarItems!.isNotEmpty) ...[
                 Text(
                   '相似资源',
@@ -160,7 +201,7 @@ class SearchResultTorrentItem extends StatelessWidget {
               const SizedBox(width: 6),
               GestureDetector(
                 onTap: () => _openInfoSheet(context, item),
-                child: Icon(Icons.info_outline, color: themeColor(context)),
+                child: Icon(Icons.arrow_forward_ios, size: 16, color: accent),
               ),
             ],
           ),
@@ -196,6 +237,35 @@ class SearchResultTorrentItem extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  Future<void> _showRecognizeSheet(
+    BuildContext context,
+    SearchResultItem item,
+  ) async {
+    final initialTitle = item.torrent_info?.title?.trim().isNotEmpty == true
+        ? item.torrent_info?.title?.trim()
+        : item.meta_info?.title?.trim();
+    final initialSubtitle = item.meta_info?.subtitle?.trim().isNotEmpty == true
+        ? item.meta_info?.subtitle?.trim()
+        : item.torrent_info?.description?.trim();
+
+    if (Get.isRegistered<RecognizeController>()) {
+      Get.delete<RecognizeController>();
+    }
+    Get.put(
+      RecognizeController(
+        initialTitle: initialTitle,
+        initialSubtitle: initialSubtitle,
+      ),
+    );
+    await showCupertinoModalBottomSheet<void>(
+      context: context,
+      builder: (_) => const RecognizePage(),
+    );
+    if (Get.isRegistered<RecognizeController>()) {
+      Get.delete<RecognizeController>();
+    }
   }
 
   Widget _buildSiteIndicator(BuildContext context) {
