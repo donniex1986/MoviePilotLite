@@ -9,10 +9,14 @@ import 'package:moviepilot_mobile/modules/search_result/models/search_result_mod
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/sse_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum SearchType { media, title }
 
 class SearchMediaController extends GetxController {
+  static const _sortKeyPrefKey = 'search_result_sort_key';
+  static const _sortDirectionPrefKey = 'search_result_sort_direction';
+
   final _apiClient = Get.find<ApiClient>();
   final _appService = Get.find<AppService>();
   final _log = Get.find<AppLog>();
@@ -79,12 +83,14 @@ class SearchMediaController extends GetxController {
 
   void updateSortKey(SearchResultSortKey next) {
     sortKey.value = next;
+    unawaited(_persistSortPrefs());
   }
 
   void toggleSortDirection() {
     sortDirection.value = sortDirection.value == SortDirection.asc
         ? SortDirection.desc
         : SortDirection.asc;
+    unawaited(_persistSortPrefs());
   }
 
   void toggleFilter(SearchResultFilterType type, String value) {
@@ -405,6 +411,12 @@ class SearchMediaController extends GetxController {
   }
 
   @override
+  void onInit() {
+    super.onInit();
+    unawaited(_restoreSortPrefs());
+  }
+
+  @override
   void onReady() {
     super.onReady();
     performSearch();
@@ -414,6 +426,36 @@ class SearchMediaController extends GetxController {
   void onClose() {
     _stopProgressTracking();
     super.onClose();
+  }
+
+  Future<void> _persistSortPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_sortKeyPrefKey, sortKey.value.name);
+    await prefs.setString(_sortDirectionPrefKey, sortDirection.value.name);
+  }
+
+  Future<void> _restoreSortPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final sortKeyName = prefs.getString(_sortKeyPrefKey);
+    final sortDirectionName = prefs.getString(_sortDirectionPrefKey);
+
+    if (sortKeyName != null && sortKeyName.isNotEmpty) {
+      final matchedSortKey = SearchResultSortKey.values.where(
+        (e) => e.name == sortKeyName,
+      );
+      if (matchedSortKey.isNotEmpty) {
+        sortKey.value = matchedSortKey.first;
+      }
+    }
+
+    if (sortDirectionName != null && sortDirectionName.isNotEmpty) {
+      final matchedDirection = SortDirection.values.where(
+        (e) => e.name == sortDirectionName,
+      );
+      if (matchedDirection.isNotEmpty) {
+        sortDirection.value = matchedDirection.first;
+      }
+    }
   }
 
   Iterable<dynamic> _extractList(dynamic raw) {

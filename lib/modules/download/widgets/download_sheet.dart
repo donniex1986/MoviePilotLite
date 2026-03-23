@@ -162,13 +162,6 @@ class DownloadSheet extends GetView<DownloadController> {
                   label: volumeFactor,
                   color: CupertinoColors.systemOrange,
                 ),
-              if (downloadFactor != 1.0 || uploadFactor != 1.0)
-                _buildInfoChip(
-                  context,
-                  icon: CupertinoIcons.star,
-                  label: '${downloadFactor}x/${uploadFactor}x',
-                  color: CupertinoColors.systemYellow,
-                ),
             ],
           ),
         ],

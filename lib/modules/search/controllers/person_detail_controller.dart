@@ -20,6 +20,9 @@ class PersonDetailController extends GetxController {
   final RxList<String> alsoKnownAs = <String>[].obs;
 
   final RxList<RecommendApiItem> works = <RecommendApiItem>[].obs;
+  final RxBool isLoadingMoreWorks = false.obs;
+  final RxBool worksHasMore = false.obs;
+  final RxInt worksPage = 1.obs;
 
   Iterable<dynamic> _extractList(dynamic raw) {
     if (raw is List) return raw;
@@ -79,10 +82,26 @@ class PersonDetailController extends GetxController {
 
       alsoKnownAs.assignAll(detail.alsoKnownAs ?? const []);
 
+      await _fetchWorks(page: 1, append: false);
+    } catch (e) {
+      error.value = e.toString();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> loadMoreWorks() async {
+    if (isLoadingMoreWorks.value || !worksHasMore.value) return;
+    await _fetchWorks(page: worksPage.value + 1, append: true);
+  }
+
+  Future<void> _fetchWorks({required int page, required bool append}) async {
+    if (append) isLoadingMoreWorks.value = true;
+    try {
       final worksResp = await _apiClient.get<dynamic>(
         '/api/v1/$source/person/credits/$personId',
         timeout: 120,
-        queryParameters: {'page': 1},
+        queryParameters: {'page': page},
       );
       final worksStatus = worksResp.statusCode ?? 0;
       if (worksStatus >= 400) {
@@ -94,11 +113,15 @@ class PersonDetailController extends GetxController {
           .whereType<Map<String, dynamic>>()
           .map(RecommendApiItem.fromJson)
           .toList();
-      works.assignAll(parsedWorks);
-    } catch (e) {
-      error.value = e.toString();
+      if (append) {
+        works.addAll(parsedWorks);
+      } else {
+        works.assignAll(parsedWorks);
+      }
+      worksPage.value = page;
+      worksHasMore.value = parsedWorks.isNotEmpty;
     } finally {
-      isLoading.value = false;
+      if (append) isLoadingMoreWorks.value = false;
     }
   }
 }

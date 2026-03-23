@@ -496,44 +496,6 @@ class SearchMediaResultPage extends GetView<SearchMediaController> {
     controller.updateKeyword(submitted);
   }
 
-  Future<void> _openSortSheet(BuildContext context) async {
-    await showCupertinoModalPopup<void>(
-      context: context,
-      builder: (ctx) {
-        return CupertinoActionSheet(
-          title: const Text('排序'),
-          actions: [
-            for (final key in SearchResultSortKey.values)
-              CupertinoActionSheetAction(
-                onPressed: () {
-                  controller.updateSortKey(key);
-                  Navigator.of(ctx).pop();
-                },
-                child: Text(_sortLabel(key)),
-              ),
-            CupertinoActionSheetAction(
-              onPressed: () {
-                controller.toggleSortDirection();
-                Navigator.of(ctx).pop();
-              },
-              child: Obx(
-                () => Text(
-                  controller.sortDirection.value == SortDirection.asc
-                      ? '切换为降序'
-                      : '切换为升序',
-                ),
-              ),
-            ),
-          ],
-          cancelButton: CupertinoActionSheetAction(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('取消'),
-          ),
-        );
-      },
-    );
-  }
-
   static String _sortLabel(SearchResultSortKey key) {
     switch (key) {
       case SearchResultSortKey.defaultSort:
