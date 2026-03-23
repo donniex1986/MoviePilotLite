@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:moviepilot_mobile/l10n/app_localizations.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/app_setting_controller.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 class AppSettingPage extends GetView<AppSettingController> {
   const AppSettingPage({super.key});
@@ -116,7 +116,7 @@ class AppSettingPage extends GetView<AppSettingController> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Icon(
-                          Icons.inventory_2_outlined,
+                          Icons.video_library_outlined,
                           size: 18,
                           color: theme.colorScheme.primary,
                         ),
@@ -165,31 +165,50 @@ class AppSettingPage extends GetView<AppSettingController> {
                       ),
                     );
                   }),
-                  // Obx(() {
-                  //   return CupertinoListTile(
-                  //     leading: Container(
-                  //       width: 29,
-                  //       height: 29,
-                  //       alignment: Alignment.center,
-                  //       decoration: BoxDecoration(
-                  //         color: theme.colorScheme.primary.withValues(
-                  //           alpha: 0.2,
-                  //         ),
-                  //         borderRadius: BorderRadius.circular(6),
-                  //       ),
-                  //       child: Icon(
-                  //         Icons.download_outlined,
-                  //         size: 18,
-                  //         color: theme.colorScheme.primary,
-                  //       ),
-                  //     ),
-                  //     title: const Text('下载器管理'),
-                  //     trailing: Switch.adaptive(
-                  //       value: controller.enableDownloaderManager.value,
-                  //       onChanged: controller.updateEnableDownloaderManager,
-                  //     ),
-                  //   );
-                  // }),
+                ],
+              ),
+              Section(
+                padding: EdgeInsets.all(0),
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                header: _buildHeader(context, '高级设置'),
+                children: [
+                  Obx(() {
+                    return CupertinoListTile(
+                      leading: Container(
+                        width: 29,
+                        height: 29,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.2,
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.download_outlined,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      title: const Text('下载器管理'),
+                      trailing: Switch.adaptive(
+                        value: controller.enableDownloaderManager.value,
+                        onChanged: (value) async {
+                          if (!value) {
+                            controller.updateEnableDownloaderManager(false);
+                            return;
+                          }
+                          ToastUtil.warning(
+                            '已启用 app 种子管理：请求由 App 直连下载器，不经过 MoviePilot 服务器，请确保网络可达。',
+                            onConfirm: () =>
+                                controller.updateEnableDownloaderManager(true),
+                            onCancel: () =>
+                                controller.updateEnableDownloaderManager(false),
+                          );
+                        },
+                      ),
+                    );
+                  }),
                 ],
               ),
             ],

@@ -45,7 +45,9 @@ class DirectorySettingResponse with _$DirectorySettingResponse {
 @freezed
 class DirectorySettingData with _$DirectorySettingData {
   const factory DirectorySettingData({
-    @Default([]) @JsonKey(fromJson: _directoryListFromJson) List<DirectorySetting> value,
+    @Default([])
+    @JsonKey(fromJson: _directoryListFromJson)
+    List<DirectorySetting> value,
   }) = _DirectorySettingData;
 
   factory DirectorySettingData.fromJson(Map<String, dynamic> json) =>
@@ -66,22 +68,46 @@ class DirectorySetting with _$DirectorySetting {
   const factory DirectorySetting({
     @JsonKey(fromJson: _stringFromJson) @Default('') String name,
     @JsonKey(fromJson: _stringFromJson) @Default('') String storage,
-    @JsonKey(name: 'download_path', fromJson: _stringFromJson) @Default('') String downloadPath,
+    @JsonKey(name: 'download_path', fromJson: _stringFromJson)
+    @Default('')
+    String downloadPath,
     @JsonKey(fromJson: _intFromJson) @Default(0) int priority,
-    @JsonKey(name: 'monitor_type', fromJson: _stringFromJson) @Default('') String monitorType,
-    @JsonKey(name: 'media_type', fromJson: _stringFromJson) @Default('') String mediaType,
-    @JsonKey(name: 'media_category', fromJson: _stringFromJson) @Default('') String mediaCategory,
-    @JsonKey(name: 'transfer_type', fromJson: _stringFromJson) @Default('') String transferType,
-    @JsonKey(name: 'library_path', fromJson: _stringFromJson) @Default('') String libraryPath,
-    @JsonKey(name: 'library_type_folder', fromJson: _boolFromJson) @Default(false) bool libraryTypeFolder,
+    @JsonKey(name: 'monitor_type', fromJson: _stringFromJson)
+    @Default('')
+    String monitorType,
+    @JsonKey(name: 'media_type', fromJson: _stringFromJson)
+    @Default('')
+    String mediaType,
+    @JsonKey(name: 'media_category', fromJson: _stringFromJson)
+    @Default('')
+    String mediaCategory,
+    @JsonKey(name: 'transfer_type', fromJson: _stringFromJson)
+    @Default('')
+    String transferType,
+    @JsonKey(name: 'library_path', fromJson: _stringFromJson)
+    @Default('')
+    String libraryPath,
+    @JsonKey(name: 'library_type_folder', fromJson: _boolFromJson)
+    @Default(false)
+    bool libraryTypeFolder,
     @JsonKey(fromJson: _boolFromJson) @Default(false) bool renaming,
     @JsonKey(fromJson: _boolFromJson) @Default(false) bool scraping,
     @JsonKey(fromJson: _boolFromJson) @Default(false) bool notify,
-    @JsonKey(name: 'overwrite_mode', fromJson: _stringFromJson) @Default('') String overwriteMode,
-    @JsonKey(name: 'download_type_folder', fromJson: _boolFromJson) @Default(false) bool downloadTypeFolder,
-    @JsonKey(name: 'library_storage', fromJson: _stringFromJson) @Default('') String libraryStorage,
-    @JsonKey(name: 'library_category_folder', fromJson: _boolFromJson) @Default(false) bool libraryCategoryFolder,
-    @JsonKey(name: 'download_category_folder', fromJson: _boolFromJson) @Default(false) bool downloadCategoryFolder,
+    @JsonKey(name: 'overwrite_mode', fromJson: _stringFromJson)
+    @Default('')
+    String overwriteMode,
+    @JsonKey(name: 'download_type_folder', fromJson: _boolFromJson)
+    @Default(false)
+    bool downloadTypeFolder,
+    @JsonKey(name: 'library_storage', fromJson: _stringFromJson)
+    @Default('')
+    String libraryStorage,
+    @JsonKey(name: 'library_category_folder', fromJson: _boolFromJson)
+    @Default(false)
+    bool libraryCategoryFolder,
+    @JsonKey(name: 'download_category_folder', fromJson: _boolFromJson)
+    @Default(false)
+    bool downloadCategoryFolder,
   }) = _DirectorySetting;
 
   factory DirectorySetting.fromJson(Map<String, dynamic> json) =>
@@ -94,8 +120,21 @@ class DownloadClient with _$DownloadClient {
   const factory DownloadClient({
     @JsonKey(fromJson: _stringFromJson) @Default('') String name,
     @JsonKey(fromJson: _stringFromJson) @Default('') String type,
+    DownloadClientConfig? config,
   }) = _DownloadClient;
 
   factory DownloadClient.fromJson(Map<String, dynamic> json) =>
       _$DownloadClientFromJson(json);
+}
+
+@freezed
+class DownloadClientConfig with _$DownloadClientConfig {
+  const factory DownloadClientConfig({
+    @JsonKey(fromJson: _stringFromJson) @Default('') String username,
+    @JsonKey(fromJson: _stringFromJson) @Default('') String password,
+    @JsonKey(fromJson: _stringFromJson) @Default('') String host,
+  }) = _DownloadClientConfig;
+
+  factory DownloadClientConfig.fromJson(Map<String, dynamic> json) =>
+      _$DownloadClientConfigFromJson(json);
 }

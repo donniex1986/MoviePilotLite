@@ -1069,6 +1069,7 @@ mixin _$DownloadClient {
   String get name => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _stringFromJson)
   String get type => throw _privateConstructorUsedError;
+  DownloadClientConfig? get config => throw _privateConstructorUsedError;
 
   /// Serializes this DownloadClient to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1090,7 +1091,10 @@ abstract class $DownloadClientCopyWith<$Res> {
   $Res call({
     @JsonKey(fromJson: _stringFromJson) String name,
     @JsonKey(fromJson: _stringFromJson) String type,
+    DownloadClientConfig? config,
   });
+
+  $DownloadClientConfigCopyWith<$Res>? get config;
 }
 
 /// @nodoc
@@ -1107,7 +1111,11 @@ class _$DownloadClientCopyWithImpl<$Res, $Val extends DownloadClient>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? name = null, Object? type = null}) {
+  $Res call({
+    Object? name = null,
+    Object? type = null,
+    Object? config = freezed,
+  }) {
     return _then(
       _value.copyWith(
             name: null == name
@@ -1118,9 +1126,27 @@ class _$DownloadClientCopyWithImpl<$Res, $Val extends DownloadClient>
                 ? _value.type
                 : type // ignore: cast_nullable_to_non_nullable
                       as String,
+            config: freezed == config
+                ? _value.config
+                : config // ignore: cast_nullable_to_non_nullable
+                      as DownloadClientConfig?,
           )
           as $Val,
     );
+  }
+
+  /// Create a copy of DownloadClient
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $DownloadClientConfigCopyWith<$Res>? get config {
+    if (_value.config == null) {
+      return null;
+    }
+
+    return $DownloadClientConfigCopyWith<$Res>(_value.config!, (value) {
+      return _then(_value.copyWith(config: value) as $Val);
+    });
   }
 }
 
@@ -1136,7 +1162,11 @@ abstract class _$$DownloadClientImplCopyWith<$Res>
   $Res call({
     @JsonKey(fromJson: _stringFromJson) String name,
     @JsonKey(fromJson: _stringFromJson) String type,
+    DownloadClientConfig? config,
   });
+
+  @override
+  $DownloadClientConfigCopyWith<$Res>? get config;
 }
 
 /// @nodoc
@@ -1152,7 +1182,11 @@ class __$$DownloadClientImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? name = null, Object? type = null}) {
+  $Res call({
+    Object? name = null,
+    Object? type = null,
+    Object? config = freezed,
+  }) {
     return _then(
       _$DownloadClientImpl(
         name: null == name
@@ -1163,6 +1197,10 @@ class __$$DownloadClientImplCopyWithImpl<$Res>
             ? _value.type
             : type // ignore: cast_nullable_to_non_nullable
                   as String,
+        config: freezed == config
+            ? _value.config
+            : config // ignore: cast_nullable_to_non_nullable
+                  as DownloadClientConfig?,
       ),
     );
   }
@@ -1174,6 +1212,7 @@ class _$DownloadClientImpl implements _DownloadClient {
   const _$DownloadClientImpl({
     @JsonKey(fromJson: _stringFromJson) this.name = '',
     @JsonKey(fromJson: _stringFromJson) this.type = '',
+    this.config,
   });
 
   factory _$DownloadClientImpl.fromJson(Map<String, dynamic> json) =>
@@ -1185,10 +1224,12 @@ class _$DownloadClientImpl implements _DownloadClient {
   @override
   @JsonKey(fromJson: _stringFromJson)
   final String type;
+  @override
+  final DownloadClientConfig? config;
 
   @override
   String toString() {
-    return 'DownloadClient(name: $name, type: $type)';
+    return 'DownloadClient(name: $name, type: $type, config: $config)';
   }
 
   @override
@@ -1197,12 +1238,13 @@ class _$DownloadClientImpl implements _DownloadClient {
         (other.runtimeType == runtimeType &&
             other is _$DownloadClientImpl &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.type, type) || other.type == type));
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.config, config) || other.config == config));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, name, type);
+  int get hashCode => Object.hash(runtimeType, name, type, config);
 
   /// Create a copy of DownloadClient
   /// with the given fields replaced by the non-null parameter values.
@@ -1225,6 +1267,7 @@ abstract class _DownloadClient implements DownloadClient {
   const factory _DownloadClient({
     @JsonKey(fromJson: _stringFromJson) final String name,
     @JsonKey(fromJson: _stringFromJson) final String type,
+    final DownloadClientConfig? config,
   }) = _$DownloadClientImpl;
 
   factory _DownloadClient.fromJson(Map<String, dynamic> json) =
@@ -1236,6 +1279,8 @@ abstract class _DownloadClient implements DownloadClient {
   @override
   @JsonKey(fromJson: _stringFromJson)
   String get type;
+  @override
+  DownloadClientConfig? get config;
 
   /// Create a copy of DownloadClient
   /// with the given fields replaced by the non-null parameter values.
@@ -1243,4 +1288,225 @@ abstract class _DownloadClient implements DownloadClient {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$DownloadClientImplCopyWith<_$DownloadClientImpl> get copyWith =>
       throw _privateConstructorUsedError;
+}
+
+DownloadClientConfig _$DownloadClientConfigFromJson(Map<String, dynamic> json) {
+  return _DownloadClientConfig.fromJson(json);
+}
+
+/// @nodoc
+mixin _$DownloadClientConfig {
+  @JsonKey(fromJson: _stringFromJson)
+  String get username => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _stringFromJson)
+  String get password => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _stringFromJson)
+  String get host => throw _privateConstructorUsedError;
+
+  /// Serializes this DownloadClientConfig to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of DownloadClientConfig
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $DownloadClientConfigCopyWith<DownloadClientConfig> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $DownloadClientConfigCopyWith<$Res> {
+  factory $DownloadClientConfigCopyWith(
+    DownloadClientConfig value,
+    $Res Function(DownloadClientConfig) then,
+  ) = _$DownloadClientConfigCopyWithImpl<$Res, DownloadClientConfig>;
+  @useResult
+  $Res call({
+    @JsonKey(fromJson: _stringFromJson) String username,
+    @JsonKey(fromJson: _stringFromJson) String password,
+    @JsonKey(fromJson: _stringFromJson) String host,
+  });
+}
+
+/// @nodoc
+class _$DownloadClientConfigCopyWithImpl<
+  $Res,
+  $Val extends DownloadClientConfig
+>
+    implements $DownloadClientConfigCopyWith<$Res> {
+  _$DownloadClientConfigCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of DownloadClientConfig
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? username = null,
+    Object? password = null,
+    Object? host = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            username: null == username
+                ? _value.username
+                : username // ignore: cast_nullable_to_non_nullable
+                      as String,
+            password: null == password
+                ? _value.password
+                : password // ignore: cast_nullable_to_non_nullable
+                      as String,
+            host: null == host
+                ? _value.host
+                : host // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$DownloadClientConfigImplCopyWith<$Res>
+    implements $DownloadClientConfigCopyWith<$Res> {
+  factory _$$DownloadClientConfigImplCopyWith(
+    _$DownloadClientConfigImpl value,
+    $Res Function(_$DownloadClientConfigImpl) then,
+  ) = __$$DownloadClientConfigImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(fromJson: _stringFromJson) String username,
+    @JsonKey(fromJson: _stringFromJson) String password,
+    @JsonKey(fromJson: _stringFromJson) String host,
+  });
+}
+
+/// @nodoc
+class __$$DownloadClientConfigImplCopyWithImpl<$Res>
+    extends _$DownloadClientConfigCopyWithImpl<$Res, _$DownloadClientConfigImpl>
+    implements _$$DownloadClientConfigImplCopyWith<$Res> {
+  __$$DownloadClientConfigImplCopyWithImpl(
+    _$DownloadClientConfigImpl _value,
+    $Res Function(_$DownloadClientConfigImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of DownloadClientConfig
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? username = null,
+    Object? password = null,
+    Object? host = null,
+  }) {
+    return _then(
+      _$DownloadClientConfigImpl(
+        username: null == username
+            ? _value.username
+            : username // ignore: cast_nullable_to_non_nullable
+                  as String,
+        password: null == password
+            ? _value.password
+            : password // ignore: cast_nullable_to_non_nullable
+                  as String,
+        host: null == host
+            ? _value.host
+            : host // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$DownloadClientConfigImpl implements _DownloadClientConfig {
+  const _$DownloadClientConfigImpl({
+    @JsonKey(fromJson: _stringFromJson) this.username = '',
+    @JsonKey(fromJson: _stringFromJson) this.password = '',
+    @JsonKey(fromJson: _stringFromJson) this.host = '',
+  });
+
+  factory _$DownloadClientConfigImpl.fromJson(Map<String, dynamic> json) =>
+      _$$DownloadClientConfigImplFromJson(json);
+
+  @override
+  @JsonKey(fromJson: _stringFromJson)
+  final String username;
+  @override
+  @JsonKey(fromJson: _stringFromJson)
+  final String password;
+  @override
+  @JsonKey(fromJson: _stringFromJson)
+  final String host;
+
+  @override
+  String toString() {
+    return 'DownloadClientConfig(username: $username, password: $password, host: $host)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DownloadClientConfigImpl &&
+            (identical(other.username, username) ||
+                other.username == username) &&
+            (identical(other.password, password) ||
+                other.password == password) &&
+            (identical(other.host, host) || other.host == host));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, username, password, host);
+
+  /// Create a copy of DownloadClientConfig
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DownloadClientConfigImplCopyWith<_$DownloadClientConfigImpl>
+  get copyWith =>
+      __$$DownloadClientConfigImplCopyWithImpl<_$DownloadClientConfigImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$DownloadClientConfigImplToJson(this);
+  }
+}
+
+abstract class _DownloadClientConfig implements DownloadClientConfig {
+  const factory _DownloadClientConfig({
+    @JsonKey(fromJson: _stringFromJson) final String username,
+    @JsonKey(fromJson: _stringFromJson) final String password,
+    @JsonKey(fromJson: _stringFromJson) final String host,
+  }) = _$DownloadClientConfigImpl;
+
+  factory _DownloadClientConfig.fromJson(Map<String, dynamic> json) =
+      _$DownloadClientConfigImpl.fromJson;
+
+  @override
+  @JsonKey(fromJson: _stringFromJson)
+  String get username;
+  @override
+  @JsonKey(fromJson: _stringFromJson)
+  String get password;
+  @override
+  @JsonKey(fromJson: _stringFromJson)
+  String get host;
+
+  /// Create a copy of DownloadClientConfig
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$DownloadClientConfigImplCopyWith<_$DownloadClientConfigImpl>
+  get copyWith => throw _privateConstructorUsedError;
 }

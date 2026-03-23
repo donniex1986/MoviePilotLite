@@ -159,6 +159,13 @@ class PersonDetailPage extends GetView<PersonDetailController> {
                                 ),
                           ),
                   ),
+                  if (controller.works.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        child: _buildWorksPaginationFooter(),
+                      ),
+                    ),
                 ],
               ),
       );
@@ -210,6 +217,29 @@ class PersonDetailPage extends GetView<PersonDetailController> {
       return 'bangumi:$bangumiId';
     }
     return null;
+  }
+
+  Widget _buildWorksPaginationFooter() {
+    if (controller.isLoadingMoreWorks.value) {
+      return const Center(
+        child: CupertinoActivityIndicator(),
+      );
+    }
+    if (controller.worksHasMore.value) {
+      return Center(
+        child: CupertinoButton.filled(
+          sizeStyle: CupertinoButtonSize.small,
+          onPressed: controller.loadMoreWorks,
+          child: const Text('加载更多'),
+        ),
+      );
+    }
+    return const Center(
+      child: Text(
+        '没有更多数据',
+        style: TextStyle(color: Colors.white70),
+      ),
+    );
   }
 }
 

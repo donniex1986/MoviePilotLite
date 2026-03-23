@@ -110,8 +110,33 @@ _$DownloadClientImpl _$$DownloadClientImplFromJson(Map<String, dynamic> json) =>
     _$DownloadClientImpl(
       name: json['name'] == null ? '' : _stringFromJson(json['name']),
       type: json['type'] == null ? '' : _stringFromJson(json['type']),
+      config: json['config'] == null
+          ? null
+          : DownloadClientConfig.fromJson(
+              json['config'] as Map<String, dynamic>,
+            ),
     );
 
 Map<String, dynamic> _$$DownloadClientImplToJson(
   _$DownloadClientImpl instance,
-) => <String, dynamic>{'name': instance.name, 'type': instance.type};
+) => <String, dynamic>{
+  'name': instance.name,
+  'type': instance.type,
+  'config': instance.config,
+};
+
+_$DownloadClientConfigImpl _$$DownloadClientConfigImplFromJson(
+  Map<String, dynamic> json,
+) => _$DownloadClientConfigImpl(
+  username: json['username'] == null ? '' : _stringFromJson(json['username']),
+  password: json['password'] == null ? '' : _stringFromJson(json['password']),
+  host: json['host'] == null ? '' : _stringFromJson(json['host']),
+);
+
+Map<String, dynamic> _$$DownloadClientConfigImplToJson(
+  _$DownloadClientConfigImpl instance,
+) => <String, dynamic>{
+  'username': instance.username,
+  'password': instance.password,
+  'host': instance.host,
+};

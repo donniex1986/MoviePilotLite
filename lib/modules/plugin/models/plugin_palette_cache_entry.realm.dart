@@ -11,10 +11,7 @@ part of 'plugin_palette_cache_entry.dart';
 // ignore_for_file: type=lint
 class PluginPaletteCacheEntry extends _PluginPaletteCacheEntry
     with RealmEntity, RealmObjectBase, RealmObject {
-  PluginPaletteCacheEntry(
-    String url,
-    int colorValue,
-  ) {
+  PluginPaletteCacheEntry(String url, int colorValue) {
     RealmObjectBase.set(this, 'url', url);
     RealmObjectBase.set(this, 'colorValue', colorValue);
   }
@@ -29,8 +26,7 @@ class PluginPaletteCacheEntry extends _PluginPaletteCacheEntry
   @override
   int get colorValue => RealmObjectBase.get<int>(this, 'colorValue') as int;
   @override
-  set colorValue(int value) =>
-      RealmObjectBase.set(this, 'colorValue', value);
+  set colorValue(int value) => RealmObjectBase.set(this, 'colorValue', value);
 
   @override
   Stream<RealmObjectChanges<PluginPaletteCacheEntry>> get changes =>
@@ -39,11 +35,7 @@ class PluginPaletteCacheEntry extends _PluginPaletteCacheEntry
   @override
   Stream<RealmObjectChanges<PluginPaletteCacheEntry>> changesFor([
     List<String>? keyPaths,
-  ]) =>
-      RealmObjectBase.getChangesFor<PluginPaletteCacheEntry>(
-        this,
-        keyPaths,
-      );
+  ]) => RealmObjectBase.getChangesFor<PluginPaletteCacheEntry>(this, keyPaths);
 
   @override
   PluginPaletteCacheEntry freeze() =>
@@ -60,10 +52,7 @@ class PluginPaletteCacheEntry extends _PluginPaletteCacheEntry
   static PluginPaletteCacheEntry _fromEJson(EJsonValue ejson) {
     if (ejson is! Map<String, dynamic>) return raiseInvalidEJson(ejson);
     return switch (ejson) {
-      {
-        'url': EJsonValue url,
-        'colorValue': EJsonValue colorValue,
-      } =>
+      {'url': EJsonValue url, 'colorValue': EJsonValue colorValue} =>
         PluginPaletteCacheEntry(fromEJson(url), fromEJson(colorValue)),
       _ => raiseInvalidEJson(ejson),
     };
@@ -86,4 +75,3 @@ class PluginPaletteCacheEntry extends _PluginPaletteCacheEntry
   @override
   SchemaObject get objectSchema => RealmObjectBase.getSchema(this) ?? schema;
 }
-

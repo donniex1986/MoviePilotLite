@@ -88,16 +88,13 @@ class PersonSearchResultPage extends GetView<PersonSearchListController> {
                     ),
                   ),
                 ),
-              if (hasMore)
+              if (items.isNotEmpty && !showSkeletonGrid)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                    child: Center(
-                      child: CupertinoButton.filled(
-                        sizeStyle: CupertinoButtonSize.small,
-                        onPressed: controller.loadMore,
-                        child: const Text('加载更多'),
-                      ),
+                    child: _buildPaginationFooter(
+                      isLoading: isLoading,
+                      hasMore: hasMore,
                     ),
                   ),
                 ),
@@ -192,6 +189,32 @@ class PersonSearchResultPage extends GetView<PersonSearchListController> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPaginationFooter({
+    required bool isLoading,
+    required bool hasMore,
+  }) {
+    if (isLoading) {
+      return const Center(
+        child: CupertinoActivityIndicator(),
+      );
+    }
+    if (hasMore) {
+      return Center(
+        child: CupertinoButton.filled(
+          sizeStyle: CupertinoButtonSize.small,
+          onPressed: controller.loadMore,
+          child: const Text('加载更多'),
+        ),
+      );
+    }
+    return const Center(
+      child: Text(
+        '没有更多数据',
+        style: TextStyle(color: Colors.white70),
       ),
     );
   }

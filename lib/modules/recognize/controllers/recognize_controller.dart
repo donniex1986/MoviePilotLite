@@ -7,6 +7,11 @@ import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/modules/recognize/models/recognize_model.dart';
 
 class RecognizeController extends GetxController {
+  RecognizeController({this.initialTitle, this.initialSubtitle});
+
+  final String? initialTitle;
+  final String? initialSubtitle;
+
   final titleController = TextEditingController();
   final subtitleController = TextEditingController();
 
@@ -17,6 +22,19 @@ class RecognizeController extends GetxController {
   final recognizeResponse = Rxn<RecognizeResponse>();
 
   final ApiClient _apiClient = Get.find<ApiClient>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    final title = initialTitle?.trim() ?? '';
+    final subtitle = initialSubtitle?.trim() ?? '';
+    if (title.isNotEmpty) {
+      titleController.text = title;
+    }
+    if (subtitle.isNotEmpty) {
+      subtitleController.text = subtitle;
+    }
+  }
 
   @override
   void onClose() {

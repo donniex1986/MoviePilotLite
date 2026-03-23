@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -18,6 +19,7 @@ import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 class MediaDetailController extends GetxController {
   static const Duration _cacheValidDuration = Duration(hours: 24 * 2);
+  static const _mediaserverExistsPath = '/api/v1/mediaserver/exists';
 
   final ApiClient _apiClient = Get.find<ApiClient>();
   final _authRepository = Get.find<AuthRepository>();
@@ -31,6 +33,7 @@ class MediaDetailController extends GetxController {
   final mediaDetail = Rxn<MediaDetail>();
   final errorText = RxnString();
   final statusCode = RxnInt();
+  final mediaserverInLibrary = false.obs;
 
   final mediaNotExists = <MediaNotExists>[].obs;
 
@@ -90,7 +93,24 @@ class MediaDetailController extends GetxController {
     }
     ensureUserCookieRefreshed();
     _loadCachedDetailIfValid();
+    _scheduleMediaserverExistsEarly();
     fetchDetail();
+  }
+
+  void _scheduleMediaserverExistsEarly() {
+    if (!_appService.enableFetchMediaserverLibraryStatus.value) return;
+    final cached = mediaDetail.value;
+    if (cached != null) {
+      unawaited(_fetchMediaserverExistsForDetail(cached));
+      return;
+    }
+    final t = _args.title.trim();
+    if (t.isEmpty) return;
+    unawaited(
+      _fetchMediaserverExistsForDetail(
+        MediaDetail(title: t, year: _args.year, type: _args.typeName),
+      ),
+    );
   }
 
   void ensureUserCookieRefreshed() {
@@ -218,6 +238,9 @@ class MediaDetailController extends GetxController {
         _fetchRelated(detail);
         _fetchMediaNotExists(detail);
         _fetchSubscribeStatus(detail);
+        if (_appService.enableFetchMediaserverLibraryStatus.value) {
+          unawaited(_fetchMediaserverExistsForDetail(detail));
+        }
         errorText.value = null; // 清除错误信息
       }
     } catch (e) {
@@ -701,6 +724,67 @@ class MediaDetailController extends GetxController {
       return true;
     }
     return false;
+  }
+
+  Future<void> _fetchMediaserverExistsForDetail(MediaDetail detail) async {
+    if (!_appService.enableFetchMediaserverLibraryStatus.value) return;
+    final token =
+        _appService.loginResponse?.accessToken ??
+        _appService.latestLoginProfileAccessToken ??
+        _apiClient.token;
+    if (token == null || token.isEmpty) return;
+    final title = _existsTitleForDetail(detail);
+    if (title.isEmpty) return;
+    try {
+      final query = <String, dynamic>{'title': title};
+      final y = detail.year?.trim();
+      if (y != null && y.isNotEmpty) query['year'] = y;
+      final m = detail.type?.trim();
+      if (m != null && m.isNotEmpty) {
+        query['mtype'] = m;
+      } else {
+        final inferred = _mediaTypeName(detail);
+        if (inferred.isNotEmpty) query['mtype'] = inferred;
+      }
+      final response = await _apiClient.get<dynamic>(
+        _mediaserverExistsPath,
+        token: token,
+        queryParameters: query,
+      );
+      if (response.statusCode != 200) {
+        mediaserverInLibrary.value = false;
+        return;
+      }
+      mediaserverInLibrary.value = _parseMediaserverExistsResponse(response.data);
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '媒体入库状态查询失败');
+      mediaserverInLibrary.value = false;
+    }
+  }
+
+  String _existsTitleForDetail(MediaDetail detail) {
+    final a = detail.title?.trim();
+    if (a != null && a.isNotEmpty) return a;
+    final b = detail.en_title?.trim();
+    if (b != null && b.isNotEmpty) return b;
+    final c = detail.original_title?.trim();
+    if (c != null && c.isNotEmpty) return c;
+    final d = detail.original_name?.trim();
+    if (d != null && d.isNotEmpty) return d;
+    return '';
+  }
+
+  bool _parseMediaserverExistsResponse(dynamic raw) {
+    if (raw is! Map) return false;
+    final m = Map<String, dynamic>.from(raw);
+    if (m['success'] != true) return false;
+    final data = m['data'];
+    if (data is! Map) return false;
+    final inner = data['item'];
+    if (inner is! Map) return false;
+    final id = inner['id'];
+    if (id == null) return false;
+    return id.toString().trim().isNotEmpty;
   }
 }
 

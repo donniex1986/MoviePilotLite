@@ -27,30 +27,6 @@ class DownloaderPage extends GetView<DownloaderController> {
     );
   }
 
-  Widget _buildDownloaderStats(BuildContext context) {
-    if (controller.downloaders.isEmpty) return const SizedBox.shrink();
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: Row(
-        children: [
-          for (int i = 0; i < controller.downloaders.length; i++)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Obx(
-                () => _DownloaderStatsCard(
-                  downloader: controller.downloaders[i],
-                  stats: controller.statsFor(controller.downloaders[i].name),
-                  isSelected: controller.selectedIndex.value == i,
-                  onTap: () => controller.switchDownloader(i),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildDownloaderTabs(BuildContext context) {
     if (controller.downloaders.isEmpty) {
       return const SizedBox.shrink();

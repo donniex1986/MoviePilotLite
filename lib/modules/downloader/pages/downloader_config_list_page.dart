@@ -1,5 +1,8 @@
+import 'package:altman_downloader_control/controller/downloader_config.dart'
+    show DownloaderType;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/gen/assets.gen.dart';
 import 'package:moviepilot_mobile/modules/download/controllers/download_controller.dart';
 import 'package:moviepilot_mobile/modules/downloader/models/downloader_stats.dart';
 import 'package:moviepilot_mobile/modules/setting/models/setting_models.dart';
@@ -33,12 +36,6 @@ class DownloaderConfigListPage extends GetView<DownloadController> {
                   '暂无下载器配置',
                   style: TextStyle(color: Theme.of(context).hintColor),
                 ),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () => _navigateToForm(null),
-                  icon: const Icon(Icons.add),
-                  label: const Text('添加下载器'),
-                ),
               ],
             ),
           );
@@ -54,31 +51,45 @@ class DownloaderConfigListPage extends GetView<DownloadController> {
                 () => _DownloaderItemCard(
                   downloader: downloader,
                   stats: controller.statsFor(downloader.name),
-                  onTap: () => _navigateToForm(downloader.name),
+                  onTap: () => _navigateToForm(downloader),
                 ),
               );
             },
           ),
         );
       }),
-      floatingActionButton: Obx(() {
-        if (controller.downloaders.isEmpty) return const SizedBox.shrink();
-        return FloatingActionButton(
-          onPressed: () => _navigateToForm(null),
-          child: const Icon(Icons.add),
-        );
-      }),
     );
   }
 
-  void _navigateToForm(String? name) {
-    ToastUtil.info('暂未开放');
-    return;
-    if (name != null) {
-      Get.toNamed('/downloader-config/form', parameters: {'name': name});
+  void _navigateToForm(DownloadClient? client) {
+    if (client == null) {
+      ToastUtil.warning('前往 web 添加下载器');
     } else {
-      Get.toNamed('/downloader-config/form');
+      final type = _getDownloaderType(client.type);
+      if (type == null) {
+        ToastUtil.warning('下载器类型不支持');
+        return;
+      }
+      final config = {
+        'id': client.name,
+        'url': client.config?.host ?? '',
+        'username': client.config?.username ?? '',
+        'password': client.config?.password ?? '',
+        'type': type,
+      };
+
+      Get.toNamed('/downloader-detail', arguments: {'config': config});
     }
+  }
+
+  DownloaderType? _getDownloaderType(String type) {
+    switch (type) {
+      case 'qbittorrent':
+        return DownloaderType.qbittorrent;
+      case 'transmission':
+        return DownloaderType.transmission;
+    }
+    return null;
   }
 }
 
@@ -103,7 +114,11 @@ class _DownloaderItemCard extends StatelessWidget {
     final statsBg = isDark
         ? theme.colorScheme.surface.withValues(alpha: 0.5)
         : theme.colorScheme.surfaceContainerLow.withValues(alpha: 0.6);
-
+    final logo = switch (downloader.type) {
+      'qbittorrent' => Assets.images.logos.qbittorrent,
+      'transmission' => Assets.images.logos.transmission,
+      _ => Assets.images.logos.downloader,
+    };
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: isDark ? 0 : 1,
@@ -122,35 +137,7 @@ class _DownloaderItemCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Row(
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            theme.colorScheme.primary.withValues(alpha: 0.85),
-                            theme.colorScheme.primary.withValues(alpha: 0.6),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.25,
-                            ),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.download_for_offline_outlined,
-                        color: theme.colorScheme.onPrimary,
-                        size: 26,
-                      ),
-                    ),
+                    logo.image(width: 48, height: 48),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
