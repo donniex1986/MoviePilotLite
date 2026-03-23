@@ -197,7 +197,6 @@ class MediaOrganizeController extends GetxController {
         return false;
       }
       items.remove(item);
-      allKeys.remove(item.title);
       return true;
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '删除整理历史失败');
