@@ -39,6 +39,8 @@ dependencies:
   soft_edge_blur: ^0.1.3
   image_picker: ^1.1.2
   package_info_plus: ^9.0.0
+  altman_downloader_control:
+    path: ./altman_downloader_control
 dev_dependencies:
   flutter_test:
     sdk: flutter

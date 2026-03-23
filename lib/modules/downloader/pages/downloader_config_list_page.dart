@@ -1,3 +1,5 @@
+import 'package:altman_downloader_control/controller/downloader_config.dart'
+    show DownloaderType;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/download/controllers/download_controller.dart';
@@ -33,12 +35,6 @@ class DownloaderConfigListPage extends GetView<DownloadController> {
                   '暂无下载器配置',
                   style: TextStyle(color: Theme.of(context).hintColor),
                 ),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () => _navigateToForm(null),
-                  icon: const Icon(Icons.add),
-                  label: const Text('添加下载器'),
-                ),
               ],
             ),
           );
@@ -54,7 +50,7 @@ class DownloaderConfigListPage extends GetView<DownloadController> {
                 () => _DownloaderItemCard(
                   downloader: downloader,
                   stats: controller.statsFor(downloader.name),
-                  onTap: () => _navigateToForm(downloader.name),
+                  onTap: () => _navigateToForm(downloader),
                 ),
               );
             },
@@ -71,14 +67,35 @@ class DownloaderConfigListPage extends GetView<DownloadController> {
     );
   }
 
-  void _navigateToForm(String? name) {
-    ToastUtil.info('暂未开放');
-    return;
-    if (name != null) {
-      Get.toNamed('/downloader-config/form', parameters: {'name': name});
+  void _navigateToForm(DownloadClient? client) {
+    if (client == null) {
+      ToastUtil.warning('前往 web 添加下载器');
     } else {
-      Get.toNamed('/downloader-config/form');
+      final type = _getDownloaderType(client.type);
+      if (type == null) {
+        ToastUtil.warning('下载器类型不支持');
+        return;
+      }
+      final config = {
+        'id': client.name,
+        'url': client.config?.host ?? '',
+        'username': client.config?.username ?? '',
+        'password': client.config?.password ?? '',
+        'type': type,
+      };
+
+      Get.toNamed('/downloader-detail', arguments: {'config': config});
     }
+  }
+
+  DownloaderType? _getDownloaderType(String type) {
+    switch (type) {
+      case 'qbittorrent':
+        return DownloaderType.qbittorrent;
+      case 'transmission':
+        return DownloaderType.transmission;
+    }
+    return null;
   }
 }
 

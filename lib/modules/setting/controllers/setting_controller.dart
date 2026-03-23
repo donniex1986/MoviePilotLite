@@ -51,15 +51,13 @@ class SettingController extends GetxController {
       }
 
       final response = await _apiClient.get<dynamic>(
-        '/api/v1/download/clients',
-        token: token,
+        '/api/v1/system/setting/Downloaders',
       );
 
       if (response.statusCode == 200) {
-        final data = response.data;
+        final data = response.data['data']['value'];
         if (data is List) {
           downloadClients.value = data
-              .whereType<Map<String, dynamic>>()
               .map((e) => DownloadClient.fromJson(e))
               .toList();
         }
