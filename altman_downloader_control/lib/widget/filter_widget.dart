@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:altman_downloader_control/controller/protocol.dart';
 import 'package:altman_downloader_control/controller/qbittorrent/qb_controller.dart';
-import 'package:altman_downloader_control/model/downloader_filter_model.dart';
 import 'package:altman_downloader_control/model/qb_filter_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -67,9 +66,6 @@ class _GenericFilterWidgetInternal extends StatefulWidget {
 
 class _GenericFilterWidgetInternalState
     extends State<_GenericFilterWidgetInternal> {
-  final searchController = TextEditingController();
-  final filterModel = DownloaderFilterModel().obs;
-
   // 筛选选项
   final selectedStatuses = RxSet<String>();
   final selectedCategories = RxSet<String>();
@@ -77,6 +73,7 @@ class _GenericFilterWidgetInternalState
   final selectedTrackers = RxSet<String>();
 
   // 可用选项（从 torrentsUniversal 中提取）
+  final availableStatuses = <String>[].obs;
   final availableCategories = <String>[].obs;
   final availableTags = <String>[].obs;
   final availableTrackers = <String>[].obs;
@@ -94,7 +91,6 @@ class _GenericFilterWidgetInternalState
 
   @override
   void dispose() {
-    searchController.dispose();
     super.dispose();
   }
 
@@ -126,11 +122,15 @@ class _GenericFilterWidgetInternalState
   }
 
   void _loadAvailableOptions() {
+    final statuses = <String>{};
     final categories = <String>{};
     final tags = <String>{};
     final trackerDomains = <String>{};
 
     for (var torrent in widget.controller.torrentsUniversal) {
+      if (torrent.state.isNotEmpty) {
+        statuses.add(torrent.state);
+      }
       if (torrent.category.isNotEmpty) {
         categories.add(torrent.category);
       }
@@ -141,24 +141,92 @@ class _GenericFilterWidgetInternalState
       }
     }
 
+    availableStatuses.value = statuses.toList()..sort();
     availableCategories.value = categories.toList()..sort();
     availableTags.value = tags.toList()..sort();
     availableTrackers.value = trackerDomains.toList()..sort();
   }
 
+  void _toggleSelection(RxSet<String> selectedSet, String value) {
+    if (selectedSet.contains(value)) {
+      selectedSet.remove(value);
+    } else {
+      selectedSet.add(value);
+    }
+    selectedSet.refresh();
+  }
+
+  Widget _buildFilterSection({
+    required String title,
+    required RxList<String> options,
+    required RxSet<String> selectedSet,
+  }) {
+    return Obx(() {
+      if (options.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: options.map((option) {
+                final selected = selectedSet.contains(option);
+                return FilterChip(
+                  label: Text(option),
+                  selected: selected,
+                  onSelected: (_) => _toggleSelection(selectedSet, option),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 对于非 qBittorrent 下载器，暂时只显示搜索栏
-    // 筛选功能可以在后续版本中实现
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
-        child: CupertinoSearchTextField(
-          controller: searchController,
-          placeholder: '搜索种子...',
-          onChanged: (value) {
-            // 可以在这里实现搜索逻辑
-          },
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFilterSection(
+              title: '状态',
+              options: availableStatuses,
+              selectedSet: selectedStatuses,
+            ),
+            _buildFilterSection(
+              title: '分类',
+              options: availableCategories,
+              selectedSet: selectedCategories,
+            ),
+            _buildFilterSection(
+              title: '标签',
+              options: availableTags,
+              selectedSet: selectedTags,
+            ),
+            _buildFilterSection(
+              title: 'Tracker',
+              options: availableTrackers,
+              selectedSet: selectedTrackers,
+            ),
+          ],
         ),
       ),
     );
@@ -177,8 +245,6 @@ class _QBFilterWidgetInternal extends StatefulWidget {
 }
 
 class _QBFilterWidgetInternalState extends State<_QBFilterWidgetInternal> {
-  final searchController = TextEditingController();
-
   // 筛选选项
   final selectedStatuses = RxSet<String>();
   final selectedCategories = RxSet<String>();
@@ -203,15 +269,12 @@ class _QBFilterWidgetInternalState extends State<_QBFilterWidgetInternal> {
       selectedCategories.addAll(initialFilter.selectedCategories);
       selectedTags.addAll(initialFilter.selectedTags);
       selectedTrackers.addAll(initialFilter.selectedTrackers);
-      searchController.text = initialFilter.searchKeyword;
       _loadAvailableOptions();
     });
 
     // 监听筛选变化，更新内部状态（保留选中的选项，即使筛选关闭）
     ever(widget.controller.filter, (QBFilterModel? filter) {
       if (filter == null) return;
-      // 只更新搜索关键词，保留选中的选项
-      searchController.text = filter.searchKeyword;
       // 同步选中的选项（如果外部清除了，则同步清除）
       if (filter.selectedStatuses.isEmpty) {
         selectedStatuses.clear();
@@ -247,7 +310,6 @@ class _QBFilterWidgetInternalState extends State<_QBFilterWidgetInternal> {
   @override
   void dispose() {
     _debounceTimer?.cancel();
-    searchController.dispose();
     super.dispose();
   }
 
@@ -328,7 +390,7 @@ class _QBFilterWidgetInternalState extends State<_QBFilterWidgetInternal> {
   void _performFilterUpdate() {
     widget.controller.setFilter(
       QBFilterModel(
-        searchKeyword: searchController.text.trim(),
+        searchKeyword: widget.controller.filter.value.searchKeyword,
         selectedStatuses: selectedStatuses.toList(),
         selectedCategories: selectedCategories.toList(),
         selectedTags: selectedTags.toList(),
@@ -338,7 +400,6 @@ class _QBFilterWidgetInternalState extends State<_QBFilterWidgetInternal> {
   }
 
   void _clearFilter() {
-    searchController.clear();
     selectedStatuses.clear();
     selectedCategories.clear();
     selectedTags.clear();
@@ -346,333 +407,329 @@ class _QBFilterWidgetInternalState extends State<_QBFilterWidgetInternal> {
     widget.controller.clearFilter();
   }
 
+  Widget _buildFlatSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required List<String> options,
+    required List<String> labels,
+    required RxSet<String> selected,
+    required Function(String) onToggle,
+    required int Function(String) getCount,
+    int Function(String)? getSize,
+  }) {
+    if (options.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Obx(
+              () => selected.isEmpty
+                  ? const SizedBox.shrink()
+                  : Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${selected.length}',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Obx(
+          () => Column(
+            children: options.asMap().entries.map((entry) {
+              final index = entry.key;
+              final option = entry.value;
+              final label = labels.length > index ? labels[index] : option;
+              final isSelected = selected.contains(option);
+              final count = getCount(option);
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primaryContainer
+                      : Theme.of(context).colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(
+                            context,
+                          ).colorScheme.outline.withValues(alpha: 0.1),
+                    width: isSelected ? 1.5 : 1,
+                  ),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => onToggle(option),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant
+                                          .withValues(alpha: 0.3),
+                                width: 2,
+                              ),
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.transparent,
+                            ),
+                            child: isSelected
+                                ? Icon(
+                                    Icons.check,
+                                    size: 16,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            label,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: isSelected
+                                      ? Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimaryContainer
+                                      : Theme.of(context).colorScheme.onSurface,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                  fontSize: 14,
+                                ),
+                          ),
+                          Text(
+                            '($count)',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                          ),
+                          const Spacer(),
+                          if (getSize != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                          .withValues(alpha: 0.15)
+                                    : Theme.of(context)
+                                          .colorScheme
+                                          .surfaceContainerHighest
+                                          .withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                            .withValues(alpha: 0.3)
+                                      : Theme.of(context).colorScheme.outline
+                                            .withValues(alpha: 0.1),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.storage,
+                                    size: 12,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant
+                                              .withValues(alpha: 0.7),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    getSize(option).toHumanReadableFileSize(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          color: isSelected
+                                              ? Colors.white
+                                              : Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurfaceVariant
+                                                    .withValues(alpha: 0.8),
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 11,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
-      child: Column(
-        children: [
-          // iOS 风格工具栏：搜索框、筛选按钮、排序按钮
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outline.withValues(alpha: 0.1),
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                // 搜索框
-                Expanded(
-                  child: CupertinoSearchTextField(
-                    controller: searchController,
-                    placeholder: '搜索种子...',
-                    onChanged: (value) => _updateFilter(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // 筛选按钮
-                Obx(() {
-                  final filter = widget.controller.filter.value;
-                  final hasActiveFilters = filter.hasFilters;
-                  final theme = Theme.of(context);
-
-                  return CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      _showFilterSheet(context);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: hasActiveFilters
-                            ? LinearGradient(
-                                colors: [
-                                  theme.colorScheme.primary,
-                                  theme.colorScheme.primary.withValues(
-                                    alpha: 0.8,
-                                  ),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : LinearGradient(
-                                colors: [
-                                  theme.colorScheme.surfaceContainerHighest
-                                      .withValues(alpha: 0.6),
-                                  theme.colorScheme.surfaceContainerHighest
-                                      .withValues(alpha: 0.4),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: hasActiveFilters
-                              ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                              : theme.colorScheme.outline.withValues(
-                                  alpha: 0.15,
-                                ),
-                          width: 0.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: hasActiveFilters
-                                ? theme.colorScheme.primary.withValues(
-                                    alpha: 0.25,
-                                  )
-                                : theme.colorScheme.primary.withValues(
-                                    alpha: 0.1,
-                                  ),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.tune_rounded,
-                            size: 16,
-                            color: hasActiveFilters
-                                ? Colors.white
-                                : theme.colorScheme.primary,
-                          ),
-                          if (hasActiveFilters) ...[
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  width: 0.5,
-                                ),
-                              ),
-                              child: Text(
-                                '${filter.selectedStatuses.length + filter.selectedCategories.length + filter.selectedTags.length + filter.selectedTrackers.length}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ],
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+            bottom: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.1),
+              width: 0.5,
             ),
           ),
-          // 显示选中的筛选条件（iOS 风格）
-          Obx(() {
-            // 直接访问 filter 对象以确保 Obx 能够追踪到变化
-            final filterRx = widget.controller.filter;
-            final filter = filterRx.value;
-            if (!filter.hasFilters) {
-              return const SizedBox.shrink();
-            }
-
-            final selectedItems = <Map<String, String>>[];
-
-            // 添加选中的状态
-            for (var status in filter.selectedStatuses) {
-              final statusObj = QBFilterStatus.allStatuses.firstWhere(
-                (s) => s.value == status,
-              );
-              selectedItems.add({
-                'type': 'status',
-                'value': status,
-                'label': statusObj.label,
-              });
-            }
-
-            // 添加选中的分类
-            for (var category in filter.selectedCategories) {
-              selectedItems.add({
-                'type': 'category',
-                'value': category,
-                'label': category.isEmpty ? '无分类' : category,
-              });
-            }
-
-            // 添加选中的标签
-            for (var tag in filter.selectedTags) {
-              selectedItems.add({'type': 'tag', 'value': tag, 'label': tag});
-            }
-
-            // 添加选中的跟踪器
-            for (var tracker in filter.selectedTrackers) {
-              selectedItems.add({
-                'type': 'tracker',
-                'value': tracker,
-                'label': tracker,
-              });
-            }
-
-            if (selectedItems.isEmpty) {
-              return const SizedBox.shrink();
-            }
-
-            return Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12.0,
-                vertical: 2.0,
-              ),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                border: Border(
-                  bottom: BorderSide(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.1),
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: selectedItems.map((item) {
-                  IconData icon;
-                  Color color;
-
-                  switch (item['type']) {
-                    case 'status':
-                      icon = Icons.info_outline_rounded;
-                      color = Theme.of(context).colorScheme.primary;
-                      break;
-                    case 'category':
-                      icon = Icons.category_rounded;
-                      color = Colors.blue;
-                      break;
-                    case 'tag':
-                      icon = Icons.label_rounded;
-                      color = Colors.orange;
-                      break;
-                    case 'tracker':
-                      icon = Icons.dns_rounded;
-                      color = Colors.purple;
-                      break;
-                    default:
-                      icon = Icons.filter_list_rounded;
-                      color = Colors.grey;
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFlatSection(
+              context: context,
+              title: '状态',
+              icon: Icons.info_outline,
+              options: QBFilterStatus.allStatuses.map((e) => e.value).toList(),
+              labels: QBFilterStatus.allStatuses.map((e) => e.label).toList(),
+              selected: selectedStatuses,
+              onToggle: (value) {
+                if (selectedStatuses.contains(value)) {
+                  selectedStatuses.remove(value);
+                } else {
+                  selectedStatuses.add(value);
+                }
+                _updateFilter(immediate: true);
+              },
+              getCount: _getStatusCount,
+              getSize: _getStatusSize,
+            ),
+            const SizedBox(height: 16),
+            Obx(
+              () => _buildFlatSection(
+                context: context,
+                title: '分类',
+                icon: Icons.category,
+                options: availableCategories.toList(),
+                labels: availableCategories
+                    .map((e) => e.isEmpty ? '无分类' : e)
+                    .toList(),
+                selected: selectedCategories,
+                onToggle: (value) {
+                  if (selectedCategories.contains(value)) {
+                    selectedCategories.remove(value);
+                  } else {
+                    selectedCategories.add(value);
                   }
-
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: color.withValues(alpha: 0.25),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(icon, size: 13, color: color),
-                        const SizedBox(width: 5),
-                        Flexible(
-                          child: Text(
-                            item['label']!,
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        GestureDetector(
-                          onTap: () {
-                            final currentFilter =
-                                widget.controller.filter.value;
-                            switch (item['type']) {
-                              case 'status':
-                                final newStatuses = List<String>.from(
-                                  currentFilter.selectedStatuses,
-                                );
-                                newStatuses.remove(item['value']);
-                                widget.controller.setFilter(
-                                  currentFilter.copyWith(
-                                    selectedStatuses: newStatuses,
-                                  ),
-                                );
-                                break;
-                              case 'category':
-                                final newCategories = List<String>.from(
-                                  currentFilter.selectedCategories,
-                                );
-                                newCategories.remove(item['value']);
-                                widget.controller.setFilter(
-                                  currentFilter.copyWith(
-                                    selectedCategories: newCategories,
-                                  ),
-                                );
-                                break;
-                              case 'tag':
-                                final newTags = List<String>.from(
-                                  currentFilter.selectedTags,
-                                );
-                                newTags.remove(item['value']);
-                                widget.controller.setFilter(
-                                  currentFilter.copyWith(selectedTags: newTags),
-                                );
-                                break;
-                              case 'tracker':
-                                final newTrackers = List<String>.from(
-                                  currentFilter.selectedTrackers,
-                                );
-                                newTrackers.remove(item['value']);
-                                widget.controller.setFilter(
-                                  currentFilter.copyWith(
-                                    selectedTrackers: newTrackers,
-                                  ),
-                                );
-                                break;
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            child: Icon(
-                              Icons.close_rounded,
-                              size: 12,
-                              color: color,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                  _updateFilter(immediate: true);
+                },
+                getCount: _getCategoryCount,
+                getSize: _getCategorySize,
               ),
-            );
-          }),
-        ],
+            ),
+            const SizedBox(height: 16),
+            Obx(
+              () => _buildFlatSection(
+                context: context,
+                title: '标签',
+                icon: Icons.label,
+                options: availableTags.toList(),
+                labels: availableTags.toList(),
+                selected: selectedTags,
+                onToggle: (value) {
+                  if (selectedTags.contains(value)) {
+                    selectedTags.remove(value);
+                  } else {
+                    selectedTags.add(value);
+                  }
+                  _updateFilter(immediate: true);
+                },
+                getCount: _getTagCount,
+                getSize: _getTagSize,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Obx(
+              () => _buildFlatSection(
+                context: context,
+                title: 'Tracker',
+                icon: Icons.dns,
+                options: availableTrackers.toList(),
+                labels: availableTrackers.toList(),
+                selected: selectedTrackers,
+                onToggle: (value) {
+                  if (selectedTrackers.contains(value)) {
+                    selectedTrackers.remove(value);
+                  } else {
+                    selectedTrackers.add(value);
+                  }
+                  _updateFilter(immediate: true);
+                },
+                getCount: _getTrackerCount,
+                getSize: _getTrackerSize,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

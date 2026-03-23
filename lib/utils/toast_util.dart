@@ -67,21 +67,19 @@ class ToastUtil {
     String? title,
     Duration duration = const Duration(seconds: 2),
     VoidCallback? onConfirm,
+    VoidCallback? onCancel,
   }) {
     Get.dialog(
       CupertinoAlertDialog(
-        title: Text(
-          title ?? '警告',
-          style: TextStyle(color: CupertinoColors.label),
-        ),
-        content: Text(
-          message,
-          style: TextStyle(color: CupertinoColors.secondaryLabel),
-        ),
+        title: Text(title ?? '警告'),
+        content: Text(message),
         actions: [
           CupertinoDialogAction(
-            onPressed: () => Get.back(),
-            child: Text('取消', style: TextStyle(color: CupertinoColors.label)),
+            onPressed: () {
+              Get.back();
+              onCancel?.call();
+            },
+            child: Text('取消'),
           ),
           CupertinoDialogAction(
             onPressed: () {

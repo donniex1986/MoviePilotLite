@@ -36,6 +36,7 @@ class QBController extends GetxController
   @override
   final errorMessage = ''.obs;
   final serverState = Rxn<QBServerState>();
+  @override
   final preferences = Rxn<QBPreferencesModel>();
   final version = Rxn<String>(); // qBittorrent 客户端版本
 
@@ -60,7 +61,7 @@ class QBController extends GetxController
 
   // 自动刷新相关
   @override
-  final autoRefresh = false.obs;
+  final autoRefresh = true.obs;
   Timer? _autoRefreshTimer;
   bool _isRefreshing = false; // 防止并发刷新
 
@@ -173,6 +174,7 @@ class QBController extends GetxController
   }
 
   /// 刷新偏好设置
+  @override
   Future<void> refreshPreferences() async {
     if (!isConnected.value) {
       await checkConnection();
@@ -201,6 +203,7 @@ class QBController extends GetxController
   }
 
   /// 更新偏好设置
+  @override
   Future<bool> updatePreferences(Map<String, dynamic> prefsData) async {
     if (!isConnected.value) {
       await checkConnection();

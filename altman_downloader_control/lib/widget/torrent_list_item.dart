@@ -427,7 +427,7 @@ class TorrentListItem extends StatelessWidget {
             children: [
               Icon(Icons.pause, size: 18, color: Colors.orange.shade600),
               const SizedBox(width: 12),
-              const Text('停止'),
+              Text('停止', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -438,7 +438,7 @@ class TorrentListItem extends StatelessWidget {
             children: [
               Icon(Icons.play_arrow, size: 18, color: Colors.green.shade600),
               const SizedBox(width: 12),
-              const Text('启动'),
+              Text('启动', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -453,7 +453,7 @@ class TorrentListItem extends StatelessWidget {
                 color: Colors.blue.shade600,
               ),
               const SizedBox(width: 12),
-              const Text('强制启动'),
+              Text('强制启动', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -468,7 +468,7 @@ class TorrentListItem extends StatelessWidget {
                 color: Colors.amber.shade700,
               ),
               const SizedBox(width: 12),
-              const Text('强制重新校验'),
+              Text('强制重新校验', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -484,7 +484,7 @@ class TorrentListItem extends StatelessWidget {
                 color: Colors.purple.shade600,
               ),
               const SizedBox(width: 12),
-              const Text('设置保存地址'),
+              Text('设置保存地址', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -495,7 +495,7 @@ class TorrentListItem extends StatelessWidget {
             children: [
               Icon(Icons.edit, size: 18, color: Colors.indigo.shade600),
               const SizedBox(width: 12),
-              const Text('重命名'),
+              Text('重命名', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -506,7 +506,7 @@ class TorrentListItem extends StatelessWidget {
             children: [
               Icon(Icons.category, size: 18, color: Colors.pink.shade600),
               const SizedBox(width: 12),
-              const Text('设置分类'),
+              Text('设置分类', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -517,7 +517,7 @@ class TorrentListItem extends StatelessWidget {
             children: [
               Icon(Icons.label, size: 18, color: Colors.purple.shade600),
               const SizedBox(width: 12),
-              const Text('设置标签'),
+              Text('设置标签', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -529,7 +529,7 @@ class TorrentListItem extends StatelessWidget {
             children: [
               Icon(Icons.download, size: 18, color: Colors.blue.shade600),
               const SizedBox(width: 12),
-              const Text('限制下载速度'),
+              Text('限制下载速度', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -540,7 +540,7 @@ class TorrentListItem extends StatelessWidget {
             children: [
               Icon(Icons.upload, size: 18, color: Colors.teal.shade600),
               const SizedBox(width: 12),
-              const Text('限制上传速度'),
+              Text('限制上传速度', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -552,7 +552,7 @@ class TorrentListItem extends StatelessWidget {
             children: [
               Icon(Icons.delete_outline, size: 18, color: Colors.red.shade600),
               const SizedBox(width: 12),
-              const Text('删除'),
+              Text('删除', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -563,7 +563,7 @@ class TorrentListItem extends StatelessWidget {
             children: [
               Icon(Icons.delete_forever, size: 18, color: Colors.red.shade700),
               const SizedBox(width: 12),
-              const Text('删除（包含文件）'),
+              Text('删除（包含文件）', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
