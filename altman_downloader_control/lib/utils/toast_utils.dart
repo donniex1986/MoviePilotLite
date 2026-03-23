@@ -1,3 +1,4 @@
+import 'package:altman_downloader_control/widget/input_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -67,19 +68,21 @@ class ToastUtil {
     String? title,
     Duration duration = const Duration(seconds: 2),
     VoidCallback? onConfirm,
-    VoidCallback? onCancel,
   }) {
     Get.dialog(
       CupertinoAlertDialog(
-        title: Text(title ?? '警告'),
-        content: Text(message),
+        title: Text(
+          title ?? '警告',
+          style: TextStyle(color: CupertinoColors.label),
+        ),
+        content: Text(
+          message,
+          style: TextStyle(color: CupertinoColors.secondaryLabel),
+        ),
         actions: [
           CupertinoDialogAction(
-            onPressed: () {
-              Get.back();
-              onCancel?.call();
-            },
-            child: Text('取消'),
+            onPressed: () => Get.back(),
+            child: Text('取消', style: TextStyle(color: CupertinoColors.label)),
           ),
           CupertinoDialogAction(
             onPressed: () {
@@ -174,4 +177,51 @@ class ToastUtil {
       Get.closeAllSnackbars();
     }
   }
+}
+
+void showToast({String? message}) {
+  if (message == null) return;
+  ToastUtil.warning(message);
+}
+
+void failToast({required String message}) {
+  ToastUtil.error(message);
+}
+
+void successToast({required String message}) {
+  ToastUtil.success(message);
+}
+
+/// 显示美化的输入对话框
+Future<String?> showMSInputDialog(
+  BuildContext context, {
+  required String title,
+  String? hintText,
+  String? labelText,
+  String? initialValue,
+  String confirmText = '确定',
+  String cancelText = '取消',
+  IconData? icon,
+  String? Function(String?)? validator,
+  TextInputType? keyboardType,
+  int maxLines = 1,
+  bool autofocus = true,
+}) {
+  return showDialog<String>(
+    context: context,
+    barrierColor: Colors.black.withValues(alpha: 0.5),
+    builder: (context) => MSInputDialog(
+      title: title,
+      hintText: hintText,
+      labelText: labelText,
+      initialValue: initialValue,
+      confirmText: confirmText,
+      cancelText: cancelText,
+      icon: icon,
+      validator: validator,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      autofocus: autofocus,
+    ),
+  );
 }

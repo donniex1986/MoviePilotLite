@@ -1,3 +1,5 @@
+import 'package:altman_downloader_control/controller/controller_adaptor.dart';
+import 'package:altman_downloader_control/controller/downloader_config.dart';
 import 'package:get/get.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:liquid_tabbar_minimize/liquid_tabbar_minimize.dart';
@@ -119,6 +121,7 @@ import 'modules/workflow/controllers/workflow_controller.dart';
 import 'modules/workflow/pages/workflow_page.dart';
 import 'modules/file_manager/controllers/file_manager_browser_controller.dart';
 import 'modules/file_manager/pages/file_manager_browser_page.dart';
+import 'package:altman_downloader_control/page/torrent_list_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -423,6 +426,18 @@ class MyApp extends StatelessWidget {
               if (!Get.isRegistered<DownloadController>()) {
                 Get.put(DownloadController(), permanent: true);
               }
+            }),
+          ),
+          GetPage(
+            name: '/downloader-detail',
+            page: () => const DownloaderTorrentListPage(),
+            binding: BindingsBuilder(() {
+              final args = Get.arguments['config'] as Map<String, dynamic>;
+              final config = DownloaderConfig.fromJson(args);
+              Get.put(
+                DownloaderControllerAdaptor.getController(config),
+                permanent: false,
+              );
             }),
           ),
           GetPage(
