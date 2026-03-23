@@ -35,7 +35,8 @@ class MediaOrganizeController extends GetxController {
       Get.find<StorageListController>();
 
   List<StorageSetting> get storages => _storageController.storages;
-  Map<String, String> get storageNameMap => Map.from(_storageController.storageNameMap);
+  Map<String, String> get storageNameMap =>
+      Map.from(_storageController.storageNameMap);
 
   @override
   void onReady() {
@@ -173,5 +174,34 @@ class MediaOrganizeController extends GetxController {
       }
     }
     return const [];
+  }
+
+  Future<bool> deleteTransferRecord(
+    MediaOrganizeTransferItem item, {
+    required bool deletesrc,
+    required bool deletedest,
+  }) async {
+    try {
+      final response = await _apiClient.request<dynamic>(
+        '/api/v1/history/transfer',
+        RequestMethod.delete,
+        item.toJson(),
+        queryParameters: {'deletesrc': deletesrc, 'deletedest': deletedest},
+      );
+      final status = response.statusCode ?? 0;
+      if (status >= 400) {
+        return false;
+      }
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['success'] == false) {
+        return false;
+      }
+      items.remove(item);
+      allKeys.remove(item.title);
+      return true;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '删除整理历史失败');
+      return false;
+    }
   }
 }

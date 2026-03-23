@@ -62,7 +62,6 @@ class MediaOrganizeItemCard extends StatelessWidget {
                           ),
                           PopupMenuButton(
                             borderRadius: BorderRadius.circular(12),
-
                             icon: Icon(Icons.more_vert_outlined),
                             onSelected: (value) {
                               switch (value) {
@@ -238,6 +237,7 @@ class MediaOrganizeItemCard extends StatelessWidget {
     Color color,
   ) {
     return PopupMenuItem(
+      value: action,
       child: Row(
         children: [
           Icon(icon, size: 16, color: color),

@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/media_organize/controllers/media_organize_controller.dart';
+import 'package:moviepilot_mobile/modules/media_organize/models/media_organize_models.dart';
 import 'package:moviepilot_mobile/modules/media_organize/widgets/media_organize_item_card.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 class MediaOrganizePage extends GetView<MediaOrganizeController> {
   const MediaOrganizePage({super.key});
@@ -181,6 +183,29 @@ class MediaOrganizePage extends GetView<MediaOrganizeController> {
                   destStorageName: controller.getStorageName(
                     items[index].dest_storage,
                   ),
+                  onDeleteTransferRecordOnly: () => _deleteTransferRecord(
+                    items[index],
+                    deletesrc: true,
+                    deletedest: false,
+                  ),
+                  onDeleteTransferRecordAndSourceFile: () =>
+                      _deleteTransferRecord(
+                        items[index],
+                        deletesrc: true,
+                        deletedest: true,
+                      ),
+                  onDeleteTransferRecordAndMediaLibraryFile: () =>
+                      _deleteTransferRecord(
+                        items[index],
+                        deletesrc: false,
+                        deletedest: true,
+                      ),
+                  onDeleteTransferRecordAndSourceFileAndMediaLibraryFile: () =>
+                      _deleteTransferRecord(
+                        items[index],
+                        deletesrc: true,
+                        deletedest: true,
+                      ),
                 );
               }, childCount: items.length),
             ),
@@ -239,5 +264,26 @@ class MediaOrganizePage extends GetView<MediaOrganizeController> {
         ],
       );
     });
+  }
+
+  _deleteTransferRecord(
+    MediaOrganizeTransferItem item, {
+    required bool deletesrc,
+    required bool deletedest,
+  }) async {
+    try {
+      final success = await controller.deleteTransferRecord(
+        item,
+        deletesrc: deletesrc,
+        deletedest: deletedest,
+      );
+      if (success) {
+        ToastUtil.success('删除整理历史成功');
+      } else {
+        ToastUtil.error('删除整理历史失败');
+      }
+    } catch (e) {
+      ToastUtil.error('删除整理历史失败: $e');
+    }
   }
 }
