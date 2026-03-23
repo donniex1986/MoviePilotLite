@@ -108,18 +108,20 @@ class MediaSearchListPage extends GetView<MediaSearchListController> {
                           );
                         }
                         final item = items[index];
-                        final appService = Get.find<AppService>();
-                        final existsOn =
-                            appService.enableFetchMediaserverLibraryStatus.value;
-                        final existsKey = controller.mediaserverExistsKey(item);
-                        final inLib = existsOn &&
-                            (controller.mediaserverInLibrary[existsKey] ??
-                                false);
-                        return RecommendItemCard(
-                          item: item,
-                          inLibrary: inLib,
-                          onTap: () => _openDetail(item),
-                        );
+                        return Obx(() {
+                          final appService = Get.find<AppService>();
+                          final existsOn =
+                              appService.enableFetchMediaserverLibraryStatus.value;
+                          final existsKey = controller.mediaserverExistsKey(item);
+                          final inLib = existsOn &&
+                              (controller.mediaserverInLibrary[existsKey] ??
+                                  false);
+                          return RecommendItemCard(
+                            item: item,
+                            inLibrary: inLib,
+                            onTap: () => _openDetail(item),
+                          );
+                        });
                       },
                       childCount: showSkeletonGrid
                           ? _skeletonGridCount

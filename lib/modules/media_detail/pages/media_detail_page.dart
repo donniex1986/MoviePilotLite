@@ -354,6 +354,16 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
               _buildMetaChip(detail?.category),
             if (detail?.vote_average != null && detail!.vote_average! > 0)
               _buildScoreChip(detail.vote_average!),
+            Obx(() {
+              final app = Get.find<AppService>();
+              if (!app.enableFetchMediaserverLibraryStatus.value) {
+                return const SizedBox.shrink();
+              }
+              if (!controller.mediaserverInLibrary.value) {
+                return const SizedBox.shrink();
+              }
+              return _buildInLibraryChip();
+            }),
           ],
         ),
       ],
@@ -374,6 +384,31 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
+      ),
+    );
+  }
+
+  Widget _buildInLibraryChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF81C784).withOpacity(0.35),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF81C784)),
+          SizedBox(width: 4),
+          Text(
+            '已入库',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

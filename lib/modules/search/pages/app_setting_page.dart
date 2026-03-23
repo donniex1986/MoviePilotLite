@@ -116,7 +116,7 @@ class AppSettingPage extends GetView<AppSettingController> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Icon(
-                          Icons.inventory_2_outlined,
+                          Icons.video_library_outlined,
                           size: 18,
                           color: theme.colorScheme.primary,
                         ),

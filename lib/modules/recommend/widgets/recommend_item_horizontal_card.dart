@@ -64,7 +64,7 @@ class RecommendItemHorizontalCard extends StatelessWidget {
             ),
             SizedBox(width: 10),
             SizedBox(
-              width: 60,
+              width: 70,
               height: 30,
               child: FilledButton(
                 onPressed: onTap,

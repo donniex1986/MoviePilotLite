@@ -136,7 +136,7 @@ class RecommendItemCard extends GetView<SubscribeService> {
             children: [
               if (inLibrary) ...[
                 const Icon(
-                  Icons.inventory_2,
+                  Icons.check_circle_rounded,
                   size: 14,
                   color: Color(0xFF81C784),
                 ),

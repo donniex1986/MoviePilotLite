@@ -126,6 +126,7 @@ class MediaSearchListController extends GetxController {
         items.addAll(parsed);
       } else {
         mediaserverInLibrary.clear();
+        mediaserverInLibrary.refresh();
         items.assignAll(parsed);
       }
       currentPage.value = page;
@@ -268,12 +269,15 @@ class MediaSearchListController extends GetxController {
       );
       if (response.statusCode != 200) {
         mediaserverInLibrary[key] = false;
+        mediaserverInLibrary.refresh();
         return;
       }
       mediaserverInLibrary[key] = _parseMediaserverExists(response.data);
+      mediaserverInLibrary.refresh();
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '媒体入库状态查询失败');
       mediaserverInLibrary[key] = false;
+      mediaserverInLibrary.refresh();
     }
   }
 
