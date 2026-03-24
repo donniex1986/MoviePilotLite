@@ -649,7 +649,8 @@ class MediaDetailController extends GetxController {
   bool _isSubscribed(MediaDetail detail, int? season) {
     final isTv = _isTv(detail);
     if (isTv) {
-      return seasonSubscribeMap.containsKey(season);
+      return seasonSubscribeMap.containsKey(season) ||
+          movieSubscribeItem.value?.id != null;
     }
     return movieSubscribeItem.value?.id != null;
   }
@@ -755,7 +756,9 @@ class MediaDetailController extends GetxController {
         mediaserverInLibrary.value = false;
         return;
       }
-      mediaserverInLibrary.value = _parseMediaserverExistsResponse(response.data);
+      mediaserverInLibrary.value = _parseMediaserverExistsResponse(
+        response.data,
+      );
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '媒体入库状态查询失败');
       mediaserverInLibrary.value = false;

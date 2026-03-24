@@ -1,5 +1,6 @@
 import 'package:altman_downloader_control/controller/qbittorrent/qb_controller.dart';
 import 'package:altman_downloader_control/model/qb_rss_item_model.dart';
+import 'package:altman_downloader_control/page/torrent_download_screen.dart';
 import 'package:altman_downloader_control/utils/toast_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -88,12 +89,12 @@ class QBRssItemDetailSheet extends StatelessWidget {
     // 关闭当前页面
     Navigator.of(context).pop();
 
-    // // 打开下载页面
-    // showTorrentDownloadScreen(
-    //   context,
-    //   downloadUrls: item.torrentURL,
-    //   controller: qbController,
-    // );
+    // 打开下载页面
+    showTorrentDownloadScreen(
+      context,
+      downloadUrls: item.torrentURL,
+      controller: qbController!,
+    );
   }
 
   @override

@@ -148,7 +148,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
             padding: const EdgeInsets.fromLTRB(2, 0, 2, 8),
             child: Text(
               section.title,
-              style: theme.textTheme.labelLarge?.copyWith(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
@@ -222,8 +222,9 @@ class MultifunctionPage extends GetView<MultifunctionController> {
                 children: [
                   Text(
                     item.title,
-                    style: theme.textTheme.titleSmall?.copyWith(
+                    style: theme.textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w600,
+                      fontSize: 16,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -282,7 +283,7 @@ class MultifunctionPage extends GetView<MultifunctionController> {
   TextStyle _secondaryTextStyle(BuildContext context) {
     final theme = Theme.of(context);
     final base = theme.textTheme.bodySmall;
-    final color = theme.colorScheme.onSurfaceVariant;
+    final color = theme.colorScheme.onSurfaceVariant.withAlpha(80);
     return base?.copyWith(color: color) ??
         TextStyle(color: color, fontSize: 12);
   }

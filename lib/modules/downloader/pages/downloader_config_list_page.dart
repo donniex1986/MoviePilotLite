@@ -76,6 +76,7 @@ class DownloaderConfigListPage extends GetView<DownloadController> {
         'username': client.config?.username ?? '',
         'password': client.config?.password ?? '',
         'type': type,
+        'name': client.name,
       };
 
       Get.toNamed('/downloader-detail', arguments: {'config': config});

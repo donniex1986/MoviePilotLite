@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:altman_downloader_control/controller/protocol.dart';
 import 'package:altman_downloader_control/controller/qbittorrent/qb_controller.dart';
 import 'package:altman_downloader_control/model/qb_filter_model.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

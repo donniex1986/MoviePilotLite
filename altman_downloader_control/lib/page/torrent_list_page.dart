@@ -6,6 +6,7 @@ import 'package:altman_downloader_control/model/torrent_item_model.dart';
 import 'package:altman_downloader_control/page/qbittorrent/qb_log_page.dart';
 import 'package:altman_downloader_control/page/qbittorrent/qb_preferences_settings_page.dart';
 import 'package:altman_downloader_control/page/qbittorrent/qb_rss_list_page.dart';
+import 'package:altman_downloader_control/page/torrent_download_screen.dart';
 import 'package:altman_downloader_control/widget/filter_widget.dart';
 import 'package:altman_downloader_control/widget/torrent_list_item.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,8 +16,29 @@ import 'package:altman_downloader_control/controller/qbittorrent/qb_controller.d
 import 'package:altman_downloader_control/model/qb_sort_type.dart';
 import 'package:altman_downloader_control/utils/string_utils.dart';
 
-class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
+class DownloaderTorrentListPage extends StatefulWidget {
   const DownloaderTorrentListPage({super.key});
+
+  @override
+  State<DownloaderTorrentListPage> createState() =>
+      _DownloaderTorrentListPageState();
+}
+
+class _DownloaderTorrentListPageState extends State<DownloaderTorrentListPage> {
+  late final DownloaderControllerProtocol controller;
+  final _isBootstrapping = true.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<DownloaderControllerProtocol>();
+    _bootstrap();
+  }
+
+  Future<void> _bootstrap() async {
+    await _refreshData();
+    _isBootstrapping.value = false;
+  }
 
   /// 判断是否为 qBittorrent
   bool get isQBittorrent =>
@@ -69,6 +91,22 @@ class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
 
   @override
   Widget build(BuildContext context) {
+    if (controller is QBController) {
+      final qb = controller as QBController;
+      return Obx(() {
+        if (!qb.isLocalStateReady.value) {
+          return Scaffold(
+            appBar: _buildAppBar(context),
+            body: CustomScrollView(slivers: [_buildSkeletonList(context)]),
+          );
+        }
+        return _buildPageScaffold(context);
+      });
+    }
+    return _buildPageScaffold(context);
+  }
+
+  Widget _buildPageScaffold(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -78,101 +116,7 @@ class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(child: _buildErrorMessage(context)),
-            SliverToBoxAdapter(
-              child: Obx(() {
-                final torrentsList = this.torrentsList;
-                if (torrentsList.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-
-                final displayTorrents = filteredTorrentsList;
-
-                // 计算总尺寸
-                int totalSize = 0;
-                for (var torrent in displayTorrents) {
-                  final size = torrent.totalSize > 0
-                      ? torrent.totalSize
-                      : torrent.size;
-                  totalSize += size;
-                }
-
-                final hasFilters =
-                    supportsFilter &&
-                    controller is QBController &&
-                    (controller as QBController).filter.value.hasFilters;
-
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 12.0,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.outline.withValues(alpha: 0.1),
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // 标题行：标题 + 排序按钮
-                      Text(
-                        '种子列表',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 17,
-                              letterSpacing: -0.4,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                      ),
-                      Spacer(),
-                      // 信息行：种子数量和体积
-                      Icon(
-                        Icons.info_outline_rounded,
-                        size: 14,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${displayTorrents.length} 个种子',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Icon(
-                        Icons.storage_rounded,
-                        size: 14,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        totalSize.toHumanReadableFileSize(),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
+            _buildTorrentInfo(context),
             _buildTorrentList(context),
             SliverToBoxAdapter(
               child: SizedBox(
@@ -185,41 +129,134 @@ class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
     );
   }
 
+  Widget _buildTorrentInfo(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Obx(() {
+        final displayTorrents = filteredTorrentsList;
+        if (displayTorrents.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // 计算总尺寸
+        int totalSize = 0;
+        for (var torrent in displayTorrents) {
+          final size = torrent.totalSize > 0 ? torrent.totalSize : torrent.size;
+          totalSize += size;
+        }
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 标题行：标题 + 排序按钮
+              Text(
+                '种子列表',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 17,
+                  letterSpacing: -0.4,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              Spacer(),
+              // 信息行：种子数量和体积
+              Icon(
+                Icons.info_outline_rounded,
+                size: 14,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${displayTorrents.length} 个种子',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Icon(
+                Icons.storage_rounded,
+                size: 14,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                totalSize.toHumanReadableFileSize(),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
   Widget _buildFloatingToolbar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(999),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-          child: Container(
-            height: 52,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.surface.withValues(alpha: 0.86),
+      child: Row(
+        children: [
+          Expanded(
+            child: ClipRRect(
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: Theme.of(
-                  context,
-                ).colorScheme.outline.withValues(alpha: 0.08),
-                width: 0.5,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                child: Container(
+                  height: 52,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surface.withValues(alpha: 0.86),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withValues(alpha: 0.08),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildFloatingFilterButton(context),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildFloatingFakeInputBar(context)),
+                      const SizedBox(width: 8),
+                      supportsSort
+                          ? _buildFloatingSortBy(context)
+                          : const SizedBox.shrink(),
+                    ],
+                  ),
+                ),
               ),
             ),
-            child: Row(
-              children: [
-                _buildFloatingFilterButton(context),
-                const SizedBox(width: 8),
-                Expanded(child: _buildFloatingFakeInputBar(context)),
-                const SizedBox(width: 8),
-                supportsSort
-                    ? _buildFloatingSortBy(context)
-                    : const SizedBox.shrink(),
-              ],
+          ),
+          const SizedBox(width: 8),
+          CupertinoButton.filled(
+            padding: EdgeInsets.zero,
+            borderRadius: BorderRadius.circular(999),
+            onPressed: () =>
+                showTorrentDownloadScreen(context, controller: controller),
+            child: const Icon(
+              CupertinoIcons.add,
+              size: 20,
+              color: Colors.white,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -423,8 +460,10 @@ class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
 
   Widget _buildTorrentList(BuildContext context) {
     return Obx(() {
-      // 使用通用格式的种子列表
       final displayTorrents = filteredTorrentsList;
+      if (_isBootstrapping.value && displayTorrents.isEmpty) {
+        return _buildSkeletonList(context);
+      }
 
       if (displayTorrents.isEmpty) {
         return SliverFillRemaining(
@@ -464,6 +503,51 @@ class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
         },
       );
     });
+  }
+
+  Widget _buildSkeletonList(BuildContext context) {
+    final base = Theme.of(
+      context,
+    ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.38);
+    return SliverList.builder(
+      itemCount: 8,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.12),
+              width: 0.5,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(height: 14, width: double.infinity, color: base),
+              const SizedBox(height: 8),
+              Container(height: 14, width: 180, color: base),
+              const SizedBox(height: 12),
+              Container(height: 8, width: double.infinity, color: base),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Container(height: 12, width: 68, color: base),
+                  const SizedBox(width: 8),
+                  Container(height: 12, width: 80, color: base),
+                  const Spacer(),
+                  Container(height: 12, width: 52, color: base),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildIOSSortButton(BuildContext context) {
@@ -586,54 +670,25 @@ class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
-      leadingWidth: 80,
-      leading: CupertinoButton(
-        padding: EdgeInsets.zero,
-        minSize: 0,
-        onPressed: () => Get.back(),
+      leadingWidth: 60,
+      leading: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Container(
-          margin: const EdgeInsets.only(left: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
-            color: isDark
-                ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.2)
-                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.08),
-              width: 0.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.primary.withValues(alpha: 0.05),
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
+            color: theme.primaryColor.withAlpha(50),
+            borderRadius: BorderRadius.circular(44),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.arrow_back_ios_new,
-                color: colorScheme.primary,
-                size: 13,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '返回',
-                style: TextStyle(
-                  color: colorScheme.primary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Icon(CupertinoIcons.chevron_left, color: theme.primaryColor),
+            onPressed: () => Get.back(),
           ),
         ),
       ),
       title: Text(
-        controller.config?.name ?? '',
+        controller.config?.name ?? controller.config?.url.split('/').last ?? '',
         style: TextStyle(
           color: colorScheme.onSurface,
           fontWeight: FontWeight.w600,
@@ -643,63 +698,34 @@ class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      centerTitle: true,
+      centerTitle: false,
       actions: [
         // RSS 和 Log 整合为一个整体（降低视觉重量）
         if (isQBittorrent && controller is QBController)
-          Container(
-            margin: const EdgeInsets.only(right: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.1)
-                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.05),
-                width: 0.5,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 日志按钮
-                _buildIOSActionButton(
-                  context: context,
-                  icon: Icons.description_outlined,
-                  tooltip: '日志',
-                  onPressed: () {
-                    Get.to(
-                      () => QBLogPage(controller: controller as QBController),
-                    );
-                  },
-                  showContainer: false, // 不显示独立容器
-                ),
-                // 分隔线（降低视觉重量）
-                Container(
-                  width: 0.5,
-                  height: 14,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  color: colorScheme.outline.withValues(alpha: 0.08),
-                ),
-                // RSS 按钮
-                if (supportsRSS && controller is QBController)
-                  _buildIOSActionButton(
-                    context: context,
-                    icon: Icons.rss_feed_outlined,
-                    tooltip: 'RSS订阅',
-                    onPressed: () {
-                      Get.to(
-                        () => QBRssListPage(
-                          controller: controller as QBController,
-                        ),
-                      );
-                    },
-                    showContainer: false, // 不显示独立容器
-                  ),
-              ],
-            ),
+        // 日志按钮
+        ...[
+          _buildIOSActionButton(
+            context: context,
+            icon: Icons.description_outlined,
+            tooltip: '日志',
+            onPressed: () {
+              Get.to(() => QBLogPage(controller: controller as QBController));
+            },
+            showContainer: false, // 不显示独立容器
           ),
+          _buildIOSActionButton(
+            context: context,
+            icon: Icons.rss_feed_outlined,
+            tooltip: 'RSS订阅',
+            onPressed: () {
+              Get.to(
+                () => QBRssListPage(controller: controller as QBController),
+              );
+            },
+            showContainer: false, // 不显示独立容器
+          ),
+        ],
+
         // 仅 qBittorrent 支持偏好设置（独立显示）
         if (supportsPreferences && controller is QBController)
           _buildIOSActionButton(
@@ -797,8 +823,7 @@ class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
     if (!showContainer) {
       // 不显示容器，直接返回按钮（用于 RSS 和 Log，降低视觉重量）
       return CupertinoButton(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-        minSize: 0,
+        sizeStyle: CupertinoButtonSize.medium,
         onPressed: onPressed,
         child: Icon(
           icon,
@@ -854,9 +879,4 @@ class DownloaderTorrentListPage extends GetView<DownloaderControllerProtocol> {
       ),
     );
   }
-
-  void showTorrentDownloadScreen(
-    BuildContext context, {
-    required DownloaderControllerProtocol controller,
-  }) {}
 }

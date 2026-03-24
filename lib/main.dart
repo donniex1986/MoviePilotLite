@@ -1,5 +1,6 @@
 import 'package:altman_downloader_control/controller/controller_adaptor.dart';
 import 'package:altman_downloader_control/controller/downloader_config.dart';
+import 'package:altman_totp/page/totp_manage_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:liquid_tabbar_minimize/liquid_tabbar_minimize.dart';
@@ -188,6 +189,7 @@ class MyApp extends StatelessWidget {
             },
           ),
           GetPage(name: '/login', page: () => const LoginPage()),
+          GetPage(name: '/totp-manage', page: () => const TotpManagePage()),
           GetPage(
             name: '/dashboard',
             page: () => const DashboardPage(),

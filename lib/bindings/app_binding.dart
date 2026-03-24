@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:altman_totp/services/totp_service.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 
 import '../modules/login/controllers/login_controller.dart';
@@ -13,6 +14,7 @@ class AppBinding extends Bindings {
   void dependencies() {
     Get.put(AppLog(), permanent: true);
     Get.put(AppService(), permanent: true);
+    Get.put(TotpService(), permanent: true);
     Get.put(RealmService(), permanent: true);
     Get.put(AuthRepository(), permanent: true);
     Get.put(LoginController(), permanent: true);
