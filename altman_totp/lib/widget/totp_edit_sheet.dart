@@ -188,7 +188,7 @@ class _TotpEditSheetState extends State<TotpEditSheet> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: CupertinoTheme.of(context).barBackgroundColor,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(children: children),
@@ -383,7 +383,7 @@ class _TotpEditSheetState extends State<TotpEditSheet> {
                   children: [
                     _buildFormRow(
                       context: context,
-                      title: 'Username',
+                      title: '名称',
                       field: _buildInlineField(
                         controller: _usernameController,
                         hintText: '用户名',
@@ -391,7 +391,7 @@ class _TotpEditSheetState extends State<TotpEditSheet> {
                     ),
                     _buildFormRow(
                       context: context,
-                      title: 'Secret',
+                      title: '秘钥',
                       field: _buildInlineField(
                         controller: _secretController,
                         hintText: 'Base32',
@@ -403,7 +403,13 @@ class _TotpEditSheetState extends State<TotpEditSheet> {
                       isLast: true,
                       field: const Align(
                         alignment: Alignment.centerRight,
-                        child: Text('TOTP / 6位 / 30秒'),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          child: Text('TOTP / 6位 / 30秒'),
+                        ),
                       ),
                     ),
                   ],

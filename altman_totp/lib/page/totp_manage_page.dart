@@ -235,13 +235,6 @@ class _TotpManagePageState extends State<TotpManagePage> {
             ? null
             : [
                 IconButton(
-                  onPressed: () async {
-                    final text = controller.exportCoreInfoJson();
-                    await Clipboard.setData(ClipboardData(text: text));
-                  },
-                  icon: const Icon(Icons.upload_file_outlined),
-                ),
-                IconButton(
                   onPressed: () => _showEditorSheet(context),
                   icon: const Icon(Icons.add),
                 ),
