@@ -58,6 +58,7 @@ class QBController extends GetxController
   // 排序相关
   final torrentSortType = QBTorrentSortType.dateAdded.obs; // 默认按添加时间排序
   final rssSortType = QBRssSortType.date.obs;
+  final isLocalStateReady = false.obs;
 
   // 自动刷新相关
   @override
@@ -74,9 +75,17 @@ class QBController extends GetxController
   QBController({required this.config});
 
   @override
-  void onReady() {
+  void onReady() async {
     super.onReady();
+    await _restoreLocalUiState();
     initialize();
+  }
+
+  Future<void> _restoreLocalUiState() async {
+    if (isLocalStateReady.value) return;
+    await _loadSavedFilter();
+    await _loadSavedSort();
+    isLocalStateReady.value = true;
   }
 
   /// 初始化下载器
@@ -109,8 +118,6 @@ class QBController extends GetxController
           await refreshVersion();
           // 获取 preferences
           await refreshPreferences();
-          // 加载保存的筛选条件
-          _loadSavedFilter();
           await refreshTorrentsWithMainData();
           // 首次加载 RSS 列表时显示加载状态
           if (rssItems.isEmpty) {
@@ -1290,6 +1297,23 @@ class QBController extends GetxController
   void sortTorrents(QBTorrentSortType sortType) {
     torrentSortType.value = sortType;
     _applySorting();
+    _applyFilter();
+    unawaited(saveSortPreference(sortType.name));
+  }
+
+  Future<void> _loadSavedSort() async {
+    try {
+      final saved = await loadSortPreference();
+      if (saved == null || saved.isEmpty) return;
+      final matched = QBTorrentSortType.sortTypes.firstWhereOrNull(
+        (e) => e.name == saved,
+      );
+      if (matched != null) {
+        torrentSortType.value = matched;
+      }
+    } catch (e) {
+      _log.w('加载排序条件失败: $e');
+    }
   }
 
   /// 应用筛选条件
@@ -1378,6 +1402,8 @@ class QBController extends GetxController
               break;
             case 'errored':
             case 'error':
+            case 'missingfiles':
+            case 'missing_files':
               // 错误状态：error, missingFiles
               matchesStatus = torrent.hasError;
               break;
@@ -1463,17 +1489,14 @@ class QBController extends GetxController
   String get _filterStorageKey => 'qb_filter_${config?.id ?? 'default'}';
 
   /// 加载保存的筛选条件
-  void _loadSavedFilter() {
+  Future<void> _loadSavedFilter() async {
     try {
-      final savedFilterJson = appPrefrences.get(_filterStorageKey) as String?;
+      final savedFilterJson = await loadFilterPreference();
       if (savedFilterJson != null) {
         final filterData = jsonDecode(savedFilterJson) as Map<String, dynamic>;
         final savedFilter = QBFilterModel.fromJson(filterData);
-        // 只有在有筛选条件时才应用，避免覆盖用户当前的选择
-        if (savedFilter.hasFilters) {
-          filter.value = savedFilter;
-          _applyFilter();
-        }
+        filter.value = savedFilter;
+        _applyFilter();
       }
     } catch (e) {
       _log.w('加载保存的筛选条件失败: $e');
@@ -1481,10 +1504,10 @@ class QBController extends GetxController
   }
 
   /// 保存筛选条件到本地
-  void _saveFilter() {
+  Future<void> _saveFilter() async {
     try {
       final filterJson = jsonEncode(filter.value.toJson());
-      appPrefrences.put(_filterStorageKey, filterJson);
+      await saveFilterPreference(filterJson);
       _log.d('筛选条件已保存: $_filterStorageKey');
     } catch (e) {
       _log.w('保存筛选条件失败: $e');
@@ -1496,14 +1519,14 @@ class QBController extends GetxController
     filter.value = newFilter;
     filter.refresh(); // 确保触发响应式更新
     _applyFilter();
-    _saveFilter(); // 保存到本地
+    unawaited(_saveFilter());
   }
 
   /// 清除筛选
   void clearFilter() {
     filter.value = QBFilterModel();
     _applyFilter();
-    _saveFilter(); // 保存到本地（清除筛选）
+    unawaited(_saveFilter());
   }
 
   /// 应用当前排序类型到种子列表
@@ -1812,8 +1835,6 @@ class QBController extends GetxController
   @override
   List<TorrentModel> get torrentsUniversal =>
       torrents.map((t) => t.toTorrentModel()).toList();
-
-  get appPrefrences => null;
 
   /// 获取日志
   /// [normal] 是否包含普通日志

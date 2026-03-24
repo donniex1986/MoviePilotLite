@@ -3,6 +3,7 @@ import 'package:altman_downloader_control/model/qb_preferences_model.dart';
 import 'package:altman_downloader_control/model/server_state_model.dart';
 import 'package:altman_downloader_control/model/torrent_item_model.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// 下载器控制器协议（Protocol）
 /// 定义所有下载器控制器必须实现的基本方法
@@ -144,4 +145,52 @@ abstract class DownloaderControllerProtocol extends GetxController {
   /// 获取通用格式的服务器状态
   /// 所有下载器控制器应该提供此方法，返回统一的 ServerStateModel
   ServerStateModel? get serverStateUniversal;
+}
+
+extension DownloaderControllerLocalCacheX on DownloaderControllerProtocol {
+  String get cacheDownloaderId {
+    final id = config?.id;
+    if (id != null && id.isNotEmpty) return id;
+    final type = config?.type.name ?? 'unknown';
+    final url = config?.url ?? '';
+    final username = config?.username ?? '';
+    return '$type|$url|$username';
+  }
+
+  String get filterPreferenceKey => 'downloader_filter_$cacheDownloaderId';
+  String get legacyFilterPreferenceKey =>
+      'qb_filter_${config?.id ?? 'default'}';
+  String get sortPreferenceKey => 'downloader_sort_$cacheDownloaderId';
+
+  Future<void> saveFilterPreference(String value) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(filterPreferenceKey, value);
+  }
+
+  Future<String?> loadFilterPreference() async {
+    final preferences = await SharedPreferences.getInstance();
+    final current = preferences.getString(filterPreferenceKey);
+    if (current != null && current.isNotEmpty) return current;
+    final legacy = preferences.getString(legacyFilterPreferenceKey);
+    if (legacy != null && legacy.isNotEmpty) {
+      await preferences.setString(filterPreferenceKey, legacy);
+      return legacy;
+    }
+    return null;
+  }
+
+  Future<void> clearFilterPreference() async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.remove(filterPreferenceKey);
+  }
+
+  Future<void> saveSortPreference(String value) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(sortPreferenceKey, value);
+  }
+
+  Future<String?> loadSortPreference() async {
+    final preferences = await SharedPreferences.getInstance();
+    return preferences.getString(sortPreferenceKey);
+  }
 }

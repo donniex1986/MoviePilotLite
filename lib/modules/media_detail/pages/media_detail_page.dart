@@ -59,15 +59,14 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           slivers: [
             _buildSliverAppBar(context, headerDetail, isLoading: isLoading),
             SliverToBoxAdapter(
-              child: Skeletonizer(
-                enabled: contentSkeletonEnabled,
-                child: _buildContent(
-                  context,
-                  viewDetail,
-                  errorText: hasError && !isLoading ? errorText : null,
-                  isLoading: isLoading,
-                ),
-              ),
+              child: contentSkeletonEnabled
+                  ? _buildLoadingSkeleton(context)
+                  : _buildContent(
+                      context,
+                      viewDetail,
+                      errorText: hasError && !isLoading ? errorText : null,
+                      isLoading: isLoading,
+                    ),
             ),
             SliverToBoxAdapter(child: SizedBox(height: 44)),
           ],
@@ -517,6 +516,26 @@ class MediaDetailPage extends GetWidget<MediaDetailController> {
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildLoadingSkeleton(BuildContext context) {
+    final detail = _skeletonDetail();
+    return Skeletonizer(
+      enabled: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildOverView(context, detail),
+          const SizedBox(height: 16),
+          _buildSectionTitle('核心信息'),
+          _buildInfoList(context, detail),
+          const SizedBox(height: 16),
+          _buildSectionTitle('主演'),
+          const SizedBox(height: 16),
+          _buildActorList(detail.actors ?? const []),
+        ],
+      ),
     );
   }
 

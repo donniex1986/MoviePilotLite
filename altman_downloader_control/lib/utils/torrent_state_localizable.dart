@@ -42,4 +42,61 @@ class QBLocalizable {
   static const String active = '活跃';
   static const String inactive = '非活跃';
   static const String stalled = '停滞';
+
+  static String getStateText(String state) {
+    switch (state.toLowerCase()) {
+      case 'downloading':
+        return downloading;
+      case 'seeding':
+        return seeding;
+      case 'stopped':
+        return stopped;
+      case 'checking':
+        return checking;
+      case 'paused':
+        return paused;
+      case 'uploading':
+        return uploading;
+      case 'paused_download':
+        return pausedDownload;
+      case 'paused_upload':
+        return pausedUpload;
+      case 'forced_download':
+        return forcedDownload;
+      case 'forced_upload':
+        return forcedUpload;
+      case 'meta_download':
+        return metaDownload;
+      case 'forced_meta_download':
+        return forcedMetaDownload;
+      case 'stalled_download':
+      case 'stalleddl':
+        return stalledDownload;
+      case 'stalled_upload':
+      case 'stalledup':
+        return stalledUpload;
+      case 'checking_download':
+        return checkingDownload;
+      case 'checking_upload':
+        return checkingUpload;
+      case 'checking_resume_data':
+        return checkingResumeData;
+      case 'queued_download':
+        return queuedDownload;
+      case 'queued_upload':
+        return queuedUpload;
+      case 'moving':
+        return moving;
+      case 'error':
+        return error;
+      case 'missing_files':
+      case 'missingfiles':
+        return missingFiles;
+      case 'stopped_up':
+        return stopped;
+      case 'queued_to_seed':
+        return queuedToSeed;
+    }
+    return state;
+  }
 }

@@ -181,7 +181,7 @@ class ToastUtil {
 
 void showToast({String? message}) {
   if (message == null) return;
-  ToastUtil.warning(message);
+  ToastUtil.success(message);
 }
 
 void failToast({required String message}) {

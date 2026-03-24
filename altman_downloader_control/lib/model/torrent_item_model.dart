@@ -131,6 +131,98 @@ class TorrentModel {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'hash': hash,
+      'name': name,
+      'size': size,
+      'totalSize': totalSize,
+      'progress': progress,
+      'dlspeed': dlspeed,
+      'upspeed': upspeed,
+      'priority': priority,
+      'numSeeds': numSeeds,
+      'numLeechers': numLeechers,
+      'numComplete': numComplete,
+      'numIncomplete': numIncomplete,
+      'ratio': ratio,
+      'popularity': popularity,
+      'eta': eta,
+      'state': state,
+      'category': category,
+      'tags': tags,
+      'addedOn': addedOn,
+      'completionOn': completionOn,
+      'lastActivity': lastActivity,
+      'seenComplete': seenComplete,
+      'savePath': savePath,
+      'contentPath': contentPath,
+      'downloadPath': downloadPath,
+      'rootPath': rootPath,
+      'downloaded': downloaded,
+      'completed': completed,
+      'uploaded': uploaded,
+      'downloadedSession': downloadedSession,
+      'uploadedSession': uploadedSession,
+      'amountLeft': amountLeft,
+      'tracker': tracker,
+      'comment': comment,
+      'magnetUri': magnetUri,
+      'availability': availability,
+      'dlLimit': dlLimit,
+      'upLimit': upLimit,
+      'timeActive': timeActive,
+      'seedingTime': seedingTime,
+    };
+  }
+
+  factory TorrentModel.fromJson(Map<String, dynamic> json) {
+    return TorrentModel(
+      hash: json['hash']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      size: (json['size'] as num?)?.toInt() ?? 0,
+      totalSize: (json['totalSize'] as num?)?.toInt() ?? 0,
+      progress: (json['progress'] as num?)?.toDouble() ?? 0,
+      dlspeed: (json['dlspeed'] as num?)?.toInt() ?? 0,
+      upspeed: (json['upspeed'] as num?)?.toInt() ?? 0,
+      priority: (json['priority'] as num?)?.toInt() ?? 0,
+      numSeeds: (json['numSeeds'] as num?)?.toInt() ?? 0,
+      numLeechers: (json['numLeechers'] as num?)?.toInt() ?? 0,
+      numComplete: (json['numComplete'] as num?)?.toInt() ?? 0,
+      numIncomplete: (json['numIncomplete'] as num?)?.toInt() ?? 0,
+      ratio: (json['ratio'] as num?)?.toDouble() ?? 0,
+      popularity: (json['popularity'] as num?)?.toDouble() ?? 0,
+      eta: (json['eta'] as num?)?.toInt() ?? 0,
+      state: json['state']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      tags: (json['tags'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList(),
+      addedOn: (json['addedOn'] as num?)?.toInt() ?? 0,
+      completionOn: (json['completionOn'] as num?)?.toInt() ?? 0,
+      lastActivity: (json['lastActivity'] as num?)?.toInt() ?? 0,
+      seenComplete: (json['seenComplete'] as num?)?.toInt() ?? 0,
+      savePath: json['savePath']?.toString() ?? '',
+      contentPath: json['contentPath']?.toString() ?? '',
+      downloadPath: json['downloadPath']?.toString() ?? '',
+      rootPath: json['rootPath']?.toString() ?? '',
+      downloaded: (json['downloaded'] as num?)?.toInt() ?? 0,
+      completed: (json['completed'] as num?)?.toInt() ?? 0,
+      uploaded: (json['uploaded'] as num?)?.toInt() ?? 0,
+      downloadedSession: (json['downloadedSession'] as num?)?.toInt() ?? 0,
+      uploadedSession: (json['uploadedSession'] as num?)?.toInt() ?? 0,
+      amountLeft: (json['amountLeft'] as num?)?.toInt() ?? 0,
+      tracker: json['tracker']?.toString() ?? '',
+      comment: json['comment']?.toString() ?? '',
+      magnetUri: json['magnetUri']?.toString() ?? '',
+      availability: (json['availability'] as num?)?.toDouble() ?? 0,
+      dlLimit: (json['dlLimit'] as num?)?.toDouble() ?? 0,
+      upLimit: (json['upLimit'] as num?)?.toDouble() ?? 0,
+      timeActive: (json['timeActive'] as num?)?.toDouble() ?? 0,
+      seedingTime: (json['seedingTime'] as num?)?.toInt() ?? 0,
+    );
+  }
+
   /// 转换为 QBTorrentModel（兼容性方法）
   dynamic toQBTorrentModel() {
     // 导入 QBTorrentModel 并创建实例

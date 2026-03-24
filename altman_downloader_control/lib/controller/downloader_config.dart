@@ -6,7 +6,7 @@ class DownloaderConfig {
   final String password;
   final String username;
   final DownloaderType type;
-  String name;
+  String? name;
   DownloaderConfig({
     required this.id,
     required this.url,
