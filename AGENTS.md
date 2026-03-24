@@ -10,3 +10,23 @@
 
 ## 输出约束
 - 禁止在对话回复中输出任何代码内容（包括但不限于：代码块、代码片段、行号引用、patch/diff、堆栈中的代码行、以及内联代码格式）。如需修改代码，仅允许直接改动仓库文件而不展示代码。
+## Cursor Cloud specific instructions
+
+### Environment
+- Flutter 3.38.2 installed at `/opt/flutter`, Dart 3.10.0 bundled
+- Android SDK at `/opt/android-sdk` (SDK 36, build-tools 36.0.0, NDK 28.2)
+- PATH and ANDROID_HOME are set in `~/.bashrc`
+
+### Commands
+- **Install deps**: `flutter pub get`
+- **Code gen** (freezed/json_serializable/flutter_gen): `dart run build_runner build --delete-conflicting-outputs`
+- **Lint**: `flutter analyze`
+- **Test**: `flutter test`
+- **Build debug APK**: `flutter build apk --debug`
+- **Build release APK**: `flutter build apk --release --dart-define=FLUTTER_APP_ENV=release`
+
+### Gotchas
+- `dart run build_runner build` regenerates `*.freezed.dart` files. The committed `form_block_models.freezed.dart` has a known duplicate class issue (`InfoCardRowMenu` used for both `menu` and `group` constructors in `InfoCardRow`). **Do not regenerate** this file unless the source model is fixed — the build succeeds only with the committed version.
+- The project targets **Android/iOS/macOS only** — no web or linux platform. Cannot run interactively in a headless VM; use `flutter build apk --debug` to verify builds.
+- First Android build downloads Realm native binaries and CMake automatically — this can take ~2 minutes extra.
+- `pubspec.lock` may show minor version drifts after `flutter pub get`; restore with `git checkout -- pubspec.lock` if you don't intend to update deps.
