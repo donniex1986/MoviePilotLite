@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:altman_totp/page/totp_manage_page.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
@@ -160,6 +161,7 @@ class LoginPage extends GetView<LoginController> {
     bool enableSuggestions = true,
     void Function(String)? onSubmitted,
     TextInputAction? textInputAction,
+    Widget? suffix,
   }) {
     final hasWallpapers = controller.wallpapers.isNotEmpty;
     final textColor = hasWallpapers ? CupertinoColors.white : null;
@@ -196,6 +198,7 @@ class LoginPage extends GetView<LoginController> {
               ),
             )
           : null,
+      suffix: suffix,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
         color: fillColor,
@@ -360,6 +363,25 @@ class LoginPage extends GetView<LoginController> {
             '二步验证码（如未启用可留空）',
             keyboardType: TextInputType.number,
             prefix: const Icon(CupertinoIcons.number),
+            suffix: CupertinoButton(
+              padding: const EdgeInsets.only(right: 8),
+              minimumSize: const Size(0, 0),
+              onPressed: () async {
+                final code = await showCupertinoModalBottomSheet<String>(
+                  context: context,
+                  expand: true,
+                  builder: (_) => TotpManagePage(
+                    selectMode: true,
+                    targetServer: controller.serverController.text.trim(),
+                    targetUsername: controller.usernameController.text.trim(),
+                  ),
+                );
+                if (code is String && code.isNotEmpty) {
+                  controller.otpController.text = code;
+                }
+              },
+              child: const Text('选择'),
+            ),
           ),
         ],
       ),
@@ -390,6 +412,19 @@ class LoginPage extends GetView<LoginController> {
             ),
             Row(
               children: [
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Get.toNamed('/totp-manage'),
+                  child: Text(
+                    'TOTP',
+                    style: TextStyle(
+                      color: hasWallpapers
+                          ? CupertinoColors.white
+                          : CupertinoColors.activeBlue,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
                 CupertinoButton(
                   padding: EdgeInsets.zero,
                   onPressed: controller.profiles.isEmpty

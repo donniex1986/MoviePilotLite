@@ -15,3 +15,10 @@
 - 修复媒体详情页骨架加载与 `soft_edge_blur` 组合导致的断言问题。
 - 移除种子管理本地 Realm 缓存逻辑，回归在线数据流。
 - fix: douban media detail subscribe state error
+- 新增独立 `altman_totp` package，支持 TOTP 新增、编辑、删除、选择回填登录 OTP。
+- TOTP 本地存储改为 `sqflite`，支持多条记录与 UUID 主键。
+- 新增 TOTP 扫码录入与手动密钥录入，支持解析 `otpauth://` 并自动回填用户名。
+- 登录页 OTP 选择改为 modal 方式拉起 TOTP 选择页。
+- TOTP 管理页与编辑页增加验证码倒计时与逆向进度显示。
+- TOTP 管理页支持单项导出，提供二维码与字符串（含 `name`、`key`）复制。
+- 增加 iOS/Android 相机权限配置以支持二维码扫描。

@@ -6,6 +6,9 @@ PODS:
     - Flutter
   - liquid_tabbar_minimize (1.0.9):
     - Flutter
+  - mobile_scanner (7.0.0):
+    - Flutter
+    - FlutterMacOS
   - package_info_plus (0.4.5):
     - Flutter
   - realm (20.2.0):
@@ -29,6 +32,7 @@ DEPENDENCIES:
   - flutter_keyboard_visibility (from `.symlinks/plugins/flutter_keyboard_visibility/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - liquid_tabbar_minimize (from `.symlinks/plugins/liquid_tabbar_minimize/ios`)
+  - mobile_scanner (from `.symlinks/plugins/mobile_scanner/darwin`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - realm (from `.symlinks/plugins/realm/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
@@ -46,6 +50,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   liquid_tabbar_minimize:
     :path: ".symlinks/plugins/liquid_tabbar_minimize/ios"
+  mobile_scanner:
+    :path: ".symlinks/plugins/mobile_scanner/darwin"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   realm:
@@ -66,6 +72,7 @@ SPEC CHECKSUMS:
   flutter_keyboard_visibility: 4625131e43015dbbe759d9b20daaf77e0e3f6619
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   liquid_tabbar_minimize: 2623640cda6c1e01948a1af43af041420956d5db
+  mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   realm: 3d783b78767d1cab29b2bbe60c579fe5cd11d334
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a

@@ -41,6 +41,8 @@ dependencies:
   package_info_plus: ^9.0.0
   altman_downloader_control:
     path: ./altman_downloader_control
+  altman_totp:
+    path: ./altman_totp
 dev_dependencies:
   flutter_test:
     sdk: flutter

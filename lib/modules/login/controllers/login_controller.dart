@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:altman_totp/services/totp_service.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import '../../../utils/toast_util.dart';
 import '../../system_message/controllers/system_message_controller.dart';
@@ -14,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
   final _repository = Get.find<AuthRepository>();
+  final _totpService = Get.find<TotpService>();
   final _talker = Get.find<AppLog>();
   final imageUtil = Get.find<ImageUtil>();
 
@@ -55,9 +57,12 @@ class LoginController extends GetxController {
 
   @override
   void onInit() {
+    _totpService.load();
     _loadSavedWallpapers();
     _loadProfiles();
     _autoLogin();
+    serverController.addListener(_autofillTotpIfMatched);
+    usernameController.addListener(_autofillTotpIfMatched);
     super.onInit();
   }
 
@@ -105,6 +110,8 @@ class LoginController extends GetxController {
   @override
   void onClose() {
     _wallpaperTimer?.cancel();
+    serverController.removeListener(_autofillTotpIfMatched);
+    usernameController.removeListener(_autofillTotpIfMatched);
     super.onClose();
   }
 
@@ -237,6 +244,7 @@ class LoginController extends GetxController {
     serverController.text = profile.server;
     usernameController.text = profile.username;
     passwordController.text = profile.password;
+    _autofillTotpIfMatched(force: true);
 
     // 若当前在步骤 1，选中历史账号后直接进入步骤 2 并拉取壁纸
     if (step.value == 1) {
@@ -248,7 +256,8 @@ class LoginController extends GetxController {
     final server = serverController.text.trim();
     final username = usernameController.text.trim();
     final password = passwordController.text;
-    final otpPassword = otpController.text;
+    _autofillTotpIfMatched();
+    final otpPassword = otpController.text.trim();
 
     if (server.isEmpty || username.isEmpty || password.isEmpty) {
       ToastUtil.info('服务器地址、用户名和密码不能为空');
@@ -279,6 +288,16 @@ class LoginController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _autofillTotpIfMatched({bool force = false}) {
+    final server = serverController.text.trim();
+    final username = usernameController.text.trim();
+    if (server.isEmpty || username.isEmpty) return;
+    final code = _totpService.generateCurrentCode(server, username);
+    if (code == null || code.isEmpty) return;
+    if (!force && otpController.text.trim().isNotEmpty) return;
+    otpController.text = code;
   }
 
   Future<int?> _loadLastTabIndex() async {

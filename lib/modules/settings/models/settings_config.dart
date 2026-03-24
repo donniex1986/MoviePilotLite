@@ -69,6 +69,12 @@ List<SettingsCategory> get settingsCategories => [
         route: '/settings/app/app-setting',
         icon: Icons.tune,
       ),
+      SettingsSubItem(
+        id: 'totp-manage',
+        title: 'Authenticator',
+        route: '/totp-manage',
+        icon: Icons.key_outlined,
+      ),
       // SettingsSubItem(
       //   id: 'dashboard-config',
       //   title: 'Dashboard配置',

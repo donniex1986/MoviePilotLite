@@ -88,6 +88,8 @@ class SettingsPage extends GetView<SettingsController> {
 
   static Color _iconColorForCategory(SettingsCategory category) {
     switch (category.id) {
+      case SettingsCategoryId.app:
+        return CupertinoColors.activeBlue;
       case SettingsCategoryId.system:
         return CupertinoColors.systemIndigo;
       case SettingsCategoryId.storage:
