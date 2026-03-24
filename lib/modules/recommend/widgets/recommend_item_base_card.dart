@@ -75,8 +75,9 @@ class RecommendItemBaseCard extends GetView<SubscribeService> {
             year: item?.year,
             subscribeId: subscribeItem?.id?.toString(),
           );
-          final isTv = item?.type == 'tv';
-          final showEditSnack = ok && !isSubscribed && isTv && subscribeId != null;
+          final isTv = item?.type == 'tv' || item?.type == '电视剧';
+          final showEditSnack =
+              ok && !isSubscribed && isTv && subscribeId != null;
           if (ok && isSubscribed) {
             controller.subscribeItems[subscribeKey] = null;
           }
