@@ -223,8 +223,6 @@ class SiteSyncPage extends GetView<SettingsSiteSyncController> {
     return SettingsFieldRow(
       title: field.label,
       description: field.hint,
-      compact: false,
-      editMode: controller.isEditing.value,
       controlType: controlType,
       controlValue: value,
       unit: field.unit,

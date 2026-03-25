@@ -305,8 +305,6 @@ class _DirectoryExpandableItemState extends State<_DirectoryExpandableItem> {
     if (isToggle) {
       return SettingsFieldRow(
         title: title,
-        compact: true,
-        editMode: false,
         controlType: SettingsControlType.toggle,
         controlValue: toggleValue,
         switchValue: toggleValue,
@@ -316,8 +314,6 @@ class _DirectoryExpandableItemState extends State<_DirectoryExpandableItem> {
     }
     return SettingsFieldRow(
       title: title,
-      compact: true,
-      editMode: false,
       controlType: SettingsControlType.text,
       controlValue: value ?? '-',
       editable: false,

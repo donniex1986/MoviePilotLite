@@ -283,7 +283,7 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
             () => SettingsFieldRow(
               title: '洗版',
               description: '根据洗版优先级进行洗版订阅',
-              compact: true,
+
               controlType: SettingsControlType.toggle,
               editable: true,
               switchValue: controller.bestVersion.value,
@@ -294,7 +294,6 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
             () => SettingsFieldRow(
               title: '使用 ImdbID 搜索',
               description: '开启使用 ImdbID 精确搜索资源',
-              compact: true,
               controlType: SettingsControlType.toggle,
               editable: true,
               switchValue: controller.searchImdbid.value,
@@ -477,7 +476,6 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
       return SettingsFieldRow(
         title: '订阅站点',
         description: '订阅的站点范围，不选使用系统设置',
-        compact: true,
         control: _buildNavControl(
           context,
           display: display.length > 14
@@ -508,7 +506,6 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
       return SettingsFieldRow(
         title: '下载器',
         description: '指定该订阅使用的下载器',
-        compact: true,
         controlType: SettingsControlType.select,
         controlValue: val,
         enumLabel: val.isEmpty ? '默认' : val,
@@ -530,7 +527,6 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
       return SettingsFieldRow(
         title: '保存路径',
         description: '指定该订阅的下载保存路径，留空自动使用系统设定',
-        compact: true,
         controlType: SettingsControlType.select,
         controlValue: val,
         enumLabel: val.isEmpty
@@ -550,7 +546,6 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
       return SettingsFieldRow(
         title: '优先级规则组',
         description: '按选定的过滤规则组对订阅进行过滤',
-        compact: true,
         control: _buildNavControl(
           context,
           display: display,
@@ -582,7 +577,6 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
       return SettingsFieldRow(
         title: '指定季',
         description: '指定任意季订阅',
-        compact: true,
         controlType: SettingsControlType.select,
         controlValue: val.toString(),
         enumLabel: display,

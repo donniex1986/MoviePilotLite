@@ -110,7 +110,7 @@ List<SettingsFieldConfig> get aiAssistantConfigFields => [
   SettingsFieldConfig(
     label: 'LLM 模型名称',
     envKey: 'LLM_MODEL',
-    type: SettingsFieldType.text,
+    type: SettingsFieldType.select,
     hint: '指定使用的LLM模型,如gpt-3.5-turbo、deepseek-chat等',
     icon: Icons.psychology_outlined,
     enumKey: 'LLM_MODEL',

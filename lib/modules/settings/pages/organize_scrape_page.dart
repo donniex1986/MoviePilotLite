@@ -240,8 +240,6 @@ class OrganizeScrapePage extends GetView<SettingsOrganizeScrapeController> {
     return SettingsFieldRow(
       title: field.label,
       description: field.hint,
-      compact: false,
-      editMode: controller.isEditing.value,
       controlType: controlType,
       controlValue: value,
       unit: field.unit,

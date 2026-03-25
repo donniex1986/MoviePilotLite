@@ -111,8 +111,6 @@ class SettingsAdvancedDetailPage
     }
     return SettingsFieldRow(
       title: field.label,
-      compact: true,
-      editMode: false,
       editable: false,
       controlType: controlType,
       controlValue: displayValue ?? value,

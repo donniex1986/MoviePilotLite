@@ -223,7 +223,6 @@ class SettingsSearchDownloadPage extends GetView<SettingsSearchDownloadControlle
         title: field.label,
         description: field.hint,
         icon: field.icon,
-        editMode: controller.isEditing.value,
         control: SearchSourceMultiSelect(
           value: value?.toString(),
           editable: editable,
@@ -254,7 +253,6 @@ class SettingsSearchDownloadPage extends GetView<SettingsSearchDownloadControlle
       title: field.label,
       description: field.hint,
       icon: field.icon,
-      editMode: controller.isEditing.value,
       controlType: controlType,
       controlValue: value,
       unit: field.unit,

@@ -152,9 +152,11 @@ class SiteOptionsPage extends GetView<SettingsSiteOptionsController> {
                     context,
                     header: '站点数据',
                     fields: controller.fields
-                        .where((f) =>
-                            f.envKey == 'SITEDATA_REFRESH_INTERVAL' ||
-                            f.envKey == 'SITE_MESSAGE')
+                        .where(
+                          (f) =>
+                              f.envKey == 'SITEDATA_REFRESH_INTERVAL' ||
+                              f.envKey == 'SITE_MESSAGE',
+                        )
                         .toList(),
                   ),
                   _buildSection(
@@ -233,8 +235,6 @@ class SiteOptionsPage extends GetView<SettingsSiteOptionsController> {
     return SettingsFieldRow(
       title: field.label,
       description: field.hint,
-      compact: false,
-      editMode: controller.isEditing.value,
       controlType: controlType,
       controlValue: value,
       unit: field.unit,
@@ -257,8 +257,8 @@ class SiteOptionsPage extends GetView<SettingsSiteOptionsController> {
       selectOptions: selectOpts,
       onSelectChanged:
           editable && isSelect && selectOpts != null && selectOpts.isNotEmpty
-              ? (v) => _onFieldChanged(field, v)
-              : null,
+          ? (v) => _onFieldChanged(field, v)
+          : null,
     );
   }
 
