@@ -57,13 +57,21 @@ class ProfilePage extends GetView<ProfileController> {
                         _buildServerCard(profile, userInfo),
                         const SizedBox(height: 16),
                         _buildThirdPartyCard(userInfo),
-                        const SizedBox(height: 24),
-                        _buildLogoutButton(context),
                       ],
                     ),
                   ),
                 ),
               ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: _buildLogoutButton(context),
+                ),
+              ),
+              SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           );
         }),
