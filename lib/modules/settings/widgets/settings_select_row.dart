@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moviepilot_mobile/modules/settings/models/settings_enums.dart';
 import 'package:moviepilot_mobile/modules/settings/widgets/settings_textinput_row.dart';
@@ -39,6 +38,8 @@ class SettingsSelectRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canPick =
+        editable && selectOptions.isNotEmpty && onSelectChanged != null;
     return SettingsTextInputRow(
       title: title,
       description: description,
@@ -49,37 +50,41 @@ class SettingsSelectRow extends StatelessWidget {
       onTextSubmitted: editable && allowInput ? onSelectChanged : null,
       textController: displayController,
       enabled: true,
-      suffix: PopupMenuButton(
-        borderRadius: BorderRadius.circular(25),
-        offset: Offset(0, 40),
-        itemBuilder: (context) => selectOptions
-            .map(
-              (opt) => PopupMenuItem(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (optionLeadingBuilder != null)
-                      ...(() {
-                        final w = optionLeadingBuilder!(opt);
-                        if (w == null) return const <Widget>[];
-                        return <Widget>[w, const SizedBox(width: 8)];
-                      })(),
-                    Text(
-                      opt.label,
-                      style: Theme.of(context).textTheme.bodyMedium,
+      suffix: canPick
+          ? PopupMenuButton(
+              borderRadius: BorderRadius.circular(25),
+              offset: Offset(0, 40),
+              itemBuilder: (context) => selectOptions
+                  .map(
+                    (opt) => PopupMenuItem(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (optionLeadingBuilder != null)
+                            ...(() {
+                              final w = optionLeadingBuilder!(opt);
+                              if (w == null) return const <Widget>[];
+                              return <Widget>[w, const SizedBox(width: 8)];
+                            })(),
+                          Text(
+                            opt.label,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                      onTap: () => updateSelectDisplay(
+                        value: opt.value,
+                        label: opt.label,
+                      ),
                     ),
-                  ],
-                ),
-                onTap: () =>
-                    updateSelectDisplay(value: opt.value, label: opt.label),
+                  )
+                  .toList(),
+              child: Icon(
+                Icons.more_vert_outlined,
+                color: Theme.of(context).primaryColor,
               ),
             )
-            .toList(),
-        child: Icon(
-          Icons.more_vert_outlined,
-          color: Theme.of(context).primaryColor,
-        ),
-      ),
+          : null,
     );
   }
 

@@ -136,6 +136,7 @@ class SettingsBasicController extends GetxController {
               envData.value?.globalImageCache ?? false,
             );
             form.hydrateAll((k) => envData.value?.valueFor(k));
+            _applyAiRecommendDefaults();
             await _tryAutoloadLlmModels();
             return;
           }
@@ -217,6 +218,18 @@ class SettingsBasicController extends GetxController {
     final err = await fetchLlmModels();
     if (err == null || err.isEmpty) {
       _llmModelsLoaded.value = true;
+    }
+  }
+
+  void _applyAiRecommendDefaults() {
+    final maxField = aiFields.firstWhere(
+      (f) => f.envKey == 'AI_RECOMMEND_MAX_ITEMS',
+    );
+    final v = envData.value?.valueFor(maxField.envKey);
+    if (v != null) return;
+    final s = form.stateFor(maxField);
+    if (s is SettingsNumberFieldState) {
+      s.hydrate(50);
     }
   }
 
