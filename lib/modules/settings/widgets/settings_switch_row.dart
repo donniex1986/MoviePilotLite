@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class SettingsSwitchRow extends StatelessWidget {
@@ -88,7 +89,7 @@ class SettingsSwitchRow extends StatelessWidget {
     return CupertinoListTile.notched(
       leading: leading,
       title: _buildTitle(context),
-      additionalInfo: CupertinoSwitch(
+      additionalInfo: Switch(
         value: value,
         onChanged: (v) {
           HapticFeedback.lightImpact();
@@ -99,8 +100,8 @@ class SettingsSwitchRow extends StatelessWidget {
       padding: const EdgeInsetsDirectional.only(
         start: 12,
         end: 16,
-        top: 10,
-        bottom: 10,
+        top: 0,
+        bottom: 0,
       ),
     );
   }

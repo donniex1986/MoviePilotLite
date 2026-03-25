@@ -40,7 +40,17 @@ class SettingsFormRowBuilder {
     List<SettingsEnumOption>? selectOptions;
     if (field.type == SettingsFieldType.select && field.enumKey != null) {
       selectOptions = optionsOf?.call(field.enumKey!) ?? const [];
-      enumLabel = enumValueToLabel(field.enumKey!, value);
+      final valStr = value?.toString();
+      if (valStr != null) {
+        for (final opt in selectOptions) {
+          final optStr = opt.value.toString();
+          if (optStr.toLowerCase() == valStr.toLowerCase()) {
+            enumLabel = opt.label;
+            break;
+          }
+        }
+      }
+      enumLabel ??= enumValueToLabel(field.enumKey!, value);
     }
 
     return SettingsFieldRow(

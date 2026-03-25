@@ -34,6 +34,29 @@ const Map<String, Map<String, SettingsOptionVisual>> settingsOptionVisuals = {
     'openai': SettingsOptionVisual(icon: Icons.auto_awesome_outlined),
     'google': SettingsOptionVisual(icon: Icons.cloud_outlined),
   },
+  'DIR_MONITOR_TYPE': {
+    'monitor': SettingsOptionVisual(icon: Icons.remove_red_eye_outlined),
+    'downloader': SettingsOptionVisual(icon: Icons.download_outlined),
+    'manual': SettingsOptionVisual(icon: Icons.pan_tool_outlined),
+    'none': SettingsOptionVisual(icon: Icons.block_outlined),
+  },
+  'DIR_TRANSFER_TYPE': {
+    'copy': SettingsOptionVisual(icon: Icons.copy_all_outlined),
+    'move': SettingsOptionVisual(icon: Icons.drive_file_move_outline),
+    'softlink': SettingsOptionVisual(icon: Icons.link_outlined),
+    'hardlink': SettingsOptionVisual(icon: Icons.link),
+  },
+  'DIR_OVERWRITE_MODE': {
+    'always': SettingsOptionVisual(icon: Icons.autorenew),
+    'never': SettingsOptionVisual(icon: Icons.do_not_disturb_on_outlined),
+    'size': SettingsOptionVisual(icon: Icons.swap_vert),
+    'latest': SettingsOptionVisual(icon: Icons.schedule),
+  },
+  'DIR_MEDIA_TYPE': {
+    '': SettingsOptionVisual(icon: Icons.all_inclusive),
+    '电影': SettingsOptionVisual(icon: Icons.movie_outlined),
+    '电视剧': SettingsOptionVisual(icon: Icons.tv_outlined),
+  },
 };
 
 Widget? buildSettingsOptionLeading(

@@ -75,6 +75,9 @@ class DirectorySetting with _$DirectorySetting {
     @JsonKey(name: 'monitor_type', fromJson: _stringFromJson)
     @Default('')
     String monitorType,
+    @JsonKey(name: 'monitor_mode', fromJson: _stringFromJson)
+    @Default('')
+    String monitorMode,
     @JsonKey(name: 'media_type', fromJson: _stringFromJson)
     @Default('')
     String mediaType,

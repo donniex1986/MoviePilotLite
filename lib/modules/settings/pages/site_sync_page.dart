@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/settings/controllers/settings_site_sync_controller.dart';
 import 'package:moviepilot_mobile/modules/settings/models/settings_enums.dart';
@@ -78,44 +79,25 @@ class SiteSyncPage extends GetView<SettingsSiteSyncController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final editing = controller.isEditing.value;
-      return CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          leading: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () => Get.back(),
-            child: const Icon(CupertinoIcons.back),
-          ),
-          middle: const Text(
-            '站点同步',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-          trailing: editing
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: _confirmCancel,
-                      child: const Text('取消'),
-                    ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: _confirmSave,
-                      child: const Text('保存'),
-                    ),
-                  ],
-                )
-              : CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: controller.enterEditMode,
-                  child: const Text('编辑'),
-                ),
-          backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(
-            context,
-          ),
-          border: null,
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('站点同步'),
+          actions: editing
+              ? [
+                  TextButton(
+                    onPressed: _confirmCancel,
+                    child: const Text('取消'),
+                  ),
+                  TextButton(onPressed: _confirmSave, child: const Text('保存')),
+                ]
+              : [
+                  TextButton(
+                    onPressed: controller.enterEditMode,
+                    child: const Text('编辑'),
+                  ),
+                ],
         ),
-        child: Obx(() {
+        body: Obx(() {
           if (controller.isLoading.value && controller.envData.value == null) {
             return const Center(child: CupertinoActivityIndicator());
           }
