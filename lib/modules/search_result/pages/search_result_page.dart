@@ -1,18 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:ui';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/search_result/controllers/search_result_controller.dart';
 import 'package:moviepilot_mobile/modules/search_result/models/search_result_models.dart';
 import 'package:moviepilot_mobile/modules/search_result/widgets/search_result_filter_sheet.dart'
-    show
-        SearchResultFilterSectionConfig,
-        SearchResultFilterSheet,
-        chipColorForType;
+    show SearchResultFilterSectionConfig, SearchResultFilterSheet;
 import 'package:moviepilot_mobile/modules/search_result/widgets/search_result_torrent_item.dart';
 import 'package:moviepilot_mobile/modules/search_result/widgets/sort_pull_down_widget.dart';
-import 'package:moviepilot_mobile/theme/app_theme.dart';
-import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SearchResultPage extends GetView<SearchResultController> {
@@ -23,11 +19,14 @@ class SearchResultPage extends GetView<SearchResultController> {
   static const double _horizontalPadding = 16;
   static const double _cardSpacing = 12;
   static const int _skeletonCardCount = 4;
+  static const double _floatingBarHeight = 52;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildNavigationBar(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: _buildFloatingBar(context),
       body: Obx(() {
         if (controller.isClosed) return const SizedBox.shrink();
         final items = controller.visibleItems;
@@ -39,15 +38,6 @@ class SearchResultPage extends GetView<SearchResultController> {
         return CustomScrollView(
           controller: scrollController,
           slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: _horizontalPadding,
-                vertical: 15,
-              ),
-              sliver: SliverToBoxAdapter(
-                child: _buildSearchAndToolbar(context),
-              ),
-            ),
             if (showSkeleton)
               _buildSkeletonSliver(context)
             else if (errorText != null)
@@ -56,7 +46,9 @@ class SearchResultPage extends GetView<SearchResultController> {
               SliverToBoxAdapter(child: _buildEmptyState(context))
             else
               _buildResults(context, items, viewMode),
-            SliverToBoxAdapter(child: SizedBox(height: _bottomSpacer(context))),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: _floatingBarHeight + 32),
+            ),
           ],
         );
       }),
@@ -67,53 +59,154 @@ class SearchResultPage extends GetView<SearchResultController> {
     return AppBar(title: const Text('搜索结果'), centerTitle: false);
   }
 
-  Widget _buildSearchAndToolbar(BuildContext context) {
-    return Section(
-      child: Column(
-        children: [
-          CupertinoSearchTextField(
-            decoration: BoxDecoration(
-              color: CupertinoColors.tertiarySystemFill,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            onSubmitted: controller.updateKeyword,
-            placeholder: '搜索标题、描述、站点…',
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+  Widget _buildFloatingBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final child = Row(
+      children: [
+        _buildFloatingFilterButton(context),
+        const SizedBox(width: 8),
+        Expanded(child: _buildFakeSearchBar(context)),
+        const SizedBox(width: 8),
+        _buildFloatingSortButton(context),
+      ],
+    );
+    final pill = Container(
+      height: _floatingBarHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
+      child: child,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          color: theme.colorScheme.surface.withValues(alpha: 0.2),
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+            width: 0.5,
           ),
-          const SizedBox(height: 10),
-          _buildToolbar(context),
-        ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+            child: pill,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildToolbar(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: Row(
-        children: [
-          Obx(
-            () => SortPullDownWidget<SearchResultSortKey>(
-              isAscending: controller.sortDirection.value == SortDirection.asc,
-              currentValue: controller.sortKey.value,
-              options: SearchResultSortKey.values,
-              labelBuilder: _sortLabel,
-              onDirectionChanged: (asc) {
-                final want = asc ? SortDirection.asc : SortDirection.desc;
-                if (controller.sortDirection.value != want) {
-                  controller.toggleSortDirection();
-                }
-              },
-              onValueChanged: controller.updateSortKey,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(child: _buildFilterBar(context)),
-          const SizedBox(width: 6),
-          _buildFilterButton(context),
-        ],
+  Widget _buildFloatingFilterButton(BuildContext context) {
+    return Obx(() {
+      final hasFilters = controller.hasActiveFilters;
+      final color = hasFilters
+          ? CupertinoDynamicColor.resolve(CupertinoColors.activeBlue, context)
+          : CupertinoDynamicColor.resolve(
+              CupertinoColors.secondaryLabel,
+              context,
+            );
+      return CupertinoButton(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        onPressed: () => _openFilterSheet(context),
+        child: Icon(CupertinoIcons.slider_horizontal_3, size: 20, color: color),
+      );
+    });
+  }
+
+  Widget _buildFloatingSortButton(BuildContext context) {
+    return Obx(
+      () => SortPullDownWidget<SearchResultSortKey>(
+        isAscending: controller.sortDirection.value == SortDirection.asc,
+        currentValue: controller.sortKey.value,
+        options: SearchResultSortKey.values,
+        labelBuilder: _sortLabel,
+        onDirectionChanged: (asc) {
+          final want = asc ? SortDirection.asc : SortDirection.desc;
+          if (controller.sortDirection.value != want) {
+            controller.toggleSortDirection();
+          }
+        },
+        onValueChanged: controller.updateSortKey,
       ),
     );
+  }
+
+  Widget _buildFakeSearchBar(BuildContext context) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: () => _openKeywordSheet(context),
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
+        child: Row(
+          children: [
+            Icon(
+              CupertinoIcons.search,
+              size: 18,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Obx(
+                () => Text(
+                  controller.keyword.value.isEmpty
+                      ? '筛选标题、描述、站点…'
+                      : controller.keyword.value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openKeywordSheet(BuildContext context) async {
+    final controllerText = TextEditingController(
+      text: controller.keyword.value,
+    );
+    final submitted = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final insets = MediaQuery.of(ctx).viewInsets;
+        return Padding(
+          padding: EdgeInsets.only(bottom: insets.bottom),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            decoration: BoxDecoration(
+              color: CupertinoDynamicColor.resolve(
+                CupertinoColors.systemBackground,
+                ctx,
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(18),
+              ),
+            ),
+            child: CupertinoSearchTextField(
+              controller: controllerText,
+              autofocus: true,
+              placeholder: '筛选标题、描述、站点…',
+              onSubmitted: (v) => Navigator.of(ctx).pop(v),
+            ),
+          ),
+        );
+      },
+    );
+    controllerText.dispose();
+    if (submitted == null) return;
+    controller.updateKeyword(submitted);
   }
 
   static String _sortLabel(SearchResultSortKey key) {
@@ -129,96 +222,6 @@ class SearchResultPage extends GetView<SearchResultController> {
       case SearchResultSortKey.pubdate:
         return '发布时间';
     }
-  }
-
-  Widget _buildFilterButton(BuildContext context) {
-    return Obx(() {
-      final hasFilters = controller.hasActiveFilters;
-      final accent = context.primaryColor;
-      return CupertinoButton(
-        padding: const EdgeInsets.all(6),
-        minSize: 0,
-        pressedOpacity: 0.7,
-        onPressed: () => _openFilterSheet(context),
-        child: _buildLightChip(
-          context,
-          isActive: hasFilters,
-          child: Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              Icon(
-                CupertinoIcons.slider_horizontal_3,
-                size: 16,
-                color: hasFilters
-                    ? accent
-                    : CupertinoDynamicColor.resolve(
-                        CupertinoColors.tertiaryLabel,
-                        context,
-                      ),
-              ),
-              if (hasFilters)
-                Positioned(
-                  right: -2,
-                  top: -2,
-                  child: Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: accent,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildLightChip(
-    BuildContext context, {
-    required Widget child,
-    bool isActive = false,
-  }) {
-    final baseColor = CupertinoDynamicColor.resolve(
-      CupertinoColors.tertiarySystemFill,
-      context,
-    );
-    final activeTint = context.primaryColor.withOpacity(isActive ? 0.2 : 0);
-    final bgColor = Color.alphaBlend(activeTint, baseColor);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-        border: isActive
-            ? Border.all(color: context.primaryColor.withOpacity(0.3), width: 1)
-            : null,
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildCountBadge(BuildContext context, int count, [Color? color]) {
-    final c = color ?? context.primaryColor;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-      decoration: BoxDecoration(
-        color: c,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        '$count',
-        style: const TextStyle(
-          color: CupertinoColors.white,
-          fontWeight: FontWeight.w600,
-          fontSize: 10,
-        ),
-      ),
-    );
   }
 
   static const Map<SearchResultFilterType, String> _filterSectionTitles = {
@@ -290,115 +293,6 @@ class SearchResultPage extends GetView<SearchResultController> {
             controller.toggleFilter(SearchResultFilterType.team, v),
       ),
     ];
-  }
-
-  Widget _buildFilterBar(BuildContext context) {
-    return Obx(() {
-      final items = [
-        _FilterChipItem(
-          filterType: SearchResultFilterType.site,
-          label: _filterSectionTitles[SearchResultFilterType.site]!,
-          icon: CupertinoIcons.cube_box,
-          count: controller.selectedSites.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.season,
-          label: _filterSectionTitles[SearchResultFilterType.season]!,
-          icon: CupertinoIcons.tv,
-          count: controller.selectedSeasons.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.promotion,
-          label: _filterSectionTitles[SearchResultFilterType.promotion]!,
-          icon: CupertinoIcons.tag,
-          count: controller.selectedPromotions.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.videoEncode,
-          label: _filterSectionTitles[SearchResultFilterType.videoEncode]!,
-          icon: CupertinoIcons.film,
-          count: controller.selectedVideoEncodes.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.quality,
-          label: _filterSectionTitles[SearchResultFilterType.quality]!,
-          icon: CupertinoIcons.star,
-          count: controller.selectedQualities.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.resolution,
-          label: _filterSectionTitles[SearchResultFilterType.resolution]!,
-          icon: CupertinoIcons.rectangle,
-          count: controller.selectedResolutions.length,
-        ),
-        _FilterChipItem(
-          filterType: SearchResultFilterType.team,
-          label: _filterSectionTitles[SearchResultFilterType.team]!,
-          icon: CupertinoIcons.person_2,
-          count: controller.selectedTeams.length,
-        ),
-      ];
-
-      return SizedBox(
-        height: 32,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return _buildFilterPill(context, item);
-          },
-          separatorBuilder: (_, __) => const SizedBox(width: 6),
-          itemCount: items.length,
-        ),
-      );
-    });
-  }
-
-  Widget _buildFilterPill(BuildContext context, _FilterChipItem item) {
-    final hasCount = item.count > 0;
-    final chipColor = chipColorForType(item.filterType, selected: hasCount);
-    final bgColor = hasCount ? chipColor : chipColor.withValues(alpha: 0.12);
-    final borderColor = hasCount
-        ? chipColor
-        : chipColor.withValues(alpha: 0.35);
-
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      minSize: 0,
-      pressedOpacity: 0.7,
-      onPressed: () => _openFilterSheet(context, item.filterType),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(5),
-          border: Border.all(color: borderColor, width: 1),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              item.icon,
-              size: 14,
-              color: hasCount ? Colors.white : chipColor,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              item.label,
-              style: TextStyle(
-                color: hasCount ? Colors.white : chipColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (hasCount) ...[
-              const SizedBox(width: 4),
-              _buildCountBadge(context, item.count, chipColor),
-            ],
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildResults(
@@ -539,10 +433,6 @@ class SearchResultPage extends GetView<SearchResultController> {
     );
   }
 
-  double _bottomSpacer(BuildContext context) {
-    return MediaQuery.of(context).padding.bottom + 70;
-  }
-
   Future<void> _openFilterSheet(
     BuildContext context, [
     SearchResultFilterType? filterMode,
@@ -569,6 +459,7 @@ class SearchResultPage extends GetView<SearchResultController> {
   }
 }
 
+// ignore: unused_element
 class _FilterChipItem {
   const _FilterChipItem({
     required this.filterType,
