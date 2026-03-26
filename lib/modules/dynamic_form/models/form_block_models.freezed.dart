@@ -7985,6 +7985,18 @@ mixin _$InfoCardRow {
       Map<String, dynamic>? events,
     )
     menu,
+    required TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )
+    group,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
@@ -8026,6 +8038,18 @@ mixin _$InfoCardRow {
       Map<String, dynamic>? events,
     )?
     menu,
+    TResult? Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
@@ -8067,6 +8091,18 @@ mixin _$InfoCardRow {
       Map<String, dynamic>? events,
     )?
     menu,
+    TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -8074,18 +8110,21 @@ mixin _$InfoCardRow {
     TResult Function(InfoCardRowBase value) $default, {
     required TResult Function(InfoCardRowProgress value) progress,
     required TResult Function(InfoCardRowMenu value) menu,
+    required TResult Function(InfoCardRowGroup value) group,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>(
     TResult? Function(InfoCardRowBase value)? $default, {
     TResult? Function(InfoCardRowProgress value)? progress,
     TResult? Function(InfoCardRowMenu value)? menu,
+    TResult? Function(InfoCardRowGroup value)? group,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>(
     TResult Function(InfoCardRowBase value)? $default, {
     TResult Function(InfoCardRowProgress value)? progress,
     TResult Function(InfoCardRowMenu value)? menu,
+    TResult Function(InfoCardRowGroup value)? group,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 
@@ -8390,6 +8429,18 @@ class _$InfoCardRowBaseImpl implements InfoCardRowBase {
       Map<String, dynamic>? events,
     )
     menu,
+    required TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )
+    group,
   }) {
     return $default(
       iconName,
@@ -8444,6 +8495,18 @@ class _$InfoCardRowBaseImpl implements InfoCardRowBase {
       Map<String, dynamic>? events,
     )?
     menu,
+    TResult? Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
   }) {
     return $default?.call(
       iconName,
@@ -8498,6 +8561,18 @@ class _$InfoCardRowBaseImpl implements InfoCardRowBase {
       Map<String, dynamic>? events,
     )?
     menu,
+    TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
     required TResult orElse(),
   }) {
     if ($default != null) {
@@ -8521,6 +8596,7 @@ class _$InfoCardRowBaseImpl implements InfoCardRowBase {
     TResult Function(InfoCardRowBase value) $default, {
     required TResult Function(InfoCardRowProgress value) progress,
     required TResult Function(InfoCardRowMenu value) menu,
+    required TResult Function(InfoCardRowGroup value) group,
   }) {
     return $default(this);
   }
@@ -8531,6 +8607,7 @@ class _$InfoCardRowBaseImpl implements InfoCardRowBase {
     TResult? Function(InfoCardRowBase value)? $default, {
     TResult? Function(InfoCardRowProgress value)? progress,
     TResult? Function(InfoCardRowMenu value)? menu,
+    TResult? Function(InfoCardRowGroup value)? group,
   }) {
     return $default?.call(this);
   }
@@ -8541,6 +8618,7 @@ class _$InfoCardRowBaseImpl implements InfoCardRowBase {
     TResult Function(InfoCardRowBase value)? $default, {
     TResult Function(InfoCardRowProgress value)? progress,
     TResult Function(InfoCardRowMenu value)? menu,
+    TResult Function(InfoCardRowGroup value)? group,
     required TResult orElse(),
   }) {
     if ($default != null) {
@@ -8849,6 +8927,18 @@ class _$InfoCardRowProgressImpl implements InfoCardRowProgress {
       Map<String, dynamic>? events,
     )
     menu,
+    required TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )
+    group,
   }) {
     return progress(
       iconName,
@@ -8907,6 +8997,18 @@ class _$InfoCardRowProgressImpl implements InfoCardRowProgress {
       Map<String, dynamic>? events,
     )?
     menu,
+    TResult? Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
   }) {
     return progress?.call(
       iconName,
@@ -8965,6 +9067,18 @@ class _$InfoCardRowProgressImpl implements InfoCardRowProgress {
       Map<String, dynamic>? events,
     )?
     menu,
+    TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
     required TResult orElse(),
   }) {
     if (progress != null) {
@@ -8992,6 +9106,7 @@ class _$InfoCardRowProgressImpl implements InfoCardRowProgress {
     TResult Function(InfoCardRowBase value) $default, {
     required TResult Function(InfoCardRowProgress value) progress,
     required TResult Function(InfoCardRowMenu value) menu,
+    required TResult Function(InfoCardRowGroup value) group,
   }) {
     return progress(this);
   }
@@ -9002,6 +9117,7 @@ class _$InfoCardRowProgressImpl implements InfoCardRowProgress {
     TResult? Function(InfoCardRowBase value)? $default, {
     TResult? Function(InfoCardRowProgress value)? progress,
     TResult? Function(InfoCardRowMenu value)? menu,
+    TResult? Function(InfoCardRowGroup value)? group,
   }) {
     return progress?.call(this);
   }
@@ -9012,6 +9128,7 @@ class _$InfoCardRowProgressImpl implements InfoCardRowProgress {
     TResult Function(InfoCardRowBase value)? $default, {
     TResult Function(InfoCardRowProgress value)? progress,
     TResult Function(InfoCardRowMenu value)? menu,
+    TResult Function(InfoCardRowGroup value)? group,
     required TResult orElse(),
   }) {
     if (progress != null) {
@@ -9299,6 +9416,18 @@ class _$InfoCardRowMenuImpl implements InfoCardRowMenu {
       Map<String, dynamic>? events,
     )
     menu,
+    required TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )
+    group,
   }) {
     return menu(
       iconName,
@@ -9354,6 +9483,18 @@ class _$InfoCardRowMenuImpl implements InfoCardRowMenu {
       Map<String, dynamic>? events,
     )?
     menu,
+    TResult? Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
   }) {
     return menu?.call(
       iconName,
@@ -9409,6 +9550,18 @@ class _$InfoCardRowMenuImpl implements InfoCardRowMenu {
       Map<String, dynamic>? events,
     )?
     menu,
+    TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
     required TResult orElse(),
   }) {
     if (menu != null) {
@@ -9433,6 +9586,7 @@ class _$InfoCardRowMenuImpl implements InfoCardRowMenu {
     TResult Function(InfoCardRowBase value) $default, {
     required TResult Function(InfoCardRowProgress value) progress,
     required TResult Function(InfoCardRowMenu value) menu,
+    required TResult Function(InfoCardRowGroup value) group,
   }) {
     return menu(this);
   }
@@ -9443,6 +9597,7 @@ class _$InfoCardRowMenuImpl implements InfoCardRowMenu {
     TResult? Function(InfoCardRowBase value)? $default, {
     TResult? Function(InfoCardRowProgress value)? progress,
     TResult? Function(InfoCardRowMenu value)? menu,
+    TResult? Function(InfoCardRowGroup value)? group,
   }) {
     return menu?.call(this);
   }
@@ -9453,6 +9608,7 @@ class _$InfoCardRowMenuImpl implements InfoCardRowMenu {
     TResult Function(InfoCardRowBase value)? $default, {
     TResult Function(InfoCardRowProgress value)? progress,
     TResult Function(InfoCardRowMenu value)? menu,
+    TResult Function(InfoCardRowGroup value)? group,
     required TResult orElse(),
   }) {
     if (menu != null) {
@@ -9498,6 +9654,480 @@ abstract class InfoCardRowMenu implements InfoCardRow {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InfoCardRowMenuImplCopyWith<_$InfoCardRowMenuImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$InfoCardRowGroupImplCopyWith<$Res>
+    implements $InfoCardRowCopyWith<$Res> {
+  factory _$$InfoCardRowGroupImplCopyWith(
+    _$InfoCardRowGroupImpl value,
+    $Res Function(_$InfoCardRowGroupImpl) then,
+  ) = __$$InfoCardRowGroupImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String? iconName,
+    String? iconColor,
+    String label,
+    String? subtitle,
+    String? value,
+    String? chipText,
+    String? chipColor,
+    List<InfoCardRowMenuItem> menuItems,
+    Map<String, dynamic>? events,
+  });
+}
+
+/// @nodoc
+class __$$InfoCardRowGroupImplCopyWithImpl<$Res>
+    extends _$InfoCardRowCopyWithImpl<$Res, _$InfoCardRowGroupImpl>
+    implements _$$InfoCardRowGroupImplCopyWith<$Res> {
+  __$$InfoCardRowGroupImplCopyWithImpl(
+    _$InfoCardRowGroupImpl _value,
+    $Res Function(_$InfoCardRowGroupImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of InfoCardRow
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? iconName = freezed,
+    Object? iconColor = freezed,
+    Object? label = null,
+    Object? subtitle = freezed,
+    Object? value = freezed,
+    Object? chipText = freezed,
+    Object? chipColor = freezed,
+    Object? menuItems = null,
+    Object? events = freezed,
+  }) {
+    return _then(
+      _$InfoCardRowGroupImpl(
+        iconName: freezed == iconName
+            ? _value.iconName
+            : iconName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        iconColor: freezed == iconColor
+            ? _value.iconColor
+            : iconColor // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        label: null == label
+            ? _value.label
+            : label // ignore: cast_nullable_to_non_nullable
+                  as String,
+        subtitle: freezed == subtitle
+            ? _value.subtitle
+            : subtitle // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        value: freezed == value
+            ? _value.value
+            : value // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        chipText: freezed == chipText
+            ? _value.chipText
+            : chipText // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        chipColor: freezed == chipColor
+            ? _value.chipColor
+            : chipColor // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        menuItems: null == menuItems
+            ? _value._menuItems
+            : menuItems // ignore: cast_nullable_to_non_nullable
+                  as List<InfoCardRowMenuItem>,
+        events: freezed == events
+            ? _value._events
+            : events // ignore: cast_nullable_to_non_nullable
+                  as Map<String, dynamic>?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$InfoCardRowGroupImpl implements InfoCardRowGroup {
+  const _$InfoCardRowGroupImpl({
+    this.iconName,
+    this.iconColor,
+    required this.label,
+    this.subtitle,
+    this.value,
+    this.chipText,
+    this.chipColor,
+    final List<InfoCardRowMenuItem> menuItems = const [],
+    final Map<String, dynamic>? events,
+  }) : _menuItems = menuItems,
+       _events = events;
+
+  @override
+  final String? iconName;
+  @override
+  final String? iconColor;
+  @override
+  final String label;
+  @override
+  final String? subtitle;
+  @override
+  final String? value;
+  @override
+  final String? chipText;
+  @override
+  final String? chipColor;
+  final List<InfoCardRowMenuItem> _menuItems;
+  @override
+  @JsonKey()
+  List<InfoCardRowMenuItem> get menuItems {
+    if (_menuItems is EqualUnmodifiableListView) return _menuItems;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_menuItems);
+  }
+
+  final Map<String, dynamic>? _events;
+  @override
+  Map<String, dynamic>? get events {
+    final value = _events;
+    if (value == null) return null;
+    if (_events is EqualUnmodifiableMapView) return _events;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
+  @override
+  String toString() {
+    return 'InfoCardRow.group(iconName: $iconName, iconColor: $iconColor, label: $label, subtitle: $subtitle, value: $value, chipText: $chipText, chipColor: $chipColor, menuItems: $menuItems, events: $events)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$InfoCardRowGroupImpl &&
+            (identical(other.iconName, iconName) ||
+                other.iconName == iconName) &&
+            (identical(other.iconColor, iconColor) ||
+                other.iconColor == iconColor) &&
+            (identical(other.label, label) || other.label == label) &&
+            (identical(other.subtitle, subtitle) ||
+                other.subtitle == subtitle) &&
+            (identical(other.value, value) || other.value == value) &&
+            (identical(other.chipText, chipText) ||
+                other.chipText == chipText) &&
+            (identical(other.chipColor, chipColor) ||
+                other.chipColor == chipColor) &&
+            const DeepCollectionEquality().equals(
+              other._menuItems,
+              _menuItems,
+            ) &&
+            const DeepCollectionEquality().equals(other._events, _events));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    iconName,
+    iconColor,
+    label,
+    subtitle,
+    value,
+    chipText,
+    chipColor,
+    const DeepCollectionEquality().hash(_menuItems),
+    const DeepCollectionEquality().hash(_events),
+  );
+
+  /// Create a copy of InfoCardRow
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$InfoCardRowGroupImplCopyWith<_$InfoCardRowGroupImpl> get copyWith =>
+      __$$InfoCardRowGroupImplCopyWithImpl<_$InfoCardRowGroupImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      Map<String, dynamic>? events,
+    )
+    $default, {
+    required TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      double progressValue,
+      String? progressLabel,
+      String? progressColor,
+      String? progressBackgroundColor,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      Map<String, dynamic>? events,
+    )
+    progress,
+    required TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )
+    menu,
+    required TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )
+    group,
+  }) {
+    return group(
+      iconName,
+      iconColor,
+      label,
+      subtitle,
+      value,
+      chipText,
+      chipColor,
+      menuItems,
+      events,
+    );
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      Map<String, dynamic>? events,
+    )?
+    $default, {
+    TResult? Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      double progressValue,
+      String? progressLabel,
+      String? progressColor,
+      String? progressBackgroundColor,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      Map<String, dynamic>? events,
+    )?
+    progress,
+    TResult? Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    menu,
+    TResult? Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
+  }) {
+    return group?.call(
+      iconName,
+      iconColor,
+      label,
+      subtitle,
+      value,
+      chipText,
+      chipColor,
+      menuItems,
+      events,
+    );
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      Map<String, dynamic>? events,
+    )?
+    $default, {
+    TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      double progressValue,
+      String? progressLabel,
+      String? progressColor,
+      String? progressBackgroundColor,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      Map<String, dynamic>? events,
+    )?
+    progress,
+    TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    menu,
+    TResult Function(
+      String? iconName,
+      String? iconColor,
+      String label,
+      String? subtitle,
+      String? value,
+      String? chipText,
+      String? chipColor,
+      List<InfoCardRowMenuItem> menuItems,
+      Map<String, dynamic>? events,
+    )?
+    group,
+    required TResult orElse(),
+  }) {
+    if (group != null) {
+      return group(
+        iconName,
+        iconColor,
+        label,
+        subtitle,
+        value,
+        chipText,
+        chipColor,
+        menuItems,
+        events,
+      );
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(InfoCardRowBase value) $default, {
+    required TResult Function(InfoCardRowProgress value) progress,
+    required TResult Function(InfoCardRowMenu value) menu,
+    required TResult Function(InfoCardRowGroup value) group,
+  }) {
+    return group(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(InfoCardRowBase value)? $default, {
+    TResult? Function(InfoCardRowProgress value)? progress,
+    TResult? Function(InfoCardRowMenu value)? menu,
+    TResult? Function(InfoCardRowGroup value)? group,
+  }) {
+    return group?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(InfoCardRowBase value)? $default, {
+    TResult Function(InfoCardRowProgress value)? progress,
+    TResult Function(InfoCardRowMenu value)? menu,
+    TResult Function(InfoCardRowGroup value)? group,
+    required TResult orElse(),
+  }) {
+    if (group != null) {
+      return group(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class InfoCardRowGroup implements InfoCardRow {
+  const factory InfoCardRowGroup({
+    final String? iconName,
+    final String? iconColor,
+    required final String label,
+    final String? subtitle,
+    final String? value,
+    final String? chipText,
+    final String? chipColor,
+    final List<InfoCardRowMenuItem> menuItems,
+    final Map<String, dynamic>? events,
+  }) = _$InfoCardRowGroupImpl;
+
+  @override
+  String? get iconName;
+  @override
+  String? get iconColor;
+  @override
+  String get label;
+  @override
+  String? get subtitle;
+  @override
+  String? get value;
+  @override
+  String? get chipText;
+  @override
+  String? get chipColor;
+  List<InfoCardRowMenuItem> get menuItems;
+  @override
+  Map<String, dynamic>? get events;
+
+  /// Create a copy of InfoCardRow
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$InfoCardRowGroupImplCopyWith<_$InfoCardRowGroupImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

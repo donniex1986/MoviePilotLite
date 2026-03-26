@@ -371,48 +371,6 @@ class $AssetsImagesPagesGen {
   /// File path: assets/images/pages/404.svg
   SvgGenImage get a404Svg => const SvgGenImage('assets/images/pages/404.svg');
 
-  /// File path: assets/images/pages/auth-v1-mask-dark.png
-  AssetGenImage get authV1MaskDark =>
-      const AssetGenImage('assets/images/pages/auth-v1-mask-dark.png');
-
-  /// File path: assets/images/pages/auth-v1-mask-light.png
-  AssetGenImage get authV1MaskLight =>
-      const AssetGenImage('assets/images/pages/auth-v1-mask-light.png');
-
-  /// File path: assets/images/pages/auth-v1-tree-2.png
-  AssetGenImage get authV1Tree2 =>
-      const AssetGenImage('assets/images/pages/auth-v1-tree-2.png');
-
-  /// File path: assets/images/pages/auth-v1-tree.png
-  AssetGenImage get authV1Tree =>
-      const AssetGenImage('assets/images/pages/auth-v1-tree.png');
-
-  /// File path: assets/images/pages/auth-v2-mask-dark.png
-  AssetGenImage get authV2MaskDark =>
-      const AssetGenImage('assets/images/pages/auth-v2-mask-dark.png');
-
-  /// File path: assets/images/pages/auth-v2-mask-light.png
-  AssetGenImage get authV2MaskLight =>
-      const AssetGenImage('assets/images/pages/auth-v2-mask-light.png');
-
-  /// File path: assets/images/pages/auth-v2-register-illustration-dark.png
-  AssetGenImage get authV2RegisterIllustrationDark => const AssetGenImage(
-    'assets/images/pages/auth-v2-register-illustration-dark.png',
-  );
-
-  /// File path: assets/images/pages/auth-v2-register-illustration-light.png
-  AssetGenImage get authV2RegisterIllustrationLight => const AssetGenImage(
-    'assets/images/pages/auth-v2-register-illustration-light.png',
-  );
-
-  /// File path: assets/images/pages/misc-mask-dark.png
-  AssetGenImage get miscMaskDark =>
-      const AssetGenImage('assets/images/pages/misc-mask-dark.png');
-
-  /// File path: assets/images/pages/misc-mask-light.png
-  AssetGenImage get miscMaskLight =>
-      const AssetGenImage('assets/images/pages/misc-mask-light.png');
-
   /// File path: assets/images/pages/pose-fs-9.png
   AssetGenImage get poseFs9 =>
       const AssetGenImage('assets/images/pages/pose-fs-9.png');
@@ -429,24 +387,7 @@ class $AssetsImagesPagesGen {
   AssetGenImage get tree => const AssetGenImage('assets/images/pages/tree.png');
 
   /// List of all assets
-  List<dynamic> get values => [
-    a404Png,
-    a404Svg,
-    authV1MaskDark,
-    authV1MaskLight,
-    authV1Tree2,
-    authV1Tree,
-    authV2MaskDark,
-    authV2MaskLight,
-    authV2RegisterIllustrationDark,
-    authV2RegisterIllustrationLight,
-    miscMaskDark,
-    miscMaskLight,
-    poseFs9,
-    tree2,
-    tree3,
-    tree,
-  ];
+  List<dynamic> get values => [a404Png, a404Svg, poseFs9, tree2, tree3, tree];
 }
 
 class $AssetsImagesSvgGen {

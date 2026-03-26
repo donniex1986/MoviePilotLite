@@ -231,7 +231,7 @@ class InfoCardRow with _$InfoCardRow {
     String? chipColor,
     @Default([]) List<InfoCardRowMenuItem> menuItems,
     Map<String, dynamic>? events,
-  }) = InfoCardRowMenu;
+  }) = InfoCardRowGroup;
 }
 
 @freezed

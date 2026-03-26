@@ -114,6 +114,7 @@ class InfoCardWidget extends StatelessWidget {
         (data) => data.events,
         progress: (data) => data.events,
         menu: (data) => data.events,
+        group: (data) => data.events,
       ),
     );
 
@@ -123,6 +124,8 @@ class InfoCardWidget extends StatelessWidget {
           _buildProgressRow(context, data, iconData, iconColor, clickEvent),
       menu: (data) =>
           _buildMenuRow(context, data, iconData, iconColor, clickEvent),
+      group: (data) =>
+          _buildGroupRow(context, data, iconData, iconColor, clickEvent),
     );
   }
 
@@ -261,6 +264,48 @@ class InfoCardWidget extends StatelessWidget {
       trailingWidgets.add(const SizedBox(width: 6));
     }
     if (row.menuItems.isNotEmpty) {
+      trailingWidgets.add(_buildPopupMenuButton(context, row.menuItems));
+    }
+
+    return CupertinoListTile(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      leading: iconData != null
+          ? _buildSubtleIconBadge(iconData, iconColor)
+          : null,
+      title: Text(
+        row.label,
+        style: TextStyle(
+          fontSize: 15,
+          color: CupertinoDynamicColor.resolve(CupertinoColors.label, context),
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: _buildSubtitle(context, row.subtitle),
+      trailing: trailingWidgets.isNotEmpty
+          ? Row(mainAxisSize: MainAxisSize.min, children: trailingWidgets)
+          : null,
+      onTap: clickEvent != null ? () => _handleClickEvent(clickEvent) : null,
+    );
+  }
+
+  Widget _buildGroupRow(
+    BuildContext context,
+    InfoCardRowGroup row,
+    IconData? iconData,
+    Color iconColor,
+    _InfoCardClickEvent? clickEvent,
+  ) {
+    final valueTrailing = _buildValueChipTrailing(
+      context,
+      value: row.value,
+      chipText: row.chipText,
+      chipColor: row.chipColor,
+    );
+    final trailingWidgets = <Widget>[];
+    trailingWidgets.add(Flexible(child: valueTrailing));
+    if (row.menuItems.isNotEmpty) {
+      trailingWidgets.add(const SizedBox(width: 6));
       trailingWidgets.add(_buildPopupMenuButton(context, row.menuItems));
     }
 

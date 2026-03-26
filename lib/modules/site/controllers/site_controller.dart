@@ -66,36 +66,126 @@ class SiteController extends GetxController {
     }
   }
 
+  SiteModel _safeParseSiteModel(Map<String, dynamic> json) {
+    int asInt(Object? v, {int def = 0}) {
+      if (v == null) return def;
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      if (v is String) return int.tryParse(v) ?? def;
+      return def;
+    }
+
+    String asString(Object? v, {String def = ''}) {
+      if (v == null) return def;
+      final s = v.toString();
+      return s;
+    }
+
+    bool asBool(Object? v, {bool def = false}) {
+      if (v == null) return def;
+      if (v is bool) return v;
+      if (v is int) return v != 0;
+      if (v is num) return v.toInt() != 0;
+      if (v is String) {
+        final s = v.toLowerCase();
+        return s == 'true' || s == '1';
+      }
+      return def;
+    }
+
+    return SiteModel(
+      id: asInt(json['id']),
+      name: asString(json['name']),
+      domain: asString(json['domain']),
+      url: asString(json['url']),
+      pri: asInt(json['pri']),
+      rss: (json['rss']?.toString().isEmpty ?? true)
+          ? null
+          : json['rss'].toString(),
+      cookie: (json['cookie']?.toString().isEmpty ?? true)
+          ? null
+          : json['cookie'].toString(),
+      ua: (json['ua']?.toString().isEmpty ?? true)
+          ? null
+          : json['ua'].toString(),
+      apikey: (json['apikey']?.toString().isEmpty ?? true)
+          ? null
+          : json['apikey'].toString(),
+      token: (json['token']?.toString().isEmpty ?? true)
+          ? null
+          : json['token'].toString(),
+      proxy: asInt(json['proxy']),
+      filter: (json['filter']?.toString().isEmpty ?? true)
+          ? null
+          : json['filter'].toString(),
+      render: asInt(json['render']),
+      public: asInt(json['public']),
+      note: (json['note']?.toString().isEmpty ?? true)
+          ? null
+          : json['note'].toString(),
+      timeout: asInt(json['timeout'], def: 15),
+      limitInterval: asInt(json['limit_interval']),
+      limitCount: asInt(json['limit_count']),
+      limitSeconds: asInt(json['limit_seconds']),
+      isActive: asBool(json['is_active'], def: true),
+      downloader: asString(json['downloader']),
+    );
+  }
+
   Future<void> load({String? keyword}) async {
     isLoading.value = true;
     errorText.value = null;
     loadFromCache();
 
+    final sites = <SiteModel>[];
+    final userDataMap = <String, SiteUserDataModel>{};
+    final iconBytesMap = <int, List<int>>{};
+
     try {
-      // 1. 获取站点列表
       final siteResponse = await _apiClient.get<dynamic>('/api/v1/site/');
       final status = siteResponse.statusCode ?? 0;
       if (status >= 400) {
         errorText.value = '获取站点列表失败 (HTTP $status)';
         if (items.isEmpty) items.clear();
+        isLoading.value = false;
         return;
       }
 
       final siteListRaw = siteResponse.data;
       final siteList = siteListRaw is List ? siteListRaw : <dynamic>[];
-      final sites = <SiteModel>[];
       for (final item in siteList) {
         if (item is Map<String, dynamic>) {
           try {
-            sites.add(SiteModel.fromJson(item));
+            final site = _safeParseSiteModel(item);
+            if (site.id != -1) sites.add(site);
           } catch (e, st) {
-            _log.handle(e, stackTrace: st, message: '解析站点失败');
+            final id = item['id'];
+            final name = item['name'];
+            _log.handle(
+              e,
+              stackTrace: st,
+              message: '解析站点失败 id=$id name=$name',
+            );
           }
         }
       }
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '加载站点列表失败');
+      errorText.value = '加载失败，请稍后重试';
+      if (items.isEmpty) items.clear();
+      isLoading.value = false;
+      return;
+    } finally {
+      if (sites.isNotEmpty) {
+        final baseMerged = sites
+            .map((site) => SiteItem(site: site, userData: null, iconBytes: null))
+            .toList()
+          ..sort((a, b) => a.site.pri.compareTo(b.site.pri));
+        items.assignAll(baseMerged);
+      }
+    }
 
-      // 2. 获取用户数据（按 domain 匹配）
-      final userDataMap = <String, SiteUserDataModel>{};
+    try {
       final userDataResponse = await _apiClient.get<dynamic>(
         '/api/v1/site/userdata/latest',
       );
@@ -116,37 +206,32 @@ class SiteController extends GetxController {
           }
         }
       }
-
-      // 3. 并行拉取每个站点的 icon（先查本地 url->base64 缓存，未命中再请求接口并写入缓存）
-      final iconBytesMap = <int, List<int>>{};
-      await Future.wait(sites.map((site) => _fetchIconBytes(site))).then((
-        results,
-      ) {
-        for (var i = 0; i < sites.length; i++) {
-          final bytes = results[i];
-          if (bytes != null && bytes.isNotEmpty) {
-            iconBytesMap[sites[i].id] = bytes;
-          }
-        }
-      });
-
-      // 4. 合并为 SiteItem，按 pri 排序
-      final merged = sites.map((site) {
-        final userData = userDataMap[site.domain];
-        final iconBytes = iconBytesMap[site.id];
-        return SiteItem(site: site, iconBytes: iconBytes, userData: userData);
-      }).toList();
-
-      merged.sort((a, b) => a.site.pri.compareTo(b.site.pri));
-      items.assignAll(merged);
-      _saveToCache();
     } catch (e, st) {
-      _log.handle(e, stackTrace: st, message: '加载站点失败');
-      errorText.value = '加载失败，请稍后重试';
-      if (items.isEmpty) items.clear();
-    } finally {
-      isLoading.value = false;
+      _log.handle(e, stackTrace: st, message: '加载站点用户数据失败');
     }
+
+    try {
+      final results = await Future.wait(sites.map((site) => _fetchIconBytes(site)));
+      for (var i = 0; i < sites.length; i++) {
+        final bytes = results[i];
+        if (bytes != null && bytes.isNotEmpty) {
+          iconBytesMap[sites[i].id] = bytes;
+        }
+      }
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '加载站点图标失败');
+    }
+
+    final merged = sites.map((site) {
+      final userData = userDataMap[site.domain];
+      final iconBytes = iconBytesMap[site.id];
+      return SiteItem(site: site, iconBytes: iconBytes, userData: userData);
+    }).toList();
+
+    merged.sort((a, b) => a.site.pri.compareTo(b.site.pri));
+    items.assignAll(merged);
+    _saveToCache();
+    isLoading.value = false;
   }
 
   void loadFromCache() {
@@ -248,11 +333,12 @@ class SiteController extends GetxController {
       );
     }).toList();
 
-    final userDataCaches = items.where((item) => item.userData != null).map((
-      item,
-    ) {
-      final u = item.userData!;
-      return SiteUserDataCache(
+    final userDataByDomain = <String, SiteUserDataCache>{};
+    for (final item in items) {
+      final u = item.userData;
+      if (u == null) continue;
+      if (u.domain.isEmpty) continue;
+      userDataByDomain[u.domain] = SiteUserDataCache(
         u.domain,
         u.username,
         u.userid,
@@ -271,13 +357,14 @@ class SiteController extends GetxController {
         u.updatedDay,
         u.updatedTime,
       );
-    }).toList();
+    }
+    final userDataCaches = userDataByDomain.values.toList();
 
     _realm.realm.write(() {
       _realm.realm.deleteAll<SiteModelCache>();
       _realm.realm.deleteAll<SiteUserDataCache>();
-      _realm.realm.addAll(siteCaches);
-      _realm.realm.addAll(userDataCaches);
+      _realm.realm.addAll(siteCaches, update: true);
+      _realm.realm.addAll(userDataCaches, update: true);
     });
   }
 
