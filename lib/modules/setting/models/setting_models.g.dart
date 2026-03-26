@@ -48,6 +48,9 @@ _$DirectorySettingImpl _$$DirectorySettingImplFromJson(
   monitorType: json['monitor_type'] == null
       ? ''
       : _stringFromJson(json['monitor_type']),
+  monitorMode: json['monitor_mode'] == null
+      ? ''
+      : _stringFromJson(json['monitor_mode']),
   mediaType: json['media_type'] == null
       ? ''
       : _stringFromJson(json['media_type']),
@@ -91,6 +94,7 @@ Map<String, dynamic> _$$DirectorySettingImplToJson(
   'download_path': instance.downloadPath,
   'priority': instance.priority,
   'monitor_type': instance.monitorType,
+  'monitor_mode': instance.monitorMode,
   'media_type': instance.mediaType,
   'media_category': instance.mediaCategory,
   'transfer_type': instance.transferType,

@@ -1,102 +1,39 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/settings/models/settings_field_config.dart';
 import 'package:moviepilot_mobile/modules/settings/models/settings_site_options_config.dart';
 import 'package:moviepilot_mobile/modules/settings/models/system_env_model.dart';
+import 'package:moviepilot_mobile/modules/settings/state/settings_form_manager.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 
 class SettingsSiteOptionsController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
 
+  bool _forceNextFormHydrate = false;
+
   final envData = Rxn<SystemEnvData>();
   final isLoading = false.obs;
   final errorText = RxnString();
   final isUpdating = false.obs;
-  final isEditing = false.obs;
-  final pendingChanges = <String, dynamic>{}.obs;
+  final isEditing = true.obs;
 
-  final Map<String, TextEditingController> _textControllers = {};
+  late final SettingsFormManager form = SettingsFormManager(
+    fields: siteOptionsConfigFields,
+  );
 
   List<SettingsFieldConfig> get fields => siteOptionsConfigFields;
 
-  bool get hasPendingChanges => pendingChanges.isNotEmpty;
-
-  void enterEditMode() {
-    pendingChanges.clear();
-    _syncAllTextControllers();
-    isEditing.value = true;
-  }
+  bool get hasPendingChanges => form.hasPendingChanges;
 
   void cancelEdit() {
-    _revertTextControllers();
-    pendingChanges.clear();
-    isEditing.value = false;
-  }
-
-  void exitEditMode() {
-    pendingChanges.clear();
-    isEditing.value = false;
+    form.hydrateAll((k) => envData.value?.valueFor(k));
+    form.clearDirty();
   }
 
   Future<bool> saveEdit() async {
-    if (pendingChanges.isEmpty) {
-      isEditing.value = false;
-      return true;
-    }
-    final ok = await updateEnv(Map.from(pendingChanges));
-    if (ok) {
-      pendingChanges.clear();
-      _syncAllTextControllers();
-      isEditing.value = false;
-    }
+    if (!form.hasPendingChanges) return true;
+    final ok = await updateEnv(form.toPatch());
+    if (ok) form.clearDirty();
     return ok;
-  }
-
-  void addPendingChange(String key, dynamic value) {
-    pendingChanges[key] = value;
-  }
-
-  void _syncAllTextControllers() {
-    for (final f in fields) {
-      if (f.type == SettingsFieldType.text) {
-        final c = _textControllers[f.envKey];
-        if (c != null) {
-          final v = valueFor(f);
-          c.text = v?.toString() ?? '';
-        }
-      }
-    }
-  }
-
-  void _revertTextControllers() {
-    for (final f in fields) {
-      if (f.type == SettingsFieldType.text) {
-        final c = _textControllers[f.envKey];
-        if (c != null) {
-          final v = valueFor(f);
-          c.text = v?.toString() ?? '';
-        }
-      }
-    }
-  }
-
-  TextEditingController textControllerFor(SettingsFieldConfig field) {
-    final c = _textControllers.putIfAbsent(field.envKey, () {
-      final controller = TextEditingController();
-      final v = valueFor(field);
-      controller.text = v?.toString() ?? '';
-      return controller;
-    });
-    if (!isEditing.value) {
-      final v = valueFor(field);
-      final s = v?.toString() ?? '';
-      if (c.text != s) c.text = s;
-    } else if (!pendingChanges.containsKey(field.envKey)) {
-      final v = valueFor(field);
-      final s = v?.toString() ?? '';
-      if (c.text != s) c.text = s;
-    }
-    return c;
   }
 
   @override
@@ -107,10 +44,7 @@ class SettingsSiteOptionsController extends GetxController {
 
   @override
   void onClose() {
-    for (final c in _textControllers.values) {
-      c.dispose();
-    }
-    _textControllers.clear();
+    form.dispose();
     super.onClose();
   }
 
@@ -137,6 +71,7 @@ class SettingsSiteOptionsController extends GetxController {
         if (body != null) {
           final parsed = SystemEnvResponse.fromJson(body);
           if (parsed.success) {
+            _forceNextFormHydrate = true;
             await load();
             return true;
           }
@@ -167,6 +102,14 @@ class SettingsSiteOptionsController extends GetxController {
           final parsed = SystemEnvResponse.fromJson(body);
           if (parsed.success && parsed.data != null) {
             envData.value = parsed.data;
+            final syncForm = _forceNextFormHydrate ||
+                !isEditing.value ||
+                !form.hasPendingChanges;
+            _forceNextFormHydrate = false;
+            if (syncForm) {
+              form.hydrateAll((k) => envData.value?.valueFor(k));
+              if (!isEditing.value) form.clearDirty();
+            }
             return;
           }
         }
@@ -177,15 +120,5 @@ class SettingsSiteOptionsController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-  }
-
-  dynamic valueFor(SettingsFieldConfig field) =>
-      envData.value?.valueFor(field.envKey);
-
-  dynamic effectiveValueFor(SettingsFieldConfig field) {
-    if (pendingChanges.containsKey(field.envKey)) {
-      return pendingChanges[field.envKey];
-    }
-    return valueFor(field);
   }
 }

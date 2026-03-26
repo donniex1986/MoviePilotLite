@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/settings/models/settings_basic_config.dart';
 import 'package:moviepilot_mobile/modules/settings/models/settings_field_config.dart';
+import 'package:moviepilot_mobile/modules/settings/models/settings_enums.dart';
 import 'package:moviepilot_mobile/modules/settings/models/system_env_model.dart';
+import 'package:moviepilot_mobile/modules/settings/state/settings_form_manager.dart';
+import 'package:moviepilot_mobile/modules/settings/state/settings_field_state.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 
@@ -13,118 +15,60 @@ class SettingsBasicController extends GetxController {
   final isLoading = false.obs;
   final errorText = RxnString();
   final isUpdating = false.obs;
-  final isEditing = false.obs;
-  final pendingChanges = <String, dynamic>{}.obs;
+  final isEditing = true.obs;
 
   final imageUtil = Get.find<ImageUtil>();
 
-  /// 编辑态下 AI 区域展开状态，切换开关时立即更新
-  final aiSectionExpanded = false.obs;
+  late final SettingsFormManager form = SettingsFormManager(
+    fields: [...basicFields, ...aiFields],
+  );
 
-  final Map<String, TextEditingController> _textControllers = {};
+  final llmModelOptions = <SettingsEnumOption>[].obs;
+  final _llmModelsLoaded = false.obs;
 
   List<SettingsFieldConfig> get basicFields => basicConfigFields;
   List<SettingsFieldConfig> get aiFields => aiAssistantConfigFields;
   bool get aiAgentEnabled => envData.value?.aiAgentEnable ?? false;
 
-  bool get hasPendingChanges => pendingChanges.isNotEmpty;
+  bool get hasPendingChanges => form.hasPendingChanges;
 
-  void enterEditMode() {
-    pendingChanges.clear();
-    aiSectionExpanded.value = aiAgentEnabled;
-    _syncAllTextControllers();
+  @override
+  void onInit() {
+    super.onInit();
+    onLoad();
+  }
+
+  onLoad() async {
+    await load();
     isEditing.value = true;
   }
 
-  void cancelEdit() {
-    _revertTextControllers();
-    pendingChanges.clear();
-    aiSectionExpanded.value = aiAgentEnabled;
-    isEditing.value = false;
-  }
-
-  void exitEditMode() {
-    pendingChanges.clear();
-    aiSectionExpanded.value = aiAgentEnabled;
-    isEditing.value = false;
-  }
-
   Future<bool> saveEdit() async {
-    if (pendingChanges.isEmpty) {
+    if (!form.hasPendingChanges) {
       isEditing.value = false;
       return true;
     }
-    final ok = await updateEnv(Map.from(pendingChanges));
+    final ok = await updateEnv(form.toPatch());
     if (ok) {
-      pendingChanges.clear();
-      _syncAllTextControllers();
+      form.clearDirty();
       isEditing.value = false;
     }
     return ok;
   }
 
-  void addPendingChange(String key, dynamic value) {
-    pendingChanges[key] = value;
-  }
-
-  void setAiSectionExpanded(bool v) {
-    aiSectionExpanded.value = v;
-    addPendingChange('AI_AGENT_ENABLE', v);
-  }
-
-  void _syncAllTextControllers() {
-    for (final f in [...basicFields, ...aiFields]) {
-      if (f.type == SettingsFieldType.text ||
-          f.type == SettingsFieldType.number) {
-        final c = _textControllers[f.envKey];
-        if (c != null) {
-          final v = valueFor(f);
-          c.text = v?.toString() ?? '';
-        }
-      }
-    }
-  }
-
-  void _revertTextControllers() {
-    for (final f in [...basicFields, ...aiFields]) {
-      if (f.type == SettingsFieldType.text ||
-          f.type == SettingsFieldType.number) {
-        final c = _textControllers[f.envKey];
-        if (c != null) {
-          final v = valueFor(f);
-          c.text = v?.toString() ?? '';
-        }
-      }
-    }
-  }
-
-  TextEditingController textControllerFor(SettingsFieldConfig field) {
-    final c = _textControllers.putIfAbsent(field.envKey, () {
-      final controller = TextEditingController();
-      final v = valueFor(field);
-      controller.text = v?.toString() ?? '';
-      return controller;
-    });
-    if (!isEditing.value) {
-      final v = valueFor(field);
-      final s = v?.toString() ?? '';
-      if (c.text != s) c.text = s;
-    } else if (!pendingChanges.containsKey(field.envKey)) {
-      // 编辑态下若用户未修改该字段，则从 valueFor 同步（兜底）
-      final v = valueFor(field);
-      final s = v?.toString() ?? '';
-      if (c.text != s) c.text = s;
-    }
-    return c;
-  }
-
-  void syncTextController(SettingsFieldConfig field) {
-    final c = _textControllers[field.envKey];
-    if (c != null) {
-      final v = valueFor(field);
-      final s = v?.toString() ?? '';
-      if (c.text != s) c.text = s;
-    }
+  bool get aiSectionVisible {
+    final d = envData.value;
+    if (d == null) return false;
+    if (!isEditing.value) return d.aiAgentEnable ?? false;
+    final s = form.stateFor(
+      const SettingsFieldConfig(
+        label: '启用智能助手',
+        envKey: 'AI_AGENT_ENABLE',
+        type: SettingsFieldType.toggle,
+      ),
+    );
+    if (s is SettingsToggleFieldState) return s.value.value;
+    return d.aiAgentEnable ?? false;
   }
 
   @override
@@ -135,10 +79,7 @@ class SettingsBasicController extends GetxController {
 
   @override
   void onClose() {
-    for (final c in _textControllers.values) {
-      c.dispose();
-    }
-    _textControllers.clear();
+    form.dispose();
     super.onClose();
   }
 
@@ -194,6 +135,9 @@ class SettingsBasicController extends GetxController {
             imageUtil.saveGlobalCachedEnabled(
               envData.value?.globalImageCache ?? false,
             );
+            form.hydrateAll((k) => envData.value?.valueFor(k));
+            _applyAiRecommendDefaults();
+            await _tryAutoloadLlmModels();
             return;
           }
         }
@@ -209,20 +153,10 @@ class SettingsBasicController extends GetxController {
   dynamic valueFor(SettingsFieldConfig field) =>
       envData.value?.valueFor(field.envKey);
 
-  /// 编辑态下优先使用待保存值
-  dynamic effectiveValueFor(SettingsFieldConfig field) {
-    if (pendingChanges.containsKey(field.envKey)) {
-      return pendingChanges[field.envKey];
-    }
-    return valueFor(field);
-  }
-
   bool shouldShowField(SettingsFieldConfig field) {
-    if (field.conditionKey == null || field.conditionValue == null) return true;
-    final v = isEditing.value && pendingChanges.containsKey(field.conditionKey!)
-        ? pendingChanges[field.conditionKey!]
-        : envData.value?.valueFor(field.conditionKey!);
-    return v?.toString().toLowerCase() == field.conditionValue?.toLowerCase();
+    final d = envData.value;
+    if (d == null) return false;
+    return form.shouldShow(field, (k) => d.valueFor(k));
   }
 
   List<SettingsFieldConfig> visibleBasicFields() =>
@@ -230,4 +164,85 @@ class SettingsBasicController extends GetxController {
 
   List<SettingsFieldConfig> visibleAiFields() =>
       aiFields.where(shouldShowField).toList();
+
+  Future<String?> fetchLlmModels() async {
+    final provider = _readString('LLM_PROVIDER');
+    final apiKey = _readString('LLM_API_KEY');
+    final baseUrl = _readString('LLM_BASE_URL');
+
+    if (provider.isEmpty || apiKey.isEmpty || baseUrl.isEmpty) {
+      return '请先填写 LLM 提供商 / LLM API 密钥 / LLM 基础 URL';
+    }
+
+    try {
+      final resp = await _apiClient.get<Map<String, dynamic>>(
+        '/api/v1/system/llm-models',
+        queryParameters: {
+          'provider': provider,
+          'api_key': apiKey,
+          'base_url': baseUrl,
+        },
+      );
+      final status = resp.statusCode ?? 0;
+      final body = resp.data;
+      if (status < 200 || status >= 300 || body == null) {
+        return '请求失败($status)';
+      }
+      final success = body['success'] == true;
+      if (!success) {
+        final msg = body['message']?.toString();
+        return msg == null || msg.isEmpty ? '请求失败' : msg;
+      }
+      final data = body['data'];
+      if (data is! List) return '响应数据格式错误';
+      final models = data
+          .map((e) => e?.toString())
+          .whereType<String>()
+          .where((s) => s.trim().isNotEmpty)
+          .toList();
+      llmModelOptions.assignAll(
+        models.map((m) => SettingsEnumOption(value: m, label: m)).toList(),
+      );
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<void> _tryAutoloadLlmModels() async {
+    if (_llmModelsLoaded.value) return;
+    final provider = _readString('LLM_PROVIDER');
+    final apiKey = _readString('LLM_API_KEY');
+    final baseUrl = _readString('LLM_BASE_URL');
+    if (provider.isEmpty || apiKey.isEmpty || baseUrl.isEmpty) return;
+    final err = await fetchLlmModels();
+    if (err == null || err.isEmpty) {
+      _llmModelsLoaded.value = true;
+    }
+  }
+
+  void _applyAiRecommendDefaults() {
+    final maxField = aiFields.firstWhere(
+      (f) => f.envKey == 'AI_RECOMMEND_MAX_ITEMS',
+    );
+    final v = envData.value?.valueFor(maxField.envKey);
+    if (v != null) return;
+    final s = form.stateFor(maxField);
+    if (s is SettingsNumberFieldState) {
+      s.hydrate(50);
+    }
+  }
+
+  String _readString(String envKey) {
+    final f = form.fields.where((e) => e.envKey == envKey).toList();
+    final field = f.isNotEmpty
+        ? f.first
+        : SettingsFieldConfig(label: envKey, envKey: envKey, type: SettingsFieldType.text);
+    final s = form.stateFor(field);
+    if (s is SettingsTextFieldState) return s.controller.text.trim();
+    if (s is SettingsSelectFieldState) return s.value.value.trim();
+    if (s is SettingsNumberFieldState) return s.controller.text.trim();
+    if (s is SettingsToggleFieldState) return s.value.value.toString();
+    return '';
+  }
 }

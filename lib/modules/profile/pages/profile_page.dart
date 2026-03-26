@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/gen/assets.gen.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
@@ -57,13 +58,21 @@ class ProfilePage extends GetView<ProfileController> {
                         _buildServerCard(profile, userInfo),
                         const SizedBox(height: 16),
                         _buildThirdPartyCard(userInfo),
-                        const SizedBox(height: 24),
-                        _buildLogoutButton(context),
                       ],
                     ),
                   ),
                 ),
               ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: _buildLogoutButton(context),
+                ),
+              ),
+              SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           );
         }),
@@ -401,7 +410,7 @@ class ProfilePage extends GetView<ProfileController> {
 
   Widget _buildAvatar(String? avatar) {
     if (avatar == null || avatar.isEmpty) {
-      return const CircleAvatar(radius: 32, child: Icon(CupertinoIcons.person));
+      return Assets.images.avatars.avatar1.image(width: 60, height: 60);
     }
 
     try {
@@ -424,7 +433,7 @@ class ProfilePage extends GetView<ProfileController> {
         backgroundImage: MemoryImage(Uint8List.fromList(bytes)),
       );
     } catch (_) {
-      return const CircleAvatar(radius: 32, child: Icon(CupertinoIcons.person));
+      return Assets.images.avatars.avatar1.image(width: 60, height: 60);
     }
   }
 }

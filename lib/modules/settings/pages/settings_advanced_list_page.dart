@@ -27,19 +27,19 @@ class SettingsAdvancedListPage extends GetView<SettingsAdvancedListController> {
   @override
   Widget build(BuildContext context) {
     final items = controller.items;
-
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
+    return Scaffold(
+      appBar: AppBar(
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => Get.back(),
           child: const Icon(CupertinoIcons.back),
         ),
-        middle: const Text('高级设置', style: TextStyle(fontWeight: FontWeight.w600)),
-        backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(context),
-        border: null,
+        title: const Text(
+          '高级设置',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
       ),
-      child: SafeArea(
+      body: SafeArea(
         child: CustomScrollView(
           slivers: [
             SliverPadding(
@@ -54,7 +54,8 @@ class SettingsAdvancedListPage extends GetView<SettingsAdvancedListController> {
                           height: 29,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: _iconColorForId(item.id).withValues(alpha: 0.2),
+                            color:
+                                _iconColorForId(item.id).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Icon(

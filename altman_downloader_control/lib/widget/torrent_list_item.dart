@@ -225,7 +225,7 @@ class TorrentListItem extends StatelessWidget {
                     ),
                     const SizedBox(width: 16),
                   ],
-
+                  const SizedBox(width: 16),
                   Text(
                     '${progressPercent.toStringAsFixed(1)}%',
                     style: textTheme.titleSmall?.copyWith(

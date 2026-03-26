@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/gen/assets.gen.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/statistic_model.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/controllers/mediaserver_controller.dart';
 import 'package:moviepilot_mobile/modules/mediaserver/models/mediaserver_model.dart';
@@ -23,7 +24,8 @@ class MediaServerConfigListPage extends GetView<MediaServerController> {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading.value && controller.mediaServers.value.isEmpty) {
+        if (controller.isLoading.value &&
+            controller.mediaServers.value.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
         final servers = controller.mediaServers.value;
@@ -46,8 +48,8 @@ class MediaServerConfigListPage extends GetView<MediaServerController> {
                 Text(
                   '请在设定中配置 Emby / Jellyfin / Plex 等媒体服务器',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).hintColor,
-                      ),
+                    color: Theme.of(context).hintColor,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -89,6 +91,18 @@ class _MediaServerItemCard extends StatelessWidget {
   final MediaServer server;
   final StatisticModel? stats;
   final VoidCallback onTap;
+  Widget _buildLogo(BuildContext context) {
+    final logo = switch (server.type) {
+      'emby' => Assets.images.misc.emby,
+      'jellyfin' => Assets.images.misc.jellyfin,
+      'plex' => Assets.images.misc.plex,
+      _ => Assets.images.logos.mediaserver,
+    };
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: logo.image(width: 60, height: 60, fit: BoxFit.cover),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,34 +133,7 @@ class _MediaServerItemCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Row(
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            theme.colorScheme.primary.withValues(alpha: 0.85),
-                            theme.colorScheme.primary.withValues(alpha: 0.6),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.primary
-                                .withValues(alpha: 0.25),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.live_tv_rounded,
-                        color: theme.colorScheme.onPrimary,
-                        size: 26,
-                      ),
-                    ),
+                    _buildLogo(context),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -172,10 +159,12 @@ class _MediaServerItemCard extends StatelessWidget {
                                   ),
                                   decoration: BoxDecoration(
                                     color: server.enabled
-                                        ? const Color(0xFF4CAF50)
-                                            .withValues(alpha: 0.15)
-                                        : theme.colorScheme.outline
-                                            .withValues(alpha: 0.2),
+                                        ? const Color(
+                                            0xFF4CAF50,
+                                          ).withValues(alpha: 0.15)
+                                        : theme.colorScheme.outline.withValues(
+                                            alpha: 0.2,
+                                          ),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -204,8 +193,9 @@ class _MediaServerItemCard extends StatelessWidget {
                     ),
                     Icon(
                       Icons.chevron_right_rounded,
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.7),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.7,
+                      ),
                       size: 22,
                     ),
                   ],
@@ -220,8 +210,9 @@ class _MediaServerItemCard extends StatelessWidget {
                       color: statsBg,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: theme.colorScheme.outline
-                            .withValues(alpha: 0.08),
+                        color: theme.colorScheme.outline.withValues(
+                          alpha: 0.08,
+                        ),
                         width: 1,
                       ),
                     ),

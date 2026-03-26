@@ -40,80 +40,8 @@ class $AssetsImagesAvatarsGen {
   AssetGenImage get avatar1 =>
       const AssetGenImage('assets/images/avatars/avatar-1.png');
 
-  /// File path: assets/images/avatars/avatar-10.png
-  AssetGenImage get avatar10 =>
-      const AssetGenImage('assets/images/avatars/avatar-10.png');
-
-  /// File path: assets/images/avatars/avatar-11.png
-  AssetGenImage get avatar11 =>
-      const AssetGenImage('assets/images/avatars/avatar-11.png');
-
-  /// File path: assets/images/avatars/avatar-12.png
-  AssetGenImage get avatar12 =>
-      const AssetGenImage('assets/images/avatars/avatar-12.png');
-
-  /// File path: assets/images/avatars/avatar-13.png
-  AssetGenImage get avatar13 =>
-      const AssetGenImage('assets/images/avatars/avatar-13.png');
-
-  /// File path: assets/images/avatars/avatar-14.png
-  AssetGenImage get avatar14 =>
-      const AssetGenImage('assets/images/avatars/avatar-14.png');
-
-  /// File path: assets/images/avatars/avatar-15.png
-  AssetGenImage get avatar15 =>
-      const AssetGenImage('assets/images/avatars/avatar-15.png');
-
-  /// File path: assets/images/avatars/avatar-2.png
-  AssetGenImage get avatar2 =>
-      const AssetGenImage('assets/images/avatars/avatar-2.png');
-
-  /// File path: assets/images/avatars/avatar-3.png
-  AssetGenImage get avatar3 =>
-      const AssetGenImage('assets/images/avatars/avatar-3.png');
-
-  /// File path: assets/images/avatars/avatar-4.png
-  AssetGenImage get avatar4 =>
-      const AssetGenImage('assets/images/avatars/avatar-4.png');
-
-  /// File path: assets/images/avatars/avatar-5.png
-  AssetGenImage get avatar5 =>
-      const AssetGenImage('assets/images/avatars/avatar-5.png');
-
-  /// File path: assets/images/avatars/avatar-6.png
-  AssetGenImage get avatar6 =>
-      const AssetGenImage('assets/images/avatars/avatar-6.png');
-
-  /// File path: assets/images/avatars/avatar-7.png
-  AssetGenImage get avatar7 =>
-      const AssetGenImage('assets/images/avatars/avatar-7.png');
-
-  /// File path: assets/images/avatars/avatar-8.png
-  AssetGenImage get avatar8 =>
-      const AssetGenImage('assets/images/avatars/avatar-8.png');
-
-  /// File path: assets/images/avatars/avatar-9.png
-  AssetGenImage get avatar9 =>
-      const AssetGenImage('assets/images/avatars/avatar-9.png');
-
   /// List of all assets
-  List<AssetGenImage> get values => [
-    avatar1,
-    avatar10,
-    avatar11,
-    avatar12,
-    avatar13,
-    avatar14,
-    avatar15,
-    avatar2,
-    avatar3,
-    avatar4,
-    avatar5,
-    avatar6,
-    avatar7,
-    avatar8,
-    avatar9,
-  ];
+  List<AssetGenImage> get values => [avatar1];
 }
 
 class $AssetsImagesLogosGen {
