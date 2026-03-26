@@ -14,7 +14,8 @@ class SiteStatisticController extends GetxController {
   int get totalSites => items.length;
   int get normalCount =>
       items.where((e) => e.state == SiteStatisticState.ok).length;
-  int get failCount => items.where((e) => e.state == SiteStatisticState.fail).length;
+  int get failCount =>
+      items.where((e) => e.state == SiteStatisticState.fail).length;
 
   @override
   void onReady() {
@@ -26,8 +27,7 @@ class SiteStatisticController extends GetxController {
     isLoading.value = true;
     errorText.value = null;
     try {
-      final response =
-          await _apiClient.get<dynamic>('/api/v1/site/statistic');
+      final response = await _apiClient.get<dynamic>('/api/v1/site/statistic');
       final status = response.statusCode ?? 0;
       if (status >= 400) {
         errorText.value = '获取统计失败 (HTTP $status)';
