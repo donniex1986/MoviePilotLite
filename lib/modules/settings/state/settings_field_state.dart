@@ -40,6 +40,7 @@ class SettingsTextFieldState extends SettingsFieldState {
 
   String _initial;
   bool _dirty = false;
+  bool _hydrating = false;
 
   @override
   bool get dirty => _dirty;
@@ -52,13 +53,16 @@ class SettingsTextFieldState extends SettingsFieldState {
     final next = value?.toString() ?? '';
     _initial = next;
     if (!_dirty && controller.text != next) {
+      _hydrating = true;
       controller.text = next;
+      _hydrating = false;
     } else {
       _recomputeDirty();
     }
   }
 
   void _recomputeDirty() {
+    if (_hydrating) return;
     final next = controller.text != _initial;
     if (_dirty != next) _dirty = next;
   }
@@ -98,6 +102,7 @@ class SettingsNumberFieldState extends SettingsFieldState {
 
   num? _initial;
   bool _dirty = false;
+  bool _hydrating = false;
 
   @override
   bool get dirty => _dirty;
@@ -117,7 +122,11 @@ class SettingsNumberFieldState extends SettingsFieldState {
     _initial = n;
     if (!_dirty) {
       final nextText = n?.toString() ?? '';
-      if (controller.text != nextText) controller.text = nextText;
+      if (controller.text != nextText) {
+        _hydrating = true;
+        controller.text = nextText;
+        _hydrating = false;
+      }
     } else {
       _recomputeDirty();
     }
@@ -129,6 +138,7 @@ class SettingsNumberFieldState extends SettingsFieldState {
   }
 
   void _recomputeDirty() {
+    if (_hydrating) return;
     final now = _parse();
     final next = now != _initial;
     if (_dirty != next) _dirty = next;
@@ -169,6 +179,7 @@ class SettingsToggleFieldState extends SettingsFieldState {
   final RxBool value;
   bool _initial;
   bool _dirty = false;
+  bool _hydrating = false;
 
   @override
   bool get dirty => _dirty;
@@ -187,13 +198,16 @@ class SettingsToggleFieldState extends SettingsFieldState {
     };
     _initial = next;
     if (!_dirty && value.value != next) {
+      _hydrating = true;
       value.value = next;
+      _hydrating = false;
     } else {
       _recomputeDirty();
     }
   }
 
   void _recomputeDirty() {
+    if (_hydrating) return;
     final next = value.value != _initial;
     if (_dirty != next) _dirty = next;
   }
@@ -227,6 +241,7 @@ class SettingsSelectFieldState extends SettingsFieldState {
   final RxString value;
   String? _initial;
   bool _dirty = false;
+  bool _hydrating = false;
 
   @override
   bool get dirty => _dirty;
@@ -239,13 +254,16 @@ class SettingsSelectFieldState extends SettingsFieldState {
     final next = v?.toString() ?? '';
     _initial = next;
     if (!_dirty && value.value != next) {
+      _hydrating = true;
       value.value = next;
+      _hydrating = false;
     } else {
       _recomputeDirty();
     }
   }
 
   void _recomputeDirty() {
+    if (_hydrating) return;
     final next = value.value != (_initial ?? '');
     if (_dirty != next) _dirty = next;
   }

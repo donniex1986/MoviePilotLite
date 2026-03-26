@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SettingsOptionVisual {
   const SettingsOptionVisual({this.icon, this.asset, this.color});
@@ -26,8 +27,8 @@ const Map<String, Map<String, SettingsOptionVisual>> settingsOptionVisuals = {
     'bangumi': SettingsOptionVisual(icon: Icons.tv_outlined),
   },
   'SCRAP_SOURCE': {
-    'themoviedb': SettingsOptionVisual(icon: Icons.public_outlined),
-    'douban': SettingsOptionVisual(icon: Icons.local_movies_outlined),
+    'douban': SettingsOptionVisual(asset: 'assets/images/logos/douban.png'),
+    'themoviedb': SettingsOptionVisual(asset: 'assets/images/logos/tmdb.png'),
   },
   'LLM_PROVIDER': {
     'deepseek': SettingsOptionVisual(icon: Icons.psychology_alt_outlined),
@@ -67,12 +68,11 @@ Widget? buildSettingsOptionLeading(
   final visual = settingsOptionVisuals[enumKey]?[value.toLowerCase()];
   if (visual == null) return null;
   if (visual.asset != null) {
-    return Image.asset(
-      visual.asset!,
-      width: 18,
-      height: 18,
-      fit: BoxFit.contain,
-    );
+    final path = visual.asset!;
+    if (path.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(path, width: 18, height: 18, fit: BoxFit.contain);
+    }
+    return Image.asset(path, width: 18, height: 18, fit: BoxFit.contain);
   }
   if (visual.icon != null) {
     return Icon(

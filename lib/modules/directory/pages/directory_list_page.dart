@@ -235,14 +235,15 @@ class _DirectoryListTile extends StatelessWidget {
           children: [
             Row(
               children: [
-                FileStorageUtils.storageIconWidget(directory.storage, size: 22),
-                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),

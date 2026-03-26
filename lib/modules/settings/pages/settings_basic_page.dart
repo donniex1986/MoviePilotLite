@@ -13,6 +13,20 @@ import 'package:skeletonizer/skeletonizer.dart';
 class SettingsBasicPage extends GetView<SettingsBasicController> {
   const SettingsBasicPage({super.key});
 
+  List<SettingsFieldConfig> _skeletonFieldsOf(
+    List<SettingsFieldConfig> fields,
+    bool skeletonEnabled,
+  ) {
+    if (!skeletonEnabled) return fields;
+    if (fields.isEmpty) return fields;
+    const count = 5;
+    final out = <SettingsFieldConfig>[];
+    for (var i = 0; i < count; i++) {
+      out.add(fields[i % fields.length]);
+    }
+    return out;
+  }
+
   Future<void> _confirmSave() async {
     final confirmed = await showCupertinoDialog<bool>(
       context: Get.context!,
@@ -64,49 +78,61 @@ class SettingsBasicPage extends GetView<SettingsBasicController> {
         actions: [TextButton(onPressed: _confirmSave, child: const Text('保存'))],
       ),
       body: Obx(() {
-        if (controller.errorText.value != null) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                controller.errorText.value ?? '',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: CupertinoColors.secondaryLabel.resolveFrom(context),
-                ),
+        if (controller.errorText.value != null && controller.envData.value == null) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    controller.errorText.value ?? '',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: CupertinoColors.secondaryLabel.resolveFrom(context),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CupertinoButton.filled(
+                    onPressed: controller.load,
+                    child: const Text('重试'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              CupertinoButton.filled(
-                onPressed: controller.load,
-                child: const Text('重试'),
-              ),
-            ],
+            ),
           );
         }
+        final skeletonEnabled =
+            controller.isLoading.value && controller.envData.value == null;
+        final basicFields = controller.visibleBasicFields();
+        final aiFields = controller.visibleAiFields();
         return Stack(
           children: [
             Skeletonizer(
-              enabled:
-                  controller.isLoading.value &&
-                  controller.envData.value == null,
-              child: ListView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                children: [
-                  _buildSection(
-                    context,
-                    header: '基础配置',
-                    fields: controller.visibleBasicFields(),
-                    rowBuilder: rowBuilder,
-                  ),
-                  if (controller.aiSectionVisible)
+              enabled: skeletonEnabled,
+              child: RefreshIndicator(
+                onRefresh: controller.load,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  children: [
                     _buildSection(
                       context,
-                      header: '全局智能助手',
-                      fields: controller.visibleAiFields(),
+                      header: '基础配置',
+                      fields: _skeletonFieldsOf(basicFields, skeletonEnabled),
                       rowBuilder: rowBuilder,
                     ),
-                ],
+                    if (controller.aiSectionVisible || skeletonEnabled)
+                      _buildSection(
+                        context,
+                        header: '全局智能助手',
+                        fields: _skeletonFieldsOf(aiFields, skeletonEnabled),
+                        rowBuilder: rowBuilder,
+                      ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
             if (controller.isUpdating.value)
@@ -126,6 +152,7 @@ class SettingsBasicPage extends GetView<SettingsBasicController> {
     required List<SettingsFieldConfig> fields,
     required SettingsFormRowBuilder rowBuilder,
   }) {
+    if (fields.isEmpty) return const SizedBox.shrink();
     return Section(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),

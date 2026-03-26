@@ -33,7 +33,8 @@ class SettingsFormRowBuilder {
     final s = form.stateFor(field);
     final controlType = _toControlType(field.type);
 
-    final editable = field.type != SettingsFieldType.textCopy;
+    final notCopy = field.type != SettingsFieldType.textCopy;
+    final rowEditable = editMode && notCopy;
     final value = s.effectiveValue;
 
     String? enumLabel;
@@ -71,26 +72,26 @@ class SettingsFormRowBuilder {
               onCopied?.call(text);
             }
           : null,
-      editable: editable,
-      textController: editable && s is SettingsTextFieldState
+      editable: rowEditable,
+      textController: notCopy && s is SettingsTextFieldState
           ? s.controller
-          : editable && s is SettingsNumberFieldState
+          : notCopy && s is SettingsNumberFieldState
               ? s.controller
               : null,
       obscureText: field.obscureText,
       onTextChanged: null,
       onTextSubmitted: null,
       switchValue: s is SettingsToggleFieldState ? s.value.value : false,
-      onSwitchChanged: editable && s is SettingsToggleFieldState
+      onSwitchChanged: rowEditable && s is SettingsToggleFieldState
           ? (v) => s.value.value = v
           : null,
       step: field.step,
-      onNumberChanged: editable && s is SettingsNumberFieldState
+      onNumberChanged: rowEditable && s is SettingsNumberFieldState
           ? (n) => s.setNumber(n)
           : null,
       selectOptions: selectOptions,
       onSelectChanged:
-          editable && s is SettingsSelectFieldState && selectOptions != null
+          rowEditable && s is SettingsSelectFieldState && selectOptions != null
               ? (v) => s.value.value = v
               : null,
       selectOptionLeadingBuilder:

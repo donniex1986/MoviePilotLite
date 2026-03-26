@@ -148,6 +148,7 @@ class SettingsFieldRow extends StatelessWidget {
           icon: icon,
           iconColor: iconColor,
           iconBackgroundColor: iconBackgroundColor,
+          editMode: isEditing,
           display: enumLabel ?? controlValue?.toString() ?? '',
           editable: canInput || canPick,
           selectOptions: selectOptions ?? const [],

@@ -76,6 +76,9 @@ class SettingsTextInputRow extends StatelessWidget {
           ? '${textController?.text.length ?? 0}/$countableLength'
           : null,
       suffixIcon: _buildSuffixIcon(context),
+      suffixIconConstraints: suffix != null
+          ? const BoxConstraints(minWidth: 48, minHeight: 48)
+          : null,
       prefixIcon: _buildPrefixIcon(context),
     );
   }
@@ -97,7 +100,7 @@ class SettingsTextInputRow extends StatelessWidget {
         child: TextField(
           readOnly: !editable,
           enabled: true,
-          maxLines: maxLines,
+          maxLines: obscureText ? 1 : maxLines,
           keyboardType: keyboardType,
           controller: textController,
           obscureText: obscureText,

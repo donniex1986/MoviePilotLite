@@ -1,95 +1,127 @@
-import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/settings/models/settings_enums.dart';
+import 'package:moviepilot_mobile/modules/settings/models/settings_field_config.dart';
+import 'package:moviepilot_mobile/modules/settings/state/settings_form_row_builder.dart';
 import 'package:moviepilot_mobile/modules/settings/widgets/settings_field_row.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_edit_controller.dart';
 import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_media_enums.dart';
 import 'package:moviepilot_mobile/modules/subscribe/pages/priority_rule_order_picker_page.dart'
     show PriorityRulePickerSheet;
-import 'package:moviepilot_mobile/modules/subscribe/pages/site_multi_select_picker_page.dart'
-    show SubscribeSitePickerSheet;
+import 'package:moviepilot_mobile/modules/search/pages/search_mid_sheet.dart'
+    show SiteSelectSheet, SiteSelectScene;
+import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
+import 'package:moviepilot_mobile/widgets/section_header.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 
 /// 订阅编辑页
-/// UI 参照 iOS 联系人编辑页：圆角分组、无图标、标题上输入下的布局
 class SubscribeEditPage extends GetView<SubscribeEditController> {
   const SubscribeEditPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = CupertinoColors.systemGroupedBackground.resolveFrom(
-      context,
-    );
-    return CupertinoPageScaffold(
-      backgroundColor: backgroundColor,
-      navigationBar: CupertinoNavigationBar(
-        backgroundColor: CupertinoColors.systemBackground.resolveFrom(context),
-        border: null,
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Icon(CupertinoIcons.chevron_left, size: 28),
-        ),
-        middle: Obx(() {
-          controller.isDetailLoading.value;
-          final item = controller.item;
-          final loading = controller.isDetailLoading.value;
-          return Row(
-            children: [
-              CachedImage(
-                width: 32,
-                height: 32,
-                fit: BoxFit.cover,
-                borderRadius: BorderRadius.circular(32),
-                imageUrl: ImageUtil.convertCacheImageUrl(item.poster ?? ''),
+    final rowBuilder = SettingsFormRowBuilder(
+      form: controller.form,
+      optionsOf: (k) {
+        switch (k) {
+          case 'SUB_QUALITY':
+            return MediaQuality.selectOptions;
+          case 'SUB_RESOLUTION':
+            return MediaResolution.selectOptions;
+          case 'SUB_EFFECT':
+            return MediaEffect.selectOptions;
+          case 'SUB_DOWNLOADER':
+            return [
+              const SettingsEnumOption(value: '', label: '默认'),
+              ...controller.downloaders.map(
+                (s) => SettingsEnumOption(value: s, label: s),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        '${item.name}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 15,
-                          color: CupertinoColors.label.resolveFrom(context),
-                        ),
-                        overflow: TextOverflow.ellipsis,
+            ];
+          case 'SUB_SAVE_PATH':
+            return [
+              const SettingsEnumOption(value: '', label: '自动'),
+              ...controller.savePaths.map(
+                (s) => SettingsEnumOption(value: s, label: s),
+              ),
+            ];
+          default:
+            return settingsEnums[k] ?? const [];
+        }
+      },
+      onCopied: (_) => ToastUtil.success('已复制'),
+    );
+
+    return Obx(() {
+      final item = controller.item;
+      return Scaffold(
+        appBar: AppBar(
+          leading: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () async {
+              if (controller.hasUnsavedEdits) {
+                final discard = await showCupertinoDialog<bool>(
+                  context: Get.context!,
+                  builder: (ctx) => CupertinoAlertDialog(
+                    title: const Text('返回'),
+                    content: const Text('有未保存修改，是否放弃？'),
+                    actions: [
+                      CupertinoDialogAction(
+                        isDefaultAction: true,
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: const Text('继续编辑'),
                       ),
-                    ),
-                    if (loading) ...[
-                      const SizedBox(width: 8),
-                      CupertinoActivityIndicator(
-                        radius: 8,
-                        color: CupertinoColors.systemGrey.resolveFrom(context),
+                      CupertinoDialogAction(
+                        isDestructiveAction: true,
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        child: const Text('放弃'),
                       ),
                     ],
-                  ],
+                  ),
+                );
+                if (discard != true) return;
+              }
+              Get.back();
+            },
+            child: const Icon(CupertinoIcons.back),
+          ),
+          title: Row(
+            children: [
+              CachedImage(
+                width: 28,
+                height: 28,
+                fit: BoxFit.cover,
+                borderRadius: BorderRadius.circular(28),
+                imageUrl: ImageUtil.convertCacheImageUrl(item.poster ?? ''),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  item.name ?? '订阅编辑',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
+              if (controller.isDetailLoading.value) ...[
+                const SizedBox(width: 8),
+                const CupertinoActivityIndicator(radius: 8),
+              ],
             ],
-          );
-        }),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CupertinoButton(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          actions: [
+            TextButton(
               onPressed: () {
                 ToastUtil.warning(
                   '确定取消订阅吗？',
                   onConfirm: () async {
                     final ok = await controller.deleteSubscribe();
                     if (ok && context.mounted) {
-                      final message = '订阅 ${controller.item.name} 取消订阅成功';
                       Future.delayed(const Duration(seconds: 1), () {
-                        ToastUtil.success(message);
+                        ToastUtil.success('订阅 ${controller.item.name} 取消订阅成功');
                       });
                       Get.back(result: true);
                     }
@@ -100,365 +132,195 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
                 '取消订阅',
                 style: TextStyle(
                   color: CupertinoColors.destructiveRed.resolveFrom(context),
-                  fontSize: 16,
                 ),
               ),
             ),
             Obx(
-              () => CupertinoButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+              () => TextButton(
                 onPressed: controller.isSaving.value
                     ? null
                     : () async {
                         final ok = await controller.save();
                         if (ok && context.mounted) {
-                          final message = '订阅 ${controller.item.name} 编辑成功';
                           Future.delayed(const Duration(seconds: 1), () {
-                            ToastUtil.success(message);
+                            ToastUtil.success(
+                              '订阅 ${controller.item.name} 编辑成功',
+                            );
                           });
                           Get.back(result: true);
                         }
                       },
                 child: controller.isSaving.value
-                    ? CupertinoActivityIndicator(
-                        color: CupertinoColors.activeBlue.resolveFrom(context),
-                      )
-                    : Text(
-                        '保存',
-                        style: TextStyle(
-                          color: CupertinoColors.activeBlue.resolveFrom(
-                            context,
-                          ),
-                          fontSize: 16,
-                        ),
-                      ),
+                    ? const CupertinoActivityIndicator()
+                    : const Text('保存'),
               ),
             ),
           ],
         ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Obx(() {
-                controller.isDetailLoading.value;
-                return Column(children: _buildAllSectionsAsBox(context));
-              }),
+        body: Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: controller.refreshPage,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                children: [
+                  const SizedBox(height: 8),
+                  ..._buildSections(context, rowBuilder),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
+            if (controller.isSaving.value)
+              Container(
+                color: CupertinoColors.black.withValues(alpha: 0.12),
+                child: const Center(child: CupertinoActivityIndicator()),
+              ),
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 
-  /// 返回非 Sliver 的 section 列表，用于 Padding + Column
-  List<Widget> _buildAllSectionsAsBox(BuildContext context) {
-    final list = <Widget>[];
-    for (final w in _buildAllSections(context)) {
-      if (w is SliverToBoxAdapter) list.add(w.child!);
+  List<Widget> _buildSections(
+    BuildContext context,
+    SettingsFormRowBuilder rowBuilder,
+  ) {
+    final isTv = controller.item.type?.contains('电视') == true;
+
+    List<SettingsFieldConfig> byKeys(List<String> keys) {
+      return SubscribeEditController.formFields
+          .where((f) => keys.contains(f.envKey))
+          .toList();
     }
-    return list;
-  }
 
-  /// 整页最底层背景图（无渐变），上层叠 blur + 遮罩
-  Widget _buildBackdropImageOnly(BuildContext context) {
-    var url = controller.item.backdrop;
-    if (url == null || url.isEmpty) url = controller.item.poster;
-    if (url != null && url.isNotEmpty) {
-      return CachedImage(
-        imageUrl: ImageUtil.convertCacheImageUrl(url),
-        fit: BoxFit.cover,
+    Widget section(String header, List<Widget> children) {
+      return Section(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+        header: SectionHeader(
+          title: header,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+        ),
+        children: children,
       );
     }
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF5C6BC0), Color(0xFF3949AB)],
-        ),
-      ),
-    );
-  }
 
-  List<Widget> _buildAllSections(BuildContext context) {
-    return [
-      _buildSection(
-        context,
-        header: '搜索',
-        children: [
-          _buildTextRow(
+    final widgets = <Widget>[];
+
+    widgets.add(
+      section('搜索', [
+        for (final f in byKeys(['keyword']))
+          rowBuilder.buildRow(
             context,
-            title: '搜索关键词',
-            description: '指定搜索站点时使用的关键词',
-            value: controller.keyword.value,
-            onChanged: controller.setKeyword,
-            hint: '搜索关键词',
+            f,
+            editMode: controller.isEditing.value,
+            readValue: (_) => null,
           ),
-        ],
-      ),
-      if (controller.item.type?.contains('电视') == true)
-        _buildSection(
-          context,
-          header: '剧集信息',
-          children: [
-            _buildNumberRow(
-              context,
-              title: '总集数',
-              description: '剧集总集数',
-              value: controller.totalEpisode.value,
-              onChanged: controller.setTotalEpisode,
-            ),
-            _buildNumberRow(
-              context,
-              title: '开始集数',
-              description: '开始订阅集数',
-              value: controller.startEpisode.value,
-              onChanged: controller.setStartEpisode,
-            ),
-          ],
-        ),
-      _buildSection(
-        context,
-        header: '订阅资源属性',
-        children: [
-          Obx(
-            () => _buildSelectRow(
-              context,
-              title: '质量',
-              description: '订阅资源质量',
-              value: controller.quality.value.value,
-              enumLabel: controller.quality.value.label,
-              selectOptions: MediaQuality.selectOptions,
-              onChanged: controller.setQuality,
-            ),
-          ),
-          Obx(
-            () => _buildSelectRow(
-              context,
-              title: '分辨率',
-              description: '订阅资源分辨率',
-              value: controller.resolution.value.value,
-              enumLabel: controller.resolution.value.label,
-              selectOptions: MediaResolution.selectOptions,
-              onChanged: controller.setResolution,
-            ),
-          ),
-          Obx(
-            () => _buildSelectRow(
-              context,
-              title: '特效',
-              description: '订阅资源特效',
-              value: controller.effect.value.value,
-              enumLabel: controller.effect.value.label,
-              selectOptions: MediaEffect.selectOptions,
-              onChanged: controller.setEffect,
-            ),
-          ),
-        ],
-      ),
-      _buildSection(
-        context,
-        header: '订阅站点',
-        children: [_buildSitePicker(context)],
-      ),
-      _buildSection(
-        context,
-        header: '下载设置',
-        children: [
-          _buildDownloaderPicker(context),
-          _buildSavePathPicker(context),
-        ],
-      ),
-      _buildSection(
-        context,
-        header: '开关设置',
-        children: [
-          Obx(
-            () => SettingsFieldRow(
-              title: '洗版',
-              description: '根据洗版优先级进行洗版订阅',
-
-              controlType: SettingsControlType.toggle,
-              editable: true,
-              switchValue: controller.bestVersion.value,
-              onSwitchChanged: controller.setBestVersion,
-            ),
-          ),
-          Obx(
-            () => SettingsFieldRow(
-              title: '使用 ImdbID 搜索',
-              description: '开启使用 ImdbID 精确搜索资源',
-              controlType: SettingsControlType.toggle,
-              editable: true,
-              switchValue: controller.searchImdbid.value,
-              onSwitchChanged: controller.setSearchImdbid,
-            ),
-          ),
-        ],
-      ),
-      _buildSection(
-        context,
-        header: '包含/排除规则',
-        children: [
-          _buildTextRow(
-            context,
-            title: '包含',
-            description: '包含规则，支持正则表达式',
-            value: controller.include.value,
-            onChanged: controller.setInclude,
-            hint: '关键字、正则式',
-          ),
-          _buildTextRow(
-            context,
-            title: '排除',
-            description: '排除规则，支持正则表达式',
-            value: controller.exclude.value,
-            onChanged: controller.setExclude,
-            hint: '关键字、正则式',
-          ),
-        ],
-      ),
-      _buildSection(
-        context,
-        header: '优先级规则',
-        children: [_buildPriorityRulePicker(context)],
-      ),
-      if (controller.item.type?.contains('电视') == true)
-        _buildSection(
-          context,
-          header: '剧集/季指定',
-          children: [
-            _buildTextRow(
-              context,
-              title: '指定剧集组',
-              description: '按特定剧集组识别和刮削',
-              value: controller.episodeGroup.value,
-              onChanged: controller.setEpisodeGroup,
-              hint: '指定剧集组',
-            ),
-            _buildSeasonPicker(context),
-          ],
-        ),
-      _buildSection(
-        context,
-        header: '自定义',
-        children: [
-          _buildTextRow(
-            context,
-            title: '自定义类别',
-            description: '指定类别名称，留空自动识别',
-            value: controller.mediaCategory.value,
-            onChanged: controller.setMediaCategory,
-            hint: '自定义类别',
-          ),
-          _buildTextRow(
-            context,
-            title: '自定义识别词',
-            description: '只对该订阅使用的识别词',
-            value: controller.customWords.value,
-            onChanged: controller.setCustomWords,
-            hint: '自定义识别词',
-            maxLines: 2,
-          ),
-        ],
-      ),
-    ];
-  }
-
-  SliverToBoxAdapter _buildSection(
-    BuildContext context, {
-    required String header,
-    required List<Widget> children,
-  }) {
-    return SliverToBoxAdapter(
-      child: CupertinoListSection.insetGrouped(
-        backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(
-          context,
-        ),
-        header: Padding(
-          padding: const EdgeInsets.only(left: 8, bottom: 6, top: 4),
-          child: Text(
-            header,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: CupertinoColors.secondaryLabel.resolveFrom(context),
-            ),
-          ),
-        ),
-
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        children: children,
-      ),
+      ]),
     );
+
+    if (isTv) {
+      widgets.add(
+        section('剧集信息', [
+          for (final f in byKeys(['total_episode', 'start_episode']))
+            rowBuilder.buildRow(
+              context,
+              f,
+              editMode: controller.isEditing.value,
+              readValue: (_) => null,
+            ),
+        ]),
+      );
+    }
+
+    widgets.add(
+      section('订阅资源属性', [
+        for (final f in byKeys(['quality', 'resolution', 'effect']))
+          rowBuilder.buildRow(
+            context,
+            f,
+            editMode: controller.isEditing.value,
+            readValue: (_) => null,
+          ),
+      ]),
+    );
+
+    widgets.add(section('订阅站点', [_buildSitePicker(context)]));
+
+    widgets.add(
+      section('下载设置', [
+        for (final f in byKeys(['downloader', 'save_path']))
+          rowBuilder.buildRow(
+            context,
+            f,
+            editMode: controller.isEditing.value,
+            readValue: (_) => null,
+          ),
+      ]),
+    );
+
+    widgets.add(
+      section('开关设置', [
+        for (final f in byKeys(['best_version', 'search_imdbid']))
+          rowBuilder.buildRow(
+            context,
+            f,
+            editMode: controller.isEditing.value,
+            readValue: (_) => null,
+          ),
+      ]),
+    );
+
+    widgets.add(
+      section('包含/排除规则', [
+        for (final f in byKeys(['include', 'exclude']))
+          rowBuilder.buildRow(
+            context,
+            f,
+            editMode: controller.isEditing.value,
+            readValue: (_) => null,
+          ),
+      ]),
+    );
+
+    widgets.add(section('优先级规则', [_buildPriorityRulePicker(context)]));
+
+    if (isTv) {
+      widgets.add(
+        section('剧集/季指定', [
+          for (final f in byKeys(['episode_group', 'season']))
+            rowBuilder.buildRow(
+              context,
+              f,
+              editMode: controller.isEditing.value,
+              readValue: (_) => null,
+            ),
+        ]),
+      );
+    }
+
+    widgets.add(
+      section('自定义', [
+        for (final f in byKeys(['media_category', 'custom_words']))
+          rowBuilder.buildRow(
+            context,
+            f,
+            editMode: controller.isEditing.value,
+            readValue: (_) => null,
+          ),
+      ]),
+    );
+
+    return widgets;
   }
 
-  Widget _buildTextRow(
-    BuildContext context, {
-    required String title,
-    required String? description,
-    required String value,
-    required ValueChanged<String> onChanged,
-    required String hint,
-    int maxLines = 1,
-  }) {
-    return _EditTextField(
-      title: title,
-      description: description,
-      hint: hint,
-      value: value,
-      onChanged: onChanged,
-      maxLines: maxLines,
-    );
-  }
-
-  Widget _buildNumberRow(
-    BuildContext context, {
-    required String title,
-    required String? description,
-    required int value,
-    required ValueChanged<int> onChanged,
-  }) {
-    return _NumberEditRow(
-      title: title,
-      description: description,
-      value: value,
-      onChanged: onChanged,
-    );
-  }
-
-  Widget _buildSelectRow(
-    BuildContext context, {
-    required String title,
-    required String? description,
-    required String value,
-    String? enumLabel,
-    List<String>? options,
-    List<SettingsEnumOption>? selectOptions,
-    required ValueChanged<String> onChanged,
-  }) {
-    final opts =
-        selectOptions ??
-        (options ?? const [])
-            .map((o) => SettingsEnumOption(value: o, label: o))
-            .toList();
-    return SettingsFieldRow(
-      title: title,
-      description: description,
-      controlType: SettingsControlType.select,
-      controlValue: value,
-      enumLabel: enumLabel,
-      editable: true,
-      selectOptions: opts,
-      onSelectChanged: onChanged,
-    );
-  }
+  // legacy row builders removed
 
   Widget _buildSitePicker(BuildContext context) {
     return Obx(() {
@@ -482,62 +344,31 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
               ? '${display.substring(0, 14)}…'
               : display,
           onTap: () async {
-            final result = await SubscribeSitePickerSheet.show(
-              context,
-              sites: allSites,
-              initialSelectedIds: selectedIds,
-              selectableIds: controller.selectableSiteIds,
+            final result =
+                await showCupertinoModalBottomSheet<({String area, List<int> sites})>(
+              context: context,
+              builder: (ctx) {
+                final allIds = controller.allSites.map((s) => s.id).toSet();
+                final selectable = controller.selectableSiteIds;
+                final disabled = (selectable == null || selectable.isEmpty)
+                    ? const <int>[]
+                    : allIds.difference(selectable).toList();
+                return SiteSelectSheet(
+                  hasSegment: false,
+                  scene: SiteSelectScene.subscribe,
+                  initialSelectedIds: selectedIds,
+                  disabledIds: disabled,
+                );
+              },
             );
-            if (result != null) controller.setSelectedSites(result);
+            if (result != null) controller.setSelectedSites(result.sites);
           },
         ),
       );
     });
   }
 
-  Widget _buildDownloaderPicker(BuildContext context) {
-    return Obx(() {
-      final list = controller.downloaders;
-      final val = controller.selectedDownloader.value;
-      final opts = [
-        const SettingsEnumOption(value: '', label: '默认'),
-        ...list.map((s) => SettingsEnumOption(value: s, label: s)),
-      ];
-      return SettingsFieldRow(
-        title: '下载器',
-        description: '指定该订阅使用的下载器',
-        controlType: SettingsControlType.select,
-        controlValue: val,
-        enumLabel: val.isEmpty ? '默认' : val,
-        editable: list.isNotEmpty,
-        selectOptions: opts,
-        onSelectChanged: list.isEmpty ? null : controller.setDownloader,
-      );
-    });
-  }
-
-  Widget _buildSavePathPicker(BuildContext context) {
-    return Obx(() {
-      final list = controller.savePaths;
-      final val = controller.selectedSavePath.value;
-      final opts = [
-        const SettingsEnumOption(value: '', label: '自动'),
-        ...list.map((s) => SettingsEnumOption(value: s, label: s)),
-      ];
-      return SettingsFieldRow(
-        title: '保存路径',
-        description: '指定该订阅的下载保存路径，留空自动使用系统设定',
-        controlType: SettingsControlType.select,
-        controlValue: val,
-        enumLabel: val.isEmpty
-            ? '自动'
-            : (val.length > 12 ? '${val.substring(0, 12)}…' : val),
-        editable: list.isNotEmpty,
-        selectOptions: opts,
-        onSelectChanged: list.isEmpty ? null : controller.setSavePath,
-      );
-    });
-  }
+  // legacy pickers removed
 
   Widget _buildPriorityRulePicker(BuildContext context) {
     return Obx(() {
@@ -562,30 +393,7 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
     });
   }
 
-  Widget _buildSeasonPicker(BuildContext context) {
-    return Obx(() {
-      final val = controller.season.value;
-      final display = val == 0 ? '默认' : '第$val季';
-      final opts = SubscribeEditController.seasonOptions
-          .map(
-            (v) => SettingsEnumOption(
-              value: v.toString(),
-              label: v == 0 ? '默认' : '第$v季',
-            ),
-          )
-          .toList();
-      return SettingsFieldRow(
-        title: '指定季',
-        description: '指定任意季订阅',
-        controlType: SettingsControlType.select,
-        controlValue: val.toString(),
-        enumLabel: display,
-        editable: true,
-        selectOptions: opts,
-        onSelectChanged: (v) => controller.setSeason(int.tryParse(v) ?? 0),
-      );
-    });
-  }
+  // legacy season picker removed
 
   /// iOS 设置风格：右箭头 + 可点击进入详情
   Widget _buildNavControl(
@@ -618,245 +426,6 @@ class SubscribeEditPage extends GetView<SubscribeEditController> {
             color: CupertinoColors.tertiaryLabel.resolveFrom(context),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// iOS 联系人「备注」风格：标题在上、全宽输入框在下
-class _EditTextField extends StatefulWidget {
-  const _EditTextField({
-    required this.title,
-    this.description,
-    required this.hint,
-    required this.value,
-    required this.onChanged,
-    this.maxLines = 1,
-  });
-
-  final String title;
-  final String? description;
-  final String hint;
-  final String value;
-  final ValueChanged<String> onChanged;
-  final int maxLines;
-
-  @override
-  State<_EditTextField> createState() => _EditTextFieldState();
-}
-
-class _EditTextFieldState extends State<_EditTextField> {
-  late TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.value);
-  }
-
-  @override
-  void didUpdateWidget(_EditTextField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value && _controller.text != widget.value) {
-      _controller.text = widget.value;
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final showDesc =
-        widget.description != null && widget.description!.isNotEmpty;
-    return CupertinoListTile.notched(
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            widget.title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: CupertinoColors.label.resolveFrom(context),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          if (showDesc) ...[
-            const SizedBox(height: 2),
-            Text(
-              widget.description!,
-              style: TextStyle(
-                fontSize: 12,
-                color: CupertinoColors.tertiaryLabel.resolveFrom(context),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-          const SizedBox(height: 10),
-          CupertinoTextField(
-            controller: _controller,
-            placeholder: widget.hint,
-            onChanged: widget.onChanged,
-            maxLines: widget.maxLines,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            style: TextStyle(
-              fontSize: 15,
-              color: CupertinoColors.label.resolveFrom(context),
-            ),
-            placeholderStyle: TextStyle(
-              fontSize: 15,
-              color: CupertinoColors.tertiaryLabel.resolveFrom(context),
-            ),
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              border: Border(
-                bottom: BorderSide(
-                  color: CupertinoColors.separator
-                      .resolveFrom(context)
-                      .withValues(alpha: 0.5),
-                  width: 1,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      additionalInfo: const SizedBox.shrink(),
-      leadingToTitle: 0,
-      padding: const EdgeInsetsDirectional.only(
-        start: 16,
-        end: 16,
-        top: 12,
-        bottom: 12,
-      ),
-    );
-  }
-}
-
-/// iOS 联系人风格：标题左、数值输入右，无图标
-class _NumberEditRow extends StatefulWidget {
-  const _NumberEditRow({
-    required this.title,
-    this.description,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final String title;
-  final String? description;
-  final int value;
-  final ValueChanged<int> onChanged;
-
-  @override
-  State<_NumberEditRow> createState() => _NumberEditRowState();
-}
-
-class _NumberEditRowState extends State<_NumberEditRow> {
-  late TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.value.toString());
-  }
-
-  @override
-  void didUpdateWidget(_NumberEditRow oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value &&
-        _controller.text != widget.value.toString()) {
-      _controller.text = widget.value.toString();
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final showDesc =
-        widget.description != null && widget.description!.isNotEmpty;
-    return CupertinoListTile.notched(
-      title: showDesc
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  widget.title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: CupertinoColors.label.resolveFrom(context),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  widget.description!,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: CupertinoColors.tertiaryLabel.resolveFrom(context),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            )
-          : Text(
-              widget.title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: CupertinoColors.label.resolveFrom(context),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-      additionalInfo: SizedBox(
-        width: 72,
-        child: CupertinoTextField(
-          controller: _controller,
-          keyboardType: TextInputType.number,
-          onChanged: (v) {
-            final n = int.tryParse(v);
-            if (n != null && n >= 0) widget.onChanged(n);
-          },
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          style: TextStyle(
-            fontSize: 15,
-            color: CupertinoColors.label.resolveFrom(context),
-          ),
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: Border(
-              bottom: BorderSide(
-                color: CupertinoColors.separator
-                    .resolveFrom(context)
-                    .withValues(alpha: 0.5),
-                width: 1,
-              ),
-            ),
-          ),
-        ),
-      ),
-      leadingToTitle: 0,
-      padding: const EdgeInsetsDirectional.only(
-        start: 16,
-        end: 16,
-        top: 10,
-        bottom: 10,
       ),
     );
   }

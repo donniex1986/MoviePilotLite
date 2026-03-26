@@ -86,22 +86,25 @@ class SettingsSwitchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final leading = _buildLeading(context);
-    return CupertinoListTile.notched(
-      leading: leading,
-      title: _buildTitle(context),
-      additionalInfo: Switch(
-        value: value,
-        onChanged: (v) {
-          HapticFeedback.lightImpact();
-          onChanged?.call(v);
-        },
-      ),
-      leadingToTitle: leading != null ? 8 : 0,
-      padding: const EdgeInsetsDirectional.only(
-        start: 12,
-        end: 16,
-        top: 0,
-        bottom: 0,
+    return Material(
+      color: Colors.transparent,
+      child: CupertinoListTile.notched(
+        leading: leading,
+        title: _buildTitle(context),
+        additionalInfo: Switch(
+          value: value,
+          onChanged: (v) {
+            HapticFeedback.lightImpact();
+            onChanged?.call(v);
+          },
+        ),
+        leadingToTitle: leading != null ? 8 : 0,
+        padding: const EdgeInsetsDirectional.only(
+          start: 12,
+          end: 16,
+          top: 0,
+          bottom: 0,
+        ),
       ),
     );
   }
