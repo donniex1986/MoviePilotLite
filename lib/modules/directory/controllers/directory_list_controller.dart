@@ -14,6 +14,7 @@ class DirectoryListController extends GetxController {
 
   final directories = <DirectorySetting>[].obs;
   final isLoading = false.obs;
+  final isSaving = false.obs;
   final errorText = RxnString();
 
   @override
@@ -70,10 +71,48 @@ class DirectoryListController extends GetxController {
     }
   }
 
+  Future<bool> updateDirectoryAt(int index, DirectorySetting updated) async {
+    if (index < 0 || index >= directories.length) return false;
+    directories[index] = updated;
+    directories.refresh();
+    return saveDirectories();
+  }
+
+  Future<bool> saveDirectories() async {
+    if (isSaving.value) return false;
+    isSaving.value = true;
+    try {
+      final token =
+          _appService.loginResponse?.accessToken ??
+          _appService.latestLoginProfileAccessToken ??
+          _apiClient.token;
+      if (token == null || token.isEmpty) {
+        ToastUtil.error('请先登录');
+        return false;
+      }
+
+      final payload = {'value': directories.map((d) => d.toJson()).toList()};
+      final resp = await _apiClient.post<Map<String, dynamic>>(
+        '/api/v1/system/setting/Directories',
+        data: payload,
+        token: token,
+      );
+      final status = resp.statusCode ?? 0;
+      if (status >= 200 && status < 300) return true;
+      ToastUtil.error('保存失败 (HTTP $status)');
+      return false;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '保存目录设置失败');
+      ToastUtil.error('保存失败');
+      return false;
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
   /// 获取目录建议列表（从目录设置中提取 download_path）
-  List<String> get directorySuggestions =>
-      directories
-          .map((dir) => dir.downloadPath)
-          .where((path) => path.isNotEmpty)
-          .toList();
+  List<String> get directorySuggestions => directories
+      .map((dir) => dir.downloadPath)
+      .where((path) => path.isNotEmpty)
+      .toList();
 }

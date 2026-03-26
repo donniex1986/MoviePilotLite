@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:moviepilot_mobile/gen/assets.gen.dart';
 import 'package:moviepilot_mobile/modules/dashboard/widgets/shortcut_popover.dart';
 import 'package:moviepilot_mobile/modules/network_test/controllers/network_test_controller.dart';
 import 'package:moviepilot_mobile/modules/network_test/pages/network_test_page.dart';
@@ -237,7 +238,7 @@ class DashboardPage extends GetView<DashboardController> {
                     return const Icon(CupertinoIcons.person_circle);
                   }
                 }()
-              : const Icon(CupertinoIcons.person_circle),
+              : Assets.images.avatars.avatar1.image(width: 34, height: 34),
         ),
       ],
     );

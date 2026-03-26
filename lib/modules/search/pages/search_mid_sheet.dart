@@ -7,9 +7,20 @@ import 'package:moviepilot_mobile/modules/site/models/site_models.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum SiteSelectScene { search, subscribe }
+
 class SiteSelectSheet extends StatefulWidget {
-  const SiteSelectSheet({super.key, this.hasSegment = false});
+  const SiteSelectSheet({
+    super.key,
+    this.hasSegment = false,
+    this.scene = SiteSelectScene.search,
+    this.initialSelectedIds,
+    this.disabledIds,
+  });
   final bool hasSegment;
+  final SiteSelectScene scene;
+  final List<int>? initialSelectedIds;
+  final List<int>? disabledIds;
   @override
   State<SiteSelectSheet> createState() => _SiteSelectSheetState();
 }
@@ -25,7 +36,9 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
   static const _prefsKeyPrefix = 'site_select_last';
 
   void _done() {
-    _persistSelection();
+    if (widget.scene == SiteSelectScene.search) {
+      _persistSelection();
+    }
     // 使用 Navigator.pop 确保关闭当前 bottom sheet 并返回结果。
     // Get.back() 会优先关闭 snackbar，导致 bottom sheet 不会被 pop，await 永不完结。
     Navigator.of(context).pop((area: area.value, sites: selectedSite.toList()));
@@ -34,7 +47,12 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
   @override
   void initState() {
     super.initState();
-    _loadSelection();
+    if (widget.scene == SiteSelectScene.search) {
+      _loadSelection();
+    } else {
+      selectedSite.assignAll(widget.initialSelectedIds ?? const <int>[]);
+      _filterSelection();
+    }
     _siteItemsWorker = ever<List<SiteItem>>(
       siteController.items,
       (_) => _filterSelection(),
@@ -48,6 +66,7 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
   }
 
   Future<void> _loadSelection() async {
+    if (widget.scene != SiteSelectScene.search) return;
     final prefs = await SharedPreferences.getInstance();
     final key = _buildPrefsKey();
     final raw = prefs.getStringList(key) ?? const <String>[];
@@ -59,6 +78,7 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
   }
 
   Future<void> _persistSelection() async {
+    if (widget.scene != SiteSelectScene.search) return;
     final prefs = await SharedPreferences.getInstance();
     final key = _buildPrefsKey();
     final values = selectedSite.map((e) => e.toString()).toList();
@@ -66,6 +86,9 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
   }
 
   String _buildPrefsKey() {
+    if (widget.scene != SiteSelectScene.search) {
+      return _prefsKeyPrefix;
+    }
     final baseUrl = appService.baseUrl ?? 'unknown';
     final userId = appService.loginResponse?.userId ?? 0;
     return '$_prefsKeyPrefix:$baseUrl:$userId';
@@ -76,7 +99,10 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
       return;
     }
     final ids = siteController.items.map((e) => e.site.id).toSet();
-    final filtered = selectedSite.where(ids.contains).toList();
+    final disabled = (widget.disabledIds ?? const <int>[]).toSet();
+    final filtered = selectedSite
+        .where((id) => ids.contains(id) && !disabled.contains(id))
+        .toList();
     if (filtered.length != selectedSite.length) {
       selectedSite.assignAll(filtered);
     }
@@ -144,9 +170,11 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
                 else
                   Spacer(),
                 const SizedBox(width: 8),
-                Obx(
-                  () => FilledButton(
-                    onPressed: selectedSite.isEmpty ? null : _done,
+                Obx(() {
+                  final selLen = selectedSite.length;
+                  final canSubmit = !widget.hasSegment || selLen > 0;
+                  return FilledButton(
+                    onPressed: canSubmit ? _done : null,
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -156,19 +184,19 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      backgroundColor: selectedSite.isEmpty
-                          ? null
-                          : theme.colorScheme.primary,
+                      backgroundColor: canSubmit
+                          ? theme.colorScheme.primary
+                          : null,
                     ),
                     child: Text(
-                      '搜索',
+                      widget.hasSegment ? '搜索' : '确定',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ),
+                  );
+                }),
               ],
             ),
           ),
@@ -195,7 +223,14 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
                   Expanded(
                     child: Obx(
                       () => Text(
-                        '已选择 ${selectedSite.length}/${siteController.items.length} 个站点',
+                        () {
+                          final disabled = (widget.disabledIds ?? const <int>[])
+                              .toSet();
+                          final enabledCount = siteController.items
+                              .where((e) => !disabled.contains(e.site.id))
+                              .length;
+                          return '已选择 ${selectedSite.length}/$enabledCount 个站点';
+                        }(),
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w500,
                           color: theme.colorScheme.onSurfaceVariant,
@@ -206,13 +241,17 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
                   Obx(
                     () => InkWell(
                       onTap: () {
-                        if (selectedSite.length ==
-                            siteController.items.length) {
+                        final disabled = (widget.disabledIds ?? const <int>[])
+                            .toSet();
+                        final enabledIds = siteController.items
+                            .map((e) => e.site.id)
+                            .where((id) => !disabled.contains(id))
+                            .toList();
+                        if (enabledIds.isNotEmpty &&
+                            selectedSite.length == enabledIds.length) {
                           selectedSite.clear();
                         } else {
-                          selectedSite.assignAll(
-                            siteController.items.map((e) => e.site.id),
-                          );
+                          selectedSite.assignAll(enabledIds);
                         }
                       },
                       borderRadius: BorderRadius.circular(6),
@@ -225,17 +264,33 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              selectedSite.length == siteController.items.length
-                                  ? Icons.check_box
-                                  : Icons.check_box_outline_blank,
+                              () {
+                                final disabled =
+                                    (widget.disabledIds ?? const <int>[])
+                                        .toSet();
+                                final enabledCount = siteController.items
+                                    .where((e) => !disabled.contains(e.site.id))
+                                    .length;
+                                return selectedSite.length == enabledCount
+                                    ? Icons.check_box
+                                    : Icons.check_box_outline_blank;
+                              }(),
                               size: 16,
                               color: theme.colorScheme.primary,
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              selectedSite.length == siteController.items.length
-                                  ? '清空'
-                                  : '全选',
+                              () {
+                                final disabled =
+                                    (widget.disabledIds ?? const <int>[])
+                                        .toSet();
+                                final enabledCount = siteController.items
+                                    .where((e) => !disabled.contains(e.site.id))
+                                    .length;
+                                return selectedSite.length == enabledCount
+                                    ? '清空'
+                                    : '全选';
+                              }(),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: theme.colorScheme.primary,
@@ -315,36 +370,50 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
     final theme = Theme.of(context);
     return Obx(() {
       final isSelected = selectedSite.contains(item.site.id);
+      final disabled = (widget.disabledIds ?? const <int>[]).toSet().contains(
+        item.site.id,
+      );
 
       return Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            if (isSelected) {
-              selectedSite.remove(item.site.id);
-            } else {
-              selectedSite.add(item.site.id);
-            }
-          },
+          onTap: disabled
+              ? null
+              : () {
+                  if (isSelected) {
+                    selectedSite.remove(item.site.id);
+                  } else {
+                    selectedSite.add(item.site.id);
+                  }
+                },
           borderRadius: BorderRadius.circular(10),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: isSelected
+              color: disabled
+                  ? theme.colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.9,
+                    )
+                  : isSelected
                   ? theme.colorScheme.primary.withValues(alpha: 0.5)
                   : theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isSelected
+                color: disabled
+                    ? theme.colorScheme.outline.withValues(alpha: 0.45)
+                    : isSelected
                     ? theme.colorScheme.primary
                     : theme.colorScheme.outline.withValues(alpha: 0.2),
-                width: isSelected ? 1.5 : 1,
+                width: disabled ? 1 : (isSelected ? 1.5 : 1),
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildSiteIcon(item),
+                Opacity(
+                  opacity: disabled ? 0.35 : 1,
+                  child: _buildSiteIcon(item),
+                ),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
@@ -356,12 +425,26 @@ class _SiteSelectSheetState extends State<SiteSelectSheet> {
                       fontWeight: isSelected
                           ? FontWeight.w600
                           : FontWeight.w500,
-                      color: isSelected
+                      color: disabled
+                          ? theme.colorScheme.onSurfaceVariant.withValues(
+                              alpha: 0.55,
+                            )
+                          : isSelected
                           ? theme.colorScheme.onPrimaryContainer
                           : theme.colorScheme.onSurface,
                     ),
                   ),
                 ),
+                if (disabled) ...[
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.block,
+                    size: 16,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.55,
+                    ),
+                  ),
+                ],
                 if (isSelected) ...[
                   const SizedBox(width: 6),
                   Icon(

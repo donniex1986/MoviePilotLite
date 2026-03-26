@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:ui';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/discover/controllers/discover_controller.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_controller.dart';
@@ -17,16 +18,21 @@ class SubscribePage extends GetView<SubscribeController> {
 
   static const double _horizontalPadding = 16;
   static const double _cardSpacing = 12;
+  static const double _floatingBarHeight = 52;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: _buildFloatingBar(context),
       body: CustomScrollView(
         controller: scrollController,
         slivers: [
-          SliverToBoxAdapter(child: _buildSearchBar(context)),
           _buildSliverContent(context),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: _floatingBarHeight + 32),
+          ),
         ],
       ),
     );
@@ -99,96 +105,134 @@ class SubscribePage extends GetView<SubscribeController> {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
+  Widget _buildFloatingBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final child = Row(
+      children: [
+        _buildFloatingFilterButton(context),
+        const SizedBox(width: 8),
+        Expanded(child: _buildFakeSearchBar(context)),
+      ],
+    );
+    final pill = Container(
+      height: _floatingBarHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
+      child: child,
+    );
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        _horizontalPadding,
-        8,
-        _horizontalPadding,
-        12,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: CupertinoSearchTextField(
-              onSubmitted: controller.updateKeyword,
-              placeholder: '搜索订阅名称…',
-              backgroundColor: CupertinoDynamicColor.resolve(
-                CupertinoColors.tertiarySystemFill,
-                context,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          color: theme.colorScheme.surface.withValues(alpha: 0.2),
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+            width: 0.5,
           ),
-          const SizedBox(width: 10),
-          _buildFilterButton(context),
-        ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+            child: pill,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildFilterButton(BuildContext context) {
+  Widget _buildFloatingFilterButton(BuildContext context) {
     return Obx(() {
       final hasFilters = controller.hasActiveFilters;
-      final accent = Theme.of(context).primaryColor; // 紫色点缀
+      final color = hasFilters
+          ? CupertinoDynamicColor.resolve(CupertinoColors.activeBlue, context)
+          : CupertinoDynamicColor.resolve(
+              CupertinoColors.secondaryLabel,
+              context,
+            );
       return CupertinoButton(
         padding: EdgeInsets.zero,
-        pressedOpacity: 0.7,
+        minimumSize: Size.zero,
         onPressed: () => _openFilterSheet(context),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: accent.withValues(alpha: 0.2),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                CupertinoIcons.line_horizontal_3_decrease_circle_fill,
-                size: 20,
-                color: hasFilters ? accent : accent.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '筛选',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: hasFilters
-                      ? accent
-                      : CupertinoDynamicColor.resolve(
-                          CupertinoColors.secondaryLabel,
-                          context,
-                        ),
-                ),
-              ),
-              if (hasFilters) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: accent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '${controller.selectedStates.length}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+        child: Icon(CupertinoIcons.slider_horizontal_3, size: 20, color: color),
       );
     });
+  }
+
+  Widget _buildFakeSearchBar(BuildContext context) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: () => _openKeywordSheet(context),
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
+        child: Row(
+          children: [
+            Icon(
+              CupertinoIcons.search,
+              size: 18,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Obx(
+                () => Text(
+                  controller.keyword.value.isEmpty
+                      ? '搜索订阅名称…'
+                      : controller.keyword.value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openKeywordSheet(BuildContext context) async {
+    final controllerText = TextEditingController(
+      text: controller.keyword.value,
+    );
+    final submitted = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final insets = MediaQuery.of(ctx).viewInsets;
+        return Padding(
+          padding: EdgeInsets.only(bottom: insets.bottom),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            decoration: BoxDecoration(
+              color: CupertinoDynamicColor.resolve(
+                CupertinoColors.systemBackground,
+                ctx,
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(18),
+              ),
+            ),
+            child: CupertinoSearchTextField(
+              controller: controllerText,
+              autofocus: true,
+              placeholder: '搜索订阅名称…',
+              onSubmitted: (v) => Navigator.of(ctx).pop(v),
+            ),
+          ),
+        );
+      },
+    );
+    controllerText.dispose();
+    if (submitted == null) return;
+    controller.updateKeyword(submitted);
   }
 
   Widget _buildSliverContent(BuildContext context) {
@@ -248,7 +292,7 @@ class SubscribePage extends GetView<SubscribeController> {
           _horizontalPadding,
           0,
           _horizontalPadding,
-          80,
+          0,
         ),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {

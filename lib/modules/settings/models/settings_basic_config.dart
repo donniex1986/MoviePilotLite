@@ -110,7 +110,7 @@ List<SettingsFieldConfig> get aiAssistantConfigFields => [
   SettingsFieldConfig(
     label: 'LLM 模型名称',
     envKey: 'LLM_MODEL',
-    type: SettingsFieldType.text,
+    type: SettingsFieldType.select,
     hint: '指定使用的LLM模型,如gpt-3.5-turbo、deepseek-chat等',
     icon: Icons.psychology_outlined,
     enumKey: 'LLM_MODEL',
@@ -129,5 +129,23 @@ List<SettingsFieldConfig> get aiAssistantConfigFields => [
     type: SettingsFieldType.toggle,
     hint: '启用搜索结果智能推荐功能,开启后将在搜索结果页面显示智能推荐按钮',
     icon: Icons.recommend_outlined,
+  ),
+  SettingsFieldConfig(
+    label: '用户偏好',
+    envKey: 'AI_RECOMMEND_USER_PREFERENCE',
+    type: SettingsFieldType.text,
+    hint: '设置智能推荐时的用户偏好，例如：4K WEB-DL Dolby Vision.',
+    icon: Icons.person_search_outlined,
+    conditionKey: 'AI_RECOMMEND_ENABLED',
+    conditionValue: 'true',
+  ),
+  SettingsFieldConfig(
+    label: '智能推荐分析条目上限',
+    envKey: 'AI_RECOMMEND_MAX_ITEMS',
+    type: SettingsFieldType.number,
+    step: 1,
+    icon: Icons.format_list_numbered,
+    conditionKey: 'AI_RECOMMEND_ENABLED',
+    conditionValue: 'true',
   ),
 ];

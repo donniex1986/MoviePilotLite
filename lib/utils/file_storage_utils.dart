@@ -18,6 +18,8 @@ class FileStorageUtils {
         return m.smb.image(width: size, height: size, fit: BoxFit.contain);
       case 'rclone':
         return m.rclone.image(width: size, height: size, fit: BoxFit.contain);
+      case 'custom7':
+        return m.storage.image(width: size, height: size, fit: BoxFit.contain);
       case 'plex':
         return m.plex.image(width: size, height: size, fit: BoxFit.contain);
       case 'emby':

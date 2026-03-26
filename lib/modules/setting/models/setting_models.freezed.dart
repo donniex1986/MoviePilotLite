@@ -435,6 +435,8 @@ mixin _$DirectorySetting {
   int get priority => throw _privateConstructorUsedError;
   @JsonKey(name: 'monitor_type', fromJson: _stringFromJson)
   String get monitorType => throw _privateConstructorUsedError;
+  @JsonKey(name: 'monitor_mode', fromJson: _stringFromJson)
+  String get monitorMode => throw _privateConstructorUsedError;
   @JsonKey(name: 'media_type', fromJson: _stringFromJson)
   String get mediaType => throw _privateConstructorUsedError;
   @JsonKey(name: 'media_category', fromJson: _stringFromJson)
@@ -487,6 +489,8 @@ abstract class $DirectorySettingCopyWith<$Res> {
     @JsonKey(fromJson: _intFromJson) int priority,
     @JsonKey(name: 'monitor_type', fromJson: _stringFromJson)
     String monitorType,
+    @JsonKey(name: 'monitor_mode', fromJson: _stringFromJson)
+    String monitorMode,
     @JsonKey(name: 'media_type', fromJson: _stringFromJson) String mediaType,
     @JsonKey(name: 'media_category', fromJson: _stringFromJson)
     String mediaCategory,
@@ -532,6 +536,7 @@ class _$DirectorySettingCopyWithImpl<$Res, $Val extends DirectorySetting>
     Object? downloadPath = null,
     Object? priority = null,
     Object? monitorType = null,
+    Object? monitorMode = null,
     Object? mediaType = null,
     Object? mediaCategory = null,
     Object? transferType = null,
@@ -567,6 +572,10 @@ class _$DirectorySettingCopyWithImpl<$Res, $Val extends DirectorySetting>
             monitorType: null == monitorType
                 ? _value.monitorType
                 : monitorType // ignore: cast_nullable_to_non_nullable
+                      as String,
+            monitorMode: null == monitorMode
+                ? _value.monitorMode
+                : monitorMode // ignore: cast_nullable_to_non_nullable
                       as String,
             mediaType: null == mediaType
                 ? _value.mediaType
@@ -643,6 +652,8 @@ abstract class _$$DirectorySettingImplCopyWith<$Res>
     @JsonKey(fromJson: _intFromJson) int priority,
     @JsonKey(name: 'monitor_type', fromJson: _stringFromJson)
     String monitorType,
+    @JsonKey(name: 'monitor_mode', fromJson: _stringFromJson)
+    String monitorMode,
     @JsonKey(name: 'media_type', fromJson: _stringFromJson) String mediaType,
     @JsonKey(name: 'media_category', fromJson: _stringFromJson)
     String mediaCategory,
@@ -687,6 +698,7 @@ class __$$DirectorySettingImplCopyWithImpl<$Res>
     Object? downloadPath = null,
     Object? priority = null,
     Object? monitorType = null,
+    Object? monitorMode = null,
     Object? mediaType = null,
     Object? mediaCategory = null,
     Object? transferType = null,
@@ -722,6 +734,10 @@ class __$$DirectorySettingImplCopyWithImpl<$Res>
         monitorType: null == monitorType
             ? _value.monitorType
             : monitorType // ignore: cast_nullable_to_non_nullable
+                  as String,
+        monitorMode: null == monitorMode
+            ? _value.monitorMode
+            : monitorMode // ignore: cast_nullable_to_non_nullable
                   as String,
         mediaType: null == mediaType
             ? _value.mediaType
@@ -791,6 +807,8 @@ class _$DirectorySettingImpl implements _DirectorySetting {
     @JsonKey(fromJson: _intFromJson) this.priority = 0,
     @JsonKey(name: 'monitor_type', fromJson: _stringFromJson)
     this.monitorType = '',
+    @JsonKey(name: 'monitor_mode', fromJson: _stringFromJson)
+    this.monitorMode = '',
     @JsonKey(name: 'media_type', fromJson: _stringFromJson) this.mediaType = '',
     @JsonKey(name: 'media_category', fromJson: _stringFromJson)
     this.mediaCategory = '',
@@ -834,6 +852,9 @@ class _$DirectorySettingImpl implements _DirectorySetting {
   @JsonKey(name: 'monitor_type', fromJson: _stringFromJson)
   final String monitorType;
   @override
+  @JsonKey(name: 'monitor_mode', fromJson: _stringFromJson)
+  final String monitorMode;
+  @override
   @JsonKey(name: 'media_type', fromJson: _stringFromJson)
   final String mediaType;
   @override
@@ -875,7 +896,7 @@ class _$DirectorySettingImpl implements _DirectorySetting {
 
   @override
   String toString() {
-    return 'DirectorySetting(name: $name, storage: $storage, downloadPath: $downloadPath, priority: $priority, monitorType: $monitorType, mediaType: $mediaType, mediaCategory: $mediaCategory, transferType: $transferType, libraryPath: $libraryPath, libraryTypeFolder: $libraryTypeFolder, renaming: $renaming, scraping: $scraping, notify: $notify, overwriteMode: $overwriteMode, downloadTypeFolder: $downloadTypeFolder, libraryStorage: $libraryStorage, libraryCategoryFolder: $libraryCategoryFolder, downloadCategoryFolder: $downloadCategoryFolder)';
+    return 'DirectorySetting(name: $name, storage: $storage, downloadPath: $downloadPath, priority: $priority, monitorType: $monitorType, monitorMode: $monitorMode, mediaType: $mediaType, mediaCategory: $mediaCategory, transferType: $transferType, libraryPath: $libraryPath, libraryTypeFolder: $libraryTypeFolder, renaming: $renaming, scraping: $scraping, notify: $notify, overwriteMode: $overwriteMode, downloadTypeFolder: $downloadTypeFolder, libraryStorage: $libraryStorage, libraryCategoryFolder: $libraryCategoryFolder, downloadCategoryFolder: $downloadCategoryFolder)';
   }
 
   @override
@@ -891,6 +912,8 @@ class _$DirectorySettingImpl implements _DirectorySetting {
                 other.priority == priority) &&
             (identical(other.monitorType, monitorType) ||
                 other.monitorType == monitorType) &&
+            (identical(other.monitorMode, monitorMode) ||
+                other.monitorMode == monitorMode) &&
             (identical(other.mediaType, mediaType) ||
                 other.mediaType == mediaType) &&
             (identical(other.mediaCategory, mediaCategory) ||
@@ -920,13 +943,14 @@ class _$DirectorySettingImpl implements _DirectorySetting {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     name,
     storage,
     downloadPath,
     priority,
     monitorType,
+    monitorMode,
     mediaType,
     mediaCategory,
     transferType,
@@ -940,7 +964,7 @@ class _$DirectorySettingImpl implements _DirectorySetting {
     libraryStorage,
     libraryCategoryFolder,
     downloadCategoryFolder,
-  );
+  ]);
 
   /// Create a copy of DirectorySetting
   /// with the given fields replaced by the non-null parameter values.
@@ -968,6 +992,8 @@ abstract class _DirectorySetting implements DirectorySetting {
     @JsonKey(fromJson: _intFromJson) final int priority,
     @JsonKey(name: 'monitor_type', fromJson: _stringFromJson)
     final String monitorType,
+    @JsonKey(name: 'monitor_mode', fromJson: _stringFromJson)
+    final String monitorMode,
     @JsonKey(name: 'media_type', fromJson: _stringFromJson)
     final String mediaType,
     @JsonKey(name: 'media_category', fromJson: _stringFromJson)
@@ -1011,6 +1037,9 @@ abstract class _DirectorySetting implements DirectorySetting {
   @override
   @JsonKey(name: 'monitor_type', fromJson: _stringFromJson)
   String get monitorType;
+  @override
+  @JsonKey(name: 'monitor_mode', fromJson: _stringFromJson)
+  String get monitorMode;
   @override
   @JsonKey(name: 'media_type', fromJson: _stringFromJson)
   String get mediaType;
