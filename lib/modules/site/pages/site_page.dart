@@ -115,6 +115,12 @@ class _SitePageState extends State<SitePage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: _buildFilterSortFloatingBar(context),
       body: Obx(() {
+        final statController = Get.find<SiteStatisticController>(
+          tag: _SitePageState._statTag,
+        );
+        final statByDomain = <String, SiteStatisticItem>{
+          for (final e in statController.items) e.domain: e,
+        };
         if (controller.isLoading.value && controller.items.isEmpty) {
           return const Center(child: CupertinoActivityIndicator());
         }
@@ -143,12 +149,6 @@ class _SitePageState extends State<SitePage> {
 
         final q = _query.trim().toLowerCase();
         final all = controller.items.toList();
-        final statController = Get.find<SiteStatisticController>(
-          tag: _SitePageState._statTag,
-        );
-        final statByDomain = <String, SiteStatisticItem>{
-          for (final e in statController.items) e.domain: e,
-        };
         final filtered = all.where((s) {
           final hit = q.isEmpty
               ? true
@@ -221,6 +221,7 @@ class _SitePageState extends State<SitePage> {
                                 child: _SiteItemCard(
                                   item: item,
                                   privacyMode: _privacyMode,
+                                  statByDomain: statByDomain,
                                 ),
                               ),
                             );
@@ -459,10 +460,15 @@ class _SitePageState extends State<SitePage> {
 }
 
 class _SiteItemCard extends StatelessWidget {
-  const _SiteItemCard({this.item, required this.privacyMode});
+  const _SiteItemCard({
+    this.item,
+    required this.privacyMode,
+    required this.statByDomain,
+  });
 
   final SiteItem? item;
   final bool privacyMode;
+  final Map<String, SiteStatisticItem> statByDomain;
 
   @override
   Widget build(BuildContext context) {
@@ -490,7 +496,7 @@ class _SiteItemCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildUpdateTime(context, user),
+          _buildUpdateTime(context, user, statByDomain[site?.domain ?? '']),
           _buildSiteInfo(
             context,
             siteName: site?.name ?? '',
@@ -509,49 +515,39 @@ class _SiteItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildUpdateTime(BuildContext context, SiteUserDataModel? user) {
+  Widget _buildUpdateTime(
+    BuildContext context,
+    SiteUserDataModel? user,
+    SiteStatisticItem? metrics,
+  ) {
     final onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     final date =
         (user != null &&
             (user.updatedDay.isNotEmpty || user.updatedTime.isNotEmpty))
         ? '${user.updatedDay} ${user.updatedTime}'.trim()
         : '-';
-    final statController = Get.find<SiteStatisticController>(
-      tag: _SitePageState._statTag,
-    );
-    return Obx(() {
-      SiteStatisticItem? metrics;
-      if (user != null && user.domain.isNotEmpty) {
-        for (final e in statController.items) {
-          if (e.domain == user.domain) {
-            metrics = e;
-            break;
-          }
-        }
-      }
-      final statusColor = _statusColor(metrics);
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
-          children: [
-            const SizedBox(width: 8),
-            Icon(Icons.update_rounded, size: 14, color: onSurfaceVariant),
-            const SizedBox(width: 6),
-            Text(
-              '更新时间: $date',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 12,
-                color: onSurfaceVariant,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+    final statusColor = _statusColor(metrics);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          const SizedBox(width: 8),
+          Icon(Icons.update_rounded, size: 14, color: onSurfaceVariant),
+          const SizedBox(width: 6),
+          Text(
+            '更新时间: $date',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontSize: 12,
+              color: onSurfaceVariant,
             ),
-            Spacer(),
-            _BreathingStatusDot(color: statusColor),
-          ],
-        ),
-      );
-    });
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Spacer(),
+          _BreathingStatusDot(color: statusColor),
+        ],
+      ),
+    );
   }
 
   Color _statusColor(SiteStatisticItem? metrics) {
