@@ -78,7 +78,8 @@ class SettingsBasicPage extends GetView<SettingsBasicController> {
         actions: [TextButton(onPressed: _confirmSave, child: const Text('保存'))],
       ),
       body: Obx(() {
-        if (controller.errorText.value != null && controller.envData.value == null) {
+        if (controller.errorText.value != null &&
+            controller.envData.value == null) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -89,7 +90,9 @@ class SettingsBasicPage extends GetView<SettingsBasicController> {
                     controller.errorText.value ?? '',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: CupertinoColors.secondaryLabel.resolveFrom(context),
+                      color: CupertinoColors.secondaryLabel.resolveFrom(
+                        context,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

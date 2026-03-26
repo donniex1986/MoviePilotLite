@@ -70,12 +70,12 @@ class _SettingsSelectRowState extends State<SettingsSelectRow> {
 
   @override
   Widget build(BuildContext context) {
-    final canPick = widget.editable &&
+    final canPick =
+        widget.editable &&
         widget.selectOptions.isNotEmpty &&
         widget.onSelectChanged != null;
-    final readOnlySelectHint = !canPick &&
-        widget.selectOptions.isNotEmpty &&
-        !widget.allowInput;
+    final readOnlySelectHint =
+        !canPick && widget.selectOptions.isNotEmpty && !widget.allowInput;
 
     Widget? suffix;
     if (canPick) {
