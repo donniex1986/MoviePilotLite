@@ -778,6 +778,11 @@ class MyApp extends StatelessWidget {
               Get.lazyPut(() => AppSettingController());
             }),
           ),
+          GetPage(
+            name: '/app/log',
+            page: () =>
+                TalkerScreen(talker: talker.talker, appBarTitle: 'App日志'),
+          ),
         ],
         // 配置错误处理
         builder: (context, child) {

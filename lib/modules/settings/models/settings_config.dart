@@ -75,12 +75,6 @@ List<SettingsCategory> get settingsCategories => [
         route: '/totp-manage',
         icon: Icons.key_outlined,
       ),
-      // SettingsSubItem(
-      //   id: 'dashboard-config',
-      //   title: 'Dashboard配置',
-      //   route: '/settings/app/dashboard-config',
-      //   icon: Icons.dashboard_outlined,
-      // ),
     ],
   ),
 
