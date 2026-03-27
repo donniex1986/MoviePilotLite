@@ -299,7 +299,7 @@ class SystemEnvData with _$SystemEnvData {
     bool? aiRecommendEnabled,
     @JsonKey(name: 'AI_RECOMMEND_USER_PREFERENCE')
     String? aiRecommendUserPreference,
-    @JsonKey(name: 'TAVILY_API_KEY') String? tavilyApiKey,
+    @JsonKey(name: 'TAVILY_API_KEY') List? tavilyApiKey,
     @JsonKey(name: 'AI_RECOMMEND_MAX_ITEMS', fromJson: _intFromJson)
     int? aiRecommendMaxItems,
     @JsonKey(name: 'VERSION') String? version,

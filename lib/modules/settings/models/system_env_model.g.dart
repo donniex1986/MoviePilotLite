@@ -182,7 +182,7 @@ _$SystemEnvDataImpl _$$SystemEnvDataImplFromJson(
   ),
   aiRecommendEnabled: _boolFromJson(json['AI_RECOMMEND_ENABLED']),
   aiRecommendUserPreference: json['AI_RECOMMEND_USER_PREFERENCE'] as String?,
-  tavilyApiKey: json['TAVILY_API_KEY'] as String?,
+  tavilyApiKey: json['TAVILY_API_KEY'] as List<dynamic>?,
   aiRecommendMaxItems: _intFromJson(json['AI_RECOMMEND_MAX_ITEMS']),
   version: json['VERSION'] as String?,
   authVersion: json['AUTH_VERSION'] as String?,

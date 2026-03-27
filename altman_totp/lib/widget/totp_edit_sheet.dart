@@ -404,7 +404,7 @@ class _TotpEditSheetState extends State<TotpEditSheet> {
                       field: const Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 6,
                           ),
