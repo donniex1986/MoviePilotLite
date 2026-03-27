@@ -38,74 +38,70 @@ class _SystemMessagePageState extends State<SystemMessagePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('系统消息')),
-      body: SafeArea(
-        child: Obx(() {
-          final items = controller.messages;
-          if (items.isEmpty) {
-            return Column(
-              children: [
-                Expanded(
-                  child: CupertinoButton(
-                    onPressed: controller.loadMore,
-                    child: const Center(
-                      child: Text(
-                        '暂无系统消息, 点击刷新',
-                        style: TextStyle(color: CupertinoColors.systemBlue),
-                      ),
-                    ),
-                  ),
-                ),
-                _buildInputBar(controller),
-              ],
-            );
-          }
-
+      body: Obx(() {
+        final items = controller.messages;
+        if (items.isEmpty) {
           return Column(
             children: [
               Expanded(
-                child: CustomScrollView(
-                  controller: controller.scrollController,
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  slivers: [
-                    CupertinoSliverRefreshControl(
-                      onRefresh: controller.loadMore,
+                child: CupertinoButton(
+                  onPressed: controller.loadMore,
+                  child: const Center(
+                    child: Text(
+                      '暂无系统消息, 点击刷新',
+                      style: TextStyle(color: CupertinoColors.systemBlue),
                     ),
-                    SliverPadding(
-                      padding: const EdgeInsets.all(12),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final message = items[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: _buildMessageCard(message),
-                          );
-                        }, childCount: items.length),
-                      ),
-                    ),
-                    if (!controller.hasMore.value)
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.only(bottom: 20),
-                          child: Center(
-                            child: Text(
-                              '没有更多了',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: CupertinoColors.systemGrey,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
               ),
               _buildInputBar(controller),
             ],
           );
-        }),
-      ),
+        }
+
+        return Column(
+          children: [
+            Expanded(
+              child: CustomScrollView(
+                controller: controller.scrollController,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                slivers: [
+                  CupertinoSliverRefreshControl(onRefresh: controller.loadMore),
+                  SliverPadding(
+                    padding: const EdgeInsets.all(12),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final message = items[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _buildMessageCard(message),
+                        );
+                      }, childCount: items.length),
+                    ),
+                  ),
+                  if (!controller.hasMore.value)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: 20),
+                        child: Center(
+                          child: Text(
+                            '没有更多了',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: CupertinoColors.systemGrey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            _buildInputBar(controller),
+          ],
+        );
+      }),
     );
   }
 

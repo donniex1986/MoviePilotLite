@@ -541,7 +541,7 @@ mixin _$SystemEnvData {
   @JsonKey(name: 'AI_RECOMMEND_USER_PREFERENCE')
   String? get aiRecommendUserPreference => throw _privateConstructorUsedError;
   @JsonKey(name: 'TAVILY_API_KEY')
-  String? get tavilyApiKey => throw _privateConstructorUsedError;
+  List<dynamic>? get tavilyApiKey => throw _privateConstructorUsedError;
   @JsonKey(name: 'AI_RECOMMEND_MAX_ITEMS', fromJson: _intFromJson)
   int? get aiRecommendMaxItems => throw _privateConstructorUsedError;
   @JsonKey(name: 'VERSION')
@@ -804,7 +804,7 @@ abstract class $SystemEnvDataCopyWith<$Res> {
     bool? aiRecommendEnabled,
     @JsonKey(name: 'AI_RECOMMEND_USER_PREFERENCE')
     String? aiRecommendUserPreference,
-    @JsonKey(name: 'TAVILY_API_KEY') String? tavilyApiKey,
+    @JsonKey(name: 'TAVILY_API_KEY') List<dynamic>? tavilyApiKey,
     @JsonKey(name: 'AI_RECOMMEND_MAX_ITEMS', fromJson: _intFromJson)
     int? aiRecommendMaxItems,
     @JsonKey(name: 'VERSION') String? version,
@@ -1592,7 +1592,7 @@ class _$SystemEnvDataCopyWithImpl<$Res, $Val extends SystemEnvData>
             tavilyApiKey: freezed == tavilyApiKey
                 ? _value.tavilyApiKey
                 : tavilyApiKey // ignore: cast_nullable_to_non_nullable
-                      as String?,
+                      as List<dynamic>?,
             aiRecommendMaxItems: freezed == aiRecommendMaxItems
                 ? _value.aiRecommendMaxItems
                 : aiRecommendMaxItems // ignore: cast_nullable_to_non_nullable
@@ -1865,7 +1865,7 @@ abstract class _$$SystemEnvDataImplCopyWith<$Res>
     bool? aiRecommendEnabled,
     @JsonKey(name: 'AI_RECOMMEND_USER_PREFERENCE')
     String? aiRecommendUserPreference,
-    @JsonKey(name: 'TAVILY_API_KEY') String? tavilyApiKey,
+    @JsonKey(name: 'TAVILY_API_KEY') List<dynamic>? tavilyApiKey,
     @JsonKey(name: 'AI_RECOMMEND_MAX_ITEMS', fromJson: _intFromJson)
     int? aiRecommendMaxItems,
     @JsonKey(name: 'VERSION') String? version,
@@ -2650,9 +2650,9 @@ class __$$SystemEnvDataImplCopyWithImpl<$Res>
             : aiRecommendUserPreference // ignore: cast_nullable_to_non_nullable
                   as String?,
         tavilyApiKey: freezed == tavilyApiKey
-            ? _value.tavilyApiKey
+            ? _value._tavilyApiKey
             : tavilyApiKey // ignore: cast_nullable_to_non_nullable
-                  as String?,
+                  as List<dynamic>?,
         aiRecommendMaxItems: freezed == aiRecommendMaxItems
             ? _value.aiRecommendMaxItems
             : aiRecommendMaxItems // ignore: cast_nullable_to_non_nullable
@@ -2917,7 +2917,7 @@ class _$SystemEnvDataImpl extends _SystemEnvData {
     this.aiRecommendEnabled,
     @JsonKey(name: 'AI_RECOMMEND_USER_PREFERENCE')
     this.aiRecommendUserPreference,
-    @JsonKey(name: 'TAVILY_API_KEY') this.tavilyApiKey,
+    @JsonKey(name: 'TAVILY_API_KEY') final List<dynamic>? tavilyApiKey,
     @JsonKey(name: 'AI_RECOMMEND_MAX_ITEMS', fromJson: _intFromJson)
     this.aiRecommendMaxItems,
     @JsonKey(name: 'VERSION') this.version,
@@ -2933,6 +2933,7 @@ class _$SystemEnvDataImpl extends _SystemEnvData {
        _renameFormatS0Names = renameFormatS0Names,
        _securityImageDomains = securityImageDomains,
        _securityImageSuffixes = securityImageSuffixes,
+       _tavilyApiKey = tavilyApiKey,
        super._();
 
   factory _$SystemEnvDataImpl.fromJson(Map<String, dynamic> json) =>
@@ -3466,9 +3467,17 @@ class _$SystemEnvDataImpl extends _SystemEnvData {
   @override
   @JsonKey(name: 'AI_RECOMMEND_USER_PREFERENCE')
   final String? aiRecommendUserPreference;
+  final List<dynamic>? _tavilyApiKey;
   @override
   @JsonKey(name: 'TAVILY_API_KEY')
-  final String? tavilyApiKey;
+  List<dynamic>? get tavilyApiKey {
+    final value = _tavilyApiKey;
+    if (value == null) return null;
+    if (_tavilyApiKey is EqualUnmodifiableListView) return _tavilyApiKey;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   @JsonKey(name: 'AI_RECOMMEND_MAX_ITEMS', fromJson: _intFromJson)
   final int? aiRecommendMaxItems;
@@ -3855,8 +3864,10 @@ class _$SystemEnvDataImpl extends _SystemEnvData {
                   aiRecommendUserPreference,
                 ) ||
                 other.aiRecommendUserPreference == aiRecommendUserPreference) &&
-            (identical(other.tavilyApiKey, tavilyApiKey) ||
-                other.tavilyApiKey == tavilyApiKey) &&
+            const DeepCollectionEquality().equals(
+              other._tavilyApiKey,
+              _tavilyApiKey,
+            ) &&
             (identical(other.aiRecommendMaxItems, aiRecommendMaxItems) ||
                 other.aiRecommendMaxItems == aiRecommendMaxItems) &&
             (identical(other.version, version) || other.version == version) &&
@@ -4021,7 +4032,7 @@ class _$SystemEnvDataImpl extends _SystemEnvData {
     llmRedisMemoryRetentionDays,
     aiRecommendEnabled,
     aiRecommendUserPreference,
-    tavilyApiKey,
+    const DeepCollectionEquality().hash(_tavilyApiKey),
     aiRecommendMaxItems,
     version,
     authVersion,
@@ -4283,7 +4294,7 @@ abstract class _SystemEnvData extends SystemEnvData {
     final bool? aiRecommendEnabled,
     @JsonKey(name: 'AI_RECOMMEND_USER_PREFERENCE')
     final String? aiRecommendUserPreference,
-    @JsonKey(name: 'TAVILY_API_KEY') final String? tavilyApiKey,
+    @JsonKey(name: 'TAVILY_API_KEY') final List<dynamic>? tavilyApiKey,
     @JsonKey(name: 'AI_RECOMMEND_MAX_ITEMS', fromJson: _intFromJson)
     final int? aiRecommendMaxItems,
     @JsonKey(name: 'VERSION') final String? version,
@@ -4751,7 +4762,7 @@ abstract class _SystemEnvData extends SystemEnvData {
   String? get aiRecommendUserPreference;
   @override
   @JsonKey(name: 'TAVILY_API_KEY')
-  String? get tavilyApiKey;
+  List<dynamic>? get tavilyApiKey;
   @override
   @JsonKey(name: 'AI_RECOMMEND_MAX_ITEMS', fromJson: _intFromJson)
   int? get aiRecommendMaxItems;
