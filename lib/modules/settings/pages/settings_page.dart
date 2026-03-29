@@ -20,6 +20,13 @@ class SettingsPage extends GetView<SettingsController> {
         ),
         title: const Text('设定'),
         centerTitle: false,
+        actions: [
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => Get.toNamed('/app/log'),
+            child: const Icon(CupertinoIcons.info),
+          ),
+        ],
       ),
       body: ListView.builder(
         itemBuilder: (context, index) {

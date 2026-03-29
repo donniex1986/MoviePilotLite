@@ -110,12 +110,12 @@ class ApiClient extends g.GetxController {
       TalkerDioLogger(
         talker: _log.talker,
         settings: const TalkerDioLoggerSettings(
-          printRequestHeaders: false,
-          printResponseHeaders: false,
-          printResponseMessage: false,
-          printRequestData: false,
-          printResponseData: false,
-          logLevel: LogLevel.info,
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+          printResponseMessage: true,
+          printRequestData: true,
+          printResponseData: true,
+          logLevel: LogLevel.debug,
         ),
       ),
     );

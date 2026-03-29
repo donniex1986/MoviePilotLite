@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/widgets/cached_image.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 import '../controllers/system_message_controller.dart';
 import '../models/system_message.dart';
