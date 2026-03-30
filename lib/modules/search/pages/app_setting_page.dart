@@ -211,6 +211,32 @@ class AppSettingPage extends GetView<AppSettingController> {
                   }),
                 ],
               ),
+              Section(
+                padding: EdgeInsets.all(0),
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                header: _buildHeader(context, '关于'),
+                children: [
+                  CupertinoListTile.notched(
+                    leading: Container(
+                      width: 29,
+                      height: 29,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        Icons.history,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    title: const Text('更新日志'),
+                    trailing: const CupertinoListTileChevron(),
+                    onTap: () => Get.toNamed('/settings/app/changelog'),
+                  ),
+                ],
+              ),
             ],
           ),
           Align(
