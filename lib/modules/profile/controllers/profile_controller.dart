@@ -5,6 +5,7 @@ import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dar
 import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
 import 'package:moviepilot_mobile/modules/system_message/controllers/system_message_controller.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:moviepilot_mobile/services/ios_shared_session_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
 
 /// Profile 控制器：负责当前登录用户 / 登录档案的展示与后续扩展
@@ -12,6 +13,7 @@ class ProfileController extends GetxController {
   final _appService = Get.find<AppService>();
   final _realmService = Get.find<RealmService>();
   final _authRepository = Get.find<AuthRepository>();
+  final _iosSharedSessionService = Get.find<IosSharedSessionService>();
   final _talker = Get.find<AppLog>();
 
   /// 当前登录配置（登录档案）
@@ -82,12 +84,14 @@ class ProfileController extends GetxController {
   Future<void> logout() async {
     // 停止消息轮询并清理 controller
     if (Get.isRegistered<SystemMessageController>()) {
-      Get.delete<SystemMessageController>(force: true);
+      Get.find<SystemMessageController>().clearForLogout();
     }
 
     // 清空内存中的登录信息
     _appService.clearBaseUrl();
     _appService.clearCookie();
+    _appService.clearLoginState();
+    await _iosSharedSessionService.clearSession();
 
     currentProfile.value = null;
     currentUserInfo.value = null;

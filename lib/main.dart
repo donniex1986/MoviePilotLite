@@ -20,6 +20,8 @@ import 'package:moviepilot_mobile/modules/search/pages/person_detail_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/person_search_result_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/search_media_result_page.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:moviepilot_mobile/services/ios_shared_session_service.dart';
+import 'package:moviepilot_mobile/services/ios_widget_navigation_service.dart';
 import 'package:moviepilot_mobile/l10n/app_localizations.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
@@ -126,11 +128,13 @@ import 'modules/file_manager/controllers/file_manager_browser_controller.dart';
 import 'modules/file_manager/pages/file_manager_browser_page.dart';
 import 'package:altman_downloader_control/page/torrent_list_page.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Get.put(AppLog());
   Get.put(AppService());
   Get.put(RealmService());
+  Get.put(IosSharedSessionService());
+  await Get.put(IosWidgetNavigationService()).init();
   Get.put(ApiClient());
   Get.put(MediaDetailService());
   Get.put(ImageUtil());

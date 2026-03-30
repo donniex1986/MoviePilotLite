@@ -13,6 +13,7 @@ import 'package:moviepilot_mobile/modules/search/controllers/search_index_contro
 import 'package:moviepilot_mobile/modules/search/pages/search_index_page.dart';
 import 'package:moviepilot_mobile/modules/search_result/controllers/search_result_controller.dart';
 import 'package:moviepilot_mobile/modules/search_result/pages/search_result_page.dart';
+import 'package:moviepilot_mobile/services/ios_widget_navigation_service.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moviepilot_mobile/utils/prefs_keys.dart';
@@ -27,6 +28,7 @@ class Index extends StatefulWidget {
 }
 
 class _IndexState extends State<Index> {
+  final _widgetNavigationService = Get.find<IosWidgetNavigationService>();
   int _selectedIndex = 0;
   double _lastScrollOffset = 0;
   bool _initialIndexApplied = false;
@@ -64,6 +66,9 @@ class _IndexState extends State<Index> {
       ..addListener(() => _onScroll(_multifunctionScrollController));
     _searchResultScrollController = ScrollController()
       ..addListener(() => _onScroll(_searchResultScrollController));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _widgetNavigationService.navigateToPendingRoute();
+    });
   }
 
   @override

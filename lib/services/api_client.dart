@@ -8,6 +8,7 @@ import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:moviepilot_mobile/services/ios_shared_session_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
@@ -39,6 +40,7 @@ class ApiHttpException implements Exception {
 
 class ApiClient extends g.GetxController {
   final _appService = g.Get.find<AppService>();
+  final _iosSharedSessionService = g.Get.find<IosSharedSessionService>();
   final _realmService = g.Get.find<RealmService>();
   final _log = g.Get.find<AppLog>();
   late final Dio _dio;
@@ -490,6 +492,7 @@ class ApiClient extends g.GetxController {
           });
         }
       } catch (_) {}
+      await _iosSharedSessionService.clearSession();
     } finally {
       _authClearing = false;
     }
