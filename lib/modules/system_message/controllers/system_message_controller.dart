@@ -86,6 +86,20 @@ class SystemMessageController extends GetxController {
     _pollingTimer = null;
   }
 
+  /// 登出时清理运行态，避免继续轮询旧会话
+  void clearForLogout() {
+    _stopPolling();
+    isLoading.value = false;
+    isLoadingMore.value = false;
+    hasMore.value = true;
+    isSending.value = false;
+    hasUnreadMessages.value = false;
+    messages.clear();
+    inputController.clear();
+    _page = 1;
+    _currentMaxMessageId = 0;
+  }
+
   /// 定时获取最新消息列表并与当前列表 diff 对比插入数据
   Future<void> _fetchLatestMessages() async {
     if (isLoading.value) return;

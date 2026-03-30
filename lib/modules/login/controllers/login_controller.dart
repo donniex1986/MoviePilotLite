@@ -7,6 +7,7 @@ import 'package:altman_totp/services/totp_service.dart';
 import 'package:moviepilot_mobile/utils/image_util.dart';
 import '../../../utils/toast_util.dart';
 import '../../system_message/controllers/system_message_controller.dart';
+import '../../../services/ios_widget_navigation_service.dart';
 import '../models/login_profile.dart';
 import '../repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
@@ -18,6 +19,7 @@ class LoginController extends GetxController {
   final _totpService = Get.find<TotpService>();
   final _talker = Get.find<AppLog>();
   final imageUtil = Get.find<ImageUtil>();
+  final _widgetNavigationService = Get.find<IosWidgetNavigationService>();
 
   /// 默认壁纸（无本地缓存时使用，如首次安装）
   static const List<String> defaultWallpapers = [
@@ -203,6 +205,7 @@ class LoginController extends GetxController {
         } else {
           Get.offAllNamed('/main');
         }
+        _widgetNavigationService.navigateToPendingRoute();
         imageUtil.loadGlobalCachedConfig();
         Future.delayed(const Duration(seconds: 1), () {
           isAutoLogin.value = false;
@@ -283,6 +286,7 @@ class LoginController extends GetxController {
       } else {
         Get.offAllNamed('/main');
       }
+      _widgetNavigationService.navigateToPendingRoute();
     } catch (e) {
       ToastUtil.error(e.toString(), title: '登录失败');
     } finally {

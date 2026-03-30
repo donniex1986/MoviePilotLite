@@ -7,6 +7,7 @@ import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_global_config.dart';
 import 'package:moviepilot_mobile/modules/system_message/controllers/system_message_controller.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:moviepilot_mobile/services/ios_shared_session_service.dart';
 import '../../../services/api_client.dart';
 import '../../../services/realm_service.dart';
 import '../models/login_profile.dart';
@@ -17,6 +18,7 @@ class AuthRepository extends GetxService {
   final _realm = Get.find<RealmService>().realm;
   final _api = Get.find<ApiClient>();
   final _appService = Get.find<AppService>();
+  final _iosSharedSessionService = Get.find<IosSharedSessionService>();
   Future<LoginResponse> login({
     required String server,
     required String username,
@@ -40,6 +42,10 @@ class AuthRepository extends GetxService {
 
     // 保存当前账号配置，包含 server、token 以及用户信息
     _saveProfile(normalizedServer, username, password, login);
+    await _iosSharedSessionService.syncSession(
+      server: normalizedServer,
+      accessToken: login.accessToken,
+    );
 
     // 登录完成后调用API接口获取配置信息和cookie
     await getUserGlobalConfig(
@@ -115,6 +121,10 @@ class AuthRepository extends GetxService {
       final normalizedServer = _normalizeServer(server);
       _api.setBaseUrl(normalizedServer);
       _api.setToken(accessToken);
+      await _iosSharedSessionService.syncSession(
+        server: normalizedServer,
+        accessToken: accessToken,
+      );
 
       _talker.info('开始获取用户全局配置: $normalizedServer');
       return true;
