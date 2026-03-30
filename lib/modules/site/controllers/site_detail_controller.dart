@@ -50,10 +50,29 @@ class SiteDetailController extends GetxController {
   void onReady() {
     super.onReady();
     if (siteId != null) {
+      loadSiteDetail();
       loadIcon();
       loadUserdataHistory();
       loadResourceCategories();
       loadResources();
+    }
+  }
+
+  Future<void> loadSiteDetail() async {
+    final id = siteId;
+    if (id == null) return;
+    try {
+      final response = await _apiClient.get<dynamic>('/api/v1/site/$id');
+      final status = response.statusCode ?? 0;
+      if (status >= 400) return;
+      final data = response.data;
+      if (data is! Map<String, dynamic>) return;
+      final detail = SiteModel.fromJson(data);
+      site = detail;
+      siteName = detail.name;
+      update();
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '加载站点详情失败');
     }
   }
 
@@ -267,6 +286,6 @@ class SiteDetailController extends GetxController {
 
   /// 下拉刷新：同时刷新用户数据历史与资源列表
   Future<void> refreshAll() async {
-    await Future.wait([loadUserdataHistory(), loadResources()]);
+    await Future.wait([loadSiteDetail(), loadUserdataHistory(), loadResources()]);
   }
 }
