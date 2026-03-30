@@ -205,7 +205,6 @@ class LoginController extends GetxController {
         } else {
           Get.offAllNamed('/main');
         }
-        _widgetNavigationService.navigateToPendingRoute();
         imageUtil.loadGlobalCachedConfig();
         Future.delayed(const Duration(seconds: 1), () {
           isAutoLogin.value = false;
@@ -286,7 +285,6 @@ class LoginController extends GetxController {
       } else {
         Get.offAllNamed('/main');
       }
-      _widgetNavigationService.navigateToPendingRoute();
     } catch (e) {
       ToastUtil.error(e.toString(), title: '登录失败');
     } finally {

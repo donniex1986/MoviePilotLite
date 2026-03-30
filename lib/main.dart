@@ -15,6 +15,7 @@ import 'package:moviepilot_mobile/modules/search/controllers/search_controller.d
 import 'package:moviepilot_mobile/modules/search/pages/app_theme_setting_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/app_setting_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/background_image_setting_page.dart';
+import 'package:moviepilot_mobile/modules/search/pages/changelog_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/media_search_list_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/person_detail_page.dart';
 import 'package:moviepilot_mobile/modules/search/pages/person_search_result_page.dart';
@@ -134,7 +135,6 @@ Future<void> main() async {
   Get.put(AppService());
   Get.put(RealmService());
   Get.put(IosSharedSessionService());
-  await Get.put(IosWidgetNavigationService()).init();
   Get.put(ApiClient());
   Get.put(MediaDetailService());
   Get.put(ImageUtil());
@@ -153,7 +153,7 @@ Future<void> main() async {
   );
 
   registerProxmoxVeBackupRenderer();
-
+    await Get.put(IosWidgetNavigationService()).init();
   runApp(const MyApp());
 }
 
@@ -789,6 +789,10 @@ class MyApp extends StatelessWidget {
             binding: BindingsBuilder(() {
               Get.lazyPut(() => AppSettingController());
             }),
+          ),
+          GetPage(
+            name: '/settings/app/changelog',
+            page: () => const ChangelogPage(),
           ),
           GetPage(
             name: '/app/log',
