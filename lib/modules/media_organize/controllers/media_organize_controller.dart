@@ -5,9 +5,17 @@ import 'package:moviepilot_mobile/modules/media_organize/models/media_organize_m
 import 'package:moviepilot_mobile/modules/storage/controllers/storage_list_controller.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 
+enum MediaOrganizeStatusFilter { all, success, failed }
+
+enum MediaOrganizeSortKey { date, title, size }
+
 class MediaOrganizeController extends GetxController {
+  MediaOrganizeController({String? initialKeyword})
+    : _initialKeyword = initialKeyword?.trim() ?? '';
+
   final _apiClient = Get.find<ApiClient>();
   final _log = Get.find<AppLog>();
+  final String _initialKeyword;
 
   static const int _pageSize = 50;
 
@@ -18,19 +26,45 @@ class MediaOrganizeController extends GetxController {
   final items = <MediaOrganizeTransferItem>[].obs;
   final isLoading = false.obs;
   final errorText = RxnString();
-  final allKeys = <String>[].obs;
+  final keyword = ''.obs;
+  final statusFilter = MediaOrganizeStatusFilter.all.obs;
+  final sortKey = MediaOrganizeSortKey.date.obs;
+  final isSortAscending = false.obs;
 
-  /// 内部用 Set 做去重
-  final _keySet = <String>{};
-  List<MediaOrganizeTransferItem> get filteredItems => items
-      .where(
-        (e) =>
-            e.title?.toLowerCase().contains(
-              searchController.text.toLowerCase(),
-            ) ??
-            false,
-      )
-      .toList();
+  List<String> get titleOptions {
+    final titles = <String>{};
+    for (final item in items) {
+      final title = item.title?.trim() ?? '';
+      if (title.isNotEmpty) {
+        titles.add(title);
+      }
+    }
+    final result = titles.toList();
+    result.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return result;
+  }
+
+  List<MediaOrganizeTransferItem> get filteredItems {
+    final q = keyword.value.trim().toLowerCase();
+    final filtered = items.where((item) {
+      final matchesKeyword =
+          q.isEmpty ? true : _matchKeyword(item, q);
+      if (!matchesKeyword) return false;
+      switch (statusFilter.value) {
+        case MediaOrganizeStatusFilter.all:
+          return true;
+        case MediaOrganizeStatusFilter.success:
+          return item.status == true;
+        case MediaOrganizeStatusFilter.failed:
+          return item.status != true;
+      }
+    }).toList();
+
+    filtered.sort(_compareItems);
+    return filtered;
+  }
+
+  bool get hasActiveFilters => statusFilter.value != MediaOrganizeStatusFilter.all;
   StorageListController get _storageController =>
       Get.find<StorageListController>();
 
@@ -41,22 +75,10 @@ class MediaOrganizeController extends GetxController {
   @override
   void onReady() {
     super.onReady();
+    if (_initialKeyword.isNotEmpty) {
+      keyword.value = _initialKeyword;
+    }
     loadStorages().then((_) => load());
-    ever<List<MediaOrganizeTransferItem>>(items, (list) {
-      final newKeys = list.map((e) => e.title).whereType<String>();
-
-      bool changed = false;
-
-      for (final key in newKeys) {
-        if (_keySet.add(key)) {
-          changed = true;
-        }
-      }
-
-      if (changed) {
-        allKeys.assignAll(_keySet.toList());
-      }
-    });
   }
 
   @override
@@ -75,14 +97,26 @@ class MediaOrganizeController extends GetxController {
     return _storageController.getStorageName(type);
   }
 
-  final searchController = TextEditingController();
-
-  void search(String value) {
-    searchController.text = value;
-    load(search: value);
+  void updateKeyword(String value) {
+    final next = value.trim();
+    if (keyword.value == next) return;
+    keyword.value = next;
+    load();
   }
 
-  Future<void> load({String? search}) async {
+  void updateStatusFilter(MediaOrganizeStatusFilter value) {
+    statusFilter.value = value;
+  }
+
+  void updateSortKey(MediaOrganizeSortKey value) {
+    sortKey.value = value;
+  }
+
+  void updateSortDirection(bool ascending) {
+    isSortAscending.value = ascending;
+  }
+
+  Future<void> load() async {
     isLoading.value = true;
     errorText.value = null;
     _page = 1;
@@ -93,7 +127,7 @@ class MediaOrganizeController extends GetxController {
         queryParameters: {
           'page': _page,
           'count': _pageSize,
-          if (search != null && search.isNotEmpty) 'title': search,
+          if (keyword.value.isNotEmpty) 'title': keyword.value,
         },
       );
       final status = response.statusCode ?? 0;
@@ -133,7 +167,11 @@ class MediaOrganizeController extends GetxController {
     try {
       final response = await _apiClient.get<dynamic>(
         '/api/v1/history/transfer',
-        queryParameters: {'page': _page, 'count': _pageSize},
+        queryParameters: {
+          'page': _page,
+          'count': _pageSize,
+          if (keyword.value.isNotEmpty) 'title': keyword.value,
+        },
       );
       final status = response.statusCode ?? 0;
       if (status >= 400) {
@@ -202,5 +240,52 @@ class MediaOrganizeController extends GetxController {
       _log.handle(e, stackTrace: st, message: '删除整理历史失败');
       return false;
     }
+  }
+
+  bool _matchKeyword(MediaOrganizeTransferItem item, String keyword) {
+    final fields = <String?>[
+      item.title,
+      item.type,
+      item.category,
+      item.mode,
+      item.year,
+      item.src,
+      item.dest,
+      item.errmsg,
+      item.date,
+      item.src_storage,
+      item.dest_storage,
+    ];
+    return fields.any(
+      (field) => (field ?? '').toLowerCase().contains(keyword),
+    );
+  }
+
+  int _compareItems(
+    MediaOrganizeTransferItem a,
+    MediaOrganizeTransferItem b,
+  ) {
+    final factor = isSortAscending.value ? 1 : -1;
+    switch (sortKey.value) {
+      case MediaOrganizeSortKey.date:
+        return _compareNullableStrings(a.date, b.date) * factor;
+      case MediaOrganizeSortKey.title:
+        return _compareNullableStrings(a.title, b.title) * factor;
+      case MediaOrganizeSortKey.size:
+        return _compareNullableInts(
+              a.src_fileitem?.size ?? 0,
+              b.src_fileitem?.size ?? 0,
+            ) *
+            factor;
+    }
+  }
+
+  int _compareNullableStrings(String? a, String? b) {
+    return (a ?? '').toLowerCase().compareTo((b ?? '').toLowerCase());
+  }
+
+  int _compareNullableInts(int a, int b) {
+    if (a == b) return 0;
+    return a < b ? -1 : 1;
   }
 }

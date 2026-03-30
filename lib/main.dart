@@ -408,8 +408,7 @@ class MyApp extends StatelessWidget {
               }
               final keyword = Get.parameters['keyword'];
               Get.put(
-                MediaOrganizeController()
-                  ..searchController.text = keyword ?? '',
+                MediaOrganizeController(initialKeyword: keyword),
                 permanent: false,
               );
             }),
