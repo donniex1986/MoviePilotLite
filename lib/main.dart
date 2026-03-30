@@ -88,9 +88,11 @@ import 'modules/dynamic_form/pages/dynamic_form_page.dart';
 import 'modules/site/controllers/site_controller.dart';
 import 'modules/site/controllers/site_detail_controller.dart';
 import 'modules/site/controllers/site_resource_controller.dart';
+import 'modules/site/controllers/site_edit_controller.dart';
 import 'modules/site/pages/site_page.dart';
 import 'modules/site/pages/site_detail_page.dart';
 import 'modules/site/pages/site_resource_page.dart';
+import 'modules/site/pages/site_edit_page.dart';
 import 'modules/user_management/controllers/user_management_controller.dart';
 import 'modules/user_management/pages/user_management_page.dart';
 import 'modules/settings/controllers/settings_controller.dart';
@@ -408,8 +410,7 @@ class MyApp extends StatelessWidget {
               }
               final keyword = Get.parameters['keyword'];
               Get.put(
-                MediaOrganizeController()
-                  ..searchController.text = keyword ?? '',
+                MediaOrganizeController(initialKeyword: keyword),
                 permanent: false,
               );
             }),
@@ -559,6 +560,13 @@ class MyApp extends StatelessWidget {
             page: () => const SiteDetailPage(),
             binding: BindingsBuilder(() {
               Get.lazyPut(() => SiteDetailController());
+            }),
+          ),
+          GetPage(
+            name: '/site-edit',
+            page: () => const SiteEditPage(),
+            binding: BindingsBuilder(() {
+              Get.lazyPut(() => SiteEditController());
             }),
           ),
           GetPage(

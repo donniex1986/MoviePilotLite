@@ -3,14 +3,10 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:moviepilot_mobile/modules/site/controllers/site_detail_controller.dart';
-import 'package:moviepilot_mobile/modules/site/widgets/site_resource_filter_sheet.dart';
-import 'package:moviepilot_mobile/modules/site/widgets/site_resource_item_card.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class SiteDetailPage extends GetView<SiteDetailController> {
@@ -18,44 +14,65 @@ class SiteDetailPage extends GetView<SiteDetailController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          controller.siteName.isNotEmpty ? controller.siteName : '站点详情',
-        ),
-        actions: [
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () {
-              Get.toNamed(
-                '/site-resource',
-                arguments: {
-                  'siteId': controller.siteId,
-                  'siteName': controller.siteName,
-                },
-              );
-            },
-            child: const Icon(Icons.mediation),
+    return GetBuilder<SiteDetailController>(
+      builder: (_) => Scaffold(
+        appBar: AppBar(
+          title: Text(
+            controller.siteName.isNotEmpty ? controller.siteName : '站点详情',
           ),
-        ],
-      ),
-      body: CustomScrollView(
-        slivers: [
-          CupertinoSliverRefreshControl(onRefresh: controller.refreshAll),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildBasicInfoSection(context),
-                  const SizedBox(height: 16),
-                  Obx(() => _buildChartsSection(context)),
-                ],
+          actions: [
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () async {
+                final updated = await Get.toNamed(
+                  '/site-edit',
+                  arguments: {
+                    'siteId': controller.siteId,
+                    'siteName': controller.siteName,
+                  },
+                );
+                if (updated == true) {
+                  await controller.loadSiteDetail();
+                }
+              },
+              child: const Text('编辑'),
+            ),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Get.toNamed(
+                  '/site-resource',
+                  arguments: {
+                    'siteId': controller.siteId,
+                    'siteName': controller.siteName,
+                  },
+                );
+              },
+              child: const Icon(Icons.mediation),
+            ),
+          ],
+        ),
+        body: CustomScrollView(
+          slivers: [
+            CupertinoSliverRefreshControl(onRefresh: controller.refreshAll),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildBasicInfoSection(context),
+                    const SizedBox(height: 16),
+                    Obx(() => _buildChartsSection(context)),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -418,186 +435,6 @@ class SiteDetailPage extends GetView<SiteDetailController> {
           ),
         ],
       ),
-    );
-  }
-
-  static const double _resourceHorizontalPadding = 16;
-  static const double _resourceCardSpacing = 12;
-
-  Widget _buildResourceSectionHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '站点资源',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: CupertinoSearchTextField(
-                  placeholder: '搜索资源…',
-                  onSubmitted: controller.onResourceSearchSubmitted,
-                  backgroundColor: CupertinoDynamicColor.resolve(
-                    CupertinoColors.tertiarySystemFill,
-                    context,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              _buildResourceFilterButton(context),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildResourceFilterButton(BuildContext context) {
-    return Obx(() {
-      final hasFilters = controller.hasActiveResourceFilters;
-      final accent = Theme.of(context).colorScheme.primary;
-      return CupertinoButton(
-        padding: EdgeInsets.zero,
-        pressedOpacity: 0.7,
-        onPressed: () => _openResourceFilterSheet(context),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: accent.withOpacity(0.2),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                CupertinoIcons.line_horizontal_3_decrease_circle_fill,
-                size: 20,
-                color: hasFilters ? accent : accent.withOpacity(0.7),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                controller.resourceCategoryFilterLabel,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: hasFilters
-                      ? accent
-                      : CupertinoDynamicColor.resolve(
-                          CupertinoColors.secondaryLabel,
-                          context,
-                        ),
-                ),
-              ),
-              if (hasFilters) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: accent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    '1',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildResourceSliverContent(BuildContext context) {
-    final loading = controller.resourceLoading.value;
-    final error = controller.resourceErrorText.value;
-    final items = controller.resourceItems;
-
-    if (error != null) {
-      return SliverFillRemaining(
-        hasScrollBody: false,
-        child: SizedBox(
-          height: 160,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(error, textAlign: TextAlign.center),
-                  const SizedBox(height: 12),
-                  CupertinoButton.filled(
-                    onPressed: controller.loadResources,
-                    child: const Text('重试'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return Skeletonizer.sliver(
-      enabled: items.isEmpty,
-      child: SliverList.builder(
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.only(
-              left: _resourceHorizontalPadding,
-              right: _resourceHorizontalPadding,
-              bottom: index < items.length - 1 ? _resourceCardSpacing : 0,
-            ),
-            child: SiteResourceItemCard(item: items[index]),
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _openResourceFilterSheet(BuildContext context) {
-    return showCupertinoModalBottomSheet<void>(
-      context: context,
-      builder: (sheetContext) {
-        return SizedBox(
-          height: MediaQuery.of(sheetContext).size.height * 0.4,
-          child: Obx(
-            () => SiteResourceFilterSheet(
-              categories: controller.resourceCategories,
-              selectedCategoryId: controller.selectedResourceCategoryId.value,
-              onSelectCategory: (id) {
-                controller.setResourceCategoryFilter(id);
-                Navigator.of(sheetContext).pop();
-                controller.loadResources();
-              },
-              onClear: () {
-                controller.clearResourceCategoryFilter();
-                Navigator.of(sheetContext).pop();
-                controller.loadResources();
-              },
-            ),
-          ),
-        );
-      },
     );
   }
 }
