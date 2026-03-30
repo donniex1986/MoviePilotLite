@@ -1,6 +1,11 @@
 import 'dart:io';
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter/services.dart';
+import 'package:moviepilot_mobile/utils/open_url.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -22,7 +27,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
   bool _cookieSet = false;
   bool _canGoBack = false;
   bool _canGoForward = false;
-  bool _isUrlExpanded = false;
   String _currentUrl = '';
 
   // 点击事件回调
@@ -71,12 +75,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
             if (widget.cookie != null &&
                 widget.cookie!.isNotEmpty &&
                 !_cookieSet) {
-              await _setCookiesWithJavaScript(
+              _cookieSet = await _setCookiesWithJavaScript(
                 controller,
                 widget.url,
                 widget.cookie!,
               );
-              _cookieSet = true;
             }
             // 注入点击事件监听脚本
             await _injectClickListener(controller);
@@ -121,7 +124,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
     // 如果有 cookie，先设置 cookie 再加载 URL
     if (widget.cookie != null && widget.cookie!.isNotEmpty) {
-      await _setCookiesWithCookieManager(widget.url, widget.cookie!);
+      _cookieSet = await _setCookiesWithCookieManager(widget.url, widget.cookie!);
     }
 
     // 加载 URL
@@ -130,17 +133,19 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   /// 使用 WebViewCookieManager 设置 Cookie（主要方式）
-  Future<void> _setCookiesWithCookieManager(
+  Future<bool> _setCookiesWithCookieManager(
     String url,
     String cookieString,
   ) async {
     try {
       final uri = Uri.parse(url);
       final domain = uri.host;
+      if (domain.isEmpty) return false;
       final cookieManager = WebViewCookieManager();
 
       // 解析 cookie 字符串（格式：key1=value1; key2=value2）
       final cookiePairs = cookieString.split(';');
+      var written = 0;
 
       for (final pair in cookiePairs) {
         final trimmed = pair.trim();
@@ -151,21 +156,26 @@ class _WebViewScreenState extends State<WebViewScreen> {
           final name = keyValue[0].trim();
           final value = keyValue.sublist(1).join('=').trim();
 
-          // 使用 WebViewCookieManager 设置 cookie
-          await cookieManager.setCookie(
-            WebViewCookie(name: name, value: value, domain: domain, path: '/'),
-          );
+          // 同时写 host 与 dot-host，提升不同站点 cookie 命中率
+          for (final d in [domain, '.$domain']) {
+            await cookieManager.setCookie(
+              WebViewCookie(name: name, value: value, domain: d, path: '/'),
+            );
+          }
+          written += 1;
         }
       }
 
-      debugPrint('已通过 CookieManager 设置 Cookie: ${cookiePairs.length} 个');
+      debugPrint('已通过 CookieManager 设置 Cookie: $written 个');
+      return written > 0;
     } catch (e) {
       debugPrint('通过 CookieManager 设置 Cookie 失败: $e');
+      return false;
     }
   }
 
   /// 使用 JavaScript 设置 Cookie（备用方案）
-  Future<void> _setCookiesWithJavaScript(
+  Future<bool> _setCookiesWithJavaScript(
     WebViewController controller,
     String url,
     String cookieString,
@@ -193,21 +203,29 @@ class _WebViewScreenState extends State<WebViewScreen> {
           final escapedKey = key.replaceAll("'", "\\'");
           final escapedValue = value.replaceAll("'", "\\'");
 
-          // 设置 cookie，使用 path=/ 和正确的 domain
+          // 先写无 domain，再写 domain，提高不同策略兼容性
+          cookieScripts.add(
+            "document.cookie = '$escapedKey=$escapedValue; path=/';",
+          );
+          if (domain.isNotEmpty) {
           cookieScripts.add(
             "document.cookie = '$escapedKey=$escapedValue; path=/; domain=$domain';",
           );
+          }
         }
       }
 
       if (cookieScripts.isNotEmpty) {
         final script = cookieScripts.join('\n');
         await controller.runJavaScript(script);
-        debugPrint('已通过 JavaScript 设置 Cookie: ${cookieScripts.length} 个');
+        debugPrint('已通过 JavaScript 设置 Cookie: ${cookieScripts.length} 条');
+        return true;
       }
     } catch (e) {
       debugPrint('通过 JavaScript 设置 Cookie 失败: $e');
+      return false;
     }
+    return false;
   }
 
   /// 注入点击事件监听脚本
@@ -384,56 +402,74 @@ class _WebViewScreenState extends State<WebViewScreen> {
     Navigator.of(context).pop();
   }
 
-  /// 切换 URL 展开/收起
-  void _toggleUrlExpanded() {
-    setState(() {
-      _isUrlExpanded = !_isUrlExpanded;
-    });
+  String _currentLink() => _currentUrl.isNotEmpty ? _currentUrl : widget.url;
+
+  String _hostLabel(String rawUrl) {
+    try {
+      final uri = Uri.parse(rawUrl);
+      if (uri.host.isNotEmpty) return uri.host;
+      return rawUrl;
+    } catch (_) {
+      return rawUrl;
+    }
   }
 
-  /// 构建操作按钮（统一样式）
-  Widget _buildActionButton(
+  Future<void> _reloadOrStop() async {
+    if (_isLoading) {
+      await _controller.runJavaScript('window.stop();');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      await _updateNavigationState();
+      return;
+    }
+    await _controller.reload();
+  }
+
+  Future<void> _copyCurrentLink() async {
+    final text = _currentLink();
+    await Clipboard.setData(ClipboardData(text: text));
+    ToastUtil.success('链接已复制');
+  }
+
+  Future<void> _openExternalBrowser() async {
+    await WebUtil.open(url: _currentLink());
+  }
+
+  Widget _buildToolbarIcon(
     BuildContext context, {
     required IconData icon,
-    required VoidCallback? onPressed,
     required String tooltip,
-    required Color color,
+    required VoidCallback? onTap,
     bool enabled = true,
+    bool accent = false,
   }) {
+    final theme = Theme.of(context);
+    final activeColor = accent
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurface;
+    final inactiveColor = theme.colorScheme.onSurface.withValues(alpha: 0.28);
     return Tooltip(
       message: tooltip,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: enabled ? onPressed : null,
+          onTap: enabled ? onTap : null,
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: enabled
-                  ? color.withOpacity(0.9)
-                  : Colors.grey.shade400.withOpacity(0.3),
+              color: theme.colorScheme.surface.withValues(alpha: 0.48),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: enabled
-                    ? color.withOpacity(0.3)
-                    : Colors.grey.shade500.withOpacity(0.2),
-                width: 1.5,
+                color: theme.colorScheme.outline.withValues(alpha: 0.14),
+                width: 0.8,
               ),
-              boxShadow: enabled
-                  ? [
-                      BoxShadow(
-                        color: color.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
             ),
             child: Icon(
               icon,
-              color: enabled ? Colors.white : Colors.grey.shade600,
+              color: enabled ? activeColor : inactiveColor,
               size: 20,
             ),
           ),
@@ -442,222 +478,120 @@ class _WebViewScreenState extends State<WebViewScreen> {
     );
   }
 
-  /// 打开下载器列表
-  void _openDownloaderList() {
-    Get.toNamed('/downloader/list');
-  }
+  Widget _buildSafariToolbar(BuildContext context) {
+    final theme = Theme.of(context);
+    final current = _currentLink();
+    final host = _hostLabel(current);
 
-  /// 构建按钮栏（带渐变背景）
-  Widget _buildButtonBar(BuildContext context) {
-    // 获取 safe area 的底部高度
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
-    const buttonBarHeight = 80.0;
-    final totalHeight = buttonBarHeight + bottomPadding;
-
-    return SizedBox(
-      height: totalHeight,
-      child: Stack(
-        children: [
-          // 渐变背景，从顶部到底部逐渐增强
-          Container(
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 26, sigmaY: 26),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black.withValues(alpha: 0.2),
-                  Colors.black.withValues(alpha: 0.4),
-                  Colors.black.withValues(alpha: 0.6),
-                  Colors.black.withValues(alpha: 0.8),
-                  Colors.black.withValues(alpha: 0.9),
-                ],
-                stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+              color: theme.colorScheme.surface.withValues(alpha: 0.78),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: theme.colorScheme.outline.withValues(alpha: 0.12),
+                width: 0.8,
               ),
             ),
-          ),
-          // 按钮内容层
-          Container(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
-              bottom: 12 + bottomPadding,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // 关闭按钮 - 左侧
-                _buildActionButton(
-                  context,
-                  icon: Icons.close,
-                  onPressed: _close,
-                  tooltip: '关闭',
-                  color: Colors.red.shade400,
-                ),
-                // URL 显示区域 - 中间
-                Expanded(
-                  child: Padding(
+                GestureDetector(
+                  onTap: _copyCurrentLink,
+                  child: Container(
+                    height: 34,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: GestureDetector(
-                      onTap: _toggleUrlExpanded,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeInOut,
-                        constraints: BoxConstraints(
-                          maxHeight: _isUrlExpanded ? 100 : 45,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHigh
+                          .withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withValues(alpha: 0.14),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          CupertinoIcons.lock_shield,
+                          size: 14,
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.75),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.25),
-                            width: 1.5,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            host,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onSurface,
+                            ),
                           ),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.language,
-                              size: 14,
-                              color: Colors.black.withValues(alpha: 0.9),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                child: Text(
-                                  _currentUrl.isNotEmpty
-                                      ? _currentUrl
-                                      : widget.url,
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.2,
-                                  ),
-                                  maxLines: _isUrlExpanded ? null : 1,
-                                  overflow: _isUrlExpanded
-                                      ? TextOverflow.visible
-                                      : TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              _isUrlExpanded
-                                  ? Icons.expand_less
-                                  : Icons.expand_more,
-                              color: Colors.black.withValues(alpha: 0.9),
-                              size: 16,
-                            ),
-                          ],
+                        const SizedBox(width: 8),
+                        Icon(
+                          CupertinoIcons.doc_on_doc,
+                          size: 14,
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
-                _buildActionButton(
-                  context,
-                  icon: Icons.arrow_back,
-                  onPressed: _goBack,
-                  tooltip: '后退',
-                  color: _canGoBack
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey,
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildToolbarIcon(
+                      context,
+                      icon: CupertinoIcons.xmark,
+                      tooltip: '关闭',
+                      onTap: _close,
+                      accent: true,
+                    ),
+                    _buildToolbarIcon(
+                      context,
+                      icon: CupertinoIcons.back,
+                      tooltip: '后退',
+                      onTap: _goBack,
+                      enabled: _canGoBack,
+                    ),
+                    _buildToolbarIcon(
+                      context,
+                      icon: CupertinoIcons.forward,
+                      tooltip: '前进',
+                      onTap: _goForward,
+                      enabled: _canGoForward,
+                    ),
+                    _buildToolbarIcon(
+                      context,
+                      icon: _isLoading
+                          ? CupertinoIcons.xmark_circle
+                          : CupertinoIcons.refresh,
+                      tooltip: _isLoading ? '停止加载' : '刷新',
+                      onTap: _reloadOrStop,
+                    ),
+                    _buildToolbarIcon(
+                      context,
+                      icon: CupertinoIcons.compass,
+                      tooltip: '浏览器打开',
+                      onTap: _openExternalBrowser,
+                    ),
+                  ],
                 ),
-                // 前进按钮 - 仅在可以前进时显示
-                if (_canGoForward) ...[
-                  const SizedBox(width: 10),
-                  _buildActionButton(
-                    context,
-                    icon: Icons.arrow_forward,
-                    onPressed: _goForward,
-                    tooltip: '前进',
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                ],
-
-                // // 更多按钮 - 下拉菜单
-                // PopupMenuButton<String>(
-                //   tooltip: '更多',
-                //   icon: Container(
-                //     width: 44,
-                //     height: 44,
-                //     decoration: BoxDecoration(
-                //       color: Theme.of(context)
-                //           .colorScheme
-                //           .secondary
-                //           .withOpacity(0.9),
-                //       borderRadius: BorderRadius.circular(12),
-                //       border: Border.all(
-                //         color: Theme.of(context)
-                //             .colorScheme
-                //             .secondary
-                //             .withOpacity(0.3),
-                //         width: 1.5,
-                //       ),
-                //       boxShadow: [
-                //         BoxShadow(
-                //           color: Theme.of(context)
-                //               .colorScheme
-                //               .secondary
-                //               .withOpacity(0.3),
-                //           blurRadius: 8,
-                //           offset: const Offset(0, 2),
-                //         ),
-                //       ],
-                //     ),
-                //     child: Icon(
-                //       Icons.more_vert,
-                //       color: Colors.white,
-                //       size: 20,
-                //     ),
-                //   ),
-                //   shape: RoundedRectangleBorder(
-                //     borderRadius: BorderRadius.circular(12),
-                //   ),
-                //   color: Colors.grey.shade900,
-                //   elevation: 8,
-                //   onSelected: (String value) {
-                //     if (value == 'downloader') {
-                //       _openDownloaderList();
-                //     }
-                //   },
-                //   itemBuilder: (BuildContext context) =>
-                //       <PopupMenuEntry<String>>[
-                //     PopupMenuItem<String>(
-                //       value: 'downloader',
-                //       child: Row(
-                //         children: [
-                //           Icon(
-                //             Icons.download_outlined,
-                //             color: Colors.white,
-                //             size: 20,
-                //           ),
-                //           const SizedBox(width: 12),
-                //           Text(
-                //             '下载器',
-                //             style: TextStyle(
-                //               color: Colors.white,
-                //               fontSize: 14,
-                //               fontWeight: FontWeight.w500,
-                //             ),
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //   ],
-                // ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -704,7 +638,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: _buildButtonBar(context),
+            child: _buildSafariToolbar(context),
           ),
         ],
       ),

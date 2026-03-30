@@ -6,8 +6,23 @@ import 'package:moviepilot_mobile/modules/site/controllers/site_statistic_contro
 import 'package:moviepilot_mobile/modules/site/models/site_statistic_models.dart';
 import 'package:moviepilot_mobile/theme/app_theme.dart';
 
-class SiteStatisticPage extends GetView<SiteStatisticController> {
+class SiteStatisticPage extends StatefulWidget {
   const SiteStatisticPage({super.key});
+
+  @override
+  State<SiteStatisticPage> createState() => _SiteStatisticPageState();
+}
+
+class _SiteStatisticPageState extends State<SiteStatisticPage> {
+  late final SiteStatisticController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.isRegistered<SiteStatisticController>()
+        ? Get.find<SiteStatisticController>()
+        : Get.put(SiteStatisticController(), permanent: false);
+  }
 
   @override
   Widget build(BuildContext context) {
