@@ -155,24 +155,19 @@ class MediaOrganizeItemCard extends StatelessWidget {
                           ],
                         ),
                       const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const SizedBox(width: 4),
-                          Text(
-                            item.errmsg ?? '',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: item.status == true
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
               ],
+            ),
+            Text(
+              item.errmsg ?? '',
+              style: TextStyle(
+                fontSize: 13,
+                color: item.status == true
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.error,
+              ),
             ),
             const SizedBox(height: 12),
             _buildPathRow(
