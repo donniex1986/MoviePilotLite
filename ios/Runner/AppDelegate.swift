@@ -1,12 +1,15 @@
 import Flutter
 import UIKit
 import WidgetKit
+import os
 
 private enum SharedSessionConfig {
   static let appGroup = "group.com.altman.moviepilot.shared"
   static let serverKey = "shared_server_url"
   static let tokenKey = "shared_access_token"
 }
+
+private let appWidgetLog = Logger(subsystem: "com.altman.moviepilot", category: "app_widget_route")
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -41,6 +44,9 @@ private enum SharedSessionConfig {
           result(nil)
         case "clearSharedSession":
           self.clearSharedSession()
+          result(nil)
+        case "reloadWidgets":
+          WidgetCenter.shared.reloadAllTimelines()
           result(nil)
         default:
           result(FlutterMethodNotImplemented)
@@ -88,7 +94,9 @@ private enum SharedSessionConfig {
   }
 
   private func handleWidgetRoute(_ url: URL) {
+    appWidgetLog.info("received widget url=\(url.absoluteString, privacy: .public)")
     guard let route = widgetRoute(from: url) else { return }
+    appWidgetLog.info("resolved widget route=\(route, privacy: .public)")
     pendingWidgetRoute = route
     guard let controller = window?.rootViewController as? FlutterViewController else { return }
     let channel = FlutterMethodChannel(
@@ -101,6 +109,9 @@ private enum SharedSessionConfig {
   private func widgetRoute(from url: URL) -> String? {
     guard let scheme = url.scheme?.lowercased(), scheme == "moviepilot" else {
       return nil
+    }
+    if url.host?.lowercased() == "media-detail" || url.path.lowercased() == "/media-detail" {
+      return url.absoluteString
     }
     if url.host?.lowercased() == "subscribe-calendar" {
       return "moviepilot://subscribe-calendar"

@@ -29,6 +29,13 @@ class IosSharedSessionService {
     } catch (_) {}
   }
 
+  Future<void> reloadWidgets() async {
+    if (!_isSupportedPlatform) return;
+    try {
+      await _channel.invokeMethod<void>('reloadWidgets');
+    } catch (_) {}
+  }
+
   bool get _isSupportedPlatform =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 }

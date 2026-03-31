@@ -1,6 +1,12 @@
 # Changelog
 
 ## 2026-03-31
+- iOS 影视推荐 Widget 请求解析增强，兼容多种返回结构（`data/results/items/list/subjects/rows`），修复部分场景下空白显示问题。
+- iOS 影视推荐 Widget 点击行为调整为条目级跳转，点击不同卡片可直达对应媒体详情页，不再固定进入同一详情。
+- iOS Widget 深链路由补充 `media-detail` 解析，支持从 Widget 冷启动进入 App 后直接打开媒体详情页。
+- 登录与自动登录流程补充 Widget 主动刷新时机，降低推荐 Widget 停留“请先登录”状态的概率。
+- 新增 Widget 关键链路日志（会话读取、请求状态、解码结果、路由解析），便于排查推荐数据加载异常。
+- iOS Widget 代码按功能拆分：新增独立 `WidgetAppIntents.swift`，集中管理 App Intent 与 Timeline Provider。
 - 应用设置页新增“更新日志”入口，支持直接查看应用 Changelog。
 - Changelog 页面改为 Markdown 渲染，保留标题与列表等格式化展示。
 - Changelog 默认仅展开最新版本更新，历史版本改为折叠展开样式以提升可读性。
