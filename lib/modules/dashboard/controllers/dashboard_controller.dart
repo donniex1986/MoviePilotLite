@@ -107,15 +107,7 @@ class DashboardController extends GetxController {
     // 1. 根据传入数据创建 mediaServerController
     await _initializeMediaServerController();
 
-    // 2. 读取本地配置并预先展示
-    await _loadLocalDashboardConfig();
-
-    // 3. 获取 dashboard 开关配置
-    await _fetchDashboardConfig();
-
-    // 4. 获取 dashboard 顺序配置
-    await _fetchDashboardOrder();
-
+    _useDefaultConfig();
     // 5. 根据开关获取对应数据
     _setupDataLoading();
 
