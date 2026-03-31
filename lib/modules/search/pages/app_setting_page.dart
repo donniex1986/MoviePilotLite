@@ -132,6 +132,44 @@ class AppSettingPage extends GetView<AppSettingController> {
                       ),
                     );
                   }),
+                  Obx(() {
+                    return CupertinoListTile(
+                      leading: Container(
+                        width: 29,
+                        height: 29,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.2,
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.bolt_outlined,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      title: const Text('下载器直连下载'),
+                      subtitle: const Text('下载前先保存本地种子文件并跳转直连下载页'),
+                      trailing: Switch.adaptive(
+                        value: controller.enableSpecialDownload.value,
+                        onChanged: (value) async {
+                          if (!value) {
+                            controller.updateEnableSpecialDownload(false);
+                            return;
+                          }
+                          ToastUtil.warning(
+                            '由于站点特殊性，下载器直连下载暂不能保证适配所有站点。如有特殊需求，请提交 PR。',
+                            onConfirm: () =>
+                                controller.updateEnableSpecialDownload(true),
+                            onCancel: () =>
+                                controller.updateEnableSpecialDownload(false),
+                          );
+                        },
+                      ),
+                    );
+                  }),
                 ],
               ),
 

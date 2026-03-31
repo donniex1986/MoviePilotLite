@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/download/controllers/download_controller.dart';
 import 'package:moviepilot_mobile/modules/search_result/models/search_result_models.dart';
+import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 import 'package:moviepilot_mobile/widgets/bottom_sheet.dart';
@@ -12,6 +13,7 @@ class DownloadSheet extends GetView<DownloadController> {
   const DownloadSheet({super.key, required this.item});
 
   final SearchResultItem item;
+  AppService get _appService => Get.find<AppService>();
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +25,8 @@ class DownloadSheet extends GetView<DownloadController> {
       builder: (context, scrollController) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: ListView(
+          controller: scrollController,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           children: [
             _buildMediaInfo(context),
             const SizedBox(height: 24),
@@ -35,6 +39,8 @@ class DownloadSheet extends GetView<DownloadController> {
             // 高级选项（可展开）
             _buildAdvancedOptions(context, primaryColor),
             const SizedBox(height: 24),
+            _buildBottomActions(context, primaryColor),
+            const SizedBox(height: 50),
           ],
         ),
       ),
@@ -42,10 +48,7 @@ class DownloadSheet extends GetView<DownloadController> {
   }
 
   Widget _buildHeader(BuildContext context, Color accentColor) {
-    return SectionHeader(
-      title: '下载',
-      trailing: _buildDownloadButton(context, accentColor),
-    );
+    return SectionHeader(title: '下载');
   }
 
   Widget _buildMediaInfo(BuildContext context) {
@@ -490,7 +493,7 @@ class DownloadSheet extends GetView<DownloadController> {
 
       return SizedBox(
         height: 50,
-        child: TextButton(
+        child: CupertinoButton.filled(
           onPressed: (isDownloading || !hasDownloader)
               ? null
               : () => controller.startDownload(
@@ -511,6 +514,63 @@ class DownloadSheet extends GetView<DownloadController> {
                     const SizedBox(width: 8),
                     const Text(
                       '开始下载',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildBottomActions(BuildContext context, Color accentColor) {
+    return Obx(() {
+      final showSpecial = _appService.enableSpecialDownload.value;
+      if (!showSpecial) {
+        return SizedBox(
+          width: double.infinity,
+          child: _buildDownloadButton(context, accentColor),
+        );
+      }
+      final secondaryColor = Theme.of(context).colorScheme.secondary;
+      return Row(
+        children: [
+          Expanded(child: _buildSpecialDownloadButton(context, secondaryColor)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildDownloadButton(context, accentColor)),
+        ],
+      );
+    });
+  }
+
+  Widget _buildSpecialDownloadButton(BuildContext context, Color accentColor) {
+    return Obx(() {
+      final isDownloading = controller.isSpecialDownloading.value;
+      final hasDownloader = controller.selectedDownloader.value != null;
+      return SizedBox(
+        height: 50,
+        child: CupertinoButton.filled(
+          color: accentColor,
+          onPressed: (isDownloading || !hasDownloader)
+              ? null
+              : () => controller.startSpecialDownload(
+                  context: context,
+                  item: item,
+                ),
+          child: isDownloading
+              ? const CupertinoActivityIndicator(
+                  color: Color.fromARGB(255, 77, 58, 58),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(CupertinoIcons.arrow_down_doc, size: 20),
+                    const SizedBox(width: 6),
+                    const Text(
+                      '下载器直连下载',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

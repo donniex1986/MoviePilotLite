@@ -16,12 +16,14 @@ import 'package:get/get.dart';
 void showTorrentDownloadScreen(
   BuildContext context, {
   String? downloadUrls,
+  List<String>? localFilePaths,
   required DownloaderControllerProtocol controller,
 }) {
   showCupertinoSheet(
     context: context,
     builder: (context) => TorrentDownloadScreen(
       downloadUrls: downloadUrls,
+      localFilePaths: localFilePaths,
       controller: controller,
     ),
   );
@@ -32,10 +34,12 @@ class TorrentDownloadScreen extends StatefulWidget {
   const TorrentDownloadScreen({
     super.key,
     this.downloadUrls,
+    this.localFilePaths,
     required this.controller,
   });
 
   final String? downloadUrls;
+  final List<String>? localFilePaths;
   final DownloaderControllerProtocol controller;
 
   @override
@@ -106,6 +110,14 @@ class _TorrentDownloadScreenState extends State<TorrentDownloadScreen> {
     // 设置传入的下载链接
     if (widget.downloadUrls != null && widget.downloadUrls!.isNotEmpty) {
       _linkController.text = widget.downloadUrls!;
+    }
+    if (widget.localFilePaths != null && widget.localFilePaths!.isNotEmpty) {
+      _files.assignAll(
+        widget.localFilePaths!
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList(),
+      );
     }
 
     // 读取剪贴板内容
@@ -382,6 +394,7 @@ class _TorrentDownloadScreenState extends State<TorrentDownloadScreen> {
               }),
               // Torrent 链接输入
               _buildTorrentSection(),
+              _buildLocalFilesSection(),
               // Torrent 选项
               _buildBasicInfoSection(),
               _buildDownloadControlSection(),
@@ -429,6 +442,35 @@ class _TorrentDownloadScreenState extends State<TorrentDownloadScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildLocalFilesSection() {
+    return Obx(() {
+      if (_files.isEmpty) return const SizedBox.shrink();
+      return CupertinoListSection.insetGrouped(
+        separatorColor: Colors.transparent,
+        header: Text('本地文件', style: Theme.of(context).textTheme.titleMedium),
+        children: [
+          CupertinoListTile.notched(
+            title: Text('已准备 ${_files.length} 个本地文件'),
+            subtitle: Text(
+              _files.first,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: const CupertinoListTileChevron(),
+            onTap: () {
+              Navigator.of(context).push(
+                CupertinoPageRoute(
+                  builder: (_) =>
+                      LocalTorrentFilesPage(filePaths: _files.toList()),
+                ),
+              );
+            },
+          ),
+        ],
+      );
+    });
   }
 
   /// 构建基本信息部分
@@ -733,6 +775,45 @@ class _TorrentDownloadScreenState extends State<TorrentDownloadScreen> {
           ),
         );
       }),
+    );
+  }
+}
+
+class LocalTorrentFilesPage extends StatelessWidget {
+  const LocalTorrentFilesPage({super.key, required this.filePaths});
+
+  final List<String> filePaths;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('本地文件路径')),
+      body: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemBuilder: (context, index) {
+          final path = filePaths[index];
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.2),
+              ),
+            ),
+            child: SelectableText(
+              path,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          );
+        },
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        itemCount: filePaths.length,
+      ),
     );
   }
 }

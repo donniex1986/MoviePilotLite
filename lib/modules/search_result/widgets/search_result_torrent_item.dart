@@ -670,9 +670,10 @@ class SearchResultTorrentItem extends StatelessWidget {
     if (!Get.isRegistered<SettingController>()) {
       Get.put(SettingController());
     }
-    if (!Get.isRegistered<DownloadController>()) {
-      Get.put(DownloadController());
-    }
+    final downloadController = Get.isRegistered<DownloadController>()
+        ? Get.find<DownloadController>()
+        : Get.put(DownloadController());
+    downloadController.resetSheetTransientState();
     showModalBottomSheet(
       isScrollControlled: true,
       context: context,

@@ -16,6 +16,7 @@ class AppService extends GetxService {
   final primaryColor = _defaultPrimaryColor.obs;
   final showSearchButton = true.obs;
   final enableDownloaderManager = false.obs;
+  final enableSpecialDownload = false.obs;
   final useExternalBrowser = false.obs;
   final enableFetchMediaserverLibraryStatus = false.obs;
 
@@ -43,6 +44,8 @@ class AppService extends GetxService {
     showSearchButton.value = prefs.getBool('showSearchButton') ?? true;
     enableDownloaderManager.value =
         prefs.getBool('enableDownloaderManager') ?? false;
+    enableSpecialDownload.value =
+        prefs.getBool('enableSpecialDownload') ?? false;
     useExternalBrowser.value = prefs.getBool('useExternalBrowser') ?? false;
     enableFetchMediaserverLibraryStatus.value =
         prefs.getBool('enableFetchMediaserverLibraryStatus') ?? false;
@@ -107,6 +110,12 @@ class AppService extends GetxService {
     final prefs = await SharedPreferences.getInstance();
     enableDownloaderManager.value = value;
     await prefs.setBool('enableDownloaderManager', value);
+  }
+
+  Future<void> updateEnableSpecialDownload(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    enableSpecialDownload.value = value;
+    await prefs.setBool('enableSpecialDownload', value);
   }
 
   Future<void> updateUseExternalBrowser(bool value) async {

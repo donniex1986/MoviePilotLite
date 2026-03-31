@@ -52,6 +52,9 @@ class AuthRepository extends GetxService {
       server: normalizedServer,
       accessToken: login.accessToken,
     );
+    // 推荐小组件依赖登录后的完整用户配置，登录链路末尾再触发一次刷新，
+    // 避免首次刷新时机过早导致显示“请先登录”或空数据。
+    await _iosSharedSessionService.reloadWidgets();
 
     // 登录成功后启动消息轮询
     if (!Get.isRegistered<SystemMessageController>()) {
@@ -125,6 +128,7 @@ class AuthRepository extends GetxService {
         server: normalizedServer,
         accessToken: accessToken,
       );
+      await _iosSharedSessionService.reloadWidgets();
 
       _talker.info('开始获取用户全局配置: $normalizedServer');
       return true;
