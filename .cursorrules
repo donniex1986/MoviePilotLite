@@ -63,6 +63,7 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 ## Cursor learned
 
+- iOS: if `UIBackgroundModes` includes `processing`, App Store requires `BGTaskSchedulerPermittedIdentifiers` listing every BGTask identifier the app registers. If the app does not use `BGTaskScheduler`, remove `processing` instead of adding placeholder identifiers.
 - For website image paths, always use the correct relative path (e.g., 'images/filename.png') and ensure the images directory exists
 - For search results, ensure proper handling of different character encodings (UTF-8) for international queries
 - Add debug information to stderr while keeping the main output clean in stdout for better pipeline integration
@@ -90,28 +91,9 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 # Scratchpad
 
-## Current Task: Add Test Coverage for Command Line
+## Current Task: Fix App Store ITMS-90771 (BGTaskScheduler / UIBackgroundModes processing)
 
-[X] Create test_cli.py with basic test structure
-[X] Add common fixtures in conftest.py
-[X] Implement tests for cursor-agent command
-[X] Implement tests for cursor-llm command
-[X] Implement tests for cursor-scrape command
-[X] Implement tests for cursor-search command
-[X] Implement tests for cursor-update command
-[X] Implement tests for cursor-verify command
-[X] Implement tests for cursor-changelog command
-[X] Add failure test cases
-[X] Update assertions to verify exact function calls
-[X] Document testing lessons learned
+[X] Remove unused `processing` from ios/Runner/Info.plist (no BGTaskScheduler in codebase)
+[X] Note lesson in .cursorrules
 
-Progress:
-1. Created comprehensive test suite for all CLI commands
-2. Added common fixtures for test data and environment
-3. Improved test assertions and error cases
-4. Added testing lessons to .cursorrules
-
-Next steps:
-1. Run the tests to verify coverage
-2. Add any missing edge cases
-3. Consider adding integration tests if needed
+Previous: CLI test coverage task (completed in prior session).
