@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:altman_downloader_control/controller/qbittorrent/qb_controller.dart';
 import 'package:altman_downloader_control/model/qb_log_model.dart';
 import 'package:altman_downloader_control/utils/toast_utils.dart';
@@ -7,6 +8,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+
+enum _QBLogSortKey { time, level, id }
 
 /// qBittorrent 日志页面
 class QBLogPage extends StatefulWidget {
@@ -19,7 +22,6 @@ class QBLogPage extends StatefulWidget {
 }
 
 class _QBLogPageState extends State<QBLogPage> {
-  final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   // 过滤器状态
@@ -31,12 +33,12 @@ class _QBLogPageState extends State<QBLogPage> {
   String _searchKeyword = '';
   Timer? _autoRefreshTimer;
   bool _autoRefresh = false;
+  _QBLogSortKey _sortKey = _QBLogSortKey.time;
+  bool _sortAscending = false;
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(_onSearchChanged);
-
     // 初始化时加载日志
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshLogs();
@@ -45,17 +47,9 @@ class _QBLogPageState extends State<QBLogPage> {
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
     _scrollController.dispose();
     _autoRefreshTimer?.cancel();
     super.dispose();
-  }
-
-  void _onSearchChanged() {
-    setState(() {
-      _searchKeyword = _searchController.text.toLowerCase();
-    });
   }
 
   Future<void> _refreshLogs() async {
@@ -97,7 +91,7 @@ class _QBLogPageState extends State<QBLogPage> {
 
   /// 获取过滤后的日志列表
   List<QBLogEntry> get _filteredLogs {
-    return widget.controller.logs.where((log) {
+    final result = widget.controller.logs.where((log) {
       // 按级别过滤
       if (!_showNormal && log.isNormal) return false;
       if (!_showInfo && log.isInfo) return false;
@@ -113,6 +107,32 @@ class _QBLogPageState extends State<QBLogPage> {
 
       return true;
     }).toList();
+
+    int severity(QBLogEntry log) {
+      if (log.isCritical) return 4;
+      if (log.isWarning) return 3;
+      if (log.isInfo) return 2;
+      return 1;
+    }
+
+    int direction(int value) => _sortAscending ? value : -value;
+
+    result.sort((a, b) {
+      switch (_sortKey) {
+        case _QBLogSortKey.time:
+          final byTime = direction(a.timestamp.compareTo(b.timestamp));
+          if (byTime != 0) return byTime;
+          return direction(a.id.compareTo(b.id));
+        case _QBLogSortKey.level:
+          final byLevel = direction(severity(a).compareTo(severity(b)));
+          if (byLevel != 0) return byLevel;
+          return direction(a.timestamp.compareTo(b.timestamp));
+        case _QBLogSortKey.id:
+          return direction(a.id.compareTo(b.id));
+      }
+    });
+
+    return result;
   }
 
   /// 获取日志级别的颜色（适配暗黑和浅色模式）
@@ -190,6 +210,8 @@ class _QBLogPageState extends State<QBLogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: _buildFloatingBar(context),
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -218,10 +240,6 @@ class _QBLogPageState extends State<QBLogPage> {
             ),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: _buildFilterSegments(),
-        ),
       ),
       body: Obx(() {
         final errorMessage = widget.controller.logErrorMessage.value;
@@ -295,24 +313,10 @@ class _QBLogPageState extends State<QBLogPage> {
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
-              // 搜索栏
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                  child: CupertinoSearchTextField(
-                    controller: _searchController,
-                    placeholder: '搜索日志内容...',
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                  ),
-                ),
-              ),
               // 日志列表
               if (filteredLogs.isNotEmpty)
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final log = filteredLogs[index];
@@ -320,6 +324,7 @@ class _QBLogPageState extends State<QBLogPage> {
                     }, childCount: filteredLogs.length),
                   ),
                 ),
+              const SliverToBoxAdapter(child: SizedBox(height: 120)),
             ],
           ),
         );
@@ -527,82 +532,95 @@ class _QBLogPageState extends State<QBLogPage> {
     );
   }
 
-  /// 构建多选 segment 风格的过滤器
-  Widget _buildFilterSegments() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-            width: 1,
+  bool get _hasActiveFilters =>
+      !_showNormal || !_showInfo || !_showWarning || !_showCritical;
+
+  String get _sortLabel {
+    switch (_sortKey) {
+      case _QBLogSortKey.time:
+        return '时间';
+      case _QBLogSortKey.level:
+        return '级别';
+      case _QBLogSortKey.id:
+        return 'ID';
+    }
+  }
+
+  Widget _buildFloatingBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(999),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+          child: Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.1),
+                width: 0.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                _buildFloatingFilterButton(context),
+                const SizedBox(width: 10),
+                Expanded(child: _buildFakeSearchBar(context)),
+                const SizedBox(width: 10),
+                _buildFloatingSortButton(context),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFloatingFilterButton(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = _hasActiveFilters
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurface.withValues(alpha: 0.7);
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: _openFilterSheet,
+      child: SizedBox(
+        width: 36,
+        height: 36,
+        child: Icon(CupertinoIcons.slider_horizontal_3, color: color, size: 20),
+      ),
+    );
+  }
+
+  Widget _buildFakeSearchBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final hasKeyword = _searchKeyword.isNotEmpty;
+    return GestureDetector(
+      onTap: _openKeywordSheet,
       child: Row(
         children: [
-          // 普通日志
-          Expanded(
-            child: _buildFilterChip(
-              label: '普通',
-              icon: Icons.circle,
-              isSelected: _showNormal,
-              color: Colors.grey,
-              onTap: () {
-                setState(() {
-                  _showNormal = !_showNormal;
-                  _refreshLogs();
-                });
-              },
-            ),
+          Icon(
+            CupertinoIcons.search,
+            size: 16,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
           ),
-          const SizedBox(width: 6),
-          // 信息日志
+          const SizedBox(width: 8),
           Expanded(
-            child: _buildFilterChip(
-              label: '信息',
-              icon: Icons.info,
-              isSelected: _showInfo,
-              color: Colors.blue,
-              onTap: () {
-                setState(() {
-                  _showInfo = !_showInfo;
-                  _refreshLogs();
-                });
-              },
-            ),
-          ),
-          const SizedBox(width: 6),
-          // 警告日志
-          Expanded(
-            child: _buildFilterChip(
-              label: '警告',
-              icon: Icons.warning,
-              isSelected: _showWarning,
-              color: Colors.orange,
-              onTap: () {
-                setState(() {
-                  _showWarning = !_showWarning;
-                  _refreshLogs();
-                });
-              },
-            ),
-          ),
-          const SizedBox(width: 6),
-          // 严重日志
-          Expanded(
-            child: _buildFilterChip(
-              label: '严重',
-              icon: Icons.error,
-              isSelected: _showCritical,
-              color: Colors.red,
-              onTap: () {
-                setState(() {
-                  _showCritical = !_showCritical;
-                  _refreshLogs();
-                });
-              },
+            child: Text(
+              hasKeyword ? _searchKeyword : '搜索日志内容',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface.withValues(
+                  alpha: hasKeyword ? 0.9 : 0.65,
+                ),
+              ),
             ),
           ),
         ],
@@ -610,81 +628,193 @@ class _QBLogPageState extends State<QBLogPage> {
     );
   }
 
-  /// 构建过滤器按钮
-  Widget _buildFilterChip({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? color.withValues(alpha: 0.2)
-                : Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isSelected
-                  ? color
-                  : Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-              width: 1,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: Icon(
-                  icon,
-                  key: ValueKey(isSelected),
-                  size: 16,
-                  color: isSelected
-                      ? color
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: isSelected
-                        ? color
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 12.5,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    letterSpacing: 0.3,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
+  Widget _buildFloatingSortButton(BuildContext context) {
+    final icon = _sortAscending ? Icons.north : Icons.south;
+    final color = Theme.of(
+      context,
+    ).colorScheme.onSurface.withValues(alpha: 0.78);
+    return PopupMenuButton<_QBLogSortKey>(
+      tooltip: '排序',
+      onSelected: (value) {
+        setState(() {
+          if (_sortKey == value) {
+            _sortAscending = !_sortAscending;
+          } else {
+            _sortKey = value;
+          }
+        });
+      },
+      itemBuilder: (context) => [
+        _buildSortMenuItem(_QBLogSortKey.time, '按时间'),
+        _buildSortMenuItem(_QBLogSortKey.level, '按级别'),
+        _buildSortMenuItem(_QBLogSortKey.id, '按ID'),
+      ],
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(999),
         ),
+        child: Row(
+          children: [
+            Icon(Icons.sort_rounded, size: 18, color: color),
+            const SizedBox(width: 4),
+            Text(_sortLabel, style: TextStyle(fontSize: 12.5, color: color)),
+            const SizedBox(width: 2),
+            Icon(icon, size: 16, color: color),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<_QBLogSortKey> _buildSortMenuItem(
+    _QBLogSortKey key,
+    String label,
+  ) {
+    return PopupMenuItem<_QBLogSortKey>(
+      value: key,
+      child: Row(
+        children: [
+          Icon(
+            key == _sortKey
+                ? Icons.radio_button_checked
+                : Icons.radio_button_unchecked,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Text(label),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openKeywordSheet() async {
+    final textController = TextEditingController(text: _searchKeyword);
+    final submitted = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final insets = MediaQuery.of(ctx).viewInsets;
+        return Padding(
+          padding: EdgeInsets.only(bottom: insets.bottom),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            decoration: BoxDecoration(
+              color: CupertinoDynamicColor.resolve(
+                CupertinoColors.systemBackground,
+                ctx,
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(18),
+              ),
+            ),
+            child: CupertinoSearchTextField(
+              controller: textController,
+              autofocus: true,
+              placeholder: '搜索日志内容',
+              onSubmitted: (v) => Navigator.of(ctx).pop(v),
+            ),
+          ),
+        );
+      },
+    );
+    textController.dispose();
+    if (submitted == null) return;
+    setState(() {
+      _searchKeyword = submitted.trim().toLowerCase();
+    });
+  }
+
+  Future<void> _openFilterSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          Future<void> applyNow({
+            bool? normal,
+            bool? info,
+            bool? warning,
+            bool? critical,
+          }) async {
+            if (!mounted) return;
+            setState(() {
+              if (normal != null) _showNormal = normal;
+              if (info != null) _showInfo = info;
+              if (warning != null) _showWarning = warning;
+              if (critical != null) _showCritical = critical;
+            });
+            await _refreshLogs();
+          }
+
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(ctx).colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      ctx,
+                    ).colorScheme.onSurface.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  '筛选日志级别',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 6),
+                SwitchListTile.adaptive(
+                  value: _showNormal,
+                  title: const Text('普通'),
+                  onChanged: (v) async {
+                    setModalState(() {});
+                    await applyNow(normal: v);
+                  },
+                ),
+                SwitchListTile.adaptive(
+                  value: _showInfo,
+                  title: const Text('信息'),
+                  onChanged: (v) async {
+                    setModalState(() {});
+                    await applyNow(info: v);
+                  },
+                ),
+                SwitchListTile.adaptive(
+                  value: _showWarning,
+                  title: const Text('警告'),
+                  onChanged: (v) async {
+                    setModalState(() {});
+                    await applyNow(warning: v);
+                  },
+                ),
+                SwitchListTile.adaptive(
+                  value: _showCritical,
+                  title: const Text('严重'),
+                  onChanged: (v) async {
+                    setModalState(() {});
+                    await applyNow(critical: v);
+                  },
+                ),
+                const SizedBox(height: 46),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

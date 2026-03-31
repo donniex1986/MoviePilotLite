@@ -11,6 +11,7 @@ class AppSettingController extends GetxController {
   final version = '1.0.0'.obs;
   final showSearchButton = true.obs;
   final enableDownloaderManager = false.obs;
+  final enableSpecialDownload = false.obs;
   final useExternalBrowser = false.obs;
   final enableFetchMediaserverLibraryStatus = false.obs;
 
@@ -30,6 +31,7 @@ class AppSettingController extends GetxController {
     primaryColor.value = service.primaryColor.value;
     showSearchButton.value = service.showSearchButton.value;
     enableDownloaderManager.value = service.enableDownloaderManager.value;
+    enableSpecialDownload.value = service.enableSpecialDownload.value;
     useExternalBrowser.value = service.useExternalBrowser.value;
     enableFetchMediaserverLibraryStatus.value =
         service.enableFetchMediaserverLibraryStatus.value;
@@ -74,6 +76,11 @@ class AppSettingController extends GetxController {
   void updateEnableDownloaderManager(bool value) {
     enableDownloaderManager.value = value;
     service.updateEnableDownloaderManager(value);
+  }
+
+  void updateEnableSpecialDownload(bool value) {
+    enableSpecialDownload.value = value;
+    service.updateEnableSpecialDownload(value);
   }
 
   void updateUseExternalBrowser(bool value) {

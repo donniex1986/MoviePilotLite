@@ -1,5 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:altman_downloader_control/controller/controller_adaptor.dart';
+import 'package:altman_downloader_control/controller/downloader_config.dart';
+import 'package:altman_downloader_control/controller/protocol.dart';
+import 'package:altman_downloader_control/page/torrent_download_screen.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
@@ -9,6 +15,7 @@ import 'package:moviepilot_mobile/modules/setting/controllers/setting_controller
 import 'package:moviepilot_mobile/modules/setting/models/setting_models.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
+import 'package:path_provider/path_provider.dart';
 
 class DownloadController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
@@ -34,6 +41,7 @@ class DownloadController extends GetxController {
 
   // 加载状态
   final isDownloading = false.obs;
+  final isSpecialDownloading = false.obs;
 
   SettingController get _settingController {
     if (!Get.isRegistered<SettingController>()) {
@@ -271,6 +279,119 @@ class DownloadController extends GetxController {
     }
   }
 
+  Future<void> startSpecialDownload({
+    required BuildContext context,
+    required SearchResultItem item,
+  }) async {
+    final selected = selectedDownloader.value;
+    if (selected == null) {
+      ToastUtil.error('请选择下载器');
+      return;
+    }
+    final torrent = item.torrent_info;
+    final enclosure = torrent?.enclosure?.trim() ?? '';
+    if (torrent == null || enclosure.isEmpty) {
+      ToastUtil.error('当前资源缺少下载链接，下载器直连下载失败');
+      return;
+    }
+
+    final downloaderConfig = _buildDownloaderConfig(selected);
+    if (downloaderConfig == null) {
+      ToastUtil.error('下载器配置不完整或类型不支持');
+      return;
+    }
+
+    isSpecialDownloading.value = true;
+    try {
+      final localPath = await _downloadTorrentToLocal(torrent);
+      final downloaderController = DownloaderControllerAdaptor.getController(
+        downloaderConfig,
+      );
+      showTorrentDownloadScreen(
+        context,
+        controller: downloaderController,
+        localFilePaths: [localPath],
+      );
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '下载器直连下载失败');
+      ToastUtil.error('下载器直连下载失败，请稍后重试');
+    } finally {
+      isSpecialDownloading.value = false;
+    }
+  }
+
+  DownloaderConfig? _buildDownloaderConfig(DownloadClient selected) {
+    final host = selected.config?.host ?? '';
+    if (host.isEmpty) return null;
+    final type = switch (selected.type.toLowerCase()) {
+      'qbittorrent' => DownloaderType.qbittorrent,
+      'transmission' => DownloaderType.transmission,
+      _ => null,
+    };
+    if (type == null) return null;
+    return DownloaderConfig(
+      id: selected.name,
+      url: host,
+      username: selected.config?.username ?? '',
+      password: selected.config?.password ?? '',
+      type: type,
+      name: selected.name,
+    );
+  }
+
+  Future<String> _downloadTorrentToLocal(SearchTorrentInfo torrent) async {
+    final enclosure = torrent.enclosure?.trim() ?? '';
+    if (enclosure.isEmpty) {
+      throw Exception('missing enclosure');
+    }
+    final headers = <String, String>{};
+    final cookie = torrent.site_cookie?.trim();
+    final ua = torrent.site_ua?.trim();
+    final referer = torrent.page_url?.trim();
+    if (cookie != null && cookie.isNotEmpty) {
+      headers['cookie'] = cookie;
+    }
+    if (ua != null && ua.isNotEmpty) {
+      headers['user-agent'] = ua;
+    }
+    if (referer != null && referer.isNotEmpty) {
+      headers['referer'] = referer;
+    }
+
+    final dio = Dio(
+      BaseOptions(
+        responseType: ResponseType.bytes,
+        connectTimeout: const Duration(seconds: 25),
+        receiveTimeout: const Duration(seconds: 60),
+        followRedirects: true,
+        validateStatus: (code) => code != null && code >= 200 && code < 400,
+      ),
+    );
+
+    final response = await dio.get<List<int>>(
+      enclosure,
+      options: Options(headers: headers),
+    );
+    final data = response.data;
+    if (data == null || data.isEmpty) {
+      throw Exception('empty torrent file');
+    }
+    final tempDir = await getTemporaryDirectory();
+    final fileName = _buildLocalTorrentName(torrent);
+    final file = File('${tempDir.path}/$fileName');
+    await file.writeAsBytes(data, flush: true);
+    return file.path;
+  }
+
+  String _buildLocalTorrentName(SearchTorrentInfo torrent) {
+    final rawTitle = torrent.title?.trim().isNotEmpty == true
+        ? torrent.title!.trim()
+        : 'moviepilot_torrent';
+    final sanitized = rawTitle.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return '${sanitized}_$timestamp.torrent';
+  }
+
   void setDownloader(DownloadClient? downloader) {
     selectedDownloader.value = downloader;
   }
@@ -281,5 +402,10 @@ class DownloadController extends GetxController {
 
   void setTmdbId(String id) {
     tmdbId.value = id;
+  }
+
+  void resetSheetTransientState() {
+    tmdbId.value = '';
+    showAdvanced.value = false;
   }
 }
