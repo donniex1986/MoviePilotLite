@@ -262,10 +262,22 @@ class _DownloaderTorrentListPageState extends State<DownloaderTorrentListPage> {
   }
 
   Widget _buildFloatingFilterButton(BuildContext context) {
+    if (controller is! QBController) {
+      final normalColor = Theme.of(context).colorScheme.onSurfaceVariant;
+      return CupertinoButton(
+        padding: EdgeInsets.zero,
+        minSize: 0,
+        onPressed: null,
+        child: Icon(
+          CupertinoIcons.slider_horizontal_3,
+          size: 20,
+          color: normalColor.withValues(alpha: 0.45),
+        ),
+      );
+    }
+    final qbController = controller as QBController;
     return Obx(() {
-      final hasFilters = controller is QBController
-          ? (controller as QBController).filter.value.hasFilters
-          : false;
+      final hasFilters = qbController.filter.value.hasFilters;
       final activeColor = Theme.of(context).colorScheme.primary;
       final normalColor = Theme.of(context).colorScheme.onSurfaceVariant;
       return CupertinoButton(
@@ -282,6 +294,28 @@ class _DownloaderTorrentListPageState extends State<DownloaderTorrentListPage> {
   }
 
   Widget _buildFloatingFakeInputBar(BuildContext context) {
+    if (controller is! QBController) {
+      return Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        alignment: Alignment.centerLeft,
+        child: Text(
+          '当前下载器不支持筛选',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+    final qbController = controller as QBController;
     return GestureDetector(
       onTap: () => _openKeywordSheet(context),
       child: Container(
@@ -303,9 +337,7 @@ class _DownloaderTorrentListPageState extends State<DownloaderTorrentListPage> {
             const SizedBox(width: 8),
             Expanded(
               child: Obx(() {
-                final keyword = controller is QBController
-                    ? (controller as QBController).filter.value.searchKeyword
-                    : '';
+                final keyword = qbController.filter.value.searchKeyword;
                 return Text(
                   keyword.isEmpty ? '筛选标题、分类、标签…' : keyword,
                   maxLines: 1,
@@ -777,32 +809,42 @@ class _DownloaderTorrentListPageState extends State<DownloaderTorrentListPage> {
       return Container(
         height: 34,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            Icon(
-              Icons.arrow_downward_rounded,
-              size: 14,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(width: 4),
-            Text('${dl.toHumanReadableFileSize(round: 1)}/s', style: textStyle),
-            const SizedBox(width: 14),
-            Icon(
-              Icons.arrow_upward_rounded,
-              size: 14,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-            const SizedBox(width: 4),
-            Text('${ul.toHumanReadableFileSize(round: 1)}/s', style: textStyle),
-            const SizedBox(width: 14),
-            Icon(
-              Icons.public_rounded,
-              size: 14,
-              color: Theme.of(context).colorScheme.tertiary,
-            ),
-            const SizedBox(width: 4),
-            Text('DHT $dht', style: textStyle),
-          ],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: [
+              Icon(
+                Icons.arrow_downward_rounded,
+                size: 14,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '${dl.toHumanReadableFileSize(round: 1)}/s',
+                style: textStyle,
+              ),
+              const SizedBox(width: 14),
+              Icon(
+                Icons.arrow_upward_rounded,
+                size: 14,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '${ul.toHumanReadableFileSize(round: 1)}/s',
+                style: textStyle,
+              ),
+              const SizedBox(width: 14),
+              Icon(
+                Icons.public_rounded,
+                size: 14,
+                color: Theme.of(context).colorScheme.tertiary,
+              ),
+              const SizedBox(width: 4),
+              Text('DHT $dht', style: textStyle),
+            ],
+          ),
         ),
       );
     });
