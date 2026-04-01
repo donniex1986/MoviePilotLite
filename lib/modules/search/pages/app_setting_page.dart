@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:moviepilot_mobile/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:moviepilot_mobile/modules/dashboard/pages/edit_dashboard_page.dart';
 import 'package:moviepilot_mobile/modules/search/controllers/app_setting_controller.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
 import 'package:moviepilot_mobile/utils/open_url.dart';
@@ -68,6 +71,32 @@ class AppSettingPage extends GetView<AppSettingController> {
                     title: const Text('背景图片'),
                     trailing: const CupertinoListTileChevron(),
                     onTap: () => Get.toNamed('/settings/app/background-image'),
+                  ),
+                ],
+              ),
+              Section(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                padding: EdgeInsets.zero,
+                header: _buildHeader(context, 'Dashboard'),
+                children: [
+                  CupertinoListTile.notched(
+                    leading: Container(
+                      width: 29,
+                      height: 29,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        Icons.dashboard_customize_outlined,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    title: const Text('编辑 Dashboard 布局'),
+                    trailing: const CupertinoListTileChevron(),
+                    onTap: () => _showEditDashboardModal(context),
                   ),
                 ],
               ),
@@ -329,6 +358,16 @@ class AppSettingPage extends GetView<AppSettingController> {
         title,
         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
       ),
+    );
+  }
+
+  Future<void> _showEditDashboardModal(BuildContext context) async {
+    if (!Get.isRegistered<DashboardController>()) {
+      Get.put(DashboardController());
+    }
+    await showCupertinoModalBottomSheet<void>(
+      context: context,
+      builder: (_) => const EditDashboardPage(),
     );
   }
 }

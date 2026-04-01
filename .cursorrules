@@ -91,9 +91,12 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 # Scratchpad
 
-## Current Task: Fix App Store ITMS-90771 (BGTaskScheduler / UIBackgroundModes processing)
+## Current Task: Dashboard 页面编辑功能（隐藏/显示 + 换位）
 
-[X] Remove unused `processing` from ios/Runner/Info.plist (no BGTaskScheduler in codebase)
-[X] Note lesson in .cursorrules
+[ ] 理清 DashboardConfig / DashboardOrder 与 displayedWidgets 的映射关系
+[ ] 设计并实现 Dashboard 编辑 UI（从 AppSettingPage 进入）
+[ ] 将编辑结果写回 /api/v1/user/config/Dashboard 与 /api/v1/user/config/DashboardOrder
+[ ] 确保隐藏状态下不会触发对应组件的定时请求（复用 _loadDataBasedOnConfig 逻辑）
+[ ] 本地持久化与远端配置保持兼容
 
-Previous: CLI test coverage task (completed in prior session).
+Previous: Fix App Store ITMS-90771（已完成）

@@ -107,7 +107,10 @@ class DashboardController extends GetxController {
     // 1. 根据传入数据创建 mediaServerController
     await _initializeMediaServerController();
 
-    _useDefaultConfig();
+    await _loadLocalDashboardConfig();
+    if (!_hasLocalDashboardConfig) {
+      _useDefaultConfig();
+    }
     // 5. 根据开关获取对应数据
     _setupDataLoading();
 
@@ -583,6 +586,66 @@ class DashboardController extends GetxController {
     }
   }
 
+  Future<void> applyLocalDashboardLayout(List<String> orderedVisible) async {
+    final nameToIdMap = {
+      '存储空间': 'storage',
+      '媒体统计': 'mediaStatistic',
+      '最近入库': 'weeklyOverview',
+      '实时速率': 'speed',
+      '后台任务': 'scheduler',
+      'CPU': 'cpu',
+      '内存': 'memory',
+      '网络流量': 'network',
+      '我的媒体库': 'library',
+      '继续观看': 'playing',
+      '最近添加': 'latest',
+    };
+
+    final value = DashboardConfigValue(
+      mediaStatistic: orderedVisible.contains('媒体统计'),
+      scheduler: orderedVisible.contains('后台任务'),
+      speed: orderedVisible.contains('实时速率'),
+      storage: orderedVisible.contains('存储空间'),
+      weeklyOverview: orderedVisible.contains('最近入库'),
+      cpu: orderedVisible.contains('CPU'),
+      memory: orderedVisible.contains('内存'),
+      network: orderedVisible.contains('网络流量'),
+      library: orderedVisible.contains('我的媒体库'),
+      playing: orderedVisible.contains('继续观看'),
+      latest: orderedVisible.contains('最近添加'),
+    );
+
+    final orderItems = orderedVisible
+        .map(
+          (name) => DashboardOrderItem(
+            id: nameToIdMap[name] ?? '',
+            key: '',
+          ),
+        )
+        .where((item) => item.id.isNotEmpty)
+        .toList();
+
+    dashboardConfig.value = DashboardConfigModel(
+      success: true,
+      message: 'local',
+      data: DashboardConfigData(value: value),
+    );
+
+    dashboardOrder.value = DashboardOrderModel(
+      success: true,
+      message: 'local',
+      data: DashboardOrderData(value: orderItems),
+    );
+
+    _updateDisplayedWidgets(value);
+    _updateWidgetsOrder(orderItems);
+    await _saveLocalDashboardConfig(
+      configValue: value,
+      orderItems: orderItems,
+    );
+    await refreshData();
+  }
+
   /// 更新dashboard排序
   Future<bool> updateDashboardOrder(List<dynamic> order) async {
     try {
@@ -730,16 +793,17 @@ class DashboardController extends GetxController {
       if (profile is! Map) return;
 
       final configRaw = profile['config'];
+      DashboardConfigValue? loadedConfigValue;
       if (configRaw is Map) {
-        final value = DashboardConfigValue.fromJson(
+        loadedConfigValue = DashboardConfigValue.fromJson(
           Map<String, dynamic>.from(configRaw),
         );
         dashboardConfig.value = DashboardConfigModel(
           success: true,
           message: 'local',
-          data: DashboardConfigData(value: value),
+          data: DashboardConfigData(value: loadedConfigValue),
         );
-        // _updateDisplayedWidgets(value);
+        _updateDisplayedWidgets(loadedConfigValue);
         _hasLocalDashboardConfig = true;
       }
 
@@ -758,7 +822,9 @@ class DashboardController extends GetxController {
             message: 'local',
             data: DashboardOrderData(value: items),
           );
-          _updateWidgetsOrder(items);
+          if (loadedConfigValue != null) {
+            _updateWidgetsOrder(items);
+          }
         }
       }
     } catch (e, st) {
