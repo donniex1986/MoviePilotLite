@@ -136,7 +136,7 @@ class MediaOrganizeItemCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              item.mode ?? '',
+                              _localizedMode(item.mode),
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Theme.of(context).colorScheme.primary,
@@ -340,5 +340,26 @@ class MediaOrganizeItemCard extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _localizedMode(String? mode) {
+    final value = (mode ?? '').trim().toLowerCase();
+    if (value.isEmpty) return '';
+    switch (value) {
+      case 'move':
+        return '移动';
+      case 'copy':
+        return '复制';
+      case 'hard link':
+      case 'hard_link':
+      case 'hardlink':
+        return '硬连接';
+      case 'soft link':
+      case 'soft_link':
+      case 'softlink':
+        return '软连接';
+      default:
+        return mode ?? '';
+    }
   }
 }

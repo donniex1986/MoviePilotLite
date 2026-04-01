@@ -1,9 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/media_organize/models/media_organize_models.dart';
 import 'package:moviepilot_mobile/modules/storage/controllers/storage_list_controller.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum MediaOrganizeStatusFilter { all, success, failed }
 
@@ -18,6 +22,7 @@ class MediaOrganizeController extends GetxController {
   final String _initialKeyword;
 
   static const int _pageSize = 50;
+  static const String _cacheKeyPrefix = 'media_organize_cache_v1';
 
   final scrollController = ScrollController();
   int _page = 1;
@@ -78,7 +83,7 @@ class MediaOrganizeController extends GetxController {
     if (_initialKeyword.isNotEmpty) {
       keyword.value = _initialKeyword;
     }
-    loadStorages().then((_) => load());
+    unawaited(_bootstrap());
   }
 
   @override
@@ -92,6 +97,12 @@ class MediaOrganizeController extends GetxController {
     await _storageController.loadStorages();
   }
 
+  Future<void> _bootstrap() async {
+    await _restoreCachedItems();
+    unawaited(loadStorages());
+    await load();
+  }
+
   /// 根据 storage type 获取显示名称
   String getStorageName(String? type) {
     return _storageController.getStorageName(type);
@@ -101,6 +112,7 @@ class MediaOrganizeController extends GetxController {
     final next = value.trim();
     if (keyword.value == next) return;
     keyword.value = next;
+    unawaited(_restoreCachedItems());
     load();
   }
 
@@ -117,6 +129,7 @@ class MediaOrganizeController extends GetxController {
   }
 
   Future<void> load() async {
+    final hasLocalData = items.isNotEmpty;
     isLoading.value = true;
     errorText.value = null;
     _page = 1;
@@ -133,7 +146,9 @@ class MediaOrganizeController extends GetxController {
       final status = response.statusCode ?? 0;
       if (status >= 400) {
         errorText.value = '请求失败 (HTTP $status)';
-        items.clear();
+        if (!hasLocalData) {
+          items.clear();
+        }
         return;
       }
       final list = _extractList(response.data);
@@ -151,10 +166,13 @@ class MediaOrganizeController extends GetxController {
       }
       items.assignAll(parsed);
       hasMore.value = parsed.length >= _pageSize;
+      await _saveCachedItems(parsed);
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '获取整理历史失败');
       errorText.value = '请求失败，请稍后重试';
-      items.clear();
+      if (!hasLocalData) {
+        items.clear();
+      }
     } finally {
       isLoading.value = false;
     }
@@ -199,6 +217,45 @@ class MediaOrganizeController extends GetxController {
       _page -= 1;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  String _cacheKeyForKeyword(String raw) {
+    final value = raw.trim().toLowerCase();
+    return '$_cacheKeyPrefix::$value';
+  }
+
+  Future<void> _restoreCachedItems() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_cacheKeyForKeyword(keyword.value));
+      if (raw == null || raw.isEmpty) return;
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return;
+      final parsed = <MediaOrganizeTransferItem>[];
+      for (final item in decoded) {
+        if (item is! Map<String, dynamic>) continue;
+        try {
+          parsed.add(MediaOrganizeTransferItem.fromJson(item));
+        } catch (_) {
+          continue;
+        }
+      }
+      if (parsed.isEmpty) return;
+      items.assignAll(parsed);
+      hasMore.value = parsed.length >= _pageSize;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '读取整理历史缓存失败');
+    }
+  }
+
+  Future<void> _saveCachedItems(List<MediaOrganizeTransferItem> list) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final payload = list.map((e) => e.toJson()).toList(growable: false);
+      await prefs.setString(_cacheKeyForKeyword(keyword.value), jsonEncode(payload));
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '写入整理历史缓存失败');
     }
   }
 

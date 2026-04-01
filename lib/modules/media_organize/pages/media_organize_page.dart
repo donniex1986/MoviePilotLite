@@ -25,31 +25,12 @@ class MediaOrganizePage extends GetView<MediaOrganizeController> {
       appBar: AppBar(
         title: const Text('媒体整理'),
         centerTitle: false,
-        actions: [
-          Obx(() {
-            if (!controller.isLoading.value) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Center(
-                child: SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            );
-          }),
-        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: _buildFloatingBar(context),
       body: RefreshIndicator(
         onRefresh: () async {
-          await controller.loadStorages();
-          await controller.load();
+          await Future.wait([controller.loadStorages(), controller.load()]);
         },
         child: Obx(() => _buildBody(context)),
       ),
@@ -249,6 +230,7 @@ class MediaOrganizePage extends GetView<MediaOrganizeController> {
   Widget _buildSummaryHeader(BuildContext context, int filteredCount) {
     final theme = Theme.of(context);
     final total = controller.items.length;
+    final loading = controller.isLoading.value;
     final labelColor = theme.colorScheme.onSurfaceVariant;
     final statusText = _statusFilterLabel(controller.statusFilter.value);
     final summaryText = controller.keyword.value.isEmpty
@@ -275,11 +257,15 @@ class MediaOrganizePage extends GetView<MediaOrganizeController> {
                 color: theme.colorScheme.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                CupertinoIcons.collections,
-                color: theme.colorScheme.primary,
-                size: 20,
-              ),
+              child: loading
+                  ? const Center(
+                      child: CupertinoActivityIndicator(radius: 10),
+                    )
+                  : Icon(
+                      CupertinoIcons.collections,
+                      color: theme.colorScheme.primary,
+                      size: 20,
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(
