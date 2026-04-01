@@ -192,7 +192,7 @@ class LoginController extends GetxController {
       if (success == true) {
         // 获取用户信息成功，直接跳转到dashboard页面
         _talker.info('自动登录成功');
-        ToastUtil.success('自动登录成功');
+        ToastUtil.success('自动登录成功', snackPosition: SnackPosition.TOP);
 
         // 自动登录成功后启动消息轮询
         if (!Get.isRegistered<SystemMessageController>()) {
@@ -277,7 +277,11 @@ class LoginController extends GetxController {
       await _saveWallpapers();
       imageUtil.loadGlobalCachedConfig();
       _loadProfiles();
-      ToastUtil.success('已保存账号信息', title: '登录成功');
+      ToastUtil.success(
+        '已保存账号信息',
+        title: '登录成功',
+        snackPosition: SnackPosition.TOP,
+      );
       // 跳转到 Dashboard
       final lastIndex = await _loadLastTabIndex();
       if (lastIndex != null) {

@@ -11,6 +11,7 @@ class ToastUtil {
     Duration duration = const Duration(seconds: 2),
     String? mainButtonText,
     VoidCallback? onMainButtonPressed,
+    SnackPosition snackPosition = SnackPosition.BOTTOM,
   }) {
     Get.snackbar(
       title ?? '成功',
@@ -18,7 +19,7 @@ class ToastUtil {
       backgroundColor: CupertinoColors.systemGreen.withOpacity(0.9),
       colorText: CupertinoColors.white,
       duration: duration,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: snackPosition,
       margin: const EdgeInsets.all(16),
       borderRadius: 12,
       icon: const Icon(

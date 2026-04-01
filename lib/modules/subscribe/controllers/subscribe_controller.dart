@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
+import 'package:moviepilot_mobile/modules/multifunction/controllers/multifunction_controller.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_service.dart';
 import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_models.dart';
 import 'package:moviepilot_mobile/modules/subscribe/models/subscribe_submit_resp.dart';
@@ -70,6 +71,12 @@ class SubscribeController extends GetxController {
 
   Future<void> loadAll() async {
     await loadUserSubscribes();
+  }
+
+  Future<void> _notifyMultifunctionSubscribeChanged() async {
+    if (!Get.isRegistered<MultifunctionController>()) return;
+    final controller = Get.find<MultifunctionController>();
+    await controller.refreshSubscribeSection();
   }
 
   /// 是否有默认规则入口（TV 和 Movie 分别有独立入口）
@@ -256,6 +263,7 @@ class SubscribeController extends GetxController {
     }
     final data = response.data;
     if (data is Map<String, dynamic> && data['success'] == true) {
+      await _notifyMultifunctionSubscribeChanged();
       return true;
     }
     return false;
@@ -268,7 +276,11 @@ class SubscribeController extends GetxController {
       payload,
       queryParameters: payload,
     );
-    return response.statusCode == 200 && response.data['success'] == true;
+    final ok = response.statusCode == 200 && response.data['success'] == true;
+    if (ok) {
+      await _notifyMultifunctionSubscribeChanged();
+    }
+    return ok;
   }
 
   Future<bool> resumeSubscribe(String id) async {
@@ -278,12 +290,20 @@ class SubscribeController extends GetxController {
       payload,
       queryParameters: payload,
     );
-    return response.statusCode == 200 && response.data['success'] == true;
+    final ok = response.statusCode == 200 && response.data['success'] == true;
+    if (ok) {
+      await _notifyMultifunctionSubscribeChanged();
+    }
+    return ok;
   }
 
   Future<bool> resetSubscribeState(String id) async {
     final response = await _apiClient.get('/api/v1/subscribe/reset/$id');
-    return response.statusCode == 200 && response.data['success'] == true;
+    final ok = response.statusCode == 200 && response.data['success'] == true;
+    if (ok) {
+      await _notifyMultifunctionSubscribeChanged();
+    }
+    return ok;
   }
 
   Future<bool> searchSubscribe(String id) async {
@@ -327,14 +347,25 @@ class SubscribeController extends GetxController {
   }
 
   Future<bool> deleteSubscribe(String id) async {
-    return subscribeService.deleteSubscribes(id);
+    final ok = await subscribeService.deleteSubscribes(id);
+    if (ok) {
+      await _notifyMultifunctionSubscribeChanged();
+    }
+    return ok;
   }
 
   Future<SubscribeSubmitResp> submitSubscribe(
     String mediaType, {
     required Map<String, dynamic> payload,
   }) async {
-    return subscribeService.submitSubscribe(mediaType, payload: payload);
+    final resp = await subscribeService.submitSubscribe(
+      mediaType,
+      payload: payload,
+    );
+    if (resp.success == true) {
+      await _notifyMultifunctionSubscribeChanged();
+    }
+    return resp;
   }
 
   Future<SubscribeSubmitResp> submitMovieSubscribe({
@@ -363,6 +394,9 @@ class SubscribeController extends GetxController {
       'movie',
       payload: payload,
     );
+    if (resp.success == true) {
+      await _notifyMultifunctionSubscribeChanged();
+    }
     return resp;
   }
 
@@ -386,17 +420,32 @@ class SubscribeController extends GetxController {
       'best_version': 0,
       'type': '电视剧',
     };
-    return await subscribeService.submitSubscribe('tv', payload: payload);
+    final resp = await subscribeService.submitSubscribe('tv', payload: payload);
+    if (resp.success == true) {
+      await _notifyMultifunctionSubscribeChanged();
+    }
+    return resp;
   }
 
   Future<bool> deleteMediaSubscribe(
     String mediaKey, {
     String season = '0',
   }) async {
-    return subscribeService.deleteMediaSubscribe(mediaKey, season: season);
+    final ok = await subscribeService.deleteMediaSubscribe(
+      mediaKey,
+      season: season,
+    );
+    if (ok) {
+      await _notifyMultifunctionSubscribeChanged();
+    }
+    return ok;
   }
 
   deleteSubscribes(String id) async {
-    return subscribeService.deleteSubscribes(id);
+    final ok = await subscribeService.deleteSubscribes(id);
+    if (ok) {
+      await _notifyMultifunctionSubscribeChanged();
+    }
+    return ok;
   }
 }
