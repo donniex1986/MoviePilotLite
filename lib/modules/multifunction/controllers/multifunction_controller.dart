@@ -438,6 +438,7 @@ class MultifunctionController extends GetxController {
       totalUploadSize: totalUpSize,
       clients: info,
     );
+    refresh();
     return true;
   }
 
@@ -725,10 +726,7 @@ class MultifunctionController extends GetxController {
   }
 
   bool _hasAuthSession() {
-    final token =
-        _appService.loginResponse?.accessToken ??
-        _appService.latestLoginProfileAccessToken;
-    return token != null && token.trim().isNotEmpty;
+    return true;
   }
 
   Duration get _downloaderPollingInterval {
