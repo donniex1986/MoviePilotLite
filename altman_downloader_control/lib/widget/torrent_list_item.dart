@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:altman_downloader_control/controller/protocol.dart';
 import 'package:altman_downloader_control/controller/qbittorrent/qb_controller.dart';
 import 'package:altman_downloader_control/model/torrent_item_model.dart';
@@ -35,68 +33,58 @@ class TorrentListItem extends StatelessWidget {
 
   Widget _buildUnifiedTorrentItem(BuildContext context) {
     final progressPercent = (torrent.progress * 100);
+    final progressLabel = _getProgressDisplayText();
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
     final isDark = theme.brightness == Brightness.dark;
     final stateColor = _getStateColor(colorScheme);
-    final showMeta =
-        torrent.addedOn > 0 ||
-        torrent.popularity > 0 ||
-        torrent.availability >= 0;
-    final metrics = <Widget>[
-      _buildInfoChip(
+    final totalSize = (torrent.totalSize > 0 ? torrent.totalSize : torrent.size)
+        .toHumanReadableFileSize();
+    final metricTiles = <Widget>[
+      _buildMetricTile(
         context: context,
         icon: Icons.storage_outlined,
         label: '大小',
-        value: (torrent.totalSize > 0 ? torrent.totalSize : torrent.size)
-            .toHumanReadableFileSize(),
+        value: totalSize,
       ),
-      _buildInfoChip(
+      _buildMetricTile(
         context: context,
         icon: Icons.upload_outlined,
         label: '已上传',
         value: torrent.uploaded.toHumanReadableFileSize(round: 2),
       ),
-      _buildInfoChip(
+      _buildMetricTile(
         context: context,
-        icon: Icons.swap_horiz,
+        icon: Icons.swap_horiz_rounded,
         label: '比率',
         value: torrent.ratio.toStringAsFixed(2),
       ),
-    ];
-    if (torrent.eta > 0 && torrent.isDownloading) {
-      metrics.add(
-        _buildInfoChip(
+      if (torrent.eta > 0 && torrent.isDownloading)
+        _buildMetricTile(
           context: context,
           icon: Icons.schedule_outlined,
           label: '剩余',
           value: _formatETA(torrent.eta),
-          emphasize: true,
+          accentColor: colorScheme.primary,
         ),
-      );
-    }
-    if (torrent.popularity > 0) {
-      metrics.add(
-        _buildInfoChip(
+      if (torrent.popularity > 0)
+        _buildMetricTile(
           context: context,
-          icon: Icons.local_fire_department,
+          icon: Icons.local_fire_department_outlined,
           label: '热度',
           value: _getPopularityText(torrent.popularity),
-          emphasize: true,
+          accentColor: Colors.orange.shade700,
         ),
-      );
-    }
-    if (torrent.availability >= 0) {
-      metrics.add(
-        _buildInfoChip(
+      if (torrent.availability >= 0)
+        _buildMetricTile(
           context: context,
           icon: Icons.cloud_done_outlined,
           label: '可用性',
           value: _getAvailabilityText(torrent.availability),
+          accentColor: colorScheme.secondary,
         ),
-      );
-    }
+    ];
 
     return InkWell(
       onTap: () => _showTorrentDetails(context),
@@ -106,26 +94,29 @@ class TorrentListItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           color: isDark
-              ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.6)
+              ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
               : colorScheme.surface,
           border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.15),
-            width: 0.5,
+            color: stateColor.withValues(alpha: isDark ? 0.18 : 0.12),
+            width: 0.7,
           ),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: isDark ? 0.15 : 0.03),
+              color: colorScheme.shadow.withValues(
+                alpha: isDark ? 0.12 : 0.035,
+              ),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 14.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Text(
@@ -133,150 +124,315 @@ class TorrentListItem extends StatelessWidget {
                       style: textTheme.titleSmall?.copyWith(
                         color: colorScheme.onSurface,
                         fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        height: 1.3,
+                        fontSize: 14,
+                        height: 1.2,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  _buildActionMenu(context),
+                  const SizedBox(width: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: _buildActionMenu(context),
+                  ),
                 ],
               ),
-              const SizedBox(height: 8),
-              if (torrent.category.isNotEmpty || torrent.tags.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    if (torrent.category.isNotEmpty)
-                      _buildMetaChip(
-                        context: context,
-                        icon: Icons.folder_outlined,
-                        text: torrent.category,
-                        color: colorScheme.primary,
-                      ),
-                    if (torrent.tags.isNotEmpty)
-                      _buildMetaChip(
-                        context: context,
-                        icon: Icons.category_outlined,
-                        text: torrent.tags.join(' / '),
-                        color: colorScheme.secondary,
-                        maxWidth: MediaQuery.of(context).size.width * 0.45,
-                      ),
-                  ],
-                ),
-              ],
-              const SizedBox(height: 8),
-              Row(
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: stateColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      _getStateText(),
-                      style: textTheme.labelSmall?.copyWith(
-                        color: stateColor,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 11.5,
-                      ),
-                    ),
+                  _buildMetaChip(
+                    context: context,
+                    icon: Icons.satellite_outlined,
+                    text: _getStateText(),
+                    color: stateColor,
                   ),
-                  Spacer(),
-                  if (torrent.dlspeed > 0) ...[
-                    Icon(
-                      Icons.arrow_downward,
-                      size: 15,
+                  if (torrent.category.isNotEmpty)
+                    _buildMetaChip(
+                      context: context,
+                      icon: Icons.folder_outlined,
+                      text: torrent.category,
                       color: colorScheme.primary,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${torrent.dlspeed.toHumanReadableFileSize(round: 1)}/s',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
+                  if (torrent.tags.isNotEmpty)
+                    _buildMetaChip(
+                      context: context,
+                      icon: Icons.sell_outlined,
+                      text: torrent.tags.join(' / '),
+                      color: colorScheme.secondary,
+                      maxWidth: MediaQuery.of(context).size.width * 0.45,
                     ),
-                  ],
-                  if (torrent.dlspeed > 0 && torrent.upspeed > 0)
-                    const SizedBox(width: 16),
-                  if (torrent.upspeed > 0) ...[
-                    Icon(
-                      Icons.arrow_upward,
-                      size: 15,
-                      color: colorScheme.tertiary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${torrent.upspeed.toHumanReadableFileSize(round: 1)}/s',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.tertiary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                  ],
-                  const SizedBox(width: 16),
-                  Text(
-                    '${progressPercent.toStringAsFixed(1)}%',
-                    style: textTheme.titleSmall?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: progressPercent / 100,
-                backgroundColor: colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.5,
-                ),
-                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              _buildProgressPanel(
+                context: context,
+                progressPercent: progressPercent,
+                progressLabel: progressLabel,
+                stateColor: stateColor,
               ),
               const SizedBox(height: 8),
-              Wrap(spacing: 8, runSpacing: 8, children: metrics),
-              Container(
-                padding: const EdgeInsets.all(4),
-                margin: const EdgeInsets.only(top: 10),
-                decoration: BoxDecoration(
-                  color: colorScheme.secondary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 13,
-                      color: colorScheme.secondary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatTimestamp(torrent.addedOn),
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant.withValues(
-                          alpha: 0.7,
-                        ),
-                        fontSize: 11.5,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildMetricsSection(context: context, items: metricTiles),
+              const SizedBox(height: 5),
+              Wrap(
+                spacing: 7,
+                runSpacing: 2,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  _buildFooterMeta(
+                    context: context,
+                    icon: Icons.access_time_rounded,
+                    text: _formatTimestamp(torrent.addedOn),
+                  ),
+                  _buildFooterMeta(
+                    context: context,
+                    icon: Icons.hub_outlined,
+                    text:
+                        '做种 ${torrent.numComplete} / 下载 ${torrent.numIncomplete}',
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProgressPanel({
+    required BuildContext context,
+    required double progressPercent,
+    required String progressLabel,
+    required Color stateColor,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final speedItems = <Widget>[
+      if (torrent.dlspeed > 0)
+        _buildFlowMetric(
+          context: context,
+          icon: Icons.arrow_downward_rounded,
+          label: '下载',
+          value: '${torrent.dlspeed.toHumanReadableFileSize(round: 1)}/s',
+          color: colorScheme.primary,
+        ),
+      if (torrent.upspeed > 0)
+        _buildFlowMetric(
+          context: context,
+          icon: Icons.arrow_upward_rounded,
+          label: '上传',
+          value: '${torrent.upspeed.toHumanReadableFileSize(round: 1)}/s',
+          color: colorScheme.tertiary,
+        ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.only(top: 1),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (speedItems.isNotEmpty)
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: speedItems,
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '当前进度: ',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                        TextSpan(
+                          text: progressLabel,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.primary,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: _getVisualProgressValue(progressPercent),
+              minHeight: 5,
+              backgroundColor: colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.5,
+              ),
+              valueColor: AlwaysStoppedAnimation<Color>(stateColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getProgressDisplayText() {
+    if (torrent.progress <= 0) return '0';
+    return '${(torrent.progress * 100).toStringAsFixed(1)}%';
+  }
+
+  double _getVisualProgressValue(double progressPercent) {
+    if (progressPercent <= 0) return 0.01;
+    return (progressPercent / 100).clamp(0.0, 1.0);
+  }
+
+  Widget _buildMetricTile({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? accentColor,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final color = accentColor ?? colorScheme.onSurfaceVariant;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(
+          alpha: isDarkTheme(context) ? 0.28 : 0.82,
+        ),
+        borderRadius: BorderRadius.circular(7),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(
+            alpha: isDarkTheme(context) ? 0.18 : 0.12,
+          ),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: textTheme.labelSmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            value,
+            style: textTheme.titleSmall?.copyWith(
+              color: accentColor ?? colorScheme.onSurface,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+              height: 1.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricsSection({
+    required BuildContext context,
+    required List<Widget> items,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = isDarkTheme(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(
+          alpha: isDark ? 0.2 : 0.14,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Wrap(spacing: 5, runSpacing: 5, children: items),
+    );
+  }
+
+  bool isDarkTheme(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark;
+  }
+
+  Widget _buildFlowMetric({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    final textTheme = Theme.of(context).textTheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: color),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: textTheme.labelSmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+            fontSize: 9.5,
+            height: 1.0,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          value,
+          style: textTheme.bodySmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w700,
+            fontSize: 10.5,
+            height: 1.0,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooterMeta({
+    required BuildContext context,
+    required IconData icon,
+    required String text,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: colorScheme.secondary),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.82),
+            fontSize: 10,
+            height: 1.0,
+          ),
+        ),
+      ],
     );
   }
 
@@ -289,18 +445,20 @@ class TorrentListItem extends StatelessWidget {
   }) {
     final textTheme = Theme.of(context).textTheme;
     return Container(
-      constraints: maxWidth == null ? null : BoxConstraints(maxWidth: maxWidth),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      constraints: maxWidth == null
+          ? const BoxConstraints(minHeight: 24)
+          : BoxConstraints(minHeight: 24, maxWidth: maxWidth),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.18), width: 0.5),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(7),
+        border: Border.all(color: color.withValues(alpha: 0.14), width: 0.6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 13, color: color),
-          const SizedBox(width: 4),
+          const SizedBox(width: 5),
           Flexible(
             child: Text(
               text,
@@ -308,8 +466,9 @@ class TorrentListItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: textTheme.bodySmall?.copyWith(
                 color: color,
-                fontSize: 11.5,
+                fontSize: 10,
                 fontWeight: FontWeight.w600,
+                height: 1.1,
               ),
             ),
           ),
@@ -318,47 +477,28 @@ class TorrentListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoChip({
+  Widget _buildStateBadge({
     required BuildContext context,
-    required IconData icon,
+    required Color stateColor,
     required String label,
-    required String value,
-    bool emphasize = false,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final accent = emphasize
-        ? colorScheme.primary
-        : colorScheme.onSurfaceVariant.withValues(alpha: 0.9);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: emphasize
-            ? colorScheme.primary.withValues(alpha: 0.08)
-            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(10),
+        color: stateColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(7),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: accent),
-          const SizedBox(width: 5),
-          Text(
-            '$label ',
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.82),
-              fontSize: 11.5,
-            ),
-          ),
-          Text(
-            value,
-            style: textTheme.bodySmall?.copyWith(
-              color: accent,
-              fontWeight: FontWeight.w700,
-              fontSize: 11.5,
-            ),
-          ),
-        ],
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: textTheme.labelMedium?.copyWith(
+          color: stateColor,
+          fontWeight: FontWeight.w700,
+          fontSize: 10.5,
+          height: 1.0,
+        ),
       ),
     );
   }
@@ -886,8 +1026,8 @@ class TorrentListItem extends StatelessWidget {
     if (popularity <= 0) return '冷门';
     if (popularity < 0.1) return '普通';
     if (popularity < 0.3) return '热门';
-    if (popularity < 0.5) return '🔥 很热';
-    return '🔥🔥 超热';
+    if (popularity < 0.5) return '很热';
+    return '超热';
   }
 
   String _getAvailabilityText(double availability) {

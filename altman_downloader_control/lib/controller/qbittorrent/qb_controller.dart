@@ -453,7 +453,11 @@ class QBController extends GetxController
           ? partial.numIncomplete
           : (existing.numIncomplete >= 0 ? existing.numIncomplete : 0),
       ratio: partial.ratio, // 可能为0，使用新值
-      popularity: partial.popularity, // 流行度，使用新值
+      popularity: partial.hasPopularityField
+          ? partial.popularity
+          : existing.popularity,
+      hasPopularityField:
+          partial.hasPopularityField || existing.hasPopularityField,
       eta: partial.eta, // 可能为-1或0，使用新值
       state: partial.state.isNotEmpty ? partial.state : existing.state,
       // category 保护：如果新值为空但旧值不为空，保留旧值（防止增量更新时丢失分类信息）
@@ -540,10 +544,11 @@ class QBController extends GetxController
       magnetUri: (partial.magnetUri.isNotEmpty || existing.magnetUri.isEmpty)
           ? partial.magnetUri
           : existing.magnetUri,
-      // availability 可能是 -1（表示不可用），使用新值
-      availability: partial.availability >= -1
+      availability: partial.hasAvailabilityField
           ? partial.availability
           : existing.availability,
+      hasAvailabilityField:
+          partial.hasAvailabilityField || existing.hasAvailabilityField,
       dlLimit: partial.dlLimit, // -1表示无限制，使用新值
       upLimit: partial.upLimit, // -1表示无限制，使用新值
       timeActive: partial.timeActive, // 可能为0，使用新值
@@ -664,6 +669,7 @@ class QBController extends GetxController
         old.numComplete != new_.numComplete ||
         old.numIncomplete != new_.numIncomplete ||
         old.ratio != new_.ratio ||
+        old.popularity != new_.popularity ||
         old.eta != new_.eta ||
         old.size != new_.size ||
         old.downloaded != new_.downloaded ||
@@ -671,6 +677,8 @@ class QBController extends GetxController
         old.amountLeft != new_.amountLeft ||
         old.priority != new_.priority ||
         old.category != new_.category ||
+        old.availability != new_.availability ||
+        old.addedOn != new_.addedOn ||
         old.tags.join(', ') != new_.tags.join(', ');
   }
 

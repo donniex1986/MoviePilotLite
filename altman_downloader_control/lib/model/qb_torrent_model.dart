@@ -18,6 +18,7 @@ class QBTorrentModel {
   final int numIncomplete;
   final double ratio;
   final double popularity;
+  final bool hasPopularityField;
   final int eta;
   final String state;
   final String category;
@@ -40,6 +41,7 @@ class QBTorrentModel {
   final String comment;
   final String magnetUri;
   final double availability;
+  final bool hasAvailabilityField;
   final double dlLimit;
   final double upLimit;
   final double timeActive;
@@ -60,6 +62,7 @@ class QBTorrentModel {
     required this.numIncomplete,
     required this.ratio,
     required this.popularity,
+    required this.hasPopularityField,
     required this.eta,
     required this.state,
     required this.category,
@@ -82,6 +85,7 @@ class QBTorrentModel {
     required this.comment,
     required this.magnetUri,
     required this.availability,
+    required this.hasAvailabilityField,
     required this.dlLimit,
     required this.upLimit,
     required this.timeActive,
@@ -121,6 +125,7 @@ class QBTorrentModel {
       }(),
       ratio: (json['ratio'] as num?)?.toDouble() ?? 0.0,
       popularity: (json['popularity'] as num?)?.toDouble() ?? 0.0,
+      hasPopularityField: json.containsKey('popularity'),
       eta: (json['eta'] as num?)?.toInt() ?? 0,
       state: json['state'] as String? ?? '',
       category: json['category'] as String? ?? '',
@@ -148,6 +153,7 @@ class QBTorrentModel {
       comment: json['comment'] as String? ?? '',
       magnetUri: json['magnet_uri'] as String? ?? '',
       availability: (json['availability'] as num?)?.toDouble() ?? -1.0,
+      hasAvailabilityField: json.containsKey('availability'),
       dlLimit: (json['dl_limit'] as num?)?.toDouble() ?? -1,
       upLimit: (json['up_limit'] as num?)?.toDouble() ?? -1,
       timeActive: (json['time_active'] as num?)?.toDouble() ?? 0,
@@ -323,6 +329,7 @@ class QBTorrentModel {
       numIncomplete: torrent.numIncomplete,
       ratio: torrent.ratio,
       popularity: torrent.popularity,
+      hasPopularityField: true,
       eta: torrent.eta,
       state: torrent.state,
       category: torrent.category,
@@ -345,6 +352,7 @@ class QBTorrentModel {
       comment: torrent.comment,
       magnetUri: torrent.magnetUri,
       availability: torrent.availability,
+      hasAvailabilityField: true,
       dlLimit: torrent.dlLimit,
       upLimit: torrent.upLimit,
       timeActive: torrent.timeActive,

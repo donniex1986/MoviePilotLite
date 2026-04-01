@@ -493,8 +493,9 @@ class _DownloaderTorrentListPageState extends State<DownloaderTorrentListPage> {
   Widget _buildTorrentList(BuildContext context) {
     return Obx(() {
       final displayTorrents = filteredTorrentsList;
+      final isWideLayout = MediaQuery.sizeOf(context).width > 600;
       if (_isBootstrapping.value && displayTorrents.isEmpty) {
-        return _buildSkeletonList(context);
+        return _buildSkeletonList(context, isWideLayout: isWideLayout);
       }
 
       if (displayTorrents.isEmpty) {
@@ -527,58 +528,127 @@ class _DownloaderTorrentListPageState extends State<DownloaderTorrentListPage> {
         );
       }
 
-      return SliverList.builder(
-        itemCount: displayTorrents.length,
-        itemBuilder: (context, index) {
-          final torrent = displayTorrents[index];
-          return TorrentListItem(torrent: torrent, controller: controller);
-        },
+      if (!isWideLayout) {
+        return SliverList.builder(
+          itemCount: displayTorrents.length,
+          itemBuilder: (context, index) {
+            final torrent = displayTorrents[index];
+            return TorrentListItem(torrent: torrent, controller: controller);
+          },
+        );
+      }
+
+      return SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        sliver: SliverGrid.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 1,
+            crossAxisSpacing: 1,
+            childAspectRatio: 1.8,
+          ),
+          itemCount: displayTorrents.length,
+          itemBuilder: (context, index) {
+            final torrent = displayTorrents[index];
+            return TorrentListItem(torrent: torrent, controller: controller);
+          },
+        ),
       );
     });
   }
 
-  Widget _buildSkeletonList(BuildContext context) {
+  Widget _buildSkeletonList(BuildContext context, {bool isWideLayout = false}) {
     final base = Theme.of(
       context,
     ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.38);
-    return SliverList.builder(
-      itemCount: 8,
-      itemBuilder: (context, index) {
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: Theme.of(
-                context,
-              ).colorScheme.outlineVariant.withValues(alpha: 0.12),
-              width: 0.5,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(height: 14, width: double.infinity, color: base),
-              const SizedBox(height: 8),
-              Container(height: 14, width: 180, color: base),
-              const SizedBox(height: 12),
-              Container(height: 8, width: double.infinity, color: base),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Container(height: 12, width: 68, color: base),
-                  const SizedBox(width: 8),
-                  Container(height: 12, width: 80, color: base),
-                  const Spacer(),
-                  Container(height: 12, width: 52, color: base),
-                ],
+    if (!isWideLayout) {
+      return SliverList.builder(
+        itemCount: 8,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outlineVariant.withValues(alpha: 0.12),
+                width: 0.5,
               ),
-            ],
-          ),
-        );
-      },
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(height: 14, width: double.infinity, color: base),
+                const SizedBox(height: 8),
+                Container(height: 14, width: 180, color: base),
+                const SizedBox(height: 12),
+                Container(height: 8, width: double.infinity, color: base),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Container(height: 12, width: 68, color: base),
+                    const SizedBox(width: 8),
+                    Container(height: 12, width: 80, color: base),
+                    const Spacer(),
+                    Container(height: 12, width: 52, color: base),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      sliver: SliverGrid.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 2.15,
+        ),
+        itemCount: 8,
+        itemBuilder: (context, index) {
+          return Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outlineVariant.withValues(alpha: 0.12),
+                width: 0.5,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(height: 14, width: double.infinity, color: base),
+                const SizedBox(height: 8),
+                Container(height: 14, width: 180, color: base),
+                const SizedBox(height: 12),
+                Container(height: 8, width: double.infinity, color: base),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Container(height: 12, width: 68, color: base),
+                    const SizedBox(width: 8),
+                    Container(height: 12, width: 80, color: base),
+                    const Spacer(),
+                    Container(height: 12, width: 52, color: base),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
