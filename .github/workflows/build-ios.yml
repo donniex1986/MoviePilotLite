@@ -14,11 +14,9 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      # 1️⃣ Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -26,7 +24,6 @@ jobs:
           channel: "stable"
           cache: true
 
-      # 3️⃣ Cache pub dependencies
       - name: Cache Flutter pub
         uses: actions/cache@v4
         with:
@@ -35,11 +32,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
 
-      # 4️⃣ Install Dart/Flutter dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 5️⃣ Cache CocoaPods
       - name: Cache CocoaPods
         uses: actions/cache@v4
         with:
@@ -50,14 +45,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
 
-      # 6️⃣ Install Pods
       - name: Install CocoaPods
         run: |
           cd ios
           pod install
           cd ..
 
-      # 7️⃣ Build unsigned iOS app
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | sed 's/+.*//' | tr -d ' ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate release name
+        id: release
+        run: |
+          BUILD_DATE=$(date +%Y-%m-%d)
+          RELEASE_NAME="v${{ steps.version.outputs.version }}-ios-${BUILD_DATE}"
+          IPA_NAME="MoviePilot-iOS-v${{ steps.version.outputs.version }}-${BUILD_DATE}-unsigned.ipa"
+
+          echo "name=$RELEASE_NAME" >> $GITHUB_OUTPUT
+          echo "date=$BUILD_DATE" >> $GITHUB_OUTPUT
+          echo "ipa_name=$IPA_NAME" >> $GITHUB_OUTPUT
+
       - name: Build iOS (Unsigned)
         run: |
           flutter build ios --release --no-codesign --dart-define=FLUTTER_APP_ENV=release
@@ -67,31 +77,11 @@ jobs:
           mkdir -p Payload
           cp -R Runner.app Payload/
 
-          # 生成标准 IPA
-          zip -r -y app-unsigned.ipa Payload
-
-          # 生成 SHA256 校验
-          shasum -a 256 app-unsigned.ipa > app-unsigned.ipa.sha256
+          zip -r -y "${{ steps.release.outputs.ipa_name }}" Payload
+          shasum -a 256 "${{ steps.release.outputs.ipa_name }}" > "${{ steps.release.outputs.ipa_name }}.sha256"
 
           cd ../../..
 
-      # 8️⃣ 获取版本号
-      - name: Get version
-        id: version
-        run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | sed 's/+.*//' | tr -d ' ')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      # 9️⃣ 生成 Release 名称
-      - name: Generate release name
-        id: release
-        run: |
-          BUILD_DATE=$(date +%Y-%m-%d)
-          RELEASE_NAME="v${{ steps.version.outputs.version }}-ios-${BUILD_DATE}"
-          echo "name=$RELEASE_NAME" >> $GITHUB_OUTPUT
-          echo "date=$BUILD_DATE" >> $GITHUB_OUTPUT
-
-      # 🔟 创建 GitHub Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -115,28 +105,28 @@ jobs:
             - Xcode
 
             Free Apple ID accounts expire after 7 days.
-
           files: |
-            build/ios/iphoneos/app-unsigned.ipa
-            build/ios/iphoneos/app-unsigned.ipa.sha256
-
+            build/ios/iphoneos/${{ steps.release.outputs.ipa_name }}
+            build/ios/iphoneos/${{ steps.release.outputs.ipa_name }}.sha256
           generate_release_notes: true
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 1️⃣1️⃣ Telegram 通知（仅构建成功时发送）
       - name: Telegram 通知
-        uses: ./.github/actions/telegram-notify
+        if: ${{ success() }}
+        uses: appleboy/telegram-action@master
         with:
+          to: ${{ secrets.TG_CHAT_ID }}
           token: ${{ secrets.TG_BOT_TOKEN }}
-          chat_id: ${{ secrets.TG_CHAT_ID }}
+          format: html
+          disable_web_page_preview: true
           message: |
             <b>🎬 MoviePilot iOS 构建完成</b>
 
             <b>Release:</b> <code>${{ steps.release.outputs.name }}</code>
             <b>版本:</b> ${{ steps.version.outputs.version }}
             <b>日期:</b> ${{ steps.release.outputs.date }}
+            <b>文件:</b> <code>${{ steps.release.outputs.ipa_name }}</code>
 
             <b>说明:</b> Unsigned IPA，需通过 AltStore / Sideloadly / Xcode 自行签名安装。
 
