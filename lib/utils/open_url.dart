@@ -5,7 +5,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 class WebUtil {
   /// 打开链接
-  static Future<void> open({String? url, String? cookie}) async {
+  static Future<void> open({
+    String? url,
+    String? cookie,
+    bool? internal,
+  }) async {
     final raw = url?.trim() ?? '';
     if (raw.isEmpty) {
       ToastUtil.error('链接不能为空');
@@ -22,7 +26,8 @@ class WebUtil {
       uri = Uri.parse('https://$raw');
     }
     final useExternal = Get.find<AppService>().useExternalBrowser.value;
-    if (!useExternal) {
+    final openInternally = internal ?? !useExternal;
+    if (openInternally) {
       Get.toNamed(
         '/web-view',
         parameters: {'url': uri.toString(), 'cookie': cookie ?? ''},
