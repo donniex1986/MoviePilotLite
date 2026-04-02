@@ -9,11 +9,13 @@ import 'package:moviepilot_mobile/modules/dynamic_form/models/form_block_models.
 import 'package:moviepilot_mobile/modules/dynamic_form/services/form_block_converter.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:moviepilot_mobile/services/jpush_service.dart';
 
 /// 动态表单控制器：可插件化入口，根据 render_mode 分流 vuetify/vue 渲染
 class DynamicFormController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
   final _appService = Get.find<AppService>();
+  final _jpushService = Get.find<JPushService>();
   final _log = Get.find<AppLog>();
 
   /// 接口路径（GET 拉取），如 /api/v1/plugin/page/xxx
@@ -27,6 +29,7 @@ class DynamicFormController extends GetxController {
 
   final blocks = <FormBlock>[].obs;
   final isLoading = false.obs;
+  final isApplyingPushAlias = false.obs;
   final errorText = RxnString();
   final saveSuccess = false.obs;
   final formMode = false.obs;
@@ -286,4 +289,60 @@ class DynamicFormController extends GetxController {
     'nexusinvitee',
   ];
   bool get isFormMode => formModePlugins.contains(pluginId);
+
+  bool get isAppLitePushPlugin =>
+      pluginId == 'APPLitePush' || pluginId == 'AppPushMsg';
+
+  bool get showApplyPushAliasAction => isAppLitePushPlugin;
+
+  String? _configuredPushToken() {
+    final data = formModel.value;
+    if (data.isEmpty) return null;
+
+    const exactKeys = ['token', 'pushtoken', 'push_token', 'pushToken'];
+    for (final key in exactKeys) {
+      final value = data[key]?.toString().trim();
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    }
+
+    for (final entry in data.entries) {
+      final normalizedKey = entry.key
+          .toString()
+          .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
+          .toLowerCase();
+      if (normalizedKey == 'pushtoken') {
+        final value = entry.value?.toString().trim();
+        if (value != null && value.isNotEmpty) {
+          return value;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  Future<String?> applyCurrentPushTokenAsAlias() async {
+    if (!showApplyPushAliasAction || isApplyingPushAlias.value) return null;
+
+    isApplyingPushAlias.value = true;
+    try {
+      final pushToken = _configuredPushToken();
+      if (pushToken == null || pushToken.isEmpty) {
+        return null;
+      }
+
+      final success = await _jpushService.setAlias(pushToken);
+      if (!success) {
+        return null;
+      }
+      return pushToken;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '应用 App Push Token 失败');
+      return null;
+    } finally {
+      isApplyingPushAlias.value = false;
+    }
+  }
 }

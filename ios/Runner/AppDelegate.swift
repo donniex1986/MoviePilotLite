@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import UserNotifications
 import WidgetKit
 import os
 
@@ -77,6 +78,57 @@ private let appWidgetLog = Logger(subsystem: "com.altman.moviepilot", category: 
   ) -> Bool {
     handleWidgetRoute(url)
     return super.application(app, open: url, options: options)
+  }
+
+  override func application(
+    _ application: UIApplication,
+    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+  ) {
+    MPJPushRegisterDeviceToken(deviceToken)
+    super.application(
+      application,
+      didRegisterForRemoteNotificationsWithDeviceToken: deviceToken
+    )
+  }
+
+  override func application(
+    _ application: UIApplication,
+    didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    print("didFailToRegisterForRemoteNotificationsWithError: \(error)")
+    super.application(
+      application,
+      didFailToRegisterForRemoteNotificationsWithError: error
+    )
+  }
+
+  override func application(
+    _ application: UIApplication,
+    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) {
+    MPJPushHandleRemoteNotification(userInfo)
+    completionHandler(.newData)
+  }
+
+  @available(iOS 10.0, *)
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    MPJPushHandleRemoteNotification(notification.request.content.userInfo)
+    completionHandler([.alert, .badge, .sound])
+  }
+
+  @available(iOS 10.0, *)
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    MPJPushHandleRemoteNotification(response.notification.request.content.userInfo)
+    completionHandler()
   }
 
   private func saveSharedSession(server: String, accessToken: String) {
