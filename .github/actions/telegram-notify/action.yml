@@ -105,6 +105,7 @@ runs:
 
         send_url_media_group() {
           local media_json="[]"
+          local payload
           local index=0
           for url in "${valid_urls[@]}"; do
             if [ "$index" -eq 0 ]; then
@@ -123,11 +124,25 @@ runs:
             index=$((index + 1))
           done
 
+          payload=$(jq -cn \
+            --arg chat_id "$CHAT_ID" \
+            --argjson media "$media_json" \
+            --argjson disable "$disable" \
+            '{chat_id: $chat_id, media: $media, disable_notification: $disable}')
+
           curl -s -w "\n%{http_code}" -X POST \
             "https://api.telegram.org/bot${TOKEN}/sendMediaGroup" \
-            -F "chat_id=${CHAT_ID}" \
-            -F "disable_notification=${disable}" \
-            -F "media=${media_json}" || true
+            -H "Content-Type: application/json" \
+            -d "$payload" || true
+        }
+
+        append_url_links() {
+          local links=""
+          for url in "${valid_urls[@]}"; do
+            filename=$(basename "${url%%\?*}")
+            links="${links}\n<a href=\"${url}\">${filename}</a>"
+          done
+          printf '%b' "$links"
         }
 
         send_media_group() {
@@ -168,6 +183,20 @@ runs:
 
         if [ "${#valid_urls[@]}" -gt 1 ]; then
           resp=$(send_url_media_group)
+          http_code=$(echo "$resp" | tail -n1)
+          if [ "$http_code" != "200" ]; then
+            fallback_message="${MESSAGE}$(append_url_links)"
+            payload=$(jq -n \
+              --arg chat_id "$CHAT_ID" \
+              --arg text "$fallback_message" \
+              --arg parse_mode "$PARSE_MODE" \
+              --argjson disable "$disable" \
+              '{chat_id: $chat_id, text: $text, parse_mode: $parse_mode, disable_notification: $disable}')
+            resp=$(curl -s -w "\n%{http_code}" -X POST \
+              "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+              -H "Content-Type: application/json" \
+              -d "$payload" || true)
+          fi
         elif [ "${#valid_urls[@]}" -eq 1 ]; then
           resp=$(send_single_document "${valid_urls[0]}" true)
         elif [ "${#valid_files[@]}" -eq 0 ]; then
