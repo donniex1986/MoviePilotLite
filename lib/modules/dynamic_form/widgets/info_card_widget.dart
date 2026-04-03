@@ -7,6 +7,7 @@ import 'package:moviepilot_mobile/modules/dynamic_form/utils/vuetify_mappings.da
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/theme/section.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 /// 信息卡片：基于 CupertinoListSection.insetGrouped 构建，
 /// 参考 iOS 系统设置/通讯录风格：彩色圆角图标 + 行列式布局
@@ -380,7 +381,7 @@ class InfoCardWidget extends StatelessWidget {
       children.add(const SizedBox(width: 8));
     }
     if (hasChip) {
-      children.add(_buildBadgeChip(chipText!, chipColor));
+      children.add(_buildBadgeChip(chipText, chipColor));
     }
     return Row(mainAxisSize: MainAxisSize.min, children: children);
   }
@@ -392,11 +393,8 @@ class InfoCardWidget extends StatelessWidget {
     final backgroundColor =
         (row.progressBackgroundColor?.isNotEmpty == true
                 ? _resolveColor(row.progressBackgroundColor)
-                : progressColor.withOpacity(0.2))
-            .withOpacity(0.4);
-    final labelText = row.progressLabel?.isNotEmpty == true
-        ? row.progressLabel!
-        : '${(progress * 100).round()}%';
+                : progressColor.withValues(alpha: 0.2))
+            .withValues(alpha: 0.4);
 
     final children = <Widget>[];
     if (valueText != null) {
@@ -644,7 +642,11 @@ class InfoCardWidget extends StatelessWidget {
     final api = click['api']?.toString();
     final method = click['method']?.toString().toLowerCase() ?? 'get';
     if (api == null || api.isEmpty) return null;
-    return _InfoCardClickEvent(api: api, method: method);
+    final rawParams = click['params'];
+    final params = rawParams is Map
+        ? Map<String, dynamic>.from(rawParams)
+        : const <String, dynamic>{};
+    return _InfoCardClickEvent(api: api, method: method, params: params);
   }
 
   static Future<void> _handleClickEvent(_InfoCardClickEvent event) async {
@@ -655,15 +657,89 @@ class InfoCardWidget extends StatelessWidget {
           appService.loginResponse?.accessToken ??
           appService.latestLoginProfileAccessToken ??
           apiClient.token;
-      if (token == null || token.isEmpty) return;
-      if (event.method == 'post') {
-        await apiClient.post<dynamic>(event.api, token: token);
-      } else {
-        await apiClient.get<dynamic>(event.api, token: token);
+      if (token == null || token.isEmpty) {
+        ToastUtil.error('请先登录');
+        return;
       }
+      final cookieHeader =
+          await apiClient.getCookieHeader() ?? appService.cookie;
+      final headers = cookieHeader != null && cookieHeader.isNotEmpty
+          ? <String, dynamic>{'cookie': cookieHeader}
+          : null;
+      final apiPath = _normalizeEventApiPath(event.api);
+      final response = await switch (event.method) {
+        'post' => apiClient.post<dynamic>(
+          apiPath,
+          data: event.params.isEmpty ? null : event.params,
+          token: token,
+          headers: headers,
+        ),
+        'put' => apiClient.put<dynamic>(
+          apiPath,
+          event.params.isEmpty ? null : event.params,
+          token: token,
+          headers: headers,
+        ),
+        'delete' => apiClient.delete<dynamic>(
+          apiPath,
+          queryParameters: event.params.isEmpty ? null : event.params,
+          token: token,
+          headers: headers,
+        ),
+        _ => apiClient.get<dynamic>(
+          apiPath,
+          queryParameters: event.params.isEmpty ? null : event.params,
+          token: token,
+          headers: headers,
+        ),
+      };
+      final status = response.statusCode ?? 0;
+      final message = _extractResponseMessage(response.data);
+      if (status >= 400) {
+        ToastUtil.error(message ?? '操作失败 (HTTP $status)');
+        return;
+      }
+      ToastUtil.success(message ?? '操作成功');
     } catch (e, st) {
       Get.find<AppLog>().handle(e, stackTrace: st, message: 'API 调用失败');
+      ToastUtil.error('操作失败，请稍后重试');
     }
+  }
+
+  static String? _extractResponseMessage(dynamic data) {
+    if (data is Map) {
+      final map = Map<String, dynamic>.from(data);
+      for (final key in const ['message', 'msg', 'detail']) {
+        final value = map[key]?.toString().trim();
+        if (value != null && value.isNotEmpty) {
+          return value;
+        }
+      }
+    }
+    if (data is String) {
+      final value = data.trim();
+      if (value.isNotEmpty) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  static String _normalizeEventApiPath(String api) {
+    final value = api.trim();
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return value;
+    }
+    if (value.startsWith('/api/')) {
+      return value;
+    }
+    if (value.startsWith('api/')) {
+      return '/$value';
+    }
+    if (value.startsWith('/')) {
+      return '/api/v1$value';
+    }
+    return '/api/v1/$value';
   }
 
   static Color? _namedColor(String name) {
@@ -727,8 +803,13 @@ class InfoCardWidget extends StatelessWidget {
 }
 
 class _InfoCardClickEvent {
-  const _InfoCardClickEvent({required this.api, required this.method});
+  const _InfoCardClickEvent({
+    required this.api,
+    required this.method,
+    required this.params,
+  });
 
   final String api;
   final String method;
+  final Map<String, dynamic> params;
 }

@@ -8,6 +8,7 @@ import 'package:moviepilot_mobile/modules/dynamic_form/utils/vuetify_css.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/utils/vuetify_mappings.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
+import 'package:moviepilot_mobile/utils/toast_util.dart';
 
 /// 通用 Vuetify 组件树渲染器：将 FormNode 递归转换为 iOS 原生风格的 Flutter Widget。
 class VuetifyPageRenderer extends StatelessWidget {
@@ -79,6 +80,7 @@ class _VuetifyNode extends StatelessWidget {
   final FormNode node;
   final DynamicFormController? controller;
   final double? parentWidth;
+
   /// Number of sibling VCol elements in the parent VRow (for auto-sizing).
   final int? siblingCount;
   final _RenderCtx ctx;
@@ -93,12 +95,16 @@ class _VuetifyNode extends StatelessWidget {
       'VCardText' => _buildVCardText(context),
       'VCardTitle' => _buildVCardTitle(context),
       'VCardItem' => _buildChildren(context),
-      'VCardSubtitle' => _buildTextNode(context, defaultStyle: TextStyle(
-        fontSize: 13,
-        color: CupertinoDynamicColor.resolve(
-          CupertinoColors.secondaryLabel, context,
+      'VCardSubtitle' => _buildTextNode(
+        context,
+        defaultStyle: TextStyle(
+          fontSize: 13,
+          color: CupertinoDynamicColor.resolve(
+            CupertinoColors.secondaryLabel,
+            context,
+          ),
         ),
-      )),
+      ),
       'VRow' => _buildVRow(context),
       'VCol' => _buildVCol(context),
       'VIcon' => _buildVIcon(context),
@@ -149,13 +155,14 @@ class _VuetifyNode extends StatelessWidget {
     // Smart default padding: if no CSS padding class is set AND none of the
     // children are VCardText / VCardTitle (which manage their own padding),
     // apply a sensible default so content doesn't stick to the card edges.
-    final hasCardSubComponent = node.content.any((c) =>
-        c.component == 'VCardText' || c.component == 'VCardTitle');
+    final hasCardSubComponent = node.content.any(
+      (c) => c.component == 'VCardText' || c.component == 'VCardTitle',
+    );
     final padding = rawPadding != EdgeInsets.zero
         ? rawPadding
         : hasCardSubComponent
-            ? EdgeInsets.zero
-            : const EdgeInsets.all(14);
+        ? EdgeInsets.zero
+        : const EdgeInsets.all(14);
 
     BoxDecoration decoration;
     _RenderCtx childCtx = ctx;
@@ -163,12 +170,14 @@ class _VuetifyNode extends StatelessWidget {
     if (variant == 'outlined') {
       decoration = BoxDecoration(
         color: CupertinoDynamicColor.resolve(
-          CupertinoColors.secondarySystemGroupedBackground, context,
+          CupertinoColors.secondarySystemGroupedBackground,
+          context,
         ),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: CupertinoDynamicColor.resolve(
-            CupertinoColors.separator, context,
+            CupertinoColors.separator,
+            context,
           ),
         ),
       );
@@ -177,14 +186,12 @@ class _VuetifyNode extends StatelessWidget {
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(14),
       );
-      childCtx = childCtx.copyWith(
-        insideTonalCard: true,
-        parentColor: color,
-      );
+      childCtx = childCtx.copyWith(insideTonalCard: true, parentColor: color);
     } else {
       decoration = BoxDecoration(
         color: CupertinoDynamicColor.resolve(
-          CupertinoColors.secondarySystemGroupedBackground, context,
+          CupertinoColors.secondarySystemGroupedBackground,
+          context,
         ),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
@@ -227,17 +234,18 @@ class _VuetifyNode extends StatelessWidget {
         iconNode = child;
       } else if (child.component == 'div') {
         final cls = child.props?['class']?.toString() ?? '';
-        if (cls.contains('text-caption') && labelNode == null) {
-          labelNode = child;
-        } else if (valueNode == null) {
-          valueNode = child;
+        if (cls.contains('text-caption')) {
+          labelNode ??= child;
+        } else {
+          valueNode ??= child;
         }
       }
     }
 
     if (valueNode == null) return null;
 
-    final iconName = iconNode?.text?.toString().trim() ??
+    final iconName =
+        iconNode?.text?.toString().trim() ??
         iconNode?.props?['icon']?.toString().trim();
     final iconData = VuetifyMappings.iconFromMdi(iconName);
     final value = _collectNodeText(valueNode);
@@ -265,7 +273,9 @@ class _VuetifyNode extends StatelessWidget {
 
     return Padding(
       padding: effectivePadding,
-      child: _buildChildColumn(context, childCtx,
+      child: _buildChildColumn(
+        context,
+        childCtx,
         crossAlignment: center ? CrossAxisAlignment.center : null,
       ),
     );
@@ -274,11 +284,14 @@ class _VuetifyNode extends StatelessWidget {
   Widget _buildVCardTitle(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-      child: _buildTextNode(context, defaultStyle: TextStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.w600,
-        color: CupertinoDynamicColor.resolve(CupertinoColors.label, context),
-      )),
+      child: _buildTextNode(
+        context,
+        defaultStyle: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          color: CupertinoDynamicColor.resolve(CupertinoColors.label, context),
+        ),
+      ),
     );
   }
 
@@ -288,9 +301,7 @@ class _VuetifyNode extends StatelessWidget {
 
   Widget _buildVRow(BuildContext context) {
     final margin = VuetifyCss.parseMargin(_cls);
-    final colCount = node.content
-        .where((c) => c.component == 'VCol')
-        .length;
+    final colCount = node.content.where((c) => c.component == 'VCol').length;
 
     return Padding(
       padding: margin,
@@ -348,7 +359,9 @@ class _VuetifyNode extends StatelessWidget {
         ctx: childCtx,
       );
     } else {
-      child = _buildChildColumn(context, childCtx,
+      child = _buildChildColumn(
+        context,
+        childCtx,
         crossAlignment: center ? CrossAxisAlignment.center : null,
       );
     }
@@ -366,13 +379,16 @@ class _VuetifyNode extends StatelessWidget {
   // ---------------------------------------------------------------------------
 
   Widget _buildVIcon(BuildContext context) {
-    final iconName = node.text?.toString().trim() ??
-        node.props?['icon']?.toString().trim() ?? '';
+    final iconName =
+        node.text?.toString().trim() ??
+        node.props?['icon']?.toString().trim() ??
+        '';
     final iconData = VuetifyMappings.iconFromMdi(iconName);
     if (iconData == null) return const SizedBox.shrink();
 
     final colorName = node.props?['color']?.toString();
-    final color = VuetifyCss.resolveColor(colorName) ??
+    final color =
+        VuetifyCss.resolveColor(colorName) ??
         ctx.parentColor ??
         CupertinoDynamicColor.resolve(CupertinoColors.label, context);
 
@@ -424,7 +440,8 @@ class _VuetifyNode extends StatelessWidget {
     final text = _collectNodeText(node);
     final variant = node.props?['variant']?.toString() ?? '';
     final colorName = node.props?['color']?.toString();
-    final color = VuetifyCss.resolveColor(colorName) ??
+    final color =
+        VuetifyCss.resolveColor(colorName) ??
         CupertinoDynamicColor.resolve(CupertinoColors.systemBlue, context);
     final prependIcon = node.props?['prepend-icon']?.toString();
     final prependIconData = VuetifyMappings.iconFromMdi(prependIcon);
@@ -435,7 +452,9 @@ class _VuetifyNode extends StatelessWidget {
         text: text,
         color: color,
         iconData: prependIconData,
-        onPressed: clickEvent != null ? () => _handleClickEvent(clickEvent) : null,
+        onPressed: clickEvent != null
+            ? () => _handleClickEvent(clickEvent)
+            : null,
       );
     }
 
@@ -443,7 +462,9 @@ class _VuetifyNode extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       color: color.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(10),
-      onPressed: clickEvent != null ? () => _handleClickEvent(clickEvent) : null,
+      onPressed: clickEvent != null
+          ? () => _handleClickEvent(clickEvent)
+          : null,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -453,7 +474,11 @@ class _VuetifyNode extends StatelessWidget {
           ],
           Text(
             text,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
         ],
       ),
@@ -468,26 +493,110 @@ class _VuetifyNode extends StatelessWidget {
     final api = click['api']?.toString();
     final method = click['method']?.toString().toLowerCase() ?? 'get';
     if (api == null || api.isEmpty) return null;
-    return _ClickEvent(api: api, method: method);
+    final rawParams = click['params'];
+    final params = rawParams is Map
+        ? Map<String, dynamic>.from(rawParams)
+        : const <String, dynamic>{};
+    return _ClickEvent(api: api, method: method, params: params);
   }
 
-  static Future<void> _handleClickEvent(_ClickEvent event) async {
+  Future<void> _handleClickEvent(_ClickEvent event) async {
     try {
       final apiClient = Get.find<ApiClient>();
       final appService = Get.find<AppService>();
-      final token = appService.loginResponse?.accessToken ??
+      final token =
+          appService.loginResponse?.accessToken ??
           appService.latestLoginProfileAccessToken ??
           apiClient.token;
-      if (token == null || token.isEmpty) return;
-
-      if (event.method == 'post') {
-        await apiClient.post<dynamic>(event.api, token: token);
-      } else {
-        await apiClient.get<dynamic>(event.api, token: token);
+      if (token == null || token.isEmpty) {
+        ToastUtil.error('请先登录');
+        return;
       }
+      final cookieHeader =
+          await apiClient.getCookieHeader() ?? appService.cookie;
+      final headers = cookieHeader != null && cookieHeader.isNotEmpty
+          ? <String, dynamic>{'cookie': cookieHeader}
+          : null;
+
+      final apiPath = _normalizeEventApiPath(event.api);
+      final response = await switch (event.method) {
+        'post' => apiClient.post<dynamic>(
+          apiPath,
+          data: event.params.isEmpty ? null : event.params,
+          token: token,
+          headers: headers,
+        ),
+        'put' => apiClient.put<dynamic>(
+          apiPath,
+          event.params.isEmpty ? null : event.params,
+          token: token,
+          headers: headers,
+        ),
+        'delete' => apiClient.delete<dynamic>(
+          apiPath,
+          queryParameters: event.params.isEmpty ? null : event.params,
+          token: token,
+          headers: headers,
+        ),
+        _ => apiClient.get<dynamic>(
+          apiPath,
+          queryParameters: event.params.isEmpty ? null : event.params,
+          token: token,
+          headers: headers,
+        ),
+      };
+
+      final status = response.statusCode ?? 0;
+      final message = _extractResponseMessage(response.data);
+      if (status >= 400) {
+        ToastUtil.error(message ?? '操作失败 (HTTP $status)');
+        return;
+      }
+
+      if (controller != null) {
+        await controller?.load();
+      }
+      ToastUtil.success(message ?? '操作成功');
     } catch (e, st) {
       Get.find<AppLog>().handle(e, stackTrace: st, message: 'API 调用失败');
+      ToastUtil.error('操作失败，请稍后重试');
     }
+  }
+
+  static String? _extractResponseMessage(dynamic data) {
+    if (data is Map) {
+      final map = Map<String, dynamic>.from(data);
+      for (final key in const ['message', 'msg', 'detail']) {
+        final value = map[key]?.toString().trim();
+        if (value != null && value.isNotEmpty) {
+          return value;
+        }
+      }
+    }
+    if (data is String) {
+      final value = data.trim();
+      if (value.isNotEmpty) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  static String _normalizeEventApiPath(String api) {
+    final value = api.trim();
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return value;
+    }
+    if (value.startsWith('/api/')) {
+      return value;
+    }
+    if (value.startsWith('api/')) {
+      return '/$value';
+    }
+    if (value.startsWith('/')) {
+      return '/api/v1$value';
+    }
+    return '/api/v1/$value';
   }
 
   // ---------------------------------------------------------------------------
@@ -518,7 +627,9 @@ class _VuetifyNode extends StatelessWidget {
             child: Text(
               bodyText,
               style: TextStyle(
-                fontSize: 14, height: 1.4, fontWeight: FontWeight.w500,
+                fontSize: 14,
+                height: 1.4,
+                fontWeight: FontWeight.w500,
                 color: fgColor,
               ),
             ),
@@ -566,7 +677,8 @@ class _VuetifyNode extends StatelessWidget {
     final textParts = <String>[];
     for (final child in node.content) {
       if (child.component == 'VIcon') {
-        final name = child.text?.toString().trim() ??
+        final name =
+            child.text?.toString().trim() ??
             child.props?['icon']?.toString().trim();
         iconData ??= VuetifyMappings.iconFromMdi(name);
       } else {
@@ -597,7 +709,9 @@ class _VuetifyNode extends StatelessWidget {
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w600, color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -614,9 +728,7 @@ class _VuetifyNode extends StatelessWidget {
   Widget _buildVImg(BuildContext context) {
     final src = node.props?['src']?.toString() ?? '';
     if (src.isEmpty) return const SizedBox.shrink();
-    final heightVal = double.tryParse(
-      node.props?['height']?.toString() ?? '',
-    );
+    final heightVal = double.tryParse(node.props?['height']?.toString() ?? '');
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
@@ -670,7 +782,8 @@ class _VuetifyNode extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: CupertinoDynamicColor.resolve(
-                CupertinoColors.tertiarySystemGroupedBackground, context,
+                CupertinoColors.tertiarySystemGroupedBackground,
+                context,
               ),
               borderRadius: BorderRadius.circular(10),
             ),
@@ -679,7 +792,9 @@ class _VuetifyNode extends StatelessWidget {
               children: [
                 for (var j = 0; j < rows[i].length; j++)
                   Padding(
-                    padding: EdgeInsets.only(bottom: j < rows[i].length - 1 ? 4 : 0),
+                    padding: EdgeInsets.only(
+                      bottom: j < rows[i].length - 1 ? 4 : 0,
+                    ),
                     child: Row(
                       children: [
                         if (j < headers.length)
@@ -688,7 +803,8 @@ class _VuetifyNode extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 13,
                               color: CupertinoDynamicColor.resolve(
-                                CupertinoColors.secondaryLabel, context,
+                                CupertinoColors.secondaryLabel,
+                                context,
                               ),
                             ),
                           ),
@@ -698,7 +814,8 @@ class _VuetifyNode extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14,
                               color: CupertinoDynamicColor.resolve(
-                                CupertinoColors.label, context,
+                                CupertinoColors.label,
+                                context,
                               ),
                             ),
                           ),
@@ -804,7 +921,11 @@ class _VuetifyNode extends StatelessWidget {
     } else {
       final text = node.text?.toString().trim() ?? '';
       child = text.isNotEmpty
-          ? Text(text, style: textStyle, textAlign: isCenter ? TextAlign.center : null)
+          ? Text(
+              text,
+              style: textStyle,
+              textAlign: isCenter ? TextAlign.center : null,
+            )
           : const SizedBox.shrink();
     }
 
@@ -858,11 +979,16 @@ class _VuetifyNode extends StatelessWidget {
 
   Widget _buildVSwitch(BuildContext context) {
     final label = node.props?['label']?.toString() ?? '';
-    final name = node.props?['model']?.toString() ?? node.props?['name']?.toString();
+    final name =
+        node.props?['model']?.toString() ?? node.props?['name']?.toString();
     final ctrl = controller;
 
     if (ctrl == null || name == null) {
-      return _buildFormRow(context, label, CupertinoSwitch(value: false, onChanged: null));
+      return _buildFormRow(
+        context,
+        label,
+        CupertinoSwitch(value: false, onChanged: null),
+      );
     }
 
     return Obx(() {
@@ -880,8 +1006,11 @@ class _VuetifyNode extends StatelessWidget {
 
   Widget _buildVTextField(BuildContext context) {
     final label = node.props?['label']?.toString() ?? '';
-    final name = node.props?['model']?.toString() ?? node.props?['name']?.toString();
-    final hint = node.props?['placeholder']?.toString() ?? node.props?['hint']?.toString();
+    final name =
+        node.props?['model']?.toString() ?? node.props?['name']?.toString();
+    final hint =
+        node.props?['placeholder']?.toString() ??
+        node.props?['hint']?.toString();
 
     return _VTextInputField(
       label: label,
@@ -894,10 +1023,15 @@ class _VuetifyNode extends StatelessWidget {
 
   Widget _buildVTextarea(BuildContext context) {
     final label = node.props?['label']?.toString() ?? '';
-    final name = node.props?['model']?.toString() ?? node.props?['name']?.toString();
-    final hint = node.props?['placeholder']?.toString() ?? node.props?['hint']?.toString();
+    final name =
+        node.props?['model']?.toString() ?? node.props?['name']?.toString();
+    final hint =
+        node.props?['placeholder']?.toString() ??
+        node.props?['hint']?.toString();
     final rowsRaw = node.props?['rows'];
-    final rows = rowsRaw is int ? rowsRaw : (int.tryParse(rowsRaw?.toString() ?? '') ?? 3);
+    final rows = rowsRaw is int
+        ? rowsRaw
+        : (int.tryParse(rowsRaw?.toString() ?? '') ?? 3);
 
     return _VTextInputField(
       label: label,
@@ -910,7 +1044,8 @@ class _VuetifyNode extends StatelessWidget {
 
   Widget _buildVSelect(BuildContext context) {
     final label = node.props?['label']?.toString() ?? '';
-    final name = node.props?['model']?.toString() ?? node.props?['name']?.toString();
+    final name =
+        node.props?['model']?.toString() ?? node.props?['name']?.toString();
     final itemsRaw = node.props?['items'];
     if (itemsRaw is! List) return const SizedBox.shrink();
 
@@ -928,10 +1063,9 @@ class _VuetifyNode extends StatelessWidget {
 
     return Obx(() {
       final current = ctrl.getValue(name);
-      final currentTitle = items
-          .where((i) => i.$2 == current)
-          .map((i) => i.$1)
-          .firstOrNull ?? '';
+      final currentTitle =
+          items.where((i) => i.$2 == current).map((i) => i.$1).firstOrNull ??
+          '';
 
       return CupertinoListTile(
         title: Text(label, style: const TextStyle(fontSize: 15)),
@@ -943,7 +1077,8 @@ class _VuetifyNode extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 color: CupertinoDynamicColor.resolve(
-                  CupertinoColors.secondaryLabel, context,
+                  CupertinoColors.secondaryLabel,
+                  context,
                 ),
               ),
             ),
@@ -994,7 +1129,8 @@ class _VuetifyNode extends StatelessWidget {
               style: TextStyle(
                 fontSize: 15,
                 color: CupertinoDynamicColor.resolve(
-                  CupertinoColors.label, context,
+                  CupertinoColors.label,
+                  context,
                 ),
               ),
             ),
@@ -1024,17 +1160,20 @@ class _VuetifyNode extends StatelessWidget {
     return _buildChildColumn(context, ctx);
   }
 
-  Widget _buildChildren(BuildContext context) => _buildChildColumn(context, ctx);
+  Widget _buildChildren(BuildContext context) =>
+      _buildChildColumn(context, ctx);
 
   Widget _buildChildColumn(
     BuildContext context,
     _RenderCtx childCtx, {
     CrossAxisAlignment? crossAlignment,
   }) {
-    final center = crossAlignment == CrossAxisAlignment.center ||
-        childCtx.centerContent;
+    final center =
+        crossAlignment == CrossAxisAlignment.center || childCtx.centerContent;
     Widget col = Column(
-      crossAxisAlignment: center ? CrossAxisAlignment.center : (crossAlignment ?? CrossAxisAlignment.start),
+      crossAxisAlignment: center
+          ? CrossAxisAlignment.center
+          : (crossAlignment ?? CrossAxisAlignment.start),
       mainAxisSize: MainAxisSize.min,
       children: node.content.map((child) {
         return _VuetifyNode(node: child, controller: controller, ctx: childCtx);
@@ -1050,10 +1189,15 @@ class _VuetifyNode extends StatelessWidget {
     if (text.isNotEmpty) {
       return Text(
         text,
-        style: defaultStyle ?? TextStyle(
-          fontSize: 14,
-          color: CupertinoDynamicColor.resolve(CupertinoColors.label, context),
-        ),
+        style:
+            defaultStyle ??
+            TextStyle(
+              fontSize: 14,
+              color: CupertinoDynamicColor.resolve(
+                CupertinoColors.label,
+                context,
+              ),
+            ),
       );
     }
     return _buildChildColumn(context, ctx);
@@ -1083,9 +1227,14 @@ class _VuetifyNode extends StatelessWidget {
 // =============================================================================
 
 class _ClickEvent {
-  const _ClickEvent({required this.api, required this.method});
+  const _ClickEvent({
+    required this.api,
+    required this.method,
+    required this.params,
+  });
   final String api;
   final String method;
+  final Map<String, dynamic> params;
 }
 
 /// Tonal stat card — iOS-native polished style:
@@ -1131,7 +1280,10 @@ class _TonalStatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: CupertinoDynamicColor.resolve(CupertinoColors.label, context),
+              color: CupertinoDynamicColor.resolve(
+                CupertinoColors.label,
+                context,
+              ),
             ),
           ),
           const SizedBox(height: 2),
@@ -1202,11 +1354,7 @@ class _OutlinedButton extends StatelessWidget {
 
 /// Collapsible expansion panel
 class _ExpansionTile extends StatefulWidget {
-  const _ExpansionTile({
-    this.titleNode,
-    this.textNode,
-    this.controller,
-  });
+  const _ExpansionTile({this.titleNode, this.textNode, this.controller});
 
   final FormNode? titleNode;
   final FormNode? textNode;
@@ -1236,9 +1384,7 @@ class _ExpansionTileState extends State<_ExpansionTile> {
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w500,
-          color: CupertinoDynamicColor.resolve(
-            CupertinoColors.label, context,
-          ),
+          color: CupertinoDynamicColor.resolve(CupertinoColors.label, context),
         ),
       );
     }
@@ -1255,10 +1401,13 @@ class _ExpansionTileState extends State<_ExpansionTile> {
               children: [
                 Expanded(child: titleWidget),
                 Icon(
-                  _expanded ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
+                  _expanded
+                      ? CupertinoIcons.chevron_up
+                      : CupertinoIcons.chevron_down,
                   size: 16,
                   color: CupertinoDynamicColor.resolve(
-                    CupertinoColors.tertiaryLabel, context,
+                    CupertinoColors.tertiaryLabel,
+                    context,
                   ),
                 ),
               ],
@@ -1331,7 +1480,8 @@ class _VTextInputFieldState extends State<_VTextInputField> {
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: CupertinoDynamicColor.resolve(
-                    CupertinoColors.label, context,
+                    CupertinoColors.label,
+                    context,
                   ),
                 ),
               ),
@@ -1343,7 +1493,8 @@ class _VTextInputFieldState extends State<_VTextInputField> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: CupertinoDynamicColor.resolve(
-                CupertinoColors.tertiarySystemFill, context,
+                CupertinoColors.tertiarySystemFill,
+                context,
               ),
               borderRadius: BorderRadius.circular(10),
             ),
