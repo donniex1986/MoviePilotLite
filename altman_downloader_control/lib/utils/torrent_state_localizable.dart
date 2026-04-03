@@ -10,6 +10,8 @@ class QBLocalizable {
 
   // Torrent States
   static const String stopped = '已停止';
+  static const String stoppedDL = '已停止下载';
+  static const String stoppedUP = '已停止上传';
   static const String checking = '检查中';
   static const String downloading = '下载中';
   static const String paused = '已暂停';
@@ -96,6 +98,16 @@ class QBLocalizable {
         return stopped;
       case 'queued_to_seed':
         return queuedToSeed;
+      case 'stoppedup':
+        return stoppedUP;
+      case 'stoppeddl':
+        return stoppedDL;
+      case 'pausedup':
+        return pausedUpload;
+      case 'pauseddl':
+        return pausedDownload;
+      case 'forcedup':
+        return forcedUpload;
     }
     return state;
   }
