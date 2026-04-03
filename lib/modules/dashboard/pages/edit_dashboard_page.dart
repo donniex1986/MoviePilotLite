@@ -15,15 +15,15 @@ class EditDashboardPage extends StatefulWidget {
 
 class _EditDashboardPageState extends State<EditDashboardPage> {
   late final List<String> _allWidgets;
-  late final RxSet<String> _selectedWidgets;
   final DashboardController controller = Get.find<DashboardController>();
   final _isLoading = false.obs;
+  final Set<String> _selectedWidgets = <String>{};
 
   @override
   void initState() {
     super.initState();
     _allWidgets = List<String>.from(DashboardController.availableWidgets);
-    _selectedWidgets = RxSet<String>({...controller.displayedWidgets});
+    _selectedWidgets.addAll(controller.displayedWidgets);
   }
 
   @override
@@ -34,7 +34,7 @@ class _EditDashboardPageState extends State<EditDashboardPage> {
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(CupertinoIcons.xmark),
+          icon: const Icon(Icons.close_rounded),
           onPressed: () => Get.back(),
         ),
         title: const Text('编辑 Dashboard'),
@@ -47,7 +47,7 @@ class _EditDashboardPageState extends State<EditDashboardPage> {
                     child: CupertinoActivityIndicator(),
                   )
                 : IconButton(
-                    icon: const Icon(CupertinoIcons.checkmark),
+                    icon: const Icon(Icons.done_rounded),
                     onPressed: _saveChanges,
                   ),
           ),
@@ -80,56 +80,63 @@ class _EditDashboardPageState extends State<EditDashboardPage> {
     bool isSelected,
   ) {
     final primaryColor = context.primaryColor;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            _selectedWidgets.remove(widgetName);
-          } else {
-            _selectedWidgets.add(widgetName);
-          }
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? primaryColor.withValues(alpha: 0.08)
-              : CupertinoColors.systemGroupedBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? primaryColor : CupertinoColors.systemGrey4,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              isSelected
-                  ? CupertinoIcons.check_mark_circled_solid
-                  : CupertinoIcons.circle,
-              size: 22,
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          setState(() {
+            if (isSelected) {
+              _selectedWidgets.remove(widgetName);
+            } else {
+              _selectedWidgets.add(widgetName);
+            }
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? primaryColor.withValues(alpha: 0.08)
+                : theme.colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
               color: isSelected
                   ? primaryColor
-                  : CupertinoColors.secondaryLabel.resolveFrom(context),
+                  : theme.colorScheme.outlineVariant,
+              width: isSelected ? 2 : 1,
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                widgetName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: isSelected
-                      ? primaryColor
-                      : CupertinoColors.label.resolveFrom(context),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isSelected
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                size: 22,
+                color: isSelected
+                    ? primaryColor
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  widgetName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected
+                        ? primaryColor
+                        : theme.colorScheme.onSurface,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

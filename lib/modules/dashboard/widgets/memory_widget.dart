@@ -11,7 +11,7 @@ import '../controllers/dashboard_controller.dart';
 class MemoryWidget extends StatelessWidget {
   const MemoryWidget({super.key});
   Widget _buildInfo(BuildContext context) {
-    final controller = Get.put(DashboardController());
+    final controller = Get.find<DashboardController>();
 
     return Obx(() {
       final memoryData = controller.memoryData;

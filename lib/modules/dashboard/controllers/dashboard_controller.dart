@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/statistic_model.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/schedule_model.dart';
 import 'package:moviepilot_mobile/modules/dashboard/models/dashboard_config_model.dart';
@@ -13,7 +14,6 @@ import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/utils/size_formatter.dart';
 import 'package:moviepilot_mobile/utils/toast_util.dart';
-import 'package:talker/talker.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Dashboard 控制器
@@ -79,8 +79,8 @@ class DashboardController extends GetxController {
   /// 媒体服务器控制器
   late final MediaServerController mediaServerController;
 
-  /// Talker日志实例
-  late final Talker talker;
+  /// 日志实例
+  late final AppLog talker;
 
   /// Dashboard配置
   final dashboardConfig = Rx<DashboardConfigModel?>(null);
@@ -90,19 +90,17 @@ class DashboardController extends GetxController {
 
   final appService = Get.find<AppService>();
 
-  late Timer _cpuTimer;
-  late Timer _networkTimer;
-  late Timer _downloaderTimer;
-  late Timer _memoryTimer;
-  late Timer _cookieTimer;
+  Timer? _refreshTimer;
+  Timer? _cookieTimer;
   bool _hasLocalDashboardConfig = false;
+  bool _isLoadingDashboardData = false;
 
   @override
   Future<void> onInit() async {
     super.onInit();
     // 初始化依赖
     apiClient = Get.find<ApiClient>();
-    talker = Talker();
+    talker = Get.find<AppLog>();
 
     // 1. 根据传入数据创建 mediaServerController
     await _initializeMediaServerController();
@@ -120,18 +118,17 @@ class DashboardController extends GetxController {
 
   @override
   void onClose() {
-    _cpuTimer.cancel();
-    _networkTimer.cancel();
-    _downloaderTimer.cancel();
-    _memoryTimer.cancel();
-    _cookieTimer.cancel();
+    _refreshTimer?.cancel();
+    _cookieTimer?.cancel();
     super.onClose();
   }
 
   /// 初始化媒体服务器控制器
   Future<void> _initializeMediaServerController() async {
-    // 无论当前是否已经有登录信息，都先初始化 MediaServerController，
-    // 避免在后续定时任务中访问到未初始化的字段。
+    if (Get.isRegistered<MediaServerController>()) {
+      mediaServerController = Get.find<MediaServerController>();
+      return;
+    }
     mediaServerController = Get.put(MediaServerController());
 
     // 媒体库数据由 _loadDataBasedOnConfig 在显示「我的媒体库」组件时加载
@@ -145,23 +142,12 @@ class DashboardController extends GetxController {
   /// 启动周期性刷新
   void _startPeriodicRefresh() {
     final duration = const Duration(seconds: kDebugMode ? 1000000 : 5);
-    // 初始化定时任务队列，每5秒获取一次数据，根据开关配置获取对应的数据
-    _cpuTimer = Timer.periodic(duration, (_) {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(duration, (_) {
       _loadDataBasedOnConfig();
     });
 
-    _networkTimer = Timer.periodic(duration, (_) {
-      _loadDataBasedOnConfig();
-    });
-
-    _downloaderTimer = Timer.periodic(duration, (_) {
-      _loadDataBasedOnConfig();
-    });
-
-    _memoryTimer = Timer.periodic(duration, (_) {
-      _loadDataBasedOnConfig();
-    });
-
+    _cookieTimer?.cancel();
     _cookieTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       _ensureUserCookieRefreshed();
     });
@@ -218,7 +204,7 @@ class DashboardController extends GetxController {
         talker.warning('CPU数据加载失败，状态码: ${response.statusCode}');
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载CPU数据失败');
+      talker.handle(e, stackTrace: st, message: '加载CPU数据失败');
     }
   }
 
@@ -247,7 +233,7 @@ class DashboardController extends GetxController {
         talker.warning('网络流量数据加载失败，状态码: ${response.statusCode}');
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载网络流量数据失败');
+      talker.handle(e, stackTrace: st, message: '加载网络流量数据失败');
     }
   }
 
@@ -271,7 +257,7 @@ class DashboardController extends GetxController {
         talker.warning('下载器数据加载失败，状态码: ${response.statusCode}');
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载下载器数据失败');
+      talker.handle(e, stackTrace: st, message: '加载下载器数据失败');
     }
   }
 
@@ -295,7 +281,7 @@ class DashboardController extends GetxController {
         talker.warning('存储空间数据加载失败，状态码: ${response.statusCode}');
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载存储空间数据失败');
+      talker.handle(e, stackTrace: st, message: '加载存储空间数据失败');
     }
   }
 
@@ -323,7 +309,7 @@ class DashboardController extends GetxController {
         talker.warning('媒体统计数据加载失败，状态码: ${response.statusCode}');
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载媒体统计数据失败');
+      talker.handle(e, stackTrace: st, message: '加载媒体统计数据失败');
     }
   }
 
@@ -348,7 +334,7 @@ class DashboardController extends GetxController {
         talker.warning('后台任务列表数据加载失败，状态码: ${response.statusCode}');
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载后台任务列表数据失败');
+      talker.handle(e, stackTrace: st, message: '加载后台任务列表数据失败');
     }
   }
 
@@ -365,7 +351,7 @@ class DashboardController extends GetxController {
       latestMediaData.value = data;
       talker.info('媒体服务器最新入库数据加载成功');
     } catch (e, st) {
-      talker.handle(e, st, '加载媒体服务器最新入库数据失败');
+      talker.handle(e, stackTrace: st, message: '加载媒体服务器最新入库数据失败');
     }
   }
 
@@ -390,7 +376,7 @@ class DashboardController extends GetxController {
         talker.warning('最近入库数据加载失败，状态码: ${response.statusCode}');
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载最近入库数据失败');
+      talker.handle(e, stackTrace: st, message: '加载最近入库数据失败');
     }
   }
 
@@ -401,8 +387,11 @@ class DashboardController extends GetxController {
     if (displayedWidgets.contains('我的媒体库')) {
       await mediaServerController.loadMediaLibraries();
     }
-    await mediaServerController.refreshLatestMediaList();
-    if (mediaServerController.mediaServers.value.isNotEmpty) {
+    if (displayedWidgets.contains('最近添加')) {
+      await mediaServerController.refreshLatestMediaList();
+    }
+    if (displayedWidgets.contains('继续观看') &&
+        mediaServerController.mediaServers.value.isNotEmpty) {
       await mediaServerController.loadPlayingMedia(
         mediaServerController.mediaServers.value.first.name,
       );
@@ -418,7 +407,7 @@ class DashboardController extends GetxController {
       ToastUtil.success('任务已提交');
       await loadScheduleData();
     } catch (e, st) {
-      talker.handle(e, st, '提交后台任务失败');
+      talker.handle(e, stackTrace: st, message: '提交后台任务失败');
       ToastUtil.error('提交失败，请检查网络');
     }
   }
@@ -446,42 +435,7 @@ class DashboardController extends GetxController {
         talker.warning('内存数据加载失败，状态码: ${response.statusCode}');
       }
     } catch (e, st) {
-      talker.handle(e, st, '加载内存数据失败');
-    }
-  }
-
-  /// 获取dashboard开关配置
-  Future<void> _fetchDashboardConfig() async {
-    try {
-      talker.info('开始获取dashboard配置');
-      final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/v1/user/config/Dashboard',
-      );
-
-      if (response.statusCode == 200 && response.data != null) {
-        final config = DashboardConfigModel.fromJson(response.data!);
-        dashboardConfig.value = config;
-        talker.info('获取dashboard配置成功: ${config.data.value}');
-
-        // 根据配置更新displayedWidgets列表
-        _updateDisplayedWidgets(config.data.value);
-        await _saveLocalDashboardConfig(
-          configValue: config.data.value,
-          orderItems: dashboardOrder.value?.data.value,
-        );
-      } else {
-        talker.warning('获取dashboard配置失败: 响应数据为空或状态码错误');
-        // 如果获取失败，使用默认配置
-        if (!_hasLocalDashboardConfig) {
-          _useDefaultConfig();
-        }
-      }
-    } catch (e, st) {
-      talker.handle(e, st, '获取dashboard配置失败');
-      // 如果获取失败，使用默认配置
-      if (!_hasLocalDashboardConfig) {
-        _useDefaultConfig();
-      }
+      talker.handle(e, stackTrace: st, message: '加载内存数据失败');
     }
   }
 
@@ -515,18 +469,37 @@ class DashboardController extends GetxController {
 
   /// 根据开关配置获取对应的数据
   Future<void> _loadDataBasedOnConfig() async {
-    // 加载数据，只有当对应的组件在displayedWidgets列表中时才加载
-    if (displayedWidgets.contains('CPU')) loadCpuData();
-    if (displayedWidgets.contains('网络流量')) loadNetworkData();
-    if (displayedWidgets.contains('内存')) loadMemoryData();
-    if (displayedWidgets.contains('实时速率')) loadDownloaderData();
-    if (displayedWidgets.contains('存储空间')) loadStorageData();
-    if (displayedWidgets.contains('媒体统计')) loadStatisticData();
-    if (displayedWidgets.contains('后台任务')) loadScheduleData();
-    if (displayedWidgets.contains('最近添加')) loadLatestMediaData();
-    if (displayedWidgets.contains('最近入库')) loadTransferData();
-    if (displayedWidgets.contains('我的媒体库')) {
-      mediaServerController.loadMediaLibraries();
+    if (_isLoadingDashboardData) {
+      return;
+    }
+    _isLoadingDashboardData = true;
+    try {
+      final futures = <Future<void>>[];
+      if (displayedWidgets.contains('CPU')) futures.add(loadCpuData());
+      if (displayedWidgets.contains('网络流量')) futures.add(loadNetworkData());
+      if (displayedWidgets.contains('内存')) futures.add(loadMemoryData());
+      if (displayedWidgets.contains('实时速率')) futures.add(loadDownloaderData());
+      if (displayedWidgets.contains('存储空间')) futures.add(loadStorageData());
+      if (displayedWidgets.contains('媒体统计')) futures.add(loadStatisticData());
+      if (displayedWidgets.contains('后台任务')) futures.add(loadScheduleData());
+      if (displayedWidgets.contains('最近添加')) {
+        futures.add(loadLatestMediaData());
+      }
+      if (displayedWidgets.contains('最近入库')) futures.add(loadTransferData());
+      if (displayedWidgets.contains('我的媒体库')) {
+        futures.add(mediaServerController.loadMediaLibraries());
+      }
+      if (displayedWidgets.contains('继续观看') &&
+          mediaServerController.mediaServers.value.isNotEmpty) {
+        futures.add(
+          mediaServerController.loadPlayingMedia(
+            mediaServerController.mediaServers.value.first.name,
+          ),
+        );
+      }
+      await Future.wait(futures);
+    } finally {
+      _isLoadingDashboardData = false;
     }
   }
 
@@ -556,34 +529,6 @@ class DashboardController extends GetxController {
       list.add(ChartDataPoint(list.length, value));
     }
     memoryChartData.assignAll(list);
-  }
-
-  /// 更新dashboard配置
-  Future<bool> updateDashboardConfig(Map<String, dynamic> config) async {
-    try {
-      talker.info('开始更新dashboard配置: $config');
-      final response = await apiClient.postForm<Map<String, dynamic>>(
-        '/api/v1/user/config/Dashboard',
-        config,
-      );
-
-      if (response.statusCode == 200) {
-        talker.info('更新dashboard配置成功');
-        // 重新获取配置
-        await _fetchDashboardConfig();
-        // 刷新dashboardUI
-        update();
-        // 重启所需的计时器和http请求任务
-        _restartTimersAndTasks();
-        return true;
-      } else {
-        talker.warning('更新dashboard配置失败: 状态码错误');
-        return false;
-      }
-    } catch (e, st) {
-      talker.handle(e, st, '更新dashboard配置失败');
-      return false;
-    }
   }
 
   Future<void> applyLocalDashboardLayout(List<String> orderedVisible) async {
@@ -616,12 +561,7 @@ class DashboardController extends GetxController {
     );
 
     final orderItems = orderedVisible
-        .map(
-          (name) => DashboardOrderItem(
-            id: nameToIdMap[name] ?? '',
-            key: '',
-          ),
-        )
+        .map((name) => DashboardOrderItem(id: nameToIdMap[name] ?? '', key: ''))
         .where((item) => item.id.isNotEmpty)
         .toList();
 
@@ -639,101 +579,7 @@ class DashboardController extends GetxController {
 
     _updateDisplayedWidgets(value);
     _updateWidgetsOrder(orderItems);
-    await _saveLocalDashboardConfig(
-      configValue: value,
-      orderItems: orderItems,
-    );
-    await refreshData();
-  }
-
-  /// 更新dashboard排序
-  Future<bool> updateDashboardOrder(List<dynamic> order) async {
-    try {
-      talker.info('开始更新dashboard排序: $order');
-      final response = await apiClient.postForm<Map<String, dynamic>>(
-        '/api/v1/user/config/DashboardOrder',
-        {'value': order},
-        timeout: 30,
-      );
-
-      if (response.statusCode == 200) {
-        talker.info('更新dashboard排序成功');
-        // 重新获取排序
-        await _fetchDashboardOrder();
-        // 刷新dashboardUI
-        update();
-        return true;
-      } else {
-        talker.warning('更新dashboard排序失败: 状态码错误');
-        return false;
-      }
-    } catch (e, st) {
-      talker.handle(e, st, '更新dashboard排序失败');
-      return false;
-    }
-  }
-
-  /// 重新获取dashboard配置和排序
-  Future<void> refreshDashboard() async {
-    await _fetchDashboardConfig();
-    await _fetchDashboardOrder();
-    update();
-  }
-
-  /// 重启所需的计时器和http请求任务
-  void _restartTimersAndTasks() {
-    // 取消现有的计时器
-    _cpuTimer.cancel();
-    _networkTimer.cancel();
-    _downloaderTimer.cancel();
-    _memoryTimer.cancel();
-
-    // 重新加载数据
-    _loadDataBasedOnConfig();
-
-    // 重新启动计时器
-    _cpuTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _loadDataBasedOnConfig();
-    });
-
-    _networkTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _loadDataBasedOnConfig();
-    });
-
-    _downloaderTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _loadDataBasedOnConfig();
-    });
-
-    _memoryTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _loadDataBasedOnConfig();
-    });
-  }
-
-  /// 获取dashboard顺序配置
-  Future<void> _fetchDashboardOrder() async {
-    try {
-      talker.info('开始获取dashboard元素排序');
-      final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/v1/user/config/DashboardOrder',
-      );
-
-      if (response.statusCode == 200 && response.data != null) {
-        final order = DashboardOrderModel.fromJson(response.data!);
-        dashboardOrder.value = order;
-        talker.info('获取dashboard元素排序成功: ${order.data.value}');
-
-        // 根据排序结果更新displayedWidgets列表的顺序
-        _updateWidgetsOrder(order.data.value);
-        await _saveLocalDashboardConfig(
-          configValue: dashboardConfig.value?.data.value,
-          orderItems: order.data.value,
-        );
-      } else {
-        talker.warning('获取dashboard元素排序失败: 响应数据为空或状态码错误');
-      }
-    } catch (e, st) {
-      talker.handle(e, st, '获取dashboard元素排序失败');
-    }
+    await _saveLocalDashboardConfig(configValue: value, orderItems: orderItems);
   }
 
   /// 根据排序结果更新displayedWidgets列表的顺序
@@ -828,7 +674,7 @@ class DashboardController extends GetxController {
         }
       }
     } catch (e, st) {
-      talker.handle(e, st, '读取本地dashboard配置失败');
+      talker.handle(e, stackTrace: st, message: '读取本地dashboard配置失败');
     }
   }
 
@@ -863,7 +709,7 @@ class DashboardController extends GetxController {
       data['profiles'] = profiles;
       await file.writeAsString(jsonEncode(data));
     } catch (e, st) {
-      talker.handle(e, st, '保存本地dashboard配置失败');
+      talker.handle(e, stackTrace: st, message: '保存本地dashboard配置失败');
     }
   }
 
@@ -883,9 +729,9 @@ class DashboardController extends GetxController {
   }
 
   String _profileKey() {
-    final baseUrl = appService.baseUrl ?? apiClient.baseUrl ?? 'default-server';
+    final baseUrl = appService.baseUrl ?? 'default-server';
     final userId = appService.loginResponse?.userId ?? appService.userInfo?.id;
-    return '${baseUrl}::${userId ?? 0}';
+    return '$baseUrl::${userId ?? 0}';
   }
 }
 
