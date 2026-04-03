@@ -12,6 +12,12 @@ class MediaOrganizeItemCard extends StatelessWidget {
     required this.item,
     required this.srcStorageName,
     required this.destStorageName,
+    this.margin = const EdgeInsets.only(bottom: 12),
+    this.selectionEnabled = false,
+    this.selected = false,
+    this.showPopupMenu = true,
+    this.onSelectionChanged,
+    this.onTap,
     this.onDeleteTransferRecordOnly,
     this.onDeleteTransferRecordAndSourceFile,
     this.onDeleteTransferRecordAndMediaLibraryFile,
@@ -21,6 +27,12 @@ class MediaOrganizeItemCard extends StatelessWidget {
   final MediaOrganizeTransferItem item;
   final String srcStorageName;
   final String destStorageName;
+  final EdgeInsetsGeometry margin;
+  final bool selectionEnabled;
+  final bool selected;
+  final bool showPopupMenu;
+  final ValueChanged<bool>? onSelectionChanged;
+  final VoidCallback? onTap;
   static const double cardRadius = 8;
   final void Function()? onDeleteTransferRecordOnly;
   final void Function()? onDeleteTransferRecordAndSourceFile;
@@ -29,196 +41,224 @@ class MediaOrganizeItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: margin,
+      color: selected
+          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.32)
+          : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(cardRadius),
+        side: BorderSide(
+          color: selected
+              ? theme.colorScheme.primary.withValues(alpha: 0.3)
+              : Colors.transparent,
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildPoster(context),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item.title ?? '未知',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(cardRadius),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildPoster(context),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            if (selectionEnabled) ...[
+                              Checkbox(
+                                value: selected,
+                                visualDensity: VisualDensity.compact,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                onChanged: (value) =>
+                                    onSelectionChanged?.call(value ?? false),
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                            Expanded(
+                              child: Text(
+                                item.title ?? '未知',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
-                          ),
-                          PopupMenuButton(
-                            borderRadius: BorderRadius.circular(12),
-                            icon: Icon(Icons.more_vert_outlined),
-                            onSelected: (value) {
-                              switch (value) {
-                                case '仅删除转移记录':
-                                  onDeleteTransferRecordOnly?.call();
-                                  break;
-                                case '删除转移记录和源文件':
-                                  onDeleteTransferRecordAndSourceFile?.call();
-                                  break;
-                                case '删除转移记录和媒体库文件':
-                                  onDeleteTransferRecordAndMediaLibraryFile
-                                      ?.call();
-                                  break;
-                                case '删除转移记录、源文件和媒体库文件':
-                                  onDeleteTransferRecordAndSourceFileAndMediaLibraryFile
-                                      ?.call();
-                                  break;
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              _buildActionButton(
-                                context,
-                                '仅删除转移记录',
-                                '仅删除转移记录',
-                                Icons.delete_outlined,
-                                CupertinoColors.systemPurple,
+                            if (showPopupMenu)
+                              PopupMenuButton(
+                                borderRadius: BorderRadius.circular(12),
+                                icon: Icon(Icons.more_vert_outlined),
+                                onSelected: (value) {
+                                  switch (value) {
+                                    case '仅删除转移记录':
+                                      onDeleteTransferRecordOnly?.call();
+                                      break;
+                                    case '删除转移记录和源文件':
+                                      onDeleteTransferRecordAndSourceFile
+                                          ?.call();
+                                      break;
+                                    case '删除转移记录和媒体库文件':
+                                      onDeleteTransferRecordAndMediaLibraryFile
+                                          ?.call();
+                                      break;
+                                    case '删除转移记录、源文件和媒体库文件':
+                                      onDeleteTransferRecordAndSourceFileAndMediaLibraryFile
+                                          ?.call();
+                                      break;
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  _buildActionButton(
+                                    context,
+                                    '仅删除转移记录',
+                                    '仅删除转移记录',
+                                    Icons.delete_outlined,
+                                    CupertinoColors.systemPurple,
+                                  ),
+                                  _buildActionButton(
+                                    context,
+                                    '删除转移记录和源文件',
+                                    '删除转移记录和源文件',
+                                    Icons.delete_outlined,
+                                    CupertinoColors.systemYellow,
+                                  ),
+                                  _buildActionButton(
+                                    context,
+                                    '删除转移记录和媒体库文件',
+                                    '删除转移记录和媒体库文件',
+                                    Icons.delete_outlined,
+                                    CupertinoColors.systemCyan,
+                                  ),
+                                  _buildActionButton(
+                                    context,
+                                    '删除转移记录、源文件和媒体库文件',
+                                    '删除转移记录、源文件和媒体库文件',
+                                    Icons.delete_outlined,
+                                    CupertinoColors.systemRed,
+                                  ),
+                                ],
                               ),
-                              _buildActionButton(
-                                context,
-                                '删除转移记录和源文件',
-                                '删除转移记录和源文件',
-                                Icons.delete_outlined,
-                                CupertinoColors.systemYellow,
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            _buildPill(
+                              context,
+                              '${item.type ?? ''} | ${item.category ?? ''}',
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (item.mode != null)
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.auto_mode_outlined,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
-                              _buildActionButton(
-                                context,
-                                '删除转移记录和媒体库文件',
-                                '删除转移记录和媒体库文件',
-                                Icons.delete_outlined,
-                                CupertinoColors.systemCyan,
+                              const SizedBox(width: 4),
+                              Text(
+                                _localizedMode(item.mode),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                               ),
-                              _buildActionButton(
-                                context,
-                                '删除转移记录、源文件和媒体库文件',
-                                '删除转移记录、源文件和媒体库文件',
-                                Icons.delete_outlined,
-                                CupertinoColors.systemRed,
+                              const SizedBox(width: 4),
+                              Text(
+                                item.status == true ? '成功' : '失败',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: item.status == true
+                                      ? Theme.of(context).colorScheme.secondary
+                                      : Theme.of(context).colorScheme.error,
+                                ),
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          _buildPill(
-                            context,
-                            '${item.type ?? ''} | ${item.category ?? ''}',
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-                      if (item.mode != null)
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.auto_mode_outlined,
-                              size: 16,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _localizedMode(item.mode),
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              item.status == true ? '成功' : '失败',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: item.status == true
-                                    ? Theme.of(context).colorScheme.secondary
-                                    : Theme.of(context).colorScheme.error,
-                              ),
-                            ),
-                          ],
-                        ),
-                      const SizedBox(height: 12),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Text(
-              item.errmsg ?? '',
-              style: TextStyle(
-                fontSize: 13,
-                color: item.status == true
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.error,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildPathRow(
-              context,
-              label: '来源',
-              path: item.src,
-              storageName: srcStorageName,
-            ),
-            const SizedBox(height: 6),
-            _buildPathRow(
-              context,
-              label: '目标',
-              path: item.dest,
-              storageName: destStorageName,
-            ),
-            if (item.date != null) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(
-                    Icons.file_present_outlined,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    SizeFormatter.formatSize(item.src_fileitem?.size ?? 0),
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(width: 4),
-                  Spacer(),
-                  Icon(
-                    Icons.calendar_month_outlined,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    item.date!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outline.withValues(alpha: 0.8),
+                        const SizedBox(height: 12),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 4),
                 ],
               ),
+              Text(
+                item.errmsg ?? '',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: item.status == true
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.error,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildPathRow(
+                context,
+                label: '来源',
+                path: item.src,
+                storageName: srcStorageName,
+              ),
+              const SizedBox(height: 6),
+              _buildPathRow(
+                context,
+                label: '目标',
+                path: item.dest,
+                storageName: destStorageName,
+              ),
+              if (item.date != null) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.file_present_outlined,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      SizeFormatter.formatSize(item.src_fileitem?.size ?? 0),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Spacer(),
+                    Icon(
+                      Icons.calendar_month_outlined,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      item.date!,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

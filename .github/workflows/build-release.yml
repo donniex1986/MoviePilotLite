@@ -1,0 +1,248 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 5"
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      build_date: ${{ steps.meta.outputs.build_date }}
+      release_name: ${{ steps.meta.outputs.release_name }}
+      tag_name: ${{ steps.meta.outputs.tag_name }}
+      apk_name: ${{ steps.meta.outputs.apk_name }}
+      ipa_name: ${{ steps.meta.outputs.ipa_name }}
+      ipa_sha_name: ${{ steps.meta.outputs.ipa_sha_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate build metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | sed 's/+.*//' | tr -d ' ')
+          BUILD_DATE=$(date +%Y-%m-%d)
+          RELEASE_NAME="v${VERSION}-${BUILD_DATE}"
+          TAG_NAME="release-${RELEASE_NAME}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
+          echo "release_name=${RELEASE_NAME}" >> "$GITHUB_OUTPUT"
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+          echo "apk_name=${RELEASE_NAME}.apk" >> "$GITHUB_OUTPUT"
+          echo "ipa_name=${RELEASE_NAME}.ipa" >> "$GITHUB_OUTPUT"
+          echo "ipa_sha_name=${RELEASE_NAME}.ipa.sha256" >> "$GITHUB_OUTPUT"
+
+  build-android:
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.38.2"
+          channel: "stable"
+          cache: true
+
+      - name: Flutter precache
+        run: flutter precache --android
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Validate and setup Android Keystore
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          missing=""
+          [ -z "${ANDROID_KEYSTORE_BASE64:-}" ] && missing="${missing} ANDROID_KEYSTORE_BASE64"
+          [ -z "${KEYSTORE_PASSWORD:-}" ] && missing="${missing} KEYSTORE_PASSWORD"
+          [ -z "${KEY_ALIAS:-}" ] && missing="${missing} KEY_ALIAS"
+          [ -z "${KEY_PASSWORD:-}" ] && missing="${missing} KEY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::缺少必要的 GitHub Secrets:${missing}"
+            exit 1
+          fi
+
+          if ! echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/moviepilot.keystore" 2>/dev/null; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 不是有效的 Base64 编码"
+            exit 1
+          fi
+
+          if ! keytool -list -keystore "$RUNNER_TEMP/moviepilot.keystore" \
+            -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" -keypass "$KEY_PASSWORD" \
+            -v 1>/dev/null 2>&1; then
+            echo "::error::Keystore 校验失败：请检查 KEYSTORE_PASSWORD、KEY_ALIAS、KEY_PASSWORD 是否正确"
+            exit 1
+          fi
+
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/moviepilot.keystore" >> "$GITHUB_ENV"
+          echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Build APK
+        run: flutter build apk --release --dart-define=FLUTTER_APP_ENV=release
+
+      - name: Rename APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/${{ needs.prepare.outputs.apk_name }}"
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: dist/${{ needs.prepare.outputs.apk_name }}
+          if-no-files-found: error
+
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    needs: prepare
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.38.2"
+          channel: "stable"
+          cache: true
+
+      - name: Cache Flutter pub
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      - name: Build unsigned iOS app
+        shell: bash
+        run: |
+          set -euo pipefail
+          flutter build ios --release --no-codesign --dart-define=FLUTTER_APP_ENV=release
+
+          cd build/ios/iphoneos
+          rm -rf Payload
+          mkdir -p Payload
+          cp -R Runner.app Payload/
+          zip -r -y "${{ needs.prepare.outputs.ipa_name }}" Payload
+          shasum -a 256 "${{ needs.prepare.outputs.ipa_name }}" > "${{ needs.prepare.outputs.ipa_sha_name }}"
+
+      - name: Upload iOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release
+          path: |
+            build/ios/iphoneos/${{ needs.prepare.outputs.ipa_name }}
+            build/ios/iphoneos/${{ needs.prepare.outputs.ipa_sha_name }}
+          if-no-files-found: error
+
+  release:
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+      - build-android
+      - build-ios
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Show release files
+        shell: bash
+        run: ls -lah dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag_name }}
+          name: ${{ needs.prepare.outputs.release_name }}
+          body: |
+            MoviePilot Release
+
+            - Version: ${{ needs.prepare.outputs.version }}
+            - Build Date: ${{ needs.prepare.outputs.build_date }}
+            - Android: Signed APK
+            - iOS: Unsigned IPA
+
+            iOS 安装说明：
+            - IPA 为未签名包
+            - 请使用自己的 Apple Developer 账号通过 AltStore、Sideloadly 或 Xcode 进行签名安装
+          files: |
+            dist/${{ needs.prepare.outputs.apk_name }}
+            dist/${{ needs.prepare.outputs.ipa_name }}
+            dist/${{ needs.prepare.outputs.ipa_sha_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Telegram 通知
+        uses: ./.github/actions/telegram-notify
+        with:
+          token: ${{ secrets.TG_BOT_TOKEN }}
+          chat_id: ${{ secrets.TG_CHAT_ID }}
+          message: |
+            <b>🎬 MoviePilot 构建完成</b>
+
+            <b>Release:</b> <code>${{ needs.prepare.outputs.release_name }}</code>
+            <b>版本:</b> ${{ needs.prepare.outputs.version }}
+            <b>日期:</b> ${{ needs.prepare.outputs.build_date }}
+
+            <b>附件:</b> 已附带 APK 与 IPA 安装包。
+            <b>说明:</b> IPA 为未签名包，需自行签名安装。
+
+            <a href="https://github.com/${{ github.repository }}/releases/tag/${{ needs.prepare.outputs.tag_name }}">📦 查看 Release</a>
+            <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">🔗 Workflow 运行</a>
+          file_paths: |
+            dist/${{ needs.prepare.outputs.apk_name }}
+            dist/${{ needs.prepare.outputs.ipa_name }}

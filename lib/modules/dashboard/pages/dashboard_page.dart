@@ -23,6 +23,7 @@ import '../widgets/dashboard_widgets.dart';
 
 class DashboardPage extends GetView<DashboardController> {
   const DashboardPage({super.key});
+  RealmService get _realmService => Get.find<RealmService>();
 
   @override
   Widget build(BuildContext context) {
@@ -119,8 +120,7 @@ class DashboardPage extends GetView<DashboardController> {
   /// 获取最新的登录配置文件
   LoginProfile? _getLatestLoginProfile() {
     try {
-      final realmService = RealmService();
-      final profiles = realmService.realm.all<LoginProfile>();
+      final profiles = _realmService.realm.all<LoginProfile>();
       if (profiles.isEmpty) {
         return null;
       }
@@ -135,7 +135,7 @@ class DashboardPage extends GetView<DashboardController> {
   }
 
   /// 解码头像
-  List<int> _decodeAvatar(String avatar) {
+  Uint8List _decodeAvatar(String avatar) {
     try {
       // 检查是否是data URL格式
       if (avatar.startsWith('data:image')) {
@@ -143,14 +143,14 @@ class DashboardPage extends GetView<DashboardController> {
         final commaIndex = avatar.indexOf(',');
         if (commaIndex != -1) {
           final base64String = avatar.substring(commaIndex + 1);
-          return base64Decode(base64String);
+          return Uint8List.fromList(base64Decode(base64String));
         }
       }
       // 否则，直接解码
-      return base64Decode(avatar);
+      return Uint8List.fromList(base64Decode(avatar));
     } catch (e) {
       // 如果解码失败，返回空列表
-      return [];
+      return Uint8List(0);
     }
   }
 
@@ -229,7 +229,7 @@ class DashboardPage extends GetView<DashboardController> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         image: DecorationImage(
-                          image: MemoryImage(Uint8List.fromList(avatarBytes)),
+                          image: MemoryImage(avatarBytes),
                           fit: BoxFit.cover,
                         ),
                       ),

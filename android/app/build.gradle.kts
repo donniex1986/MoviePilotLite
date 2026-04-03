@@ -28,6 +28,11 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders += mapOf(
+            "JPUSH_PKGNAME" to applicationId,
+            "JPUSH_APPKEY" to "e462379fa18ab59e31fd7ac2",
+            "JPUSH_CHANNEL" to "developer-default",
+        )
     }
 
     signingConfigs {

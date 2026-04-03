@@ -395,19 +395,32 @@ class MultifunctionPage extends GetView<MultifunctionController> {
     DashboardModuleViewModel? module,
   ) {
     return _sectionCard(
+      onTap: module == null
+          ? null
+          : () => controller.handleRouteTap(module.route, title: module.title),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               const Expanded(
-                child: Text(
-                  '上映日历',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Row(
+                  children: [
+                    Text(
+                      '上映日历',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF94A3B8),
+                      size: 18,
+                    ),
+                  ],
                 ),
               ),
               CupertinoSlidingSegmentedControl<String>(

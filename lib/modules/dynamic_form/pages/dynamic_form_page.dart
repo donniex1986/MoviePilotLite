@@ -79,13 +79,36 @@ class DynamicFormPage extends GetView<DynamicFormController> {
         centerTitle: false,
         actions: [
           Obx(() {
+            final applying = controller.isApplyingPushAlias.value;
+            if (!controller.showApplyPushAliasAction) {
+              return const SizedBox.shrink();
+            }
+            return TextButton(
+              onPressed: applying ? null : _onApplyPushAlias,
+              child: applying
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CupertinoActivityIndicator(radius: 8),
+                    )
+                  : const Text('应用'),
+            );
+          }),
+          Obx(() {
             // 依赖 isLoading，以便 adapter 注入后能重新计算并显示右侧操作（清理、actionList）
             controller.isLoading.value;
             final adapter = controller.pluginAdapter;
-            return Row(
-              mainAxisSize: MainAxisSize.min,
+            final showCleanAction = adapter is PluginFormAdapterWithClean;
+            final showMenuAction =
+                !controller.formMode.value &&
+                (adapter?.actionList ?? []).isNotEmpty;
+            if (!showCleanAction && !showMenuAction) {
+              return const SizedBox.shrink();
+            }
+            return Wrap(
+              spacing: 0,
               children: [
-                if (adapter is PluginFormAdapterWithClean)
+                if (showCleanAction)
                   IconButton(
                     icon: Icon(
                       Icons.cleaning_services,
@@ -94,9 +117,7 @@ class DynamicFormPage extends GetView<DynamicFormController> {
                     tooltip: '立即清理',
                     onPressed: () => _onTriggerClean(context),
                   ),
-                if (!controller.formMode.value &&
-                    (adapter?.actionList ?? []).isNotEmpty)
-                  _buildAppBarActionMenu(context),
+                if (showMenuAction) _buildAppBarActionMenu(context),
               ],
             );
           }),
@@ -167,7 +188,7 @@ class DynamicFormPage extends GetView<DynamicFormController> {
         }
 
         // page 模式且有原始节点：使用通用 VuetifyRenderer
-        if (pNodes.isNotEmpty && !controller.isFormMode) {
+        if (pNodes.isNotEmpty && !controller.formMode.value) {
           return VuetifyPageRenderer(nodes: pNodes, controller: controller);
         }
 
@@ -282,6 +303,15 @@ class DynamicFormPage extends GetView<DynamicFormController> {
       context: context,
       builder: (_) => PluginCleanProgressSheet(controller: controller),
     );
+  }
+
+  Future<void> _onApplyPushAlias() async {
+    final token = await controller.applyCurrentPushTokenAsAlias();
+    if (token == null || token.isEmpty) {
+      ToastUtil.error('应用失败，请确认已完成推送初始化');
+      return;
+    }
+    ToastUtil.success('已将当前 App Push Token 应用为 JPush Alias');
   }
 
   onSave() async {

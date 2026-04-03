@@ -204,11 +204,15 @@ class ApiClient extends g.GetxController {
     Map<String, dynamic> data, {
     Map<String, dynamic>? queryParameters,
     String? token,
+    Map<String, dynamic>? headers,
   }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
     final options = Options(
-      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      headers: {
+        if (authToken != null) 'authorization': 'Bearer $authToken',
+        ...?headers,
+      },
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
         return true;
@@ -276,6 +280,7 @@ class ApiClient extends g.GetxController {
     Map<String, dynamic>? queryParameters,
     String? token,
     int? timeout,
+    Map<String, dynamic>? headers,
   }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
@@ -285,7 +290,10 @@ class ApiClient extends g.GetxController {
     final options = Options(
       receiveTimeout: Duration(seconds: timeout ?? 30),
       sendTimeout: Duration(seconds: timeout ?? 30),
-      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      headers: {
+        if (authToken != null) 'authorization': 'Bearer $authToken',
+        ...?headers,
+      },
       followRedirects: true,
       maxRedirects: 5,
       validateStatus: (status) {
@@ -308,12 +316,16 @@ class ApiClient extends g.GetxController {
     Map<String, dynamic>? data, {
     Map<String, dynamic>? queryParameters,
     String? token,
+    Map<String, dynamic>? headers,
   }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
     _log.info('API PUT请求: $path, token: ${authToken != null ? '***' : 'null'}');
     final options = Options(
-      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      headers: {
+        if (authToken != null) 'authorization': 'Bearer $authToken',
+        ...?headers,
+      },
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
         return true;
@@ -336,6 +348,7 @@ class ApiClient extends g.GetxController {
     Map<String, dynamic>? queryParameters,
     String? token,
     int? timeout,
+    Map<String, dynamic>? headers,
   }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
@@ -346,6 +359,7 @@ class ApiClient extends g.GetxController {
       headers: {
         if (authToken != null) 'authorization': 'Bearer $authToken',
         'content-type': 'application/json',
+        ...?headers,
       },
       sendTimeout: Duration(seconds: timeout ?? 30),
       receiveTimeout: Duration(seconds: timeout ?? 30),
@@ -361,6 +375,7 @@ class ApiClient extends g.GetxController {
     Map<String, dynamic>? queryParameters,
     String? token,
     int? timeout,
+    Map<String, dynamic>? headers,
   }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
@@ -368,7 +383,10 @@ class ApiClient extends g.GetxController {
     final options = Options(
       sendTimeout: Duration(seconds: timeout ?? 30),
       receiveTimeout: Duration(seconds: timeout ?? 30),
-      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      headers: {
+        if (authToken != null) 'authorization': 'Bearer $authToken',
+        ...?headers,
+      },
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
         return true;
@@ -388,6 +406,7 @@ class ApiClient extends g.GetxController {
     Map<String, dynamic>? queryParameters,
     String? token,
     int? timeout,
+    Map<String, dynamic>? headers,
   }) async {
     await _ensureReady();
     final authToken = token ?? this.token;
@@ -397,7 +416,10 @@ class ApiClient extends g.GetxController {
     final options = Options(
       sendTimeout: Duration(seconds: timeout ?? 30),
       receiveTimeout: Duration(seconds: timeout ?? 30),
-      headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+      headers: {
+        if (authToken != null) 'authorization': 'Bearer $authToken',
+        ...?headers,
+      },
       validateStatus: (status) {
         // 允许所有状态码，让调用者自己处理错误
         return true;

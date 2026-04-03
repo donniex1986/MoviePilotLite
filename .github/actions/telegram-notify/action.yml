@@ -12,6 +12,10 @@ inputs:
   message:
     description: "要发送的消息内容（支持 HTML）"
     required: true
+  file_paths:
+    description: "要发送的附件路径，支持多行"
+    required: false
+    default: ""
   parse_mode:
     description: "解析模式：HTML 或 Markdown"
     required: false
@@ -36,6 +40,7 @@ runs:
         TOKEN: ${{ inputs.token }}
         CHAT_ID: ${{ inputs.chat_id }}
         MESSAGE: ${{ inputs.message }}
+        FILE_PATHS: ${{ inputs.file_paths }}
         PARSE_MODE: ${{ inputs.parse_mode }}
         DISABLE_NOTIFICATION: ${{ inputs.disable_notification }}
       run: |
@@ -46,16 +51,85 @@ runs:
           exit 0
         fi
         disable=$([ "$DISABLE_NOTIFICATION" = "true" ] && echo "true" || echo "false")
-        payload=$(jq -n \
-          --arg chat_id "$CHAT_ID" \
-          --arg text "$MESSAGE" \
-          --arg parse_mode "$PARSE_MODE" \
-          --argjson disable "$disable" \
-          '{chat_id: $chat_id, text: $text, parse_mode: $parse_mode, disable_notification: $disable}')
-        resp=$(curl -s -w "\n%{http_code}" -X POST \
-          "https://api.telegram.org/bot${TOKEN}/sendMessage" \
-          -H "Content-Type: application/json" \
-          -d "$payload") || true
+
+        mapfile -t files < <(printf '%s\n' "${FILE_PATHS:-}" | sed '/^[[:space:]]*$/d')
+        valid_files=()
+        for file in "${files[@]}"; do
+          if [ -f "$file" ]; then
+            valid_files+=("$file")
+          else
+            echo "::warning::附件不存在，跳过: $file"
+          fi
+        done
+
+        send_message() {
+          payload=$(jq -n \
+            --arg chat_id "$CHAT_ID" \
+            --arg text "$MESSAGE" \
+            --arg parse_mode "$PARSE_MODE" \
+            --argjson disable "$disable" \
+            '{chat_id: $chat_id, text: $text, parse_mode: $parse_mode, disable_notification: $disable}')
+          curl -s -w "\n%{http_code}" -X POST \
+            "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "$payload" || true
+        }
+
+        send_single_document() {
+          local file="$1"
+          curl -s -w "\n%{http_code}" -X POST \
+            "https://api.telegram.org/bot${TOKEN}/sendDocument" \
+            -F "chat_id=${CHAT_ID}" \
+            -F "caption=${MESSAGE}" \
+            -F "parse_mode=${PARSE_MODE}" \
+            -F "disable_notification=${disable}" \
+            -F "document=@${file}" || true
+        }
+
+        send_media_group() {
+          local media_json="[]"
+          local curl_args=()
+          local index=0
+          for file in "${valid_files[@]}"; do
+            attach_name="file${index}"
+            if [ "$index" -eq 0 ]; then
+              media_json=$(jq -c \
+                --argjson media "$media_json" \
+                --arg attach "attach://${attach_name}" \
+                --arg caption "$MESSAGE" \
+                --arg parse_mode "$PARSE_MODE" \
+                '$media + [{type:"document", media:$attach, caption:$caption, parse_mode:$parse_mode}]')
+            else
+              media_json=$(jq -c \
+                --argjson media "$media_json" \
+                --arg attach "attach://${attach_name}" \
+                '$media + [{type:"document", media:$attach}]')
+            fi
+            curl_args+=(-F "${attach_name}=@${file}")
+            index=$((index + 1))
+          done
+
+          if [ "$index" -eq 0 ]; then
+            send_message
+            return
+          fi
+
+          curl -s -w "\n%{http_code}" -X POST \
+            "https://api.telegram.org/bot${TOKEN}/sendMediaGroup" \
+            -F "chat_id=${CHAT_ID}" \
+            -F "disable_notification=${disable}" \
+            -F "media=${media_json}" \
+            "${curl_args[@]}" || true
+        }
+
+        if [ "${#valid_files[@]}" -eq 0 ]; then
+          resp=$(send_message)
+        elif [ "${#valid_files[@]}" -eq 1 ]; then
+          resp=$(send_single_document "${valid_files[0]}")
+        else
+          resp=$(send_media_group)
+        fi
+
         http_code=$(echo "$resp" | tail -n1)
         body=$(echo "$resp" | sed '$d')
         if [ "$http_code" = "200" ]; then
