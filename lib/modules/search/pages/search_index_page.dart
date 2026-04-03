@@ -13,10 +13,15 @@ import '../models/search_suggestion.dart';
 class SearchIndexPage extends GetView<SearchIndexController> {
   const SearchIndexPage({super.key});
 
+  static const double _searchBarHorizontalPadding = 16;
+  static const double _searchBarBottomSpacing = 108;
+  static const double _searchBarEstimatedHeight = 58;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
+        bottom: false,
         child: Stack(
           children: [
             Positioned.fill(child: _buildBody(context)),
@@ -32,6 +37,7 @@ class SearchIndexPage extends GetView<SearchIndexController> {
       final mediaSuggestions = controller.mediaSuggestionItems;
       final siteSuggestions = controller.siteSuggestionItems;
       final historyItems = controller.localHistorySuggestionItems;
+      final bottomPadding = _searchBarReservedSpace(context);
 
       final sections = <Widget>[
         if (mediaSuggestions.isNotEmpty)
@@ -84,7 +90,7 @@ class SearchIndexPage extends GetView<SearchIndexController> {
 
       return ListView.separated(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 200),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, bottomPadding),
         itemCount: sections.length,
         separatorBuilder: (_, __) => const SizedBox(height: 16),
         itemBuilder: (_, index) => sections[index],
@@ -160,14 +166,17 @@ class SearchIndexPage extends GetView<SearchIndexController> {
   Widget _buildSearchBar(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final viewInset = mediaQuery.viewInsets.bottom;
-    final tabBarSpacing = 10.0; // 预留 tabbar 区域
-    final bottomPadding = viewInset > 0 ? viewInset + 16 : tabBarSpacing;
+    final bottomPadding = viewInset > 0
+        ? viewInset + 16
+        : _searchBarBottomOffset(context);
 
-    return Align(
-      alignment: Alignment.bottomCenter,
+    return Positioned(
+      left: _searchBarHorizontalPadding,
+      right: _searchBarHorizontalPadding,
+      bottom: 0,
       child: AnimatedPadding(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding),
+        padding: EdgeInsets.only(bottom: bottomPadding),
         child: Material(
           elevation: 6,
           borderRadius: BorderRadius.circular(24),
@@ -180,6 +189,7 @@ class SearchIndexPage extends GetView<SearchIndexController> {
                 Expanded(
                   child: CupertinoSearchTextField(
                     controller: controller.textController,
+                    focusNode: controller.focusNode,
                     backgroundColor: Colors.transparent,
                     onSubmitted: controller.submit,
                     placeholder: '搜索媒体 / 订阅 / 站点资源',
@@ -208,6 +218,17 @@ class SearchIndexPage extends GetView<SearchIndexController> {
         ),
       ),
     );
+  }
+
+  double _searchBarBottomOffset(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    return mediaQuery.viewPadding.bottom + _searchBarBottomSpacing;
+  }
+
+  double _searchBarReservedSpace(BuildContext context) {
+    return _searchBarBottomOffset(context) +
+        _searchBarEstimatedHeight +
+        24;
   }
 }
 
