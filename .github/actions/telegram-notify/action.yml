@@ -16,6 +16,10 @@ inputs:
     description: "要发送的附件路径，支持多行"
     required: false
     default: ""
+  file_urls:
+    description: "要发送的附件 URL，支持多行"
+    required: false
+    default: ""
   parse_mode:
     description: "解析模式：HTML 或 Markdown"
     required: false
@@ -41,6 +45,7 @@ runs:
         CHAT_ID: ${{ inputs.chat_id }}
         MESSAGE: ${{ inputs.message }}
         FILE_PATHS: ${{ inputs.file_paths }}
+        FILE_URLS: ${{ inputs.file_urls }}
         PARSE_MODE: ${{ inputs.parse_mode }}
         DISABLE_NOTIFICATION: ${{ inputs.disable_notification }}
       run: |
@@ -53,12 +58,19 @@ runs:
         disable=$([ "$DISABLE_NOTIFICATION" = "true" ] && echo "true" || echo "false")
 
         mapfile -t files < <(printf '%s\n' "${FILE_PATHS:-}" | sed '/^[[:space:]]*$/d')
+        mapfile -t urls < <(printf '%s\n' "${FILE_URLS:-}" | sed '/^[[:space:]]*$/d')
         valid_files=()
         for file in "${files[@]}"; do
           if [ -f "$file" ]; then
             valid_files+=("$file")
           else
             echo "::warning::附件不存在，跳过: $file"
+          fi
+        done
+        valid_urls=()
+        for url in "${urls[@]}"; do
+          if [ -n "$url" ]; then
+            valid_urls+=("$url")
           fi
         done
 
@@ -76,14 +88,46 @@ runs:
         }
 
         send_single_document() {
-          local file="$1"
+          local target="$1"
+          local is_url="${2:-false}"
+          local document_field="$target"
+          if [ "$is_url" != "true" ]; then
+            document_field="@${target}"
+          fi
           curl -s -w "\n%{http_code}" -X POST \
             "https://api.telegram.org/bot${TOKEN}/sendDocument" \
             -F "chat_id=${CHAT_ID}" \
             -F "caption=${MESSAGE}" \
             -F "parse_mode=${PARSE_MODE}" \
             -F "disable_notification=${disable}" \
-            -F "document=@${file}" || true
+            -F "document=${document_field}" || true
+        }
+
+        send_url_media_group() {
+          local media_json="[]"
+          local index=0
+          for url in "${valid_urls[@]}"; do
+            if [ "$index" -eq 0 ]; then
+              media_json=$(jq -c \
+                --argjson media "$media_json" \
+                --arg media_url "$url" \
+                --arg caption "$MESSAGE" \
+                --arg parse_mode "$PARSE_MODE" \
+                '$media + [{type:"document", media:$media_url, caption:$caption, parse_mode:$parse_mode}]')
+            else
+              media_json=$(jq -c \
+                --argjson media "$media_json" \
+                --arg media_url "$url" \
+                '$media + [{type:"document", media:$media_url}]')
+            fi
+            index=$((index + 1))
+          done
+
+          curl -s -w "\n%{http_code}" -X POST \
+            "https://api.telegram.org/bot${TOKEN}/sendMediaGroup" \
+            -F "chat_id=${CHAT_ID}" \
+            -F "disable_notification=${disable}" \
+            -F "media=${media_json}" || true
         }
 
         send_media_group() {
@@ -122,7 +166,11 @@ runs:
             "${curl_args[@]}" || true
         }
 
-        if [ "${#valid_files[@]}" -eq 0 ]; then
+        if [ "${#valid_urls[@]}" -gt 1 ]; then
+          resp=$(send_url_media_group)
+        elif [ "${#valid_urls[@]}" -eq 1 ]; then
+          resp=$(send_single_document "${valid_urls[0]}" true)
+        elif [ "${#valid_files[@]}" -eq 0 ]; then
           resp=$(send_message)
         elif [ "${#valid_files[@]}" -eq 1 ]; then
           resp=$(send_single_document "${valid_files[0]}")
