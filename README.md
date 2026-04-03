@@ -17,11 +17,12 @@
 #### TestFlight 用户
 
 1. 先前往 [http://106.14.89.6/apply](http://106.14.89.6/apply) 申请推送 Token。
-2. 安装 [MoviePilot-Plugins](https://github.com/singleton-altman/MoviePilot-Plugins) 插件库中的 `APPLitePush` 插件。
-3. 在插件配置中填写 Push Token 与 Push API Key：
+2. 申请完成后，请先进入 Telegram 群并 @ 我一下，方便确认与后续处理。
+3. 安装 [MoviePilot-Plugins](https://github.com/singleton-altman/MoviePilot-Plugins) 插件库中的 `APPLitePush` 插件。
+4. 在插件配置中填写 Push Token 与 Push API Key：
    - Push Token：通过步骤 1 获取
    - Push API Key：需要到 Telegram 群获取
-4. 打开 App，找到该插件，并点击“应用”完成一次 Token 绑定。
+5. 打开 App，找到该插件，并点击“应用”完成一次 Token 绑定。
 
 #### 非 TestFlight 用户
 
@@ -41,15 +42,17 @@
 Android 用户可参考 iOS TestFlight 用户的使用步骤：
 
 1. 申请推送 Token。
-2. 安装 `APPLitePush` 插件。
-3. 配置插件中的 Push Token 与 Push API Key。
-4. 打开 App，在插件内点击“应用”完成绑定。
+2. 申请完成后，请先进入 Telegram 群并 @ 我一下，方便确认与后续处理。
+3. 安装 `APPLitePush` 插件。
+4. 配置插件中的 Push Token 与 Push API Key。
+5. 打开 App，在插件内点击“应用”完成绑定。
 
 需要注意的是，Android 版本目前没有配置渠道 Key 等信息，推送通达率没有任何保证。如果有可以提供相关信息的用户，欢迎通过 Telegram 联系我，感谢支持。
 
 ### 使用限制与说明
 
 - App 推送依赖我的转发服务器。
+- 非常欢迎有能力、有条件的热心用户自行搭建转发服务器，帮助分担现有服务压力，也让整体推送能力更稳定。
 - 当前服务器为阿里云建站服务器，存在限流：每分钟每个 IP 最多可发送 10 条消息。
 - 由于资费原因，后续存在主动废弃该服务的可能性。
 - 当前 TestFlight 使用的是私人账号，只有极少数用户可用，暂时无法提供给其他用户使用，感谢理解。
