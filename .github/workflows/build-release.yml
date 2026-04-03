@@ -19,6 +19,8 @@ jobs:
       apk_name: ${{ steps.meta.outputs.apk_name }}
       ipa_name: ${{ steps.meta.outputs.ipa_name }}
       ipa_sha_name: ${{ steps.meta.outputs.ipa_sha_name }}
+      apk_url: ${{ steps.meta.outputs.apk_url }}
+      ipa_url: ${{ steps.meta.outputs.ipa_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,9 +38,11 @@ jobs:
           echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
           echo "release_name=${RELEASE_NAME}" >> "$GITHUB_OUTPUT"
           echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
-          echo "apk_name=${RELEASE_NAME}.apk" >> "$GITHUB_OUTPUT"
-          echo "ipa_name=${RELEASE_NAME}.ipa" >> "$GITHUB_OUTPUT"
-          echo "ipa_sha_name=${RELEASE_NAME}.ipa.sha256" >> "$GITHUB_OUTPUT"
+          echo "apk_name=android-${RELEASE_NAME}.apk" >> "$GITHUB_OUTPUT"
+          echo "ipa_name=ios-${RELEASE_NAME}.ipa" >> "$GITHUB_OUTPUT"
+          echo "ipa_sha_name=ios-${RELEASE_NAME}.ipa.sha256" >> "$GITHUB_OUTPUT"
+          echo "apk_url=https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/android-${RELEASE_NAME}.apk" >> "$GITHUB_OUTPUT"
+          echo "ipa_url=https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/ios-${RELEASE_NAME}.ipa" >> "$GITHUB_OUTPUT"
 
   build-android:
     runs-on: ubuntu-latest
@@ -243,6 +247,6 @@ jobs:
 
             <a href="https://github.com/${{ github.repository }}/releases/tag/${{ needs.prepare.outputs.tag_name }}">📦 查看 Release</a>
             <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">🔗 Workflow 运行</a>
-          file_paths: |
-            dist/${{ needs.prepare.outputs.apk_name }}
-            dist/${{ needs.prepare.outputs.ipa_name }}
+          file_urls: |
+            ${{ needs.prepare.outputs.apk_url }}
+            ${{ needs.prepare.outputs.ipa_url }}
