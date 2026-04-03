@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
+import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/modules/recommend/controllers/recommend_api_item_ext.dart';
 import 'package:moviepilot_mobile/modules/recommend/models/recommend_api_item.dart';
 import 'package:moviepilot_mobile/modules/subscribe/controllers/subscribe_service.dart';
@@ -22,6 +23,7 @@ class MediaSearchListController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
   final _appService = Get.find<AppService>();
   final _log = Get.find<AppLog>();
+  final _authRepository = Get.find<AuthRepository>();
 
   final RxString keyword = ''.obs;
   final RxList<RecommendApiItem> items = <RecommendApiItem>[].obs;
@@ -66,10 +68,7 @@ class MediaSearchListController extends GetxController {
     if (type.toLowerCase() == 'person') {
       if (!_navigatedToPerson) {
         _navigatedToPerson = true;
-        Get.offNamed(
-          '/person-search-list',
-          arguments: {'keyword': term},
-        );
+        Get.offNamed('/person-search-list', arguments: {'keyword': term});
       }
       return;
     }
@@ -85,6 +84,7 @@ class MediaSearchListController extends GetxController {
   Future<void> _fetch({required int page, required bool append}) async {
     final term = keyword.value.trim();
     if (term.isEmpty) return;
+    await _refreshImageCookie();
     isLoading.value = true;
     error.value = null;
 
@@ -304,5 +304,24 @@ class MediaSearchListController extends GetxController {
       if (lower == 'false' || lower == '0') return false;
     }
     return null;
+  }
+
+  Future<void> _refreshImageCookie() async {
+    final server = _appService.baseUrl ?? _apiClient.baseUrl;
+    final token =
+        _appService.loginResponse?.accessToken ??
+        _appService.latestLoginProfileAccessToken ??
+        _apiClient.token;
+    if (server == null || server.isEmpty || token == null || token.isEmpty) {
+      return;
+    }
+    try {
+      await _authRepository.getUserGlobalConfig(
+        server: server,
+        accessToken: token,
+      );
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '刷新媒体搜索图片 Cookie 失败');
+    }
   }
 }
