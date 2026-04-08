@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
@@ -7,16 +8,19 @@ import 'package:moviepilot_mobile/modules/site/models/site_model_cache.dart';
 import 'package:moviepilot_mobile/modules/site/models/site_models.dart';
 import 'package:moviepilot_mobile/modules/site/models/site_userdata_cache.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
+import 'package:moviepilot_mobile/services/ios_shared_session_service.dart';
 import 'package:moviepilot_mobile/services/realm_service.dart';
 
 class SiteController extends GetxController {
   final _apiClient = Get.find<ApiClient>();
+  final _iosSharedSessionService = Get.find<IosSharedSessionService>();
   final _realm = Get.find<RealmService>();
   final _log = Get.find<AppLog>();
 
   final items = <SiteItem>[].obs;
   final isLoading = false.obs;
   final errorText = RxnString();
+  bool _didInitialize = false;
 
   /// 可用于 RSS 订阅的站点 ID 集合；null 表示未加载，空集合表示 API 无配置
   final rssSiteIds = Rxn<Set<int>>();
@@ -24,8 +28,14 @@ class SiteController extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    load();
-    loadRssSiteIds();
+    unawaited(ensureInitialized());
+  }
+
+  Future<void> ensureInitialized() async {
+    if (_didInitialize) return;
+    _didInitialize = true;
+    await load();
+    await loadRssSiteIds();
   }
 
   /// 获取可用于 RSS 的站点 ID 列表
@@ -161,11 +171,7 @@ class SiteController extends GetxController {
           } catch (e, st) {
             final id = item['id'];
             final name = item['name'];
-            _log.handle(
-              e,
-              stackTrace: st,
-              message: '解析站点失败 id=$id name=$name',
-            );
+            _log.handle(e, stackTrace: st, message: '解析站点失败 id=$id name=$name');
           }
         }
       }
@@ -177,10 +183,14 @@ class SiteController extends GetxController {
       return;
     } finally {
       if (sites.isNotEmpty) {
-        final baseMerged = sites
-            .map((site) => SiteItem(site: site, userData: null, iconBytes: null))
-            .toList()
-          ..sort((a, b) => a.site.pri.compareTo(b.site.pri));
+        final baseMerged =
+            sites
+                .map(
+                  (site) =>
+                      SiteItem(site: site, userData: null, iconBytes: null),
+                )
+                .toList()
+              ..sort((a, b) => a.site.pri.compareTo(b.site.pri));
         items.assignAll(baseMerged);
       }
     }
@@ -211,7 +221,9 @@ class SiteController extends GetxController {
     }
 
     try {
-      final results = await Future.wait(sites.map((site) => _fetchIconBytes(site)));
+      final results = await Future.wait(
+        sites.map((site) => _fetchIconBytes(site)),
+      );
       for (var i = 0; i < sites.length; i++) {
         final bytes = results[i];
         if (bytes != null && bytes.isNotEmpty) {
@@ -231,6 +243,7 @@ class SiteController extends GetxController {
     merged.sort((a, b) => a.site.pri.compareTo(b.site.pri));
     items.assignAll(merged);
     _saveToCache();
+    await _syncWidgetSnapshot(merged);
     isLoading.value = false;
   }
 
@@ -303,6 +316,112 @@ class SiteController extends GetxController {
 
     list.sort((a, b) => a.site.pri.compareTo(b.site.pri));
     items.assignAll(list);
+    unawaited(_syncWidgetSnapshot(list));
+  }
+
+  Future<void> _syncWidgetSnapshot(List<SiteItem> sourceItems) async {
+    if (sourceItems.isEmpty) return;
+    try {
+      await _iosSharedSessionService.syncSiteWidgetPayload(
+        jsonEncode(_buildWidgetPayload(sourceItems)),
+      );
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '同步 iOS 站点组件数据失败');
+    }
+  }
+
+  Map<String, dynamic> _buildWidgetPayload(List<SiteItem> sourceItems) {
+    final summarySites = List<SiteItem>.from(sourceItems)
+      ..sort((a, b) {
+        final aIssue = _hasSiteIssue(a) ? 1 : 0;
+        final bIssue = _hasSiteIssue(b) ? 1 : 0;
+        if (aIssue != bIssue) return bIssue.compareTo(aIssue);
+
+        final aUnread = a.userData?.messageUnread ?? 0;
+        final bUnread = b.userData?.messageUnread ?? 0;
+        if (aUnread != bUnread) return bUnread.compareTo(aUnread);
+
+        final aUpload = a.userData?.upload ?? 0;
+        final bUpload = b.userData?.upload ?? 0;
+        if (aUpload != bUpload) return bUpload.compareTo(aUpload);
+
+        return a.site.pri.compareTo(b.site.pri);
+      });
+
+    return {
+      'updatedAt': DateTime.now().toUtc().toIso8601String(),
+      'summary': {
+        'totalSites': sourceItems.length,
+        'enabledSites': sourceItems.where((item) => item.site.isActive).length,
+        'sitesWithUserData': sourceItems
+            .where((item) => item.userData != null)
+            .length,
+        'warningSites': sourceItems.where(_hasSiteIssue).length,
+        'unreadMessages': sourceItems.fold<int>(
+          0,
+          (sum, item) => sum + (item.userData?.messageUnread ?? 0),
+        ),
+        'totalUpload': sourceItems.fold<int>(
+          0,
+          (sum, item) => sum + (item.userData?.upload ?? 0),
+        ),
+        'totalDownload': sourceItems.fold<int>(
+          0,
+          (sum, item) => sum + (item.userData?.download ?? 0),
+        ),
+        'totalSeeding': sourceItems.fold<int>(
+          0,
+          (sum, item) => sum + (item.userData?.seeding ?? 0),
+        ),
+        'totalSeedingSize': sourceItems.fold<int>(
+          0,
+          (sum, item) => sum + (item.userData?.seedingSize ?? 0),
+        ),
+        'totalBonus': sourceItems.fold<double>(
+          0,
+          (sum, item) => sum + (item.userData?.bonus ?? 0),
+        ),
+      },
+      'sites': summarySites.map((item) {
+        final userData = item.userData;
+        final iconBase64 = _siteIconBase64(item);
+        return {
+          'id': item.site.id,
+          'name': item.site.name,
+          'domain': item.site.domain,
+          'priority': item.site.pri,
+          'iconBase64': iconBase64,
+          'isActive': item.site.isActive,
+          'hasIssue': _hasSiteIssue(item),
+          'errorMessage': (userData?.errMsg ?? '').trim(),
+          'messageUnread': userData?.messageUnread ?? 0,
+          'upload': userData?.upload ?? 0,
+          'download': userData?.download ?? 0,
+          'ratio': userData?.ratio ?? 0,
+          'seeding': userData?.seeding ?? 0,
+          'seedingSize': userData?.seedingSize ?? 0,
+          'bonus': userData?.bonus ?? 0,
+          'updatedDay': userData?.updatedDay ?? '',
+          'updatedTime': userData?.updatedTime ?? '',
+        };
+      }).toList(),
+    };
+  }
+
+  bool _hasSiteIssue(SiteItem item) {
+    if (!item.site.isActive) return true;
+    final errMsg = (item.userData?.errMsg ?? '').trim();
+    return errMsg.isNotEmpty;
+  }
+
+  String? _siteIconBase64(SiteItem item) {
+    final inlineBase64 = item.iconBase64?.trim();
+    if (inlineBase64 != null && inlineBase64.isNotEmpty) {
+      return inlineBase64;
+    }
+    final bytes = item.iconBytes;
+    if (bytes == null || bytes.isEmpty) return null;
+    return base64Encode(bytes);
   }
 
   void _saveToCache() {

@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_global_config.dart';
+import 'package:moviepilot_mobile/modules/site/controllers/site_controller.dart';
 import 'package:moviepilot_mobile/modules/system_message/controllers/system_message_controller.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/ios_shared_session_service.dart';
@@ -55,6 +57,7 @@ class AuthRepository extends GetxService {
     // 推荐小组件依赖登录后的完整用户配置，登录链路末尾再触发一次刷新，
     // 避免首次刷新时机过早导致显示“请先登录”或空数据。
     await _iosSharedSessionService.reloadWidgets();
+    unawaited(_warmSiteWidgetData());
 
     // 登录成功后启动消息轮询
     if (!Get.isRegistered<SystemMessageController>()) {
@@ -129,6 +132,7 @@ class AuthRepository extends GetxService {
         accessToken: accessToken,
       );
       await _iosSharedSessionService.reloadWidgets();
+      unawaited(_warmSiteWidgetData());
 
       _talker.info('开始获取用户全局配置: $normalizedServer');
       return true;
@@ -154,6 +158,17 @@ class AuthRepository extends GetxService {
     } catch (e) {
       _talker.warning('获取用户全局配置失败: $e');
       return null;
+    }
+  }
+
+  Future<void> _warmSiteWidgetData() async {
+    try {
+      final controller = Get.isRegistered<SiteController>()
+          ? Get.find<SiteController>()
+          : Get.put(SiteController(), permanent: true);
+      await controller.ensureInitialized();
+    } catch (e) {
+      _talker.warning('预热站点组件数据失败: $e');
     }
   }
 

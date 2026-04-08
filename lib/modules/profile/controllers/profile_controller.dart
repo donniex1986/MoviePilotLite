@@ -3,6 +3,7 @@ import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
 import 'package:moviepilot_mobile/modules/login/repositories/auth_repository.dart';
 import 'package:moviepilot_mobile/modules/profile/models/user_info.dart';
+import 'package:moviepilot_mobile/modules/site/controllers/site_controller.dart';
 import 'package:moviepilot_mobile/modules/system_message/controllers/system_message_controller.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/ios_shared_session_service.dart';
@@ -92,6 +93,9 @@ class ProfileController extends GetxController {
     _appService.clearCookie();
     _appService.clearLoginState();
     await _iosSharedSessionService.clearSession();
+    if (Get.isRegistered<SiteController>()) {
+      Get.delete<SiteController>(force: true);
+    }
 
     currentProfile.value = null;
     currentUserInfo.value = null;

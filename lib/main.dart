@@ -551,7 +551,10 @@ class MyApp extends StatelessWidget {
             name: '/site',
             page: () => const SitePage(),
             binding: BindingsBuilder(() {
-              Get.lazyPut(() => SiteController());
+              if (!Get.isRegistered<SiteController>()) {
+                final controller = Get.put(SiteController(), permanent: true);
+                controller.ensureInitialized();
+              }
             }),
           ),
           GetPage(
