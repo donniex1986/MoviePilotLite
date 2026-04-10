@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:moviepilot_mobile/applog/app_log.dart';
 import 'package:moviepilot_mobile/modules/dynamic_form/adapters/plugin_form_adapter.dart';
@@ -17,6 +18,7 @@ class DynamicFormController extends GetxController {
   final _appService = Get.find<AppService>();
   final _jpushService = Get.find<JPushService>();
   final _log = Get.find<AppLog>();
+  static const _appLitePushNotifyUrl = 'http://106.14.89.6/api/push';
 
   /// 接口路径（GET 拉取），如 /api/v1/plugin/page/xxx
   late final String apiPath;
@@ -30,7 +32,9 @@ class DynamicFormController extends GetxController {
   final blocks = <FormBlock>[].obs;
   final isLoading = false.obs;
   final isApplyingPushAlias = false.obs;
+  final isTestingAppLitePush = false.obs;
   final errorText = RxnString();
+  final appLitePushLastTestText = RxnString();
   final saveSuccess = false.obs;
   final formMode = false.obs;
   String? pluginId;
@@ -113,7 +117,16 @@ class DynamicFormController extends GetxController {
     isLoading.value = true;
     errorText.value = null;
     saveSuccess.value = false;
+    isTestingAppLitePush.value = false;
+    appLitePushLastTestText.value = null;
     _pluginAdapter = null;
+    if (isAppLitePushPlugin) {
+      formMode.value = true;
+    }
+    final pluginKey = pluginId?.trim();
+    if (isAppLitePushPlugin && pluginKey != null && pluginKey.isNotEmpty) {
+      apiSavePath ??= '/api/v1/plugin/$pluginKey';
+    }
     try {
       final token = _getToken();
       if (token == null || token.isEmpty) {
@@ -124,7 +137,11 @@ class DynamicFormController extends GetxController {
         return;
       }
 
-      final response = await _apiClient.get<dynamic>(apiPath, token: token);
+      final fetchPath =
+          isAppLitePushPlugin && pluginKey != null && pluginKey.isNotEmpty
+          ? '/api/v1/plugin/form/$pluginKey'
+          : apiPath;
+      final response = await _apiClient.get<dynamic>(fetchPath, token: token);
       final status = response.statusCode ?? 0;
       if (status >= 400) {
         errorText.value = '请求失败 (HTTP $status)';
@@ -151,10 +168,12 @@ class DynamicFormController extends GetxController {
           pluginId != null &&
           PluginFormAdapterRegistry.hasAdapter(pluginId!)) {
         await _loadViaAdapter();
+        _syncSpecialPluginState();
         return;
       }
 
       _loadVuetify(parsed);
+      _syncSpecialPluginState();
     } catch (e, st) {
       _log.handle(e, stackTrace: st, message: '获取动态表单失败');
       errorText.value = '请求失败，请稍后重试';
@@ -290,10 +309,126 @@ class DynamicFormController extends GetxController {
   ];
   bool get isFormMode => formModePlugins.contains(pluginId);
 
+  String get normalizedPluginId => pluginId?.trim().toLowerCase() ?? '';
+
   bool get isAppLitePushPlugin =>
-      pluginId == 'APPLitePush' || pluginId == 'AppPushMsg';
+      normalizedPluginId == 'applitepush' ||
+      normalizedPluginId == 'apppushmsg' ||
+      normalizedPluginId == 'applitepushplugin';
 
   bool get showApplyPushAliasAction => isAppLitePushPlugin;
+
+  String get appLitePushResultText =>
+      appLitePushLastTestText.value?.trim().isNotEmpty == true
+      ? appLitePushLastTestText.value!.trim()
+      : '最近一次测试结果：暂无记录';
+
+  void _syncSpecialPluginState() {
+    if (!isAppLitePushPlugin) return;
+    final lastTestText = formModel.value['last_test_text']?.toString().trim();
+    if (lastTestText != null && lastTestText.isNotEmpty) {
+      appLitePushLastTestText.value = lastTestText;
+    }
+  }
+
+  String _formatAppLitePushTestResult(bool success, String message) {
+    final now = DateTime.now();
+    String twoDigits(int value) => value.toString().padLeft(2, '0');
+    final time =
+        '${now.year}-${twoDigits(now.month)}-${twoDigits(now.day)} '
+        '${twoDigits(now.hour)}:${twoDigits(now.minute)}:${twoDigits(now.second)}';
+    final normalizedMessage = message.trim().isEmpty ? '无返回信息' : message;
+    return '最近一次测试结果：${success ? '成功' : '失败'} | 时间：$time | 返回：$normalizedMessage';
+  }
+
+  String? _extractResponseMessage(dynamic data) {
+    final map = _extractMap(data);
+    if (map != null) {
+      for (final key in const ['msg', 'message', 'detail']) {
+        final value = map[key]?.toString().trim();
+        if (value != null && value.isNotEmpty) {
+          return value;
+        }
+      }
+    }
+
+    if (data is String) {
+      final text = data.trim();
+      if (text.isNotEmpty) {
+        return text;
+      }
+    }
+
+    return null;
+  }
+
+  Future<bool> runAppLitePushTest() async {
+    if (!isAppLitePushPlugin || isTestingAppLitePush.value) return false;
+
+    final pushToken = _configuredPushToken();
+    final pushKey = formModel.value['apikey']?.toString().trim();
+    if (pushToken == null ||
+        pushToken.isEmpty ||
+        pushKey == null ||
+        pushKey.isEmpty) {
+      appLitePushLastTestText.value = _formatAppLitePushTestResult(
+        false,
+        '请先填写并保存 Push Key 和 App Push Token',
+      );
+      return false;
+    }
+
+    isTestingAppLitePush.value = true;
+    try {
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+          validateStatus: (_) => true,
+        ),
+      );
+      final response = await dio.post<dynamic>(
+        _appLitePushNotifyUrl,
+        data: <String, dynamic>{
+          'token': pushToken,
+          'title': '测试消息',
+          'content': '这是一条本地测试通知',
+        },
+        options: Options(
+          headers: <String, dynamic>{
+            'Content-Type': 'application/json',
+            'X-API-Key': pushKey,
+          },
+        ),
+      );
+      final status = response.statusCode ?? 0;
+      final responseMap = _extractMap(response.data);
+      final responseCode = responseMap?['code'];
+      final success =
+          status < 400 &&
+          (responseCode == null ||
+              (responseCode is num && responseCode.toInt() == 0) ||
+              responseCode.toString() == '0');
+      final message =
+          _extractResponseMessage(response.data) ??
+          (success ? '消息发送成功' : '操作失败');
+      appLitePushLastTestText.value = _formatAppLitePushTestResult(
+        success,
+        message,
+      );
+      return success;
+    } catch (e, st) {
+      _log.handle(e, stackTrace: st, message: '发送 AppLitePush 测试消息失败');
+      final message = e.toString().trim().isEmpty ? '请求失败，请稍后重试' : '$e';
+      appLitePushLastTestText.value = _formatAppLitePushTestResult(
+        false,
+        message,
+      );
+      return false;
+    } finally {
+      isTestingAppLitePush.value = false;
+    }
+  }
 
   String? _configuredPushToken() {
     final data = formModel.value;
