@@ -11,7 +11,9 @@ class IosWidgetNavigationService extends GetxService {
     if (!_isSupportedPlatform) return this;
     _channel.setMethodCallHandler(_handleMethodCall);
     try {
-      final route = await _channel.invokeMethod<String>('getPendingWidgetRoute');
+      final route = await _channel.invokeMethod<String>(
+        'getPendingWidgetRoute',
+      );
       _storePendingRoute(route);
     } catch (_) {}
     return this;
@@ -64,6 +66,12 @@ class IosWidgetNavigationService extends GetxService {
           'title': title.isEmpty ? '流行趋势' : title,
         },
       );
+    }
+    if (uri.host == 'site-overview' || uri.path == '/site-overview') {
+      return const _WidgetRouteTarget(route: '/site');
+    }
+    if (uri.host == 'system-message' || uri.path == '/system-message') {
+      return const _WidgetRouteTarget(route: '/system-message');
     }
     return null;
   }

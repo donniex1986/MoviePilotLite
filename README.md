@@ -2,6 +2,11 @@
 
 基于 [MoviePilot](https://github.com/jxxghp/MoviePilot) 项目的 Flutter 移动端客户端。
 
+## HarmonyOS（OHOS）
+
+- OHOS 适配在独立分支 `ohos`
+- HAP 需要使用自己的证书进行自签后安装
+
 ## 社区与贡献
 
 - 📱 **Telegram 群聊**：[小白裙](https://t.me/+MLbOpDDD1mdlOTM1)，欢迎加入交流

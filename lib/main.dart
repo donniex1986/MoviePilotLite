@@ -86,6 +86,7 @@ import 'modules/dynamic_form/adapters/plugin_form_adapter_registry.dart';
 import 'modules/dynamic_form/adapters/p115_strm_helper_form_controller.dart';
 import 'modules/dynamic_form/adapters/proxmox_ve_backup_form_controller.dart';
 import 'modules/dynamic_form/adapters/trash_clean_form_controller.dart';
+import 'modules/dynamic_form/widgets/VueStyle/applitepush/app_lite_push_widgets.dart';
 import 'modules/dynamic_form/widgets/VueStyle/proxmox_ve/proxmox_ve_backup_widgets.dart';
 import 'modules/dynamic_form/controllers/dynamic_form_controller.dart';
 import 'modules/dynamic_form/pages/dynamic_form_page.dart';
@@ -155,6 +156,7 @@ Future<void> main() async {
   );
 
   registerProxmoxVeBackupRenderer();
+  registerAppLitePushRenderer();
   await Get.put(IosWidgetNavigationService()).init();
   runApp(const MyApp());
 }
@@ -551,7 +553,10 @@ class MyApp extends StatelessWidget {
             name: '/site',
             page: () => const SitePage(),
             binding: BindingsBuilder(() {
-              Get.lazyPut(() => SiteController());
+              if (!Get.isRegistered<SiteController>()) {
+                final controller = Get.put(SiteController(), permanent: true);
+                controller.ensureInitialized();
+              }
             }),
           ),
           GetPage(
