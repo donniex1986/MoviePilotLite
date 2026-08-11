@@ -93,42 +93,11 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Test file operations should use Path objects for cross-platform compatibility
 - Mock external API calls and file operations to make tests reliable and fast
 
-## Done: Bangumi detail 解析失败（actors.images flat URL）
+## Task: 更多页下载器列表回页清空
 
-## Task: 备份 Diff + 选择性安装
-
-[X] plugin_backup_diff 模型/计算
-[X] PluginBackupDiffSheet（筛选 + 勾选安装）
-[X] 备份中心双选对比入口
+[X] 根因：切 Tab/返回调 refreshDashboard 先把 *DataReady=false，UI 用 ready 切加载态
+[X] 修复：已有数据时静默刷新，失败不覆盖旧数据
 [X] analyze
 
 ## Lessons
-- 备份对比按 plugin id；changed 判 version/name/repo/author；安装候选：added/changed→right，removed→left；默认勾选有 repo 的新增/变更
-- Bangumi MediaInfo.actors.images 是 flat URL（large/medium/small/grid 为 String），不是 TMDB 的 `{large:{url}}`；须自定义 `_actorImagesFromJson`，并用 career[0] 填 character、large URL 填 profile_path
-- Discover 列表勿用 index%3 交错布局；统一海报左文右 + DashboardPalette（pageBackgroundAlt/tileBorder），Hero 单张 Featured 即可
-- iOS NativeGlassNavBar（UiKitView）会盖在 Flutter modal 上透出白线；打开筛选等全屏弹层前须 hideBottomNavBar，关闭后恢复
-- 插件备份导出用 share_plus ShareParams(files: [XFile(path)])；打开备份中心同样须藏玻璃 TabBar
-- 插件每日自动备份：prefs `plugin_auto_backup_enabled` + 按 scope 记 last date；文件名 `plugins_auto_` / JSON `auto:true`；Index 进入主页后触发（先 await 读 prefs），一天一次去重，不依赖打开插件页
-
-
-## Lessons
-- 插件备份恢复：本地 JSON 存 ApplicationSupport/plugin_backups/{scope}/；恢复走 GET /api/v1/plugin/install/{id}?repo_url&force=false；缺 repo_url 按市场缓存/PLUGIN_MARKET/官方仓/author_url 反推并多仓尝试
-- 插件市场缓存：Hive Box.values 不保证写入序；须存 listIndex 并在 loadFromCache 排序还原；旧缓存无 index 仍要展示（可按 installCount 近似），勿 skip
-- 字幕搜索 SSE：`GET /api/v1/search/subtitle/media/{mediaid}/stream`（mtype/title/year/sites[/season]）；事件 type=append/progress/replace/done；下载 `POST /api/v1/download/subtitle` 须原样回传 subtitle_in（保留 enclosure 签名），save_path 可为 null；接口无 downloader 字段，Sheet 仍选下载器以复用目录偏好与资源下载 UX
-- SSE 长连接 `streamLines` 的 receiveTimeout 须为 null，否则会在搜索中途被 Dio 掐断
-- 历史订阅重新订阅须 POST 原样 raw JSON（保留 completed_episode/episode_priority 等），勿仅用 SubscribeItem.toJson()
-- GET /api/v1/subscribe/history/{mtype}，mtype 为「电视剧」「电影」；DELETE /api/v1/subscribe/history/{id}
-- CupertinoContextMenu 列表卡预览须固定宽高，否则松约束会撑满导致 menuSheet 无布局空间
-- GET /api/v1/subscribe/files/{id} 返回 subscribe + episodes(download/library)；点击订阅 Item 打开文件统计 Sheet，编辑走菜单
-- 沉浸式媒体 Sheet 设计见 `.cursor/skills/immersive-backdrop-sheet/SKILL.md`：backdrop 全屏背景 + pageBackground 自上而下渐变 + 半透明列表卡；首屏用已有 Item 瞬时渲染，列表异步加载
-
-## Lessons (BrushFlow)
-- 自定义 PluginFormRenderer 需保证 adapter.blocks 非空（sentinel FormBlock），否则 DynamicFormPage 不进入 customRenderer 分支
-- BrushFlow 业务放 VueStyle/brush_flow + 独立 Service/Models，仅 Registry 注册，不改 DynamicFormController 通用逻辑
-- 提交 settings 时原样回写 show_sidebar_nav，App 内不提供侧边栏开关
-- 任务保存须组完整 body（非 dirty patch）；site_id 为 int，空文本可选字段传 null
-- 任务卡片操作走 CupertinoContextMenu（长按），勿在 item 内嵌编辑/暂停按钮
-- 清理：POST /tasks/{id}/clear body `{}`；删除：DELETE /tasks/{id}
-
-## Lessons
-- 存储列表「未配置」勿用 usage.total>0 判断；须按 config（local 恒已配置，alist/openlist 看 url，u115/alipan 看 token）。`/api/v1/storage/usage/{type}` 响应常包在 `{data:{total,available}}`，须 unwrap 后再解析，勿把外层 Response 当 Usage
+- Multifunction refreshDashboard 勿在刷新开头把 DataReady 置 false；*DataReady 控制列表/加载态，置 false 会清空可见列表。切回更多 Tab（index==3）会触发 refreshDashboard
