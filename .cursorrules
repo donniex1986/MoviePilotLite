@@ -93,58 +93,23 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Test file operations should use Path objects for cross-platform compatibility
 - Mock external API calls and file operations to make tests reliable and fast
 
-## Task: 字幕结果页 Item 美化 + 整卡点击下载 Sheet（下载器/保存目录）
+## Done: Bangumi detail 解析失败（actors.images flat URL）
 
-[X] ui-ux-pro-max 指导 Item 视觉
-[X] 移除下载按钮，整卡点击
-[X] SubtitleDownloadSheet 复用 DownloadController 选下载器/目录
-[X] downloadSubtitle 带 save_path
+## Task: 备份 Diff + 选择性安装
 
-## Done: 已安装插件 AppBar 三按钮配色区分（primary / cool / warm）
+[X] plugin_backup_diff 模型/计算
+[X] PluginBackupDiffSheet（筛选 + 勾选安装）
+[X] 备份中心双选对比入口
+[X] analyze
 
-## Done: 已安装插件 AppBar 取消「更多」，直接露出指定安装/备份中心/插件市场
+## Lessons
+- 备份对比按 plugin id；changed 判 version/name/repo/author；安装候选：added/changed→right，removed→left；默认勾选有 repo 的新增/变更
+- Bangumi MediaInfo.actors.images 是 flat URL（large/medium/small/grid 为 String），不是 TMDB 的 `{large:{url}}`；须自定义 `_actorImagesFromJson`，并用 career[0] 填 character、large URL 填 profile_path
+- Discover 列表勿用 index%3 交错布局；统一海报左文右 + DashboardPalette（pageBackgroundAlt/tileBorder），Hero 单张 Featured 即可
+- iOS NativeGlassNavBar（UiKitView）会盖在 Flutter modal 上透出白线；打开筛选等全屏弹层前须 hideBottomNavBar，关闭后恢复
+- 插件备份导出用 share_plus ShareParams(files: [XFile(path)])；打开备份中心同样须藏玻璃 TabBar
+- 插件每日自动备份：prefs `plugin_auto_backup_enabled` + 按 scope 记 last date；文件名 `plugins_auto_` / JSON `auto:true`；Index 进入主页后触发（先 await 读 prefs），一天一次去重，不依赖打开插件页
 
-## Done: 插件备份中心 A — 顶部立即备份/导入 + 列表 → 恢复 Sheet
-
-## Done: 恢复安装按钮用 onPrimary 白字，避免 light 下 inverseText 深色反差
-
-## Done: 恢复列表右侧选中改为圆形 checkmark，去掉方角色块
-
-## Done: 恢复插件选择独立 Sheet，备份列表不再页内二次切换
-
-## Done: 备份/恢复 Item 背景改 pageBackgroundAlt，避免半透明 surface 发灰
-
-## Done: 插件页 AppBar title 去掉 titleLarge，对齐主题 16/w600
-
-## Done: 恢复进度保留成功/失败，不自动隐藏/关闭
-
-## Done: 备份列表删除改 ContextMenu + 文件名完整显示
-
-## Done: 删除备份确认 Dialog 美化（DashboardPalette + 危险色 + 文件信息卡）
-
-## Done: 已安装插件备份/恢复 — 本地 JSON + 多选批量 installPlugin（指定安装同逻辑）
-
-## Done: 插件安装量全 0 — statistic 解析/异常会中断合并；改为 Map.from + int 查找且 try/catch
-
-## Done: 插件市场 Item 箭头对齐 — 固定 desc/footer 高 + Grid 160 + chevron 与 chip 居中
-
-## Done: 插件市场缓存顺序 — Hive.values 无序，写入 listIndex 还原 API 序；旧缓存无 index 仍展示
-
-## Done: 更多页下载器 Item 左侧 icon 按 type 换 logo（qb/tr/通用）
-
-## Done: 媒体详情字幕搜索入口 + 按钮改版
-
-## Done: 已安装插件页（PluginPage）与插件市场同风格 bottom floating bar + visibleItems 缓存 + palette 预加载限制 + await loadFromCache
-
-## Done: 下载接口 500（对齐 WebUI POST /api/v1/download/ + 原始 torrent_in/media_in）
-
-## Done: iOS CI 构建失败 — altman_downloader_control 移除 controller_adaptor，本地 DownloaderControllerAdaptor 适配
-
-## Done: 下载 startDownload — API detail 为 List 时 ToastUtil.error 类型错误（_downloadApiErrorMessage）
-
-## Done: 插件页 Item 美化
-
-## Done: 订阅 Item 文件统计（Sheet + 海报墙）
 
 ## Lessons
 - 插件备份恢复：本地 JSON 存 ApplicationSupport/plugin_backups/{scope}/；恢复走 GET /api/v1/plugin/install/{id}?repo_url&force=false；缺 repo_url 按市场缓存/PLUGIN_MARKET/官方仓/author_url 反推并多仓尝试
@@ -164,3 +129,6 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - 任务保存须组完整 body（非 dirty patch）；site_id 为 int，空文本可选字段传 null
 - 任务卡片操作走 CupertinoContextMenu（长按），勿在 item 内嵌编辑/暂停按钮
 - 清理：POST /tasks/{id}/clear body `{}`；删除：DELETE /tasks/{id}
+
+## Lessons
+- 存储列表「未配置」勿用 usage.total>0 判断；须按 config（local 恒已配置，alist/openlist 看 url，u115/alipan 看 token）。`/api/v1/storage/usage/{type}` 响应常包在 `{data:{total,available}}`，须 unwrap 后再解析，勿把外层 Response 当 Usage
