@@ -439,14 +439,6 @@ class DashboardController extends GetxController {
           'usage=${info.usage.toStringAsFixed(1)}%',
         );
       } else if (response.statusCode == 401) {
-        final info = DashboardMemoryInfo.fromJson(payload);
-        memoryInfo.value = info;
-        _appendMemoryChartData(info.usage.clamp(0.0, 100.0));
-        talker.info(
-          '内存数据加载成功: used=${info.used}, available=${info.available}, '
-          'usage=${info.usage.toStringAsFixed(1)}%',
-        );
-      } else if (response.statusCode == 401) {
         talker.error('内存数据加载失败: 未授权，请重新登录');
       } else {
         talker.warning('内存数据加载失败，状态码: ${response.statusCode}');
