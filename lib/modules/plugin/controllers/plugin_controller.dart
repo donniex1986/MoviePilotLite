@@ -23,8 +23,10 @@ class PluginController extends GetxController {
   final _hive = Get.find<HiveService>();
   final _backupService = PluginBackupService();
   final items = <PluginItem>[].obs;
+  final availabilityById = <String, PluginAvailability>{}.obs;
   final keyword = ''.obs;
   final isLoading = false.obs;
+  final isCleaningUnavailable = false.obs;
   final errorText = RxnString();
   final isBackingUp = false.obs;
   final isRestoring = false.obs;
@@ -74,6 +76,14 @@ class PluginController extends GetxController {
     }
     _visibleCacheDirty = false;
     return _cachedVisible;
+  }
+
+  PluginAvailability availabilityOf(String id) {
+    return availabilityById[id] ?? const PluginAvailability();
+  }
+
+  List<PluginItem> get unavailableItems {
+    return items.where((item) => availabilityOf(item.id).unavailable).toList();
   }
 
   bool _matchKeyword(PluginItem item, String keywordLower) {
@@ -280,6 +290,7 @@ class PluginController extends GetxController {
       errorText.value = '当前帐号无管理权限';
       _clearLocalCache();
       items.clear();
+      availabilityById.clear();
       _visibleCacheDirty = true;
       isLoading.value = false;
       return;
@@ -299,24 +310,26 @@ class PluginController extends GetxController {
       if (status >= 400) {
         errorText.value = '请求失败 (HTTP $status)';
         items.clear();
+        availabilityById.clear();
         return;
       }
-      final raw = response.data;
-      final list = raw is List ? raw : <dynamic>[];
+      final list = unwrapPluginList(response.data);
       final parsed = <PluginItem>[];
+      final availability = <String, PluginAvailability>{};
       for (final item in list) {
         if (item is! Map) continue;
         try {
           final map = Map<String, dynamic>.from(item);
-          parsed.add(
-            PluginItem.fromJson(map).copyWith(
-              installCount: lookupPluginInstallCount(installCount, map['id']),
-            ),
+          final parsedItem = PluginItem.fromJson(map).copyWith(
+            installCount: lookupPluginInstallCount(installCount, map['id']),
           );
+          parsed.add(parsedItem);
+          availability[parsedItem.id] = pluginAvailabilityFromJson(map);
         } catch (e, st) {
           _log.handle(e, stackTrace: st, message: '解析插件失败');
         }
       }
+      availabilityById.assignAll(availability);
       items.assignAll(parsed);
       _visibleCacheDirty = true;
       _preloadPalettes(limit: 12);
@@ -325,6 +338,7 @@ class PluginController extends GetxController {
       _log.handle(e, stackTrace: st, message: '获取插件列表失败');
       errorText.value = '请求失败，请稍后重试';
       items.clear();
+      availabilityById.clear();
     } finally {
       isLoading.value = false;
     }
@@ -645,6 +659,34 @@ class PluginController extends GetxController {
     if (!_canAccessPlugins) return false;
     final response = await _apiClient.delete<dynamic>('/api/v1/plugin/$id');
     return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<({int ok, int fail})> uninstallUnavailablePlugins() async {
+    final targets = unavailableItems;
+    if (targets.length <= 2) {
+      return (ok: 0, fail: 0);
+    }
+    isCleaningUnavailable.value = true;
+    var ok = 0;
+    var fail = 0;
+    try {
+      for (final item in targets) {
+        try {
+          final success = await uninstallPlugin(item.id);
+          if (success) {
+            ok++;
+          } else {
+            fail++;
+          }
+        } catch (_) {
+          fail++;
+        }
+      }
+      await load(force: true);
+      return (ok: ok, fail: fail);
+    } finally {
+      isCleaningUnavailable.value = false;
+    }
   }
 }
 

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:moviepilot_mobile/modules/login/models/login_profile.dart';
 import 'package:moviepilot_mobile/modules/multifunction/models/multifunction_config.dart';
 import 'package:moviepilot_mobile/modules/multifunction/models/multifunction_models.dart';
+import 'package:moviepilot_mobile/modules/plugin/models/plugin_models.dart';
 import 'package:moviepilot_mobile/services/api_client.dart';
 import 'package:moviepilot_mobile/services/app_service.dart';
 import 'package:moviepilot_mobile/services/hive_service.dart';
@@ -759,12 +760,9 @@ class MultifunctionController extends GetxController {
       return false;
     }
     final raw = response.data;
-    if (raw is List) {
-      pluginInstalledCount.value = raw.length;
-      return true;
-    }
-    pluginInstalledCount.value = 0;
-    return false;
+    final list = unwrapPluginList(raw);
+    pluginInstalledCount.value = list.length;
+    return true;
   }
 
   Future<bool> _loadUserCount() async {
