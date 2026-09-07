@@ -93,11 +93,13 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Test file operations should use Path objects for cross-platform compatibility
 - Mock external API calls and file operations to make tests reliable and fast
 
-## Task: 更多页下载器列表回页清空
+## Task: 空图片缓存 FileImage 崩溃
 
-[X] 根因：切 Tab/返回调 refreshDashboard 先把 *DataReady=false，UI 用 ready 切加载态
-[X] 修复：已有数据时静默刷新，失败不覆盖旧数据
-[X] analyze
+[X] 根因：appImageCache 写入 0 字节文件，FileImage/Palette 直接加载
+[X] FileService 拒绝空响应
+[X] getFileFromCache 剔除空文件
+[X] palette 不再走 FileImage
 
 ## Lessons
 - Multifunction refreshDashboard 勿在刷新开头把 DataReady 置 false；*DataReady 控制列表/加载态，置 false 会清空可见列表。切回更多 Tab（index==3）会触发 refreshDashboard
+- appImageCache 空文件：FileImage 会抛 StateError（LocalFile is empty）。CacheManager 须在 getFileFromCache 剔除 0 字节并在 FileService 拒绝空响应；PaletteGenerator.fromImageProvider(FileImage) 无 onError 会打到 image resource service，改 instantiateImageCodec

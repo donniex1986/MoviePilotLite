@@ -6,10 +6,7 @@ import 'package:moviepilot_mobile/services/server_api_version_service.dart';
 
 /// 存储使用情况
 class StorageUsage {
-  const StorageUsage({
-    required this.total,
-    required this.available,
-  });
+  const StorageUsage({required this.total, required this.available});
 
   final double total;
   final double available;
@@ -113,14 +110,11 @@ class StorageListController extends GetxController {
     try {
       final isV3 = await _serverApiVersionService.isV3();
       final response = isV3
-          ? await _apiClient.postJson<dynamic>(
-              '/api/v1/storage/manage',
-              {
-                'target': _storageUsageTarget(type),
-                'action': 'usage',
-                'params': <String, dynamic>{},
-              },
-            )
+          ? await _apiClient.postJson<dynamic>('/api/v1/storage/manage', {
+              'target': _storageUsageTarget(type),
+              'action': 'usage',
+              'params': <String, dynamic>{},
+            })
           : await _apiClient.get<dynamic>('/api/v1/storage/usage/$type');
       final status = response.statusCode ?? 0;
       if (status >= 400) return null;
@@ -146,7 +140,8 @@ class StorageListController extends GetxController {
       final nestedMap = nested is Map<String, dynamic>
           ? nested
           : Map<String, dynamic>.from(nested);
-      if (nestedMap.containsKey('total') || nestedMap.containsKey('available')) {
+      if (nestedMap.containsKey('total') ||
+          nestedMap.containsKey('available')) {
         return nestedMap;
       }
     }
